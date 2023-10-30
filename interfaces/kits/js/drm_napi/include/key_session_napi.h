@@ -1,0 +1,73 @@
+/*
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#ifndef OHOS_DRM_KEY_SESSION_H_
+#define OHOS_DRM_KEY_SESSION_H_
+
+#include "key_session_impl.h"
+#include "napi/native_api.h"
+#include "napi/native_node_api.h"
+#include "key_session_callback_napi.h"
+#include "drm_log.h"
+#include "drm_napi_utils.h"
+#include "drm_error_code.h"
+
+#include <map>
+
+namespace OHOS {
+namespace DrmStandard {
+static const char KEY_SESSION_NAPI_CLASS_NAME[] = "KeySession";
+class KeySessionNapi {
+public:
+    KeySessionNapi();
+    ~KeySessionNapi();
+    static napi_value Init(napi_env env, napi_value exports);
+    static napi_value CreateKeySession(napi_env env, sptr<KeySessionImpl> keySessionImpl);
+    static napi_value Release(napi_env env, napi_callback_info info);
+    static napi_value GenerateLicenseRequest(napi_env env, napi_callback_info info);
+    static napi_value ProcessLicenseResponse(napi_env env, napi_callback_info info);
+    static napi_value GenerateOfflineReleaseRequest(napi_env env, napi_callback_info info);
+    static napi_value ProcessOfflineReleaseResponse(napi_env env, napi_callback_info info);
+    static napi_value CheckLicenseStatus(napi_env env, napi_callback_info info);
+    static napi_value RestoreOfflineKeys(napi_env env, napi_callback_info info);
+    static napi_value RemoveOfflineKeys(napi_env env, napi_callback_info info);
+    static napi_value GetOfflineKeyIds(napi_env env, napi_callback_info info);
+    static napi_value RemoveLicenses(napi_env env, napi_callback_info info);
+    static napi_value GetDecryptModule(napi_env env, napi_callback_info info);
+    static napi_value AddEventListener(napi_env env, napi_callback_info info);
+    static napi_value DeleteEventListener(napi_env env, napi_callback_info info);
+    static napi_value GetOfflineKeyState(napi_env env, napi_callback_info info);
+    static napi_value SetEventCallback(napi_env env, napi_callback_info info);
+    static napi_value UnsetEventCallback(napi_env env, napi_callback_info info);
+    static bool SetKeySessionNativeProperty(napi_env env, napi_value obj, const std::string &name, sptr<KeySessionImpl> keySessionImpl);
+    void SetEventCallbackReference(const std::string eventType, sptr<CallBackPair> callbackPair);
+    void ClearEventCallbackReference(const std::string eventType);
+private: 
+    static napi_value KeySessionNapiConstructor(napi_env env, napi_callback_info info);
+    static void KeySessionNapiDestructor(napi_env env, void *nativeObject, void *finalize); 
+
+    napi_env env_;
+    napi_ref wrapper_;
+    static thread_local napi_ref sConstructor_;
+    std::mutex mutex_;
+    static thread_local sptr<KeySessionImpl> sKeySessionImpl_;
+    sptr<KeySessionImpl> keySessionImpl_;
+    sptr<KeySessionCallbackNapi> keySessionCallbackNapi_;
+};
+
+} // DrmStandard   
+} // OHOS
+
+
+#endif // OHOS_DRM_KEY_SESSION_H_

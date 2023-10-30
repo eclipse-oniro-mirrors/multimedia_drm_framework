@@ -1,0 +1,9 @@
+#import("//build/config/ohos/rules.gni")
+import("//build/ohos.gni")
+group("drm_framework") {
+    deps = [
+        "//foundation/multimedia/drm_framework/frameworks/native:drm_framework",
+        "//foundation/multimedia/drm_framework/interfaces/kits/js/drm_napi:drm_napi",
+        "//foundation/multimedia/drm_framework/services:drm_service",
+    ]
+}
