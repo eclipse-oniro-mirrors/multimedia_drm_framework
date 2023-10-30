@@ -1,0 +1,88 @@
+# for ohos_shared_library("drm_framework")
+
+import("//build/ohos.gni")
+
+config("drm_framework_public_config") {
+  include_dirs = [
+    "//foundation/multimedia/drm_framework/interfaces/inner_api/native/drm",
+    "//foundation/multimedia/drm_framework/services/include",
+  ]
+}
+
+config("drm_framework_local_config") {
+  include_dirs = [
+    "//foundation/multimedia/drm_framework/services/drm_service",
+    "//foundation/multimedia/drm_framework/services/include",
+    "//foundation/multimedia/drm_framework/services/utils/include",
+    "//foundation/multimedia/drm_framework/services/drm_service/client/include",
+    "//foundation/multimedia/drm_framework/services/drm_service/ipc",
+    "//foundation/multimedia/drm_framework/services/drm_service/server/include",
+    "//foundation/multimedia/drm_framework/interfaces/inner_api/native/drm",
+  ]
+}
+
+config("drm_framework_drivers_config") {
+  include_dirs = [
+    "//foundation/multimedia/drm_framework/services/drm_service/ipc/",
+  ]
+}
+
+ohos_shared_library("drm_framework") {
+  install_enable = true
+  sources = [
+    "//foundation/multimedia/drm_framework/frameworks/native/drm/media_key_system_factory_impl.cpp",
+    "//foundation/multimedia/drm_framework/services/drm_service/client/src/mediakeysystemfactory_service_proxy.cpp",
+    "//foundation/multimedia/drm_framework/frameworks/native/drm/media_key_system_impl.cpp",
+    "//foundation/multimedia/drm_framework/services/drm_service/client/src/mediakeysystem_service_proxy.cpp",
+    "//foundation/multimedia/drm_framework/frameworks/native/drm/key_session_impl.cpp",
+    "//foundation/multimedia/drm_framework/services/drm_service/client/src/key_session_service_proxy.cpp",
+    "//foundation/multimedia/drm_framework/frameworks/native/drm/media_decrypt_module_impl.cpp",
+    "//foundation/multimedia/drm_framework/services/drm_service/client/src/media_decrypt_module_service_proxy.cpp",
+    "//foundation/multimedia/drm_framework/services/drm_service/server/src/key_session_service_callback_stub.cpp",
+  ]
+
+  cflags = [
+    "-fPIC",
+    "-Wall",
+  ]
+  if (target_cpu == "arm") {
+    cflags += [ "-DBINDER_IPC_32BIT" ]
+  }
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = true
+  }
+
+  public_configs = [
+    ":drm_framework_public_config",
+    ":drm_framework_local_config",
+    ":drm_framework_drivers_config",
+  ]
+
+  include_dirs = [
+    "//foundation/multimedia/drm_framework/frameworks/native/drm",
+    "//foundation/graphic/graphic_2d/frameworks/surface/include",
+    "//utils/system/safwk/native/include",
+    "//foundation//arkui/napi/interfaces/kits",
+  ]
+
+  deps = [
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hisysevent:libhisysevent",
+    "hitrace:hitrace_meter",
+    "hilog:libhilog",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "napi:ace_napi",
+  ]
+
+  cflags_cc = cflags
+
+  part_name = "multimedia_drm_framework"
+  subsystem_name = "multimedia"
+}

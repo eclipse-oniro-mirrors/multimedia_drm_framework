@@ -1,0 +1,110 @@
+{
+    "name": "@ohos/drm_framework",
+    "description": "DRM standard",
+    "version": "3.1",
+    "license": "Apache License 2.0",
+    "publishAs": "code-segment",
+    "segment": {
+        "destPath": "foundation/multimedia/drm_framework"
+    },
+    "dirs": {},
+    "scripts": {},
+    "component": {
+        "name": "multimedia_drm_framework",
+        "subsystem": "multimedia",
+        "syscap": ["SystemCapability.Multimedia.Drm.Core"],
+        "features": [],
+        "adapted_system_type": [ "standard" ],
+        "rom": "",
+        "ram": "",
+	"hisysevent_config": [ ],
+        "deps": {
+          "components": [
+              "safwk",
+              "window_manager",
+              "napi",
+              "samgr",
+              "hitrace",
+              "ipc",
+              "graphic_2d",
+              "hisysevent",
+              "c_utils",
+              "hilog",
+              "zlib",
+              "access_token",
+              "libhilog",
+              "ipc_core",
+              "media_client",
+              "system_ability_fwk",
+              "samgr_proxy",
+              "libaccesstoken_sdk",
+              "ipc_single",
+              "common",
+              "hicollie",
+              "hdf_core",
+              "eventhandler",
+              "bundle_framework",
+              "ability_base"
+            ],
+            "third_party": [
+              "glib",
+              "gstreamer",
+              "libffi",
+              "ffmpeg",
+              "libxml2",
+              "bounds_checking_function"
+              ]
+        },
+        "build": {
+          "group_type": {
+            "base_group": [
+            ],
+            "fwk_group": [
+              "//foundation/multimedia/drm_framework/frameworks/native:drm_framework",
+              "//foundation/multimedia/drm_framework/interfaces/kits/js/drm_napi:drm_napi",
+              "//foundation/multimedia/drm_framework/interfaces/kits/js/drm_napi:drm_js"
+            ],
+            "service_group": [
+              "//foundation/multimedia/drm_framework/sa_profile:drm_service_sa_profile",
+              "//foundation/multimedia/drm_framework/services/etc:drm_service.rc",
+              "//foundation/multimedia/drm_framework/services/drm_service:drm_service"
+            ]
+          },
+
+          "inner_kits": [
+            {
+              "type": "none",
+              "name": "//foundation/multimedia/drm_framework/frameworks/native:drm_framework",
+              "header": {
+                "header_base": [
+                    "foundation/multimedia/drm_framework/interfaces/inner_api/native/drm"
+                ],
+                "header_files": [
+                  "media_key_system_impl.h",
+                  "key_session_impl.h",
+                  "media_decrypt_module_impl.h"
+                ]
+              }
+            },
+            {
+              "type": "none",
+              "name": "//foundation/multimedia/drm_framework/interfaces/kits/js/drm_napi:drm_napi",
+              "header": {
+                "header_base": [
+                    "//foundation/multimedia/drm_framework/interfaces/kits/js/drm_napi/include"
+                 ],
+                "header_files": [
+                  "drm_napi.h",
+                  "key_session_napi.h",
+                  "media_key_system_napi.h",
+                  "media_key_system_callback_napi.h",
+                  "native_module_ohos_drm.h"
+                ]
+              }
+            }
+          ],
+          "test": [
+          ]
+        }
+    }
+}

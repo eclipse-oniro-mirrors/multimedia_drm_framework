@@ -1,0 +1,74 @@
+#include "drm_host_manager.h"
+#include "hdf_device_class.h"
+#include "iremote_broker.h"
+#include "iservmgr_hdi.h"
+#include "drm_log.h"
+#include "drm_error_code.h"
+#include "drm_napi_utils.h"
+#include "servmgr_hdi.h"
+
+namespace OHOS{
+namespace DrmStandard{
+using OHOS::HDI::ServiceManager::V1_0::IServiceManager;
+void DrmHostManager::DrmHostDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
+{
+    DRM_DEBUG_LOG("Remote died, do clean works.");
+}
+
+DrmHostManager::DrmHostManager(StatusCallback* statusCallback) {
+}
+
+DrmHostManager::~DrmHostManager() {
+}
+
+int32_t DrmHostManager::Init(void)
+{
+    DRM_INFO_LOG("DrmHostManager::Init enter.");
+    DRM_INFO_LOG("DrmHostManager::Init exit.");
+    return DRM_OK;
+}
+
+void DrmHostManager::DeInit(void)
+{
+    DRM_ERR_LOG("DrmHostManager::DeInit");
+}
+
+void DrmHostManager::OnReceive(const HDI::ServiceManager::V1_0::ServiceStatus& status) {}
+
+int32_t DrmHostManager::GetSevices(std::string &uuid, bool *isSurpported)
+{
+    DRM_INFO_LOG("DrmHostManager::GetSevices enter, uuid:%{public}s.", uuid.c_str());
+    DRM_INFO_LOG("DrmHostManager::GetSevices exit, uuid:%{public}s.", uuid.c_str());
+    return DRM_OK;
+}
+
+int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &uuid, bool *isSurpported)
+{
+    DRM_INFO_LOG("DrmHostManager::IsMediaKeySystemSupported one parameters enter, uuid:%{public}s.", uuid.c_str());
+    DRM_INFO_LOG("DrmHostManager::IsMediaKeySystemSupported one parameters exit, isSurpported:%{public}d.", *isSurpported);
+    return DRM_OK;
+}
+
+int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, bool *isSurpported)
+{
+    DRM_INFO_LOG("DrmHostManager::IsMediaKeySystemSupported two parameters enter, uuid:%{public}s, mimeType:%{public}s.", uuid.c_str(), mimeType.c_str());
+    DRM_INFO_LOG("DrmHostManager::IsMediaKeySystemSupported two parameters exit, isSurpported:%{public}d.", *isSurpported);
+    return DRM_OK;
+}
+
+int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, int32_t securityLevel, bool *isSurpported)
+{
+    DRM_INFO_LOG("DrmHostManager::IsMediaKeySystemSupported three parameters enter, uuid:%{public}s, mimeType:%{public}s, securityLevel:%{public}d.", uuid.c_str(), mimeType.c_str(), securityLevel);
+    DRM_INFO_LOG("DrmHostManager::IsMediaKeySystemSupported three parameters exit, isSurpported:%{public}d.", *isSurpported);
+    return DRM_OK;
+}
+
+int32_t DrmHostManager::CreateMediaKeySystem(std::string &uuid)
+{
+    DRM_INFO_LOG("DrmHostManager::CreateMediaKeySystem enter.");
+    DRM_INFO_LOG("DrmHostManager::CreateMediaKeySystem exit.");
+    return DRM_OK;
+}
+
+} // namespace DrmStandard
+} // namespace OHOS

@@ -1,0 +1,65 @@
+import("//build/ohos.gni")
+import("//build/ohos/ace/ace.gni")
+
+js_declaration("drm_js") {
+  part_name = "multimedia_drm_framework"
+  sources = [ "./@ohos.multimedia.drm.d.ts" ]
+}
+
+ohos_copy("drm_declaration") {
+  sources = [ "./@ohos.multimedia.drm.d.ts" ]
+  outputs = [ target_out_dir + "/$target_name/" ]
+  module_source_dir = target_out_dir + "/$target_name"
+  module_install_name = ""
+}
+
+ohos_shared_library("drm_napi") {
+  include_dirs = [
+    "//foundation/multimedia/drm_framework/frameworks/js/common",
+    "//foundation/multimedia/drm_framework/frameworks/js/drm_napi",
+    "//foundation/multimedia/drm_framework/frameworks/native/drm",
+    "//foundation/multimedia/drm_framework/frameworks/native/common",
+    "//foundation/multimedia/drm_framework/interfaces/inner_api/native/drm",
+    "//foundation/multimedia/drm_framework/interfaces/kits/js/drm_napi/include",
+    "//foundation/multimedia/drm_framework/services/drm_service/",
+    "//foundation/multimedia/drm_framework/services/drm_service/client/include",
+    "//foundation/multimedia/drm_framework/services/drm_service/server/include",
+    "//foundation/multimedia/drm_framework/services/drm_service/ipc",
+    "//foundation/multimedia/drm_framework/services/utils/include",
+    "//foundation/multimedia/graphic/graphic_2d/interfaces/inner_api/surface",
+    "//foundation//arkui/napi/interfaces/kits",
+  ]
+  sources = [
+    "//foundation/multimedia/drm_framework/frameworks/js/drm_napi/key_session_callback_napi.cpp",
+    "//foundation/multimedia/drm_framework/frameworks/js/drm_napi/media_key_system_callback_napi.cpp",
+    "//foundation/multimedia/drm_framework/frameworks/js/drm_napi/drm_napi.cpp",
+    "//foundation/multimedia/drm_framework/frameworks/js/drm_napi/drm_enum_napi.cpp",
+    "//foundation/multimedia/drm_framework/frameworks/js/drm_napi/media_key_system_napi.cpp",
+    "//foundation/multimedia/drm_framework/frameworks/js/drm_napi/key_session_napi.cpp",
+    "//foundation/multimedia/drm_framework/frameworks/js/drm_napi/media_decrypt_module_napi.cpp",
+    "//foundation/multimedia/drm_framework/frameworks/js/drm_napi/native_module_ohos_drm.cpp",
+  ]
+  deps = [
+    "//foundation/multimedia/drm_framework/frameworks/native:drm_framework",
+  ]
+  external_deps = [
+    "access_token:libtokenid_sdk",
+    "c_utils:utils",
+    "graphic_2d:surface",
+    "hisysevent:libhisysevent",
+    "hitrace:hitrace_meter",
+    "hilog:libhilog",
+    "ipc:ipc_core",
+    "napi:ace_napi",
+  ]
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = true
+  }
+  cflags = [ "-fPIC" ]
+  cflags_cc = cflags
+  relative_install_dir = "module/multimedia"
+  part_name = "multimedia_drm_framework"
+  subsystem_name = "multimedia"
+}
