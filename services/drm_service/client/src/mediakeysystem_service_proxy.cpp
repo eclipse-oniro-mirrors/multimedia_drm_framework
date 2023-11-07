@@ -20,7 +20,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 MediaKeySystemServiceProxy::MediaKeySystemServiceProxy(const sptr<IRemoteObject> &impl)
     : IRemoteProxy<IMediaKeySystemService>(impl)
 {
@@ -47,7 +46,8 @@ int32_t MediaKeySystemServiceProxy::Release()
     return 0;
 }
 
-int32_t MediaKeySystemServiceProxy::GenerateKeySystemRequest(IMediaKeySystemService::RequestType type, std::vector<uint8_t> &request, std::string &defaultUrl)
+int32_t MediaKeySystemServiceProxy::GenerateKeySystemRequest(IMediaKeySystemService::RequestType type,
+    std::vector<uint8_t> &request, std::string &defaultUrl)
 {
     DRM_INFO_LOG("MediaKeySystemServiceProxy::GenerateKeySystemRequest enter. type:%{public}d.", type);
     MessageParcel data;
@@ -64,7 +64,8 @@ int32_t MediaKeySystemServiceProxy::GenerateKeySystemRequest(IMediaKeySystemServ
         return IPC_PROXY_ERR;
     }
 
-    uint32_t error = MediaKeySystemServiceProxy::Remote()->SendRequest(MEDIA_KEY_SYSTEM_GENERATE_KEYSYSTEM_REQUEST, data, reply, option);
+    uint32_t error = MediaKeySystemServiceProxy::Remote()->SendRequest(MEDIA_KEY_SYSTEM_GENERATE_KEYSYSTEM_REQUEST,
+        data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySystemServiceProxy::GenerateKeySystemRequest failed, error: %{public}d", error);
         return error;
@@ -80,7 +81,8 @@ int32_t MediaKeySystemServiceProxy::GenerateKeySystemRequest(IMediaKeySystemServ
     return reply.ReadInt32();
 }
 
-int32_t MediaKeySystemServiceProxy::ProcessKeySystemResponse(IMediaKeySystemService::RequestType type, const std::vector<uint8_t> &response)
+int32_t MediaKeySystemServiceProxy::ProcessKeySystemResponse(IMediaKeySystemService::RequestType type,
+    const std::vector<uint8_t> &response)
 {
     DRM_INFO_LOG("MediaKeySystemServiceProxy::ProcessKeySystemResponse enter. type:%{public}d.", type);
     MessageParcel data;
@@ -115,13 +117,15 @@ int32_t MediaKeySystemServiceProxy::ProcessKeySystemResponse(IMediaKeySystemServ
         return error;
     }
 
-    DRM_INFO_LOG("MediaKeySystemServiceProxy::ProcessKeySystemResponse exit.");
+    DRM_INFO_LOG("MediaKeySystemServiceProxy ProcessKeySystemResponse exit.");
     return reply.ReadInt32();
 }
 
-int32_t MediaKeySystemServiceProxy::SetConfiguration(IMediaKeySystemService::ConfigType type, std::string &propertyName, std::string &value)
+int32_t MediaKeySystemServiceProxy::SetConfiguration(IMediaKeySystemService::ConfigType type,
+    std::string &propertyName, std::string &value)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceProxy::SetConfiguration enter, configType:%{public}d, propertyName:%{public}s, value:%{public}s.", (int)type, propertyName.c_str(), value.c_str());
+    DRM_INFO_LOG("SetConfiguration enter, configType:%{public}d, propertyName:%{public}s, value:%{public}s.",
+        (int)type, propertyName.c_str(), value.c_str());
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
@@ -151,7 +155,7 @@ int32_t MediaKeySystemServiceProxy::SetConfiguration(IMediaKeySystemService::Con
         return error;
     }
 
-    DRM_INFO_LOG("MediaKeySystemServiceProxy::SetConfiguration exit.");
+    DRM_INFO_LOG("SetConfiguration exit.");
     return reply.ReadInt32();
 }
 
@@ -167,7 +171,8 @@ int32_t MediaKeySystemServiceProxy::GetSecurityLevel(IKeySessionService::Securit
         return IPC_PROXY_ERR;
     }
 
-    int error = MediaKeySystemServiceProxy::Remote()->SendRequest(MEDIA_KEY_SYSTEM_GETSECURITYLEVEL, data, reply, option);
+    int error = MediaKeySystemServiceProxy::Remote()->SendRequest(MEDIA_KEY_SYSTEM_GETSECURITYLEVEL, data,
+        reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySystemServiceProxy GetSecurityLevel failed, error: %{public}d", error);
         return error;
@@ -179,9 +184,11 @@ int32_t MediaKeySystemServiceProxy::GetSecurityLevel(IKeySessionService::Securit
     return reply.ReadInt32();
 }
 
-int32_t MediaKeySystemServiceProxy::GetConfiguration(IMediaKeySystemService::ConfigType configType, std::string &propertyName, std::string &value)
+int32_t MediaKeySystemServiceProxy::GetConfiguration(IMediaKeySystemService::ConfigType configType,
+    std::string &propertyName, std::string &value)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetConfiguration enter, configType:%{public}d, propertyName:%{public}s.", (int)configType, propertyName.c_str());
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetConfiguration enter, configType:%{public}d, propertyName:%{public}s.",
+        (int)configType, propertyName.c_str());
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
@@ -213,7 +220,8 @@ int32_t MediaKeySystemServiceProxy::GetConfiguration(IMediaKeySystemService::Con
     return reply.ReadInt32();
 }
 
-int32_t MediaKeySystemServiceProxy::CreateKeySession(IKeySessionService::SecurityLevel securityLevel, sptr<IKeySessionService> &keySessionProxy)
+int32_t MediaKeySystemServiceProxy::CreateKeySession(IKeySessionService::SecurityLevel securityLevel,
+    sptr<IKeySessionService> &keySessionProxy)
 {
     DRM_INFO_LOG("MediaKeySystemServiceProxy::CreateKeySession enter, securityLevel:%{public}d.", securityLevel);
     MessageParcel data;

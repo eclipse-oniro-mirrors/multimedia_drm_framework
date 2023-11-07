@@ -46,16 +46,19 @@ public:
     int32_t SetMediaKeySystemServiceOperatorsCallback(wptr<IMediaKeySystemServiceOperatorsCallback> callback);
     int32_t CloseMediaKeySystemServiceByCallback();
     
-    int32_t GenerateKeySystemRequest(IMediaKeySystemService::RequestType type, std::vector<uint8_t> &request, std::string &defaultUrl) override;
-    int32_t ProcessKeySystemResponse(IMediaKeySystemService::RequestType type, const std::vector<uint8_t> &response) override;
-    int32_t SetConfiguration(IMediaKeySystemService::ConfigType type, std::string &propertyName, std::string &value) override;
-    int32_t GetConfiguration(IMediaKeySystemService::ConfigType type, std::string &propertyName, std::string &value) override;       
-    int32_t CreateKeySession(IKeySessionService::SecurityLevel securityLevel, sptr<IKeySessionService> &keySessionProxy) override;
-    //IMediaKeySystemServiceOperatorsCallback
+    int32_t GenerateKeySystemRequest(IMediaKeySystemService::RequestType type, std::vector<uint8_t> &request,
+        std::string &defaultUrl) override;
+    int32_t ProcessKeySystemResponse(IMediaKeySystemService::RequestType type,
+       const std::vector<uint8_t> &response) override;
+    int32_t SetConfiguration(IMediaKeySystemService::ConfigType type, std::string &propertyName,
+        std::string &value) override;
+    int32_t GetConfiguration(IMediaKeySystemService::ConfigType type, std::string &propertyName,
+        std::string &value) override;
+    int32_t CreateKeySession(IKeySessionService::SecurityLevel securityLevel,
+        sptr<IKeySessionService> &keySessionProxy) override;
     int32_t CloseKeySessionService(sptr<KeySessionService> sessionService) override;
     int32_t GetMetric(std::vector<IMediaKeySystemService::KeyValue> &infoMap) override;
     int32_t GetSecurityLevel(IKeySessionService::SecurityLevel *securityLevel) override;
-
 private:
 };
 
@@ -65,7 +68,6 @@ public:
     virtual ~IMediaKeySystemServiceOperatorsCallback() = default;
     virtual int32_t CloseMediaKeySystemService(sptr<MediaKeySystemService> mediaKeySystemService) = 0;
 };
-
 } // DrmStandard 
 } // OHOS
 

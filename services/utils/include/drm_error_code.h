@@ -16,15 +16,15 @@
 #ifndef DRM_ERROR_CODE_H
 #define DRM_ERROR_CODE_H
 
-namespace OHOS{
-namespace DrmStandard{
-/**
+namespace OHOS {
+namespace DrmStandard {
+/*
  * @brief drm remote request code for IPC.
  * 
  * @since 1.0
  * @version 1.0
 */
-enum DrmErrorCode{
+enum DrmErrorCode {
     DRM_ERROR = -1,
     DRM_SUCCESS = 0,
     NO_SYSTEMP_APP_PERMISSION = 202,

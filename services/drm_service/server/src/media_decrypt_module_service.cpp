@@ -16,14 +16,9 @@
 #include "media_decrypt_module_service.h"
 #include "ipc_skeleton.h"
 #include "drm_napi_utils.h"
-#include <memory>
-#include <sys/mman.h>
-#include <unistd.h>
-#include "ashmem.h"
 
 namespace OHOS {
 namespace DrmStandard {
-
 MediaDecryptModuleService::MediaDecryptModuleService()
 {
     DRM_DEBUG_LOG("MediaDecryptModuleService::MediaDecryptModuleService");
@@ -42,8 +37,8 @@ int32_t MediaDecryptModuleService::Release()
     return DRM_OK;
 }
 
-int32_t MediaDecryptModuleService::DecryptData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo, uint64_t srcBuffer,
-    uint64_t dstBuffer)
+int32_t MediaDecryptModuleService::DecryptData(bool secureDecodrtState,
+    IMediaDecryptModuleService::CryptInfo &cryptInfo, uint64_t srcBuffer, uint64_t dstBuffer)
 {
     DRM_INFO_LOG("MediaDecryptModuleService::DecryptData enter.");
     DRM_INFO_LOG("MediaDecryptModuleService::DecryptData exit.");
@@ -56,6 +51,5 @@ int32_t MediaDecryptModuleService::RequireSecureDecoderModule(std::string &mimeT
     DRM_INFO_LOG("MediaDecryptModuleService::RequireSecureDecoderModule exit.");
     return DRM_OK;
 }
-
 } // DrmStandard
 } // OHOS

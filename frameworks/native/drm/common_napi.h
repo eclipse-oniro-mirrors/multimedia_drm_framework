@@ -13,19 +13,18 @@
  * limitations under the License.
  */
 
+#ifndef OHOS_DRM_COMMON_NAPI_H_
+#define OHOS_DRM_COMMON_NAPI_H_
+
 #include <iostream>
 #include <string>
-#include <map>
-#include "napi/native_api.h"
-#include "napi/native_node_api.h"
 
 namespace OHOS {
 namespace DrmStandard {
-
 class CallBackPair : public RefBase {
 public:
-    CallBackPair(napi_env env, napi_ref callback) : env_(env), callback_(callback) { }
-    
+    CallBackPair(napi_env env, napi_ref callback) : env_(env), callback_(callback) {}
+
     ~CallBackPair()
     {
         if (env_ != nullptr && callback_ != nullptr) {
@@ -40,7 +39,6 @@ public:
     napi_ref GetCallback() {
         return callback_;
     }
-
 private:
     napi_env env_;
     napi_ref callback_;
@@ -51,6 +49,6 @@ const std::string DRM_EVENT_KEY_EXPIRED = "keyExpired";
 const std::string DRM_EVENT_KEY_SESSION_RECLAIMED = "keySessionReclaimed";
 const std::string DRM_EVENT_SYSTEM_PROVISION_REQUIRED = "keySystemProvisionRequired";
 }
-
 } // namespace DrmStandard
 } // namespace OHOS
+#endif // OHOS_DRM_COMMON_NAPI_H_

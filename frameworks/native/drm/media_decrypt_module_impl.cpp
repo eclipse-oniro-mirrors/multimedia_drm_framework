@@ -18,7 +18,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 MediaDecryptModuleImpl::MediaDecryptModuleImpl(sptr<IMediaDecryptModuleService> &decryptModule)
 {
     DRM_DEBUG_LOG("Enter Init MediaDecryptModuleImpl()");
@@ -84,6 +83,5 @@ int32_t MediaDecryptModuleImpl::RequireSecureDecoderModule(std::string &mimeType
     DRM_INFO_LOG("MediaDecryptModuleImpl::RequireSecureDecoderModule exit.");
     return DRM_OK;
 }
-
 } // DrmStandard
 } // OHOS

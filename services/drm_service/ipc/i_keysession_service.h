@@ -22,18 +22,17 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 class IKeySessionService : public IRemoteBroker {
 public:
     enum ListenerType {
         LISTENER_DRM_EVENT = 200,
         LISTENER_PROVISION_REQUIRED = 201,
         LISTENER_KEY_NEEDED = 202,
-        LISTENER_KEY_EXPIRED = 203,     
-        LISTENER_VENDOR_DEFINED = 204,       
-        LISTENER_KEYSESSION_RECLAIMED = 205,          
-        LISTENER_EXPIRATION_UPDATE = 206,    
-        LISTENER_KEY_CHANGE = 207,        
+        LISTENER_KEY_EXPIRED = 203,
+        LISTENER_VENDOR_DEFINED = 204,
+        LISTENER_KEYSESSION_RECLAIMED = 205,
+        LISTENER_EXPIRATION_UPDATE = 206,
+        LISTENER_KEY_CHANGE = 207,
         LISTENER_KEYSESSION_LOSE = 208,
     };
 
@@ -49,7 +48,7 @@ public:
 
     enum OfflineKeyState {
         OFFLINEKEYSTATE_UNKNOWN = 0,
-        OFFLINEKEYSTATE_USABLE = 1,               
+        OFFLINEKEYSTATE_USABLE = 1,
         OFFLINEKEYSTATE_INACTIVE = 2,
     };
 
@@ -90,8 +89,10 @@ public:
     virtual int32_t CreateMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule) = 0;
     virtual int32_t GenerateLicenseRequest(DrmInfo &drmInfo, LicenseInfo &licenseInfo) = 0;
     virtual int32_t ProcessLicenseResponse(std::vector<uint8_t> &keyId, std::vector<uint8_t> &licenseResponse) = 0;
-    virtual int32_t GenerateOfflineReleaseRequest(std::vector<uint8_t> &keyId, std::vector<uint8_t> &releaseRequest) = 0;
-    virtual int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &keyId, std::vector<uint8_t> &releaseReponse) = 0;
+    virtual int32_t GenerateOfflineReleaseRequest(std::vector<uint8_t> &keyId,
+        std::vector<uint8_t> &releaseRequest) = 0;
+    virtual int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &keyId,
+        std::vector<uint8_t> &releaseReponse) = 0;
     virtual int32_t CheckLicenseStatus(std::vector<KeyValue> &infoMap) = 0;
     virtual int32_t RestoreOfflineKeys(std::vector<uint8_t> &keyId) = 0;
     virtual int32_t RemoveOfflineKeys(std::vector<uint8_t> &keyId) = 0;
@@ -101,7 +102,6 @@ public:
     virtual int32_t SetKeySessionServiceCallback(sptr<IKeySessionServiceCallback> &callback) = 0;
     DECLARE_INTERFACE_DESCRIPTOR(u"IKeySessionService");
 };
-
 } // DrmStandard
 } // OHOS
 

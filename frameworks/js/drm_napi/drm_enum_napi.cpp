@@ -19,7 +19,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 struct JsEnumInt {
     std::string_view enumName;
     int32_t enumInt;

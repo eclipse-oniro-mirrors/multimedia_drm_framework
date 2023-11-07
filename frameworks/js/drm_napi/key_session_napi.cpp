@@ -17,10 +17,10 @@
 #include "key_session_impl.h"
 #include "media_key_system_impl.h"
 #include "ipc_skeleton.h"
+#include "i_keysession_service.h"
 
 namespace OHOS {
 namespace DrmStandard {
-
 thread_local napi_ref KeySessionNapi::sConstructor_ = nullptr;
 thread_local sptr<KeySessionImpl> KeySessionNapi::sKeySessionImpl_ = nullptr;
 
@@ -133,7 +133,8 @@ void KeySessionNapi::KeySessionNapiDestructor(napi_env env, void *nativeObject, 
     DRM_INFO_LOG("KeySessionNapi::KeySessionNapiDestructor exit.");
 }
 
-bool KeySessionNapi::SetKeySessionNativeProperty(napi_env env, napi_value obj, const std::string &name, sptr<KeySessionImpl> keySessionImpl)
+bool KeySessionNapi::SetKeySessionNativeProperty(napi_env env, napi_value obj, const std::string &name,
+    sptr<KeySessionImpl> keySessionImpl)
 {
     DRM_INFO_LOG("KeySessionNapi::SetKeySessionNativeProperty enter.");
     CHECK_AND_RETURN_RET_LOG(obj != nullptr, false, "obj is nullptr");
@@ -191,7 +192,6 @@ napi_value KeySessionNapi::Release(napi_env env, napi_callback_info info)
     DRM_INFO_LOG("KeySessionNapi::Release enter.");
     int32_t currentPid = IPCSkeleton::GetCallingPid();     
     DRM_DEBUG_LOG("KeySessionNapi GetCallingPID: %{public}d", currentPid);
-
     napi_status status;
     napi_value result = nullptr;
     size_t argc = ARGS_ZERO;
@@ -272,19 +272,19 @@ napi_value KeySessionNapi::GenerateLicenseRequest(napi_env env, napi_callback_in
         DRM_ERR_LOG("KeySessionNapi GenerateLicenseRequest call Failed!");
     }
 
-    if (licenseInfo.requestType == 0) {
-        requestTypeEnum = "ALGTYPE_UNENCRYPTED";
-    } else if (licenseInfo.requestType == 1) {
+    if (licenseInfo.requestType == IKeySessionService::REQUEST_TYPE_UNKNOWN) {
+        requestTypeEnum = "REQUEST_TYPE_UNKNOWN";
+    } else if (licenseInfo.requestType == IKeySessionService::REQUEST_TYPE_INITIAL) {
         requestTypeEnum = "REQUEST_TYPE_INITIAL";
-    } else if (licenseInfo.requestType == 2) {
+    } else if (licenseInfo.requestType == IKeySessionService::REQUEST_TYPE_RENEWAL) {
         requestTypeEnum = "REQUEST_TYPE_RENEWAL";
-    } else if (licenseInfo.requestType == 3) {
+    } else if (licenseInfo.requestType == IKeySessionService::REQUEST_TYPE_RELEASE) {
         requestTypeEnum = "REQUEST_TYPE_RELEASE";
-    } else if (licenseInfo.requestType == 4) {
+    } else if (licenseInfo.requestType == IKeySessionService::REQUEST_TYPE_NONE) {
         requestTypeEnum = "REQUEST_TYPE_NONE";
-    } else if (licenseInfo.requestType == 5) {
+    } else if (licenseInfo.requestType == IKeySessionService::REQUEST_TYPE_UPDATE) {
         requestTypeEnum = "REQUEST_TYPE_UPDATE";
-    } else if (licenseInfo.requestType == 6) {
+    } else if (licenseInfo.requestType == IKeySessionService::REQUEST_TYPE_DOWNLOADCERT) {
         requestTypeEnum = "REQUEST_TYPE_DOWNLOADCERT";
     }
     napi_create_string_utf8(env, requestTypeEnum, NAPI_AUTO_LENGTH, &requestType);
@@ -332,7 +332,8 @@ napi_value KeySessionNapi::ProcessLicenseResponse(napi_env env, napi_callback_in
         return nullptr;
     }
 
-    napi_get_typedarray_info(env, argv[PARAM0], &type, &reponseDataLen, &reponseData, &arraybuffer, &offset);
+    napi_get_typedarray_info(env, argv[PARAM0], &type, &reponseDataLen, &reponseData, &arraybuffer,
+        &offset);
     if (reponseData == nullptr) {
         DRM_ERR_LOG("napi_get_typedarray_info faild!");
         return nullptr;
@@ -397,7 +398,8 @@ napi_value KeySessionNapi::GenerateOfflineReleaseRequest(napi_env env, napi_call
 
     status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&keySessionNapi));
     if (status == napi_ok && keySessionNapi != nullptr) {
-        int ret = keySessionNapi->keySessionImpl_->GenerateOfflineReleaseRequest(keyIdVec, releaseRequest);
+        int ret = keySessionNapi->keySessionImpl_->GenerateOfflineReleaseRequest(keyIdVec,
+            releaseRequest);
         if (ret != napi_ok) {
             DRM_ERR_LOG("napi GenerateOfflineReleaseRequest faild!");
             return nullptr;
@@ -676,7 +678,6 @@ napi_value KeySessionNapi::RemoveLicenses(napi_env env, napi_callback_info info)
     napi_value argv[ARGS_ZERO];
     napi_value thisVar = nullptr;
     napi_status status;
-
     int32_t currentPid = IPCSkeleton::GetCallingPid();     
     DRM_DEBUG_LOG("KeySessionNapi GetCallingPID: %{public}d", currentPid);
 
@@ -705,9 +706,7 @@ napi_value KeySessionNapi::GetDecryptModule(napi_env env, napi_callback_info inf
     size_t argc = ARGS_ZERO;
     napi_value argv[ARGS_ZERO];
     napi_value thisVar = nullptr;
-
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
-
     napi_get_undefined(env, &result);
     KeySessionNapi* keySessionNapi = nullptr;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&keySessionNapi));
@@ -742,7 +741,6 @@ napi_value KeySessionNapi::GetOfflineKeyState(napi_env env, napi_callback_info i
     napi_typedarray_type type;
     KeySessionNapi* keySessionNapi = nullptr;
     bool isTypeArray;
-
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
     NAPI_ASSERT(env, argc <= ARGS_ONE, "requires 1 parameters maximum");
     napi_is_typedarray(env, argv[PARAM0], &isTypeArray);
@@ -788,7 +786,8 @@ napi_value KeySessionNapi::DeleteEventListener(napi_env env, napi_callback_info 
     return result;
 }
 
-void KeySessionNapi::SetEventCallbackReference(const std::string eventType, sptr<CallBackPair> callbackPair)
+void KeySessionNapi::SetEventCallbackReference(const std::string eventType,
+    sptr<CallBackPair> callbackPair)
 {
     DRM_INFO_LOG("KeySessionNapi::SetCallbackReference");
     std::lock_guard<std::mutex> lock(mutex_);
@@ -884,6 +883,5 @@ napi_value KeySessionNapi::UnsetEventCallback(napi_env env, napi_callback_info i
     return result;
 
 }
-
 } // DrmStandardr
 } // OHOS

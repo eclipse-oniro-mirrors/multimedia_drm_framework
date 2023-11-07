@@ -16,14 +16,14 @@
 #include "media_key_system_factory_impl.h"
 #include "i_mediakeysystem_service.h"
 
-namespace OHOS{
-namespace DrmStandard{
-
+namespace OHOS {
+namespace DrmStandard {
 sptr<MediaKeySystemFactoryImpl> MediaKeySystemFactoryImpl::mediaKeySystemFactoryImpl_;
 
 MediaKeySystemFactoryImpl::MediaKeySystemFactoryImpl()
 {
-    DRM_DEBUG_LOG("MediaKeySystemFactoryImpl:0x%{public}06" PRIXPTR "MediaKeySystemFactoryImpl Instances create", FAKE_POINTER(this));
+    DRM_DEBUG_LOG("MediaKeySystemFactoryImpl:0x%{public}06" PRIXPTR "MediaKeySystemFactoryImpl Instances create",
+        FAKE_POINTER(this));
     Init();
 }
 
@@ -33,7 +33,8 @@ MediaKeySystemFactoryImpl::~MediaKeySystemFactoryImpl()
     if (serviceProxy_ != nullptr) {
         serviceProxy_ = nullptr;
     }
-    DRM_DEBUG_LOG("MediaKeySystemFactoryImpl:0x%{public}06" PRIXPTR "MediaKeySystemFactoryImpl Instances destroy", FAKE_POINTER(this));
+    DRM_DEBUG_LOG("MediaKeySystemFactoryImpl:0x%{public}06" PRIXPTR "MediaKeySystemFactoryImpl Instances destroy",
+        FAKE_POINTER(this));
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::~MediaKeySystemFactoryImpl exit.");
     deathRecipient_ = nullptr;
 }
@@ -75,7 +76,8 @@ void MediaKeySystemFactoryImpl::Init()
     pid_t pid = 0;
     deathRecipient_ = new(std::nothrow) DrmDeathRecipient(pid);
 
-    deathRecipient_->SetNotifyCb(std::bind(&MediaKeySystemFactoryImpl::MediaKeySystemServerDied, this, std::placeholders::_1));
+    deathRecipient_->SetNotifyCb(std::bind(&MediaKeySystemFactoryImpl::MediaKeySystemServerDied, this,
+        std::placeholders::_1));
     bool result = object->AddDeathRecipient(deathRecipient_);
     if (!result) {
         DRM_ERR_LOG("failed to add deathRecipient");
@@ -133,7 +135,8 @@ bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &uuid, std
     return isSurpported;
 }
 
-bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, IKeySessionService::SecurityLevel securityLevel)
+bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType,
+    IKeySessionService::SecurityLevel securityLevel)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::IsMediaKeySystemSupported enter.");
     std::lock_guard<std::mutex> lock(mutex_);
@@ -153,7 +156,8 @@ bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &uuid, std
     return isSurpported;
 }
 
-int32_t MediaKeySystemFactoryImpl::CreateMediaKeySystem(std::string &uuid, sptr<MediaKeySystemImpl> *mediaKeySystemImpl)
+int32_t MediaKeySystemFactoryImpl::CreateMediaKeySystem(std::string &uuid,
+    sptr<MediaKeySystemImpl> *mediaKeySystemImpl)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryImpl:: CreateMediaKeySystem enter.");
     sptr<MediaKeySystemImpl> localMediaKeySystemImpl = nullptr;
@@ -174,6 +178,5 @@ int32_t MediaKeySystemFactoryImpl::CreateMediaKeySystem(std::string &uuid, sptr<
     DRM_INFO_LOG("MediaKeySystemFactoryImpl:: CreateMediaKeySystem exit.");
     return DRM_OK;
 }
-
 } // namespace DrmStandard
 } // namespace OHOS

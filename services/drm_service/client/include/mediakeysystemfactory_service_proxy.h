@@ -16,9 +16,9 @@
 #ifndef OHOS_DRM_MEDIA_KEY_SYSTEM_FACTORY_SERVICE_PROXY_H
 #define OHOS_DRM_MEDIA_KEY_SYSTEM_FACTORY_SERVICE_PROXY_H
 
-#include "i_mediakeysystemfactory_service.h"
-#include "iremote_proxy.h"
 #include <hilog/log.h>
+#include "iremote_proxy.h"
+#include "i_mediakeysystemfactory_service.h"
 
 namespace OHOS {
 namespace DrmStandard {

@@ -29,7 +29,6 @@
 
 namespace OHOS{
 namespace DrmStandard{
-
 class MediaKeySystemFactoryImpl : public RefBase {
 public:
     MediaKeySystemFactoryImpl();
@@ -38,9 +37,9 @@ public:
     static sptr<MediaKeySystemFactoryImpl> &GetInstance();
     bool IsMediaKeySystemSupported(std::string &uuid);
     bool IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType);
-    bool IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, IKeySessionService::SecurityLevel securityLevel);
+    bool IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType,
+        IKeySessionService::SecurityLevel securityLevel);
     int32_t CreateMediaKeySystem(std::string &uuid, sptr<MediaKeySystemImpl> *mediaKeySystemImpl);
-
 private:
     void MediaKeySystemServerDied(pid_t pid);
     std::mutex mutex_;
@@ -48,7 +47,6 @@ private:
     sptr<OHOS::DrmStandard::IMediaKeySystemFactoryService> serviceProxy_;
     sptr<DrmDeathRecipient> deathRecipient_;
 };
-
 } // DrmStandard
 } //OHOS
 #endif // OHOS_DRM_MEDIA_KEY_SYSTEMP_FACTORY_IMPL_H

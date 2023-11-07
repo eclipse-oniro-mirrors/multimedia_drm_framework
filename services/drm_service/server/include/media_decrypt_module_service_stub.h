@@ -25,19 +25,16 @@
 #include <iostream>
 #include <vector>
 
-namespace OHOS{
-namespace DrmStandard{
+namespace OHOS {
+namespace DrmStandard {
 class MediaDecryptModuleServiceStub : public IRemoteStub<IMediaDecryptModuleService> {
 public:
     MediaDecryptModuleServiceStub();
     ~MediaDecryptModuleServiceStub();
     virtual int OnRemoteRequest(uint32_t code, MessageParcel &data,
-                                MessageParcel &reply, MessageOption &option) override;
-
+        MessageParcel &reply, MessageOption &option) override;
 private:
 };
-
-}//namespace DrmStandard
-}//namespace OHOS
-
-#endif //OHOS_DRM_MEDIA_DECRYPT_MODULE_SERVICE_STUB_H_
+} // namespace DrmStandard
+} // namespace OHOS
+#endif // OHOS_DRM_MEDIA_DECRYPT_MODULE_SERVICE_STUB_H_

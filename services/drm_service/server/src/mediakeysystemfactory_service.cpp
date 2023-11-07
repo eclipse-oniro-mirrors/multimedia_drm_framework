@@ -14,25 +14,25 @@
  */
 
 #include "mediakeysystemfactory_service.h"
-#include "mediakeysystem_service.h"
 #include <securec.h>
 #include <unordered_set>
-
 #include "access_token.h"
-#include "drm_napi_utils.h"
+#include "ipc_skeleton.h"
 #include "iservice_registry.h"
+#include "mediakeysystem_service.h"
+#include "drm_napi_utils.h"
 #include "drm_log.h"
 #include "system_ability_definition.h"
-#include "ipc_skeleton.h"
 
-namespace OHOS{
-namespace DrmStandard{
+namespace OHOS {
+namespace DrmStandard {
 REGISTER_SYSTEM_ABILITY_BY_ID(MediaKeySystemFactoryService, MEDIA_KEY_SYSTEM_SERVICE_ID, true)
 
 MediaKeySystemFactoryService::MediaKeySystemFactoryService(int32_t systemAbilityId, bool runOnCreate)
-    :   SystemAbility(systemAbilityId, runOnCreate) {}
+    : SystemAbility(systemAbilityId, runOnCreate) {}
 
-MediaKeySystemFactoryService::~MediaKeySystemFactoryService() {
+MediaKeySystemFactoryService::~MediaKeySystemFactoryService()
+{
     DRM_INFO_LOG("~MediaKeySystemFactoryService");
 }
 
@@ -65,20 +65,23 @@ int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySy
     return DRM_OK;
 }
 
-int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &uuid, bool *isSurpported) {
+int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &uuid, bool *isSurpported)
+{
     DRM_INFO_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported one parameters enter");
     DRM_INFO_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported one parameters exit");
     return DRM_OK;
 }
 
-int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, bool *isSurpported)
+int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType,
+    bool *isSurpported)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported two parameters enter");
     DRM_INFO_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported two parameters exit");
     return DRM_OK;
 }
 
-int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, int32_t securityLevel, bool *isSurpported)
+int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType,
+    int32_t securityLevel, bool *isSurpported)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported three parameters enter");
     DRM_INFO_LOG("MediaKeySystemFactoryService enter IsMediaKeySystemSupported  three parameters exit");

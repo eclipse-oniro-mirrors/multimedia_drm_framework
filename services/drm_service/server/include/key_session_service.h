@@ -16,14 +16,14 @@
 #ifndef OHOS_DRM_KEY_SESSION_SERVICE_H
 #define OHOS_DRM_KEY_SESSION_SERVICE_H
 
+#include <refbase.h>
+#include <iostream>
 #include "key_session_service_stub.h"
 #include "drm_log.h"
 #include "drm_napi_utils.h"
 #include "drm_host_manager.h"
-#include <refbase.h>
-#include <iostream>
-
 #include "media_decrypt_module_service.h"
+
 namespace OHOS {
 namespace DrmStandard {
 class IKeySessionServiceOperatorsCallback;
@@ -48,7 +48,6 @@ public:
     int32_t SetKeySessionServiceCallback(sptr<IKeySessionServiceCallback> &callback);
     void OnKeySessionKeyExpiredStatus(const KeyStatus status);
     void OnKeySessionReclaimed(const SessionStatus status);
-
 private:
 };
 
@@ -58,7 +57,6 @@ public:
     virtual ~IKeySessionServiceOperatorsCallback() = default;
     virtual int32_t CloseKeySessionService(sptr<KeySessionService> sessionService) = 0;
 };
-
 } // DrmStandard 
 } // OHOS
 

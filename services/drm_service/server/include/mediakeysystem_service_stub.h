@@ -25,19 +25,17 @@
 #include "drm_death_recipient.h"
 #include "remote_request_code.h"
 
-namespace OHOS{
-namespace DrmStandard{
+namespace OHOS {
+namespace DrmStandard {
 class MediaKeySystemServiceStub : public IRemoteStub<IMediaKeySystemService> {
 public:
     MediaKeySystemServiceStub();
     ~MediaKeySystemServiceStub();
     virtual int OnRemoteRequest(uint32_t code, MessageParcel &data,
                                 MessageParcel &reply, MessageOption &option) override;
-
 private:
     std::map<pid_t, sptr<DrmDeathRecipient>> deathRecipientMap_;
 };
-
-}//namespace DrmStandard
-}//namespace OHOS
+} // namespace DrmStandard
+} // namespace OHOS
 #endif // OHOS_DRM_MEDIA_KEY_SYSTEM_SERVICE_STUB_H

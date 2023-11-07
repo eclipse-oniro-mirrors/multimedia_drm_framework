@@ -10,7 +10,7 @@
     "dirs": {},
     "scripts": {},
     "component": {
-        "name": "multimedia_drm_framework",
+        "name": "drm_framework",
         "subsystem": "multimedia",
         "syscap": ["SystemCapability.Multimedia.Drm.Core"],
         "features": [],

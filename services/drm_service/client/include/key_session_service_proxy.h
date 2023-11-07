@@ -16,8 +16,8 @@
 #ifndef OHOS_DRM_KEY_SESSION_PROXY_H
 #define OHOS_DRM_KEY_SESSION_PROXY_H
 
-#include "i_keysession_service.h"
 #include "iremote_proxy.h"
+#include "i_keysession_service.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -27,7 +27,8 @@ public:
     virtual ~KeySessionServiceProxy() = default;
     int32_t Release() override;
     int32_t CreateMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule) override;
-    int32_t GenerateLicenseRequest(IKeySessionService::DrmInfo &drmInfo, IKeySessionService::LicenseInfo &licenseInfo) override;
+    int32_t GenerateLicenseRequest(IKeySessionService::DrmInfo &drmInfo,
+        IKeySessionService::LicenseInfo &licenseInfo) override;
     int32_t ProcessLicenseResponse(std::vector<uint8_t> &keyId, std::vector<uint8_t> &licenseResponse) override;
     int32_t GenerateOfflineReleaseRequest(std::vector<uint8_t> &keyId, std::vector<uint8_t> &releaseRequest) override;
     int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &keyId, std::vector<uint8_t> &releaseReponse) override;

@@ -15,11 +15,10 @@
 
 #include "drm_napi.h"
 #include "ipc_skeleton.h"
+
 namespace OHOS {
 namespace DrmStandard {
-
 thread_local napi_ref DrmNapi::sConstructor_ = nullptr;
-
 DrmNapi::DrmNapi() : env_(nullptr), wrapper_(nullptr)
 {
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " Instances create", FAKE_POINTER(this));
@@ -57,7 +56,8 @@ napi_value DrmNapi::Init(napi_env env, napi_value exports)
     status = napi_set_named_property(env, exports, DRM_NAPI_CLASS_NAME, constructor);
     CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "Failed to set DrmNapi constructor");
 
-    status = napi_define_properties(env, exports, sizeof(drm_static_properties) / sizeof(drm_static_properties[0]), drm_static_properties);
+    status = napi_define_properties(env, exports, sizeof(drm_static_properties) / sizeof(drm_static_properties[0]),
+        drm_static_properties);
     CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "Failed to define static DrmNapi function");
 
     DRM_INFO_LOG("DrmNapi Init success");
@@ -118,9 +118,7 @@ napi_value DrmNapi::CreateMediaKeySystemInstance(napi_env env, napi_callback_inf
     napi_value result = nullptr;
     result = MediaKeySystemNapi::CreateMediaKeySystemInstance(env,info);
     DRM_INFO_LOG("DrmNapi CreateMediaKeySystemInstance exit.");
-
     return result;
 }
-
 } //namespace OHOS 
 } //namespace DrmStandard

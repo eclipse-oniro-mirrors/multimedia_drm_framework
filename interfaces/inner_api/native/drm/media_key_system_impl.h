@@ -29,25 +29,24 @@
 
 namespace OHOS{
 namespace DrmStandard{
-
 class MediaKeySystemImpl : public RefBase {
 public:
     explicit MediaKeySystemImpl(sptr<IMediaKeySystemService> &mediaKeysystem);
     ~MediaKeySystemImpl();
     int32_t Release();
-    int32_t GenerateKeySystemRequest(IMediaKeySystemService::RequestType type, std::vector<uint8_t> &request, std::string &defaultUrl);
+    int32_t GenerateKeySystemRequest(IMediaKeySystemService::RequestType type, std::vector<uint8_t> &request,
+        std::string &defaultUrl);
     int32_t ProcessKeySystemResponse(IMediaKeySystemService::RequestType type, const std::vector<uint8_t> &response);
     int32_t SetConfiguration(IMediaKeySystemService::ConfigType type, std::string &propertyName, std::string &value);
-    int32_t GetConfiguration(IMediaKeySystemService::ConfigType configType, std::string &propertyName, std::string &value);
+    int32_t GetConfiguration(IMediaKeySystemService::ConfigType configType, std::string &propertyName,
+        std::string &value);
     int32_t CreateKeySession(IKeySessionService::SecurityLevel securityLevel, sptr<KeySessionImpl> *keySessionImpl);
     int32_t GetMetric(std::vector<IMediaKeySystemService::KeyValue> &infoMap);
     int32_t GetSecurityLevel(IKeySessionService::SecurityLevel *securityLevel);
-
 private:
     std::mutex mutex_;
     sptr<OHOS::DrmStandard::IMediaKeySystemService> serviceProxy_;
 };
-
 } // DrmStandard
 } //OHOS
 #endif // OHOS_DRM_MEDIA_KEY_SYSTEMP_IMPL_H

@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "key_session_service_stub.h"
 #include "drm_error_code.h"
 #include "drm_log.h"
@@ -22,7 +23,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 int KeySessionServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
     MessageParcel &reply, MessageOption &option)
 {
@@ -30,6 +30,7 @@ int KeySessionServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
     int errCode = -1;
     DRM_DEBUG_LOG("OnRemoteRequest, cmd = %{public}u", code);
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " is keySessionServiceStub", FAKE_POINTER(this));
+
     if (data.ReadInterfaceToken() != GetDescriptor()) {
         DRM_ERR_LOG("KeySessionServiceStub: ReadInterfaceToken failed");
         return errCode;   
@@ -73,7 +74,6 @@ int KeySessionServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
                 DRM_ERR_LOG("KeySessionServiceStub Write GenerateLicenseRequest failed");
                 return IPC_STUB_WRITE_PARCEL_ERR;
             }
-
             for (auto data : licenseInfo.mData) {
                 if (!reply.WriteUint8(data)) {
                     DRM_ERR_LOG("KeySessionServiceStub Write GenerateLicenseRequest failed");
@@ -106,7 +106,6 @@ int KeySessionServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
                     return IPC_STUB_WRITE_PARCEL_ERR;
                 }
             }
-
             DRM_INFO_LOG("KeySessionServiceStub MEDIA_KEY_SYSTEM_PROCESS_LICENSE_RESPONSE exit.");
             return ret;
         }
@@ -200,7 +199,6 @@ int KeySessionServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
                     return IPC_STUB_WRITE_PARCEL_ERR;
                }
             }
-
             DRM_INFO_LOG("KeySessionServiceStub MEDIA_KEY_SESSION_GET_OFFLINEKEYIDS exit.");
             return ret;
         }
@@ -260,9 +258,7 @@ int KeySessionServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
         }
     }
-
     return errCode;
 }
-
 } // DrmStandard
 } // OHOS

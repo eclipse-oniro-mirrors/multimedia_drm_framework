@@ -18,7 +18,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 enum MediaKeySystemFactoryServiceRequestCode {
     MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED = 0,
     MEDIA_KEY_SYSTEM_FACTORY_CREATE_MEDIA_KEYSYSTEM = 1,
@@ -63,7 +62,6 @@ enum KeySessionServiceCallbackRequestCode {
     KEY_SESSION_SERVICE_CALLBACK_ON_KEY_EXPIRED = 0,
     KEY_SESSION_SERVICE_CALLBACK_ON_KEY_SESSION_RECLAIMED,
 };
-
 } // namespace DrmStandard
 } // namespace OHOS
 

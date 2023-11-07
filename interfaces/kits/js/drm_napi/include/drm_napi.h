@@ -23,9 +23,7 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 static const char DRM_NAPI_CLASS_NAME[] = "drm";
-
 class DrmNapi {
 public:
     DrmNapi();
@@ -40,7 +38,6 @@ private:
     napi_env env_;
     napi_ref wrapper_;
 };
-
 } // DrmStandard   
 } // OHOS
 #endif // OHOS_DRM_DRM_NAPI_H_

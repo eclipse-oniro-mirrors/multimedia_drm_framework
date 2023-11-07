@@ -16,6 +16,7 @@
 #include "key_session_service.h"
 #include "drm_log.h"
 #include "ipc_skeleton.h"
+
 namespace OHOS {
 namespace DrmStandard {
 static std::mutex sessionMutex_;
@@ -51,7 +52,8 @@ int32_t KeySessionService::SetKeySessionServiceOperatorsCallback(wptr<IKeySessio
     return DRM_OK;
 }
 
-int32_t KeySessionService::GenerateLicenseRequest(IKeySessionService::DrmInfo &drmInfo, IKeySessionService::LicenseInfo &licenseInfo)
+int32_t KeySessionService::GenerateLicenseRequest(IKeySessionService::DrmInfo &drmInfo,
+    IKeySessionService::LicenseInfo &licenseInfo)
 {
     DRM_INFO_LOG("KeySessionService::GenerateLicenseRequest enter.");
     DRM_INFO_LOG("KeySessionService::GenerateLicenseRequest exit.");
@@ -65,14 +67,16 @@ int32_t KeySessionService::ProcessLicenseResponse(std::vector<uint8_t> &keyId, s
     return DRM_OK;
 }
 
-int32_t KeySessionService::GenerateOfflineReleaseRequest(std::vector<uint8_t> &keyId, std::vector<uint8_t> &releaseRequest)
+int32_t KeySessionService::GenerateOfflineReleaseRequest(std::vector<uint8_t> &keyId,
+    std::vector<uint8_t> &releaseRequest)
 {
     DRM_INFO_LOG("KeySessionService::GenerateOfflineReleaseRequest enter.");
     DRM_INFO_LOG("KeySessionService::GenerateOfflineReleaseRequest exit.");
     return DRM_OK;
 }
 
-int32_t KeySessionService::ProcessOfflineReleaseResponse(std::vector<uint8_t> &keyId, std::vector<uint8_t> &releaseResponse)
+int32_t KeySessionService::ProcessOfflineReleaseResponse(std::vector<uint8_t> &keyId,
+    std::vector<uint8_t> &releaseResponse)
 {
     DRM_INFO_LOG("KeySessionService::ProcessOfflineReleaseResponse enter.");
     DRM_INFO_LOG("KeySessionService::ProcessOfflineReleaseResponse exit.");

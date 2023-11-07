@@ -13,13 +13,12 @@
  * limitations under the License.
  */
 #include "key_session_impl.h"
-#include "common_napi.h"
 #include "drm_log.h"
 #include "drm_error_code.h"
+#include "common_napi.h"
 
 namespace OHOS {
 namespace DrmStandard {
-
 KeySessionImpl::KeySessionImpl(sptr<IKeySessionService> &keySession)
 {
     DRM_DEBUG_LOG("KeySessionImpl::KeySessionImpl enter.");
@@ -55,7 +54,8 @@ int32_t KeySessionImpl::Release()
     return errCode;
 }
 
-int KeySessionImpl::GenerateLicenseRequest(IKeySessionService::DrmInfo &drmInfo, IKeySessionService::LicenseInfo &licenseInfo)
+int KeySessionImpl::GenerateLicenseRequest(IKeySessionService::DrmInfo &drmInfo,
+    IKeySessionService::LicenseInfo &licenseInfo)
 {
     DRM_INFO_LOG("KeySessionImpl::GenerateLicenseRequest enter.");
     std::lock_guard<std::mutex> lock(mutex_);
@@ -210,9 +210,6 @@ int32_t KeySessionImpl::RemoveOfflineKeys(std::vector<uint8_t> &keyId)
     DRM_INFO_LOG("KeySessionImpl::RemoveOfflineKeys enter.");
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t retCode = DRM_OK;
-    for (auto a : keyId) {
-        DRM_ERR_LOG("--keyId:%{public}u",a);
-    }
     if (keySessionServiceProxy_ == nullptr) {
         DRM_ERR_LOG("KeySessionImpl::RemoveOfflineKeys keySessionServiceProxy_ is null");
         return DRM_SERVICE_ERROR;
@@ -288,7 +285,8 @@ sptr<IKeySessionService> KeySessionImpl::GetKeySessionServiceProxy()
     DRM_INFO_LOG("KeySessionImpl::GetKeySessionServiceProxy enter.");
     if (keySessionServiceProxy_ != nullptr) {
         DRM_DEBUG_LOG("KeySessionImpl KeySessionServiceProxy is not nullptr");
-        DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " is keySessionServiceProxy's native pointer in KeySessionImpl", FAKE_POINTER(keySessionServiceProxy_.GetRefPtr()));
+        DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " is keySessionServiceProxy's native pointer in KeySessionImpl",
+            FAKE_POINTER(keySessionServiceProxy_.GetRefPtr()));
         DRM_DEBUG_LOG("And it's count is, %{public}d", keySessionServiceProxy_->GetSptrRefCount());
     }
     DRM_INFO_LOG("KeySessionImpl::GetKeySessionServiceProxy enter.");
@@ -362,6 +360,5 @@ int32_t KeySessionStatusCallback::OnKeySessionReclaimed(const SessionStatus stat
     DRM_ERR_LOG("KeySessionStatusCallback:: OnKeySessionReclaimed failed");
     return DRM_ERROR;
 }
-
 } // DrmStandard
 } // OHOS
