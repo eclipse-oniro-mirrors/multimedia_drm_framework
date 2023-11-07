@@ -60,7 +60,7 @@ private:
     napi_env env_;
     napi_ref wrapper_;
     sptr<MediaKeySystemImpl> keySystem_;
-    static thread_local sptr<MediaKeySystemImpl> sMediaKeySystemImpl_;
+    static thread_local sptr<MediaKeySystemImpl> sKeySystem_;
 };
 } // namespace DrmStandard
 } // namespace OHOS

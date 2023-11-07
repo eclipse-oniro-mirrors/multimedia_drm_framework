@@ -18,7 +18,7 @@
 namespace OHOS {
 namespace DrmStandard {
 thread_local napi_ref MediaKeySystemNapi::sConstructor_ = nullptr;
-thread_local sptr<MediaKeySystemImpl> MediaKeySystemNapi::skeySystem_ = nullptr;
+thread_local sptr<MediaKeySystemImpl> MediaKeySystemNapi::sKeySystem_ = nullptr;
 
 MediaKeySystemNapi::MediaKeySystemNapi() : env_(nullptr), wrapper_(nullptr)
 {
@@ -86,11 +86,11 @@ napi_value MediaKeySystemNapi::MediaKeySystemNapiConstructor(napi_env env, napi_
     if (status == napi_ok && jsThis != nullptr) {
         std::unique_ptr<MediaKeySystemNapi> obj = std::make_unique<MediaKeySystemNapi>();
         obj->env_ = env;
-        if (MediaKeySystemNapi::skeySystem_ == nullptr) {
-            DRM_ERR_LOG("skeySystem_ is null");
+        if (MediaKeySystemNapi::sKeySystem_ == nullptr) {
+            DRM_ERR_LOG("sKeySystem_ is null");
             return result;
         }
-        obj->keySystem_ = MediaKeySystemNapi::skeySystem_;
+        obj->keySystem_ = MediaKeySystemNapi::sKeySystem_;
 
         status = napi_wrap(env, jsThis, reinterpret_cast<void*>(obj.get()),
                            MediaKeySystemNapi::MediaKeySystemNapiDestructor, nullptr, nullptr);
@@ -132,13 +132,13 @@ napi_value MediaKeySystemNapi::CreateMediaKeySystemInstance(napi_env env, napi_c
             return nullptr;
         }
         uuid = std::string(uuidBuffer);
-        int retCode = MediaKeySystemFactoryImpl::GetInstance()->CreateMediaKeySystem(uuid, &MediaKeySystemNapi::skeySystem_);
-        if (retCode != DRM_OK || MediaKeySystemNapi::skeySystem_ == nullptr) {
-            DRM_ERR_LOG("MediaKeySystemNapi skeySystem_ get failed!!!");
+        int retCode = MediaKeySystemFactoryImpl::GetInstance()->CreateMediaKeySystem(uuid, &MediaKeySystemNapi::sKeySystem_);
+        if (retCode != DRM_OK || MediaKeySystemNapi::sKeySystem_ == nullptr) {
+            DRM_ERR_LOG("MediaKeySystemNapi sKeySystem_ get failed!!!");
             return nullptr;
         }
         status = napi_new_instance(env, ctor, 0, nullptr, &result);
-        MediaKeySystemNapi::skeySystem_ = nullptr;
+        MediaKeySystemNapi::sKeySystem_ = nullptr;
         if (status == napi_ok) {
             DRM_ERR_LOG("CreateMediaKeySystemInstance 164");
             return result;
