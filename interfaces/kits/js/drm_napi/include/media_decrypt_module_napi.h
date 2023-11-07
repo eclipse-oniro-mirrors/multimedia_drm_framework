@@ -36,7 +36,7 @@ public:
     static napi_value DecryptData(napi_env env, napi_callback_info info);
 private:
     static napi_value MediaDecryptModuleNapiConstructor(napi_env env, napi_callback_info info);
-    static void MediaDecryptModuleNapiDestructor(napi_env env, void *nativeObject, void *finalize); 
+    static void MediaDecryptModuleNapiDestructor(napi_env env, void *nativeObject, void *finalize);
 
     napi_env env_;
     napi_ref wrapper_;

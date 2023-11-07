@@ -132,7 +132,8 @@ napi_value MediaKeySystemNapi::CreateMediaKeySystemInstance(napi_env env, napi_c
             return nullptr;
         }
         uuid = std::string(uuidBuffer);
-        int retCode = MediaKeySystemFactoryImpl::GetInstance()->CreateMediaKeySystem(uuid, &MediaKeySystemNapi::sKeySystem_);
+        int retCode = MediaKeySystemFactoryImpl::GetInstance()->CreateMediaKeySystem(uuid, 
+            &MediaKeySystemNapi::sKeySystem_);
         if (retCode != DRM_OK || MediaKeySystemNapi::sKeySystem_ == nullptr) {
             DRM_ERR_LOG("MediaKeySystemNapi sKeySystem_ get failed!!!");
             return nullptr;
@@ -293,7 +294,8 @@ napi_value MediaKeySystemNapi::CreateKeySession(napi_env env, napi_callback_info
     status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&mediaKeySystemNapi));
 
     if (status == napi_ok && mediaKeySystemNapi != nullptr) {
-        int ret = mediaKeySystemNapi->keySystem_->CreateKeySession((IKeySessionService::SecurityLevel)securityLevel, &keySessionImpl);
+        int ret = mediaKeySystemNapi->keySystem_->CreateKeySession((IKeySessionService::SecurityLevel)securityLevel,
+            &keySessionImpl);
         if (ret != DRM_OK || keySessionImpl == nullptr) {
             DRM_ERR_LOG("MediaKeySystemNapi CreateKeySession get failed!!!");
             return nullptr;
@@ -347,7 +349,8 @@ napi_value MediaKeySystemNapi::SetConfiguration(napi_env env, napi_callback_info
     value = std::string(valueBuffer);
     status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&mediaKeySystemNapi));
     if (status == napi_ok && mediaKeySystemNapi != nullptr) {
-        int ret = mediaKeySystemNapi->keySystem_->SetConfiguration(IMediaKeySystemService::ConfigType(configType), name, value);
+        int ret = mediaKeySystemNapi->keySystem_->SetConfiguration(IMediaKeySystemService::ConfigType(configType),
+            name, value);
         if (ret != napi_ok) {
             DRM_ERR_LOG("napi SetConfiguration faild!");
             return nullptr;

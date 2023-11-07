@@ -69,9 +69,8 @@ int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &uuid, bool *isSur
 
 int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, bool *isSurpported)
 {
-    DRM_INFO_LOG("DrmHostManager::IsMediaKeySystemSupported two parameters enter, uuid:%{public}s, mimeType:%{public}s.",
-        uuid.c_str(), mimeType.c_str());
-    DRM_INFO_LOG("DrmHostManager::IsMediaKeySystemSupported two parameters exit, isSurpported:%{public}d.", *isSurpported);
+    DRM_INFO_LOG("DrmHostManager::IsMediaKeySystemSupported two parameters enter.");
+    DRM_INFO_LOG("DrmHostManager::IsMediaKeySystemSupported two parameters exit.");
     return DRM_OK;
 }
 

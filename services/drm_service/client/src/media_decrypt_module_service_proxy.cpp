@@ -44,8 +44,8 @@ int32_t MediaDecryptModuleServiceProxy::Release()
     return reply.ReadInt32();
 }
 
-int32_t MediaDecryptModuleServiceProxy::DecryptData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo,
-    uint64_t srcBuffer, uint64_t dstBuffer)
+int32_t MediaDecryptModuleServiceProxy::DecryptData(bool secureDecodrtState,
+    IMediaDecryptModuleService::CryptInfo &cryptInfo, uint64_t srcBuffer, uint64_t dstBuffer)
 {
     DRM_INFO_LOG("MediaDecryptModuleServiceProxy::DecryptData enter.");
     MessageParcel data;
