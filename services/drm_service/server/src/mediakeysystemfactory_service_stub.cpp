@@ -14,16 +14,15 @@
  */
 
 #include "mediakeysystemfactory_service_stub.h"
+#include "xcollie/xcollie.h"
+#include "xcollie/xcollie_define.h"
 #include "drm_error_code.h"
 #include "drm_log.h"
 #include "drm_napi_utils.h"
 #include "ipc_skeleton.h"
-#include "xcollie/xcollie.h"
-#include "xcollie/xcollie_define.h"
-#include <codecvt>
-namespace OHOS{
-namespace DrmStandard
-{
+
+namespace OHOS {
+namespace DrmStandard {
 MediaKeySystemFactoryServiceStub::MediaKeySystemFactoryServiceStub()
 {
     deathRecipientMap_.clear();
@@ -35,9 +34,9 @@ MediaKeySystemFactoryServiceStub::~MediaKeySystemFactoryServiceStub()
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " Instances destroy", (POINTER_MASK & reinterpret_cast<uintptr_t>(this)));
 }
 
-int MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option)
+int MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
+    MessageOption &option)
 {
-    std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> converter;
     if (data.ReadInterfaceToken() != GetDescriptor()) {
         DRM_DEBUG_LOG("MediaKeySystemFactoryServiceStub: ReadInterfaceToken failed");
         return -1;   
@@ -45,10 +44,10 @@ int MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, MessageParc
 
     switch(code) {
         case MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED: {
-            DRM_INFO_LOG("MediaKeySystemFactoryServiceStub MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED enter.");
+            DRM_INFO_LOG("MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED enter.");
             int paramNum = data.ReadInt32();
             bool isSurpported = false;
-            if (paramNum > 3 || paramNum < 0) {
+            if (paramNum > ARGS_THREE || paramNum < 0) {
                 DRM_ERR_LOG("MediaKeySystemFactoryServiceStub paramNum is invalid");
                 return IPC_STUB_WRITE_PARCEL_ERR;
             }
@@ -57,7 +56,7 @@ int MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, MessageParc
             // get uuid
             std::string uuid = data.ReadString();
             // search by uuid
-            if (paramNum == 1) {
+            if (paramNum == ARGS_ONE) {
                 DRM_ERR_LOG("MediaKeySystemFactoryServiceStub ");
                 int32_t ret = IsMediaKeySystemSupported(uuid, &isSurpported);
                 DRM_ERR_LOG("MediaKeySystemFactoryServiceStub ");
@@ -72,7 +71,7 @@ int MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, MessageParc
             // get mimeType
             std::string mimeType = data.ReadString();
             // search by uuid and mimeType
-            if (paramNum == 2) {
+            if (paramNum == ARGS_TWO) {
                 int32_t ret = IsMediaKeySystemSupported(uuid, mimeType, &isSurpported);
                 if (!reply.WriteBool(isSurpported)) {
                     DRM_ERR_LOG("MediaKeySystemFactoryServiceStub Write isSurpported failed");
@@ -84,7 +83,7 @@ int MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, MessageParc
             // get securityLevel
             int32_t securityLevel = data.ReadInt32();
             // search by uuid, mineType and securityLevel
-            if (paramNum == 3) {
+            if (paramNum == ARGS_THREE) {
                 int32_t ret = IsMediaKeySystemSupported(uuid, mimeType, securityLevel, &isSurpported);
                 if (!reply.WriteBool(isSurpported)) {
                     DRM_ERR_LOG("MediaKeySystemFactoryServiceStub Write isSurpported failed");
@@ -92,7 +91,7 @@ int MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, MessageParc
                 }
                 return ret;
             }
-            DRM_INFO_LOG("MediaKeySystemFactoryServiceStub MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED exit.");
+            DRM_INFO_LOG("MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED exit.");
             return -1;
         }
         case MEDIA_KEY_SYSTEM_FACTORY_CREATE_MEDIA_KEYSYSTEM: {
@@ -109,5 +108,5 @@ int MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, MessageParc
     }
     return DRM_OK;
 }
-}//namespace DrmStandard
-}//namespace OHOS
+} // namespace DrmStandard
+} // namespace OHOS

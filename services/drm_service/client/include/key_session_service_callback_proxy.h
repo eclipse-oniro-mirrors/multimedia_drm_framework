@@ -16,8 +16,8 @@
 #ifndef OHOS_DRM_KEY_SESSION_SERVICE_CALLBACK_PROXY_H
 #define OHOS_DRM_KEY_SESSION_SERVICE_CALLBACK_PROXY_H
 
-#include "i_keysession_service_callback.h"
 #include "iremote_proxy.h"
+#include "i_keysession_service_callback.h"
 
 namespace OHOS {
 namespace DrmStandard {

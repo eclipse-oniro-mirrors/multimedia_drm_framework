@@ -12,13 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "key_session_callback_napi.h"
 #include "drm_log.h"
 #include "drm_error_code.h"
 
 namespace OHOS {
 namespace DrmStandard {
-
 KeySessionCallbackNapi::KeySessionCallbackNapi() {}
 
 KeySessionCallbackNapi::~KeySessionCallbackNapi() {}
@@ -101,6 +101,5 @@ void KeySessionCallbackNapi::OnKeySessionReclaimed(const std::string eventType, 
     CHECK_AND_RETURN_LOG(state == napi_ok,
         "%{public}s failed to napi_call_function", eventType.c_str());
 }
-
 }    
 }

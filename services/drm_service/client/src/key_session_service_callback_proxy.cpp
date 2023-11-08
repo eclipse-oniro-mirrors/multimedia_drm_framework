@@ -19,7 +19,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 KeySessionServiceCallbackProxy::KeySessionServiceCallbackProxy(const sptr<IRemoteObject> &impl)
     : IRemoteProxy<IKeySessionServiceCallback>(impl) { };
 
@@ -64,6 +63,5 @@ int32_t KeySessionServiceCallbackProxy::OnKeySessionReclaimed(const SessionStatu
     }
     return error;
 }
-
 } // DrmStandard
 } // namespace OHOS

@@ -83,5 +83,5 @@ ohos_shared_library("drm_service") {
   cflags_cc = cflags
 
   subsystem_name = "multimedia"
-  part_name = "multimedia_drm_framework"
+  part_name = "drm_framework"
 }

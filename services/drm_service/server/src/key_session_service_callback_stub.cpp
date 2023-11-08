@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "key_session_service_callback_stub.h"
 #include "remote_request_code.h"
 #include "drm_log.h"
@@ -74,6 +75,5 @@ int32_t KeySessionServiceCallbackStub::HandleOnKeySessionReclaimed(MessageParcel
             return DRM_ERROR;
     }
 }
-
 } // namespace DrmStandard
 } // namespace OHOS

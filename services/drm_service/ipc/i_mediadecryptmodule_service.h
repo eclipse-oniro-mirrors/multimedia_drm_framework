@@ -60,4 +60,5 @@ public:
 };
 } // DrmStandard
 } // OHOS
+
 #endif // OHOS_DRM_I_MEDIA_DECRYPT_MODULE_SERVICE_H

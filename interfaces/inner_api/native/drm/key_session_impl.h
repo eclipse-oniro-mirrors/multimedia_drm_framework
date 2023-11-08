@@ -27,7 +27,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 class KeySessionImplCallback : public RefBase {
 public:
     KeySessionImplCallback() = default;
@@ -43,7 +42,8 @@ public:
     int32_t Release();
     int32_t Init();
     sptr<MediaDecryptModuleImpl> GetDecryptModule();
-    int32_t GenerateLicenseRequest(IKeySessionService::DrmInfo &drmInfo, IKeySessionService::LicenseInfo &licenseInfo);
+    int32_t GenerateLicenseRequest(IKeySessionService::DrmInfo &drmInfo,
+        IKeySessionService::LicenseInfo &licenseInfo);
     int32_t ProcessLicenseResponse(std::vector<uint8_t> &keyId, std::vector<uint8_t> &licenseResponse);
     int32_t GenerateOfflineReleaseRequest(std::vector<uint8_t> &keyId, std::vector<uint8_t> &releaseRequest);
     int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &keyId, std::vector<uint8_t> &releaseReponse);

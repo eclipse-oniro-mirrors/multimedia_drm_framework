@@ -12,3 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#ifndef OHOS_DRM_KEYSYSTEM_CALLBCK_H_
+#define OHOS_DRM_KEYSYSTEM_CALLBCK_H_
+
+#endif // OHOS_DRM_KEYSYSTEM_CALLBCK_H_

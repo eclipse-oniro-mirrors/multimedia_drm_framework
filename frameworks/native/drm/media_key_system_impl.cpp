@@ -16,12 +16,12 @@
 #include "media_key_system_impl.h"
 #include "i_mediakeysystem_service.h"
 
-namespace OHOS{
-namespace DrmStandard{
-
+namespace OHOS {
+namespace DrmStandard {
 MediaKeySystemImpl::MediaKeySystemImpl(sptr<IMediaKeySystemService> &mediaKeysystem)
 {
-    DRM_DEBUG_LOG("MediaKeySystemImpl:0x%{public}06" PRIXPTR "MediaKeySystemImpl Instances create", FAKE_POINTER(this));
+    DRM_DEBUG_LOG("MediaKeySystemImpl:0x%{public}06" PRIXPTR "MediaKeySystemImpl Instances create",
+        FAKE_POINTER(this));
     serviceProxy_ = mediaKeysystem;
 }
 
@@ -49,7 +49,8 @@ int32_t MediaKeySystemImpl::Release()
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::GenerateKeySystemRequest(IMediaKeySystemService::RequestType type, std::vector<uint8_t> &request, std::string &defaultUrl)
+int MediaKeySystemImpl::GenerateKeySystemRequest(IMediaKeySystemService::RequestType type,
+    std::vector<uint8_t> &request, std::string &defaultUrl)
 {
     DRM_INFO_LOG("MediaKeySystemImpl::GenerateKeySystemRequest enter. type:%{public}d.", type);
     std::lock_guard<std::mutex> lock(mutex_);
@@ -68,7 +69,8 @@ int MediaKeySystemImpl::GenerateKeySystemRequest(IMediaKeySystemService::Request
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::ProcessKeySystemResponse(IMediaKeySystemService::RequestType type, const std::vector<uint8_t> &response)
+int MediaKeySystemImpl::ProcessKeySystemResponse(IMediaKeySystemService::RequestType type,
+    const std::vector<uint8_t> &response)
 {
     DRM_INFO_LOG("MediaKeySystemImpl::ProcessKeySystemResponse enter.");
     std::lock_guard<std::mutex> lock(mutex_);
@@ -87,9 +89,11 @@ int MediaKeySystemImpl::ProcessKeySystemResponse(IMediaKeySystemService::Request
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::SetConfiguration(IMediaKeySystemService::ConfigType type, std::string &propertyName, std::string &value)
+int MediaKeySystemImpl::SetConfiguration(IMediaKeySystemService::ConfigType type, std::string &propertyName,
+    std::string &value)
 {
-    DRM_INFO_LOG("MediaKeySystemImpl::SetConfiguration enter, configType:%{public}d, propertyName:%{public}s, value:%{public}s.", (int)type, propertyName.c_str(), value.c_str());
+    DRM_INFO_LOG("SetConfiguration enter, configType:%{public}d, propertyName:%{public}s, value:%{public}s.",
+        (int)type, propertyName.c_str(), value.c_str());
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t retCode = DRM_OK;
 
@@ -102,13 +106,15 @@ int MediaKeySystemImpl::SetConfiguration(IMediaKeySystemService::ConfigType type
         DRM_ERR_LOG("MediaKeySystemImpl::SetConfiguration failed, retCode: %{public}d", retCode);
         return DRM_SERVICE_ERROR;
     }
-    DRM_INFO_LOG("MediaKeySystemImpl::SetConfiguration exit.");
+    DRM_INFO_LOG("SetConfiguration exit.");
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::GetConfiguration(IMediaKeySystemService::ConfigType configType, std::string &propertyName, std::string &value)
+int MediaKeySystemImpl::GetConfiguration(IMediaKeySystemService::ConfigType configType, std::string &propertyName,
+    std::string &value)
 {
-    DRM_INFO_LOG("MediaKeySystemImpl::GetConfiguration enter, configType:%{public}d, propertyName:%{public}s.", (int)configType, propertyName.c_str());
+    DRM_INFO_LOG("MediaKeySystemImpl::GetConfiguration enter, configType:%{public}d, propertyName:%{public}s.",
+        (int)configType, propertyName.c_str());
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t retCode = DRM_OK;
 
@@ -126,7 +132,8 @@ int MediaKeySystemImpl::GetConfiguration(IMediaKeySystemService::ConfigType conf
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::CreateKeySession(IKeySessionService::SecurityLevel securityLevel, sptr<KeySessionImpl> *keySessionImpl)
+int MediaKeySystemImpl::CreateKeySession(IKeySessionService::SecurityLevel securityLevel,
+    sptr<KeySessionImpl> *keySessionImpl)
 {
     DRM_INFO_LOG("MediaKeySystemImpl::CreateKeySession enter.");
     sptr<IKeySessionService> keySessionProxy = nullptr;
@@ -197,6 +204,5 @@ int MediaKeySystemImpl::GetSecurityLevel(IKeySessionService::SecurityLevel *secu
     DRM_INFO_LOG("MediaKeySystemImpl::GetSecurityLevel exit.");
     return DRM_OK;
 }
-
 } // namespace DrmStandard
 } // namespace OHOS

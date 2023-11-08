@@ -19,7 +19,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 KeySessionServiceProxy::KeySessionServiceProxy(const sptr<IRemoteObject> &impl)
     : IRemoteProxy<IKeySessionService>(impl)
 {
@@ -75,7 +74,8 @@ int32_t KeySessionServiceProxy::Release()
     return error;
 }
 
-int32_t KeySessionServiceProxy::GenerateLicenseRequest(IKeySessionService::DrmInfo &drmInfo, IKeySessionService::LicenseInfo &licenseInfo)
+int32_t KeySessionServiceProxy::GenerateLicenseRequest(IKeySessionService::DrmInfo &drmInfo,
+    IKeySessionService::LicenseInfo &licenseInfo)
 {
     DRM_INFO_LOG("KeySessionServiceProxy::GenerateLicenseRequest enter.");
     MessageParcel data;
@@ -103,7 +103,8 @@ int32_t KeySessionServiceProxy::GenerateLicenseRequest(IKeySessionService::DrmIn
         DRM_ERR_LOG("KeySessionServiceProxy GenerateLicenseRequest Write indexInfo.size failed");
         return IPC_PROXY_ERR;
     }
-    int error = KeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_GENERATE_LICENSE_REQUEST, data, reply, option);
+    int error = KeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_GENERATE_LICENSE_REQUEST, data,
+        reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("KeySessionServiceProxy::GenerateLicenseRequest failed, error: %{public}d", error);
         return error;
@@ -120,7 +121,8 @@ int32_t KeySessionServiceProxy::GenerateLicenseRequest(IKeySessionService::DrmIn
     return reply.ReadInt32();
 }
 
-int32_t KeySessionServiceProxy::ProcessLicenseResponse(std::vector<uint8_t> &keyId, std::vector<uint8_t> &licenseResponse)
+int32_t KeySessionServiceProxy::ProcessLicenseResponse(std::vector<uint8_t> &keyId,
+    std::vector<uint8_t> &licenseResponse)
 {
     DRM_INFO_LOG("KeySessionServiceProxy::ProcessLicenseResponse enter.");
     MessageParcel data;
@@ -141,7 +143,8 @@ int32_t KeySessionServiceProxy::ProcessLicenseResponse(std::vector<uint8_t> &key
             return IPC_PROXY_ERR;
         }
     }
-    int error = KeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_PROCESS_LICENSE_RESPONSE, data, reply, option);
+    int error = KeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_PROCESS_LICENSE_RESPONSE, data,
+        reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("KeySessionServiceProxy::ProcessLicenseResponse failed, error: %{public}d", error);
         return error;
@@ -154,7 +157,8 @@ int32_t KeySessionServiceProxy::ProcessLicenseResponse(std::vector<uint8_t> &key
     return reply.ReadInt32();
 }
 
-int32_t KeySessionServiceProxy::GenerateOfflineReleaseRequest(std::vector<uint8_t> &keyId, std::vector<uint8_t> &releaseRequest)
+int32_t KeySessionServiceProxy::GenerateOfflineReleaseRequest(std::vector<uint8_t> &keyId,
+    std::vector<uint8_t> &releaseRequest)
 {
     DRM_INFO_LOG("KeySessionServiceProxy::GenerateOfflineReleaseRequest enter.");
     MessageParcel data;
@@ -176,7 +180,8 @@ int32_t KeySessionServiceProxy::GenerateOfflineReleaseRequest(std::vector<uint8_
         }
     }
 
-    int error = KeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_GENERATE_OFFLINE_RELEASE_REQUEST, data, reply, option);
+    int error = KeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_GENERATE_OFFLINE_RELEASE_REQUEST,
+        data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("KeySessionServiceProxy::GenerateOfflineReleaseRequest failed, error: %{public}d", error);
         return error;
@@ -189,7 +194,8 @@ int32_t KeySessionServiceProxy::GenerateOfflineReleaseRequest(std::vector<uint8_
     return reply.ReadInt32();
 }
 
-int32_t KeySessionServiceProxy::ProcessOfflineReleaseResponse(std::vector<uint8_t> &keyId, std::vector<uint8_t> &releaseReponse)
+int32_t KeySessionServiceProxy::ProcessOfflineReleaseResponse(std::vector<uint8_t> &keyId,
+    std::vector<uint8_t> &releaseReponse)
 {
     DRM_INFO_LOG("KeySessionServiceProxy::ProcessOfflineReleaseResponse enter.");
     MessageParcel data;
@@ -221,7 +227,8 @@ int32_t KeySessionServiceProxy::ProcessOfflineReleaseResponse(std::vector<uint8_
             return IPC_PROXY_ERR;
         }
     }
-    int error = KeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_PROCESS_OFFLINE_RELEASE_RESPONSE, data, reply, option);
+    int error = KeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_PROCESS_OFFLINE_RELEASE_RESPONSE,
+        data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("KeySessionServiceProxy::ProcessOfflineReleaseResponse failed, error: %{public}d", error);
         return error;
@@ -243,7 +250,8 @@ int32_t KeySessionServiceProxy::CheckLicenseStatus(std::vector<IKeySessionServic
         return IPC_PROXY_ERR;
     }
 
-    int error = KeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_GENERATE_CHECK_LICENSE_STATUS, data, reply, option);
+    int error = KeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_GENERATE_CHECK_LICENSE_STATUS,
+        data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("KeySessionServiceProxy::GenerateOfflineReleaseRequest failed, error: %{public}d", error);
         return error;
@@ -282,7 +290,8 @@ int32_t KeySessionServiceProxy::RestoreOfflineKeys(std::vector<uint8_t> &keyId)
         }
     }
 
-    int error = KeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_RESTORE_OFFLINEKEYS, data, reply, option);
+    int error = KeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_RESTORE_OFFLINEKEYS, data,
+        reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("KeySessionServiceProxy::RestoreOfflineKeys failed, error: %{public}d", error);
         return error;
@@ -315,7 +324,8 @@ int32_t KeySessionServiceProxy::RemoveOfflineKeys(std::vector<uint8_t> &keyId)
         }
     }
 
-    int error = KeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_REMOVE_OFFLINEKEYS, data, reply, option);
+    int error = KeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_REMOVE_OFFLINEKEYS, data,
+        reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("KeySessionServiceProxy::RemoveOfflineKeys failed, error: %{public}d", error);
         return error;
@@ -336,7 +346,8 @@ int32_t KeySessionServiceProxy::GetOfflineKeyIds(std::vector<std::vector<uint8_t
         DRM_ERR_LOG("KeySessionServiceProxy GetOfflineKeyIds Write interface token failed");
         return IPC_PROXY_ERR;
     }
-    int32_t error = KeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_GET_OFFLINEKEYIDS, data, reply, option);
+    int32_t error = KeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_GET_OFFLINEKEYIDS,
+        data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("KeySessionServiceProxy::GetOfflineKeyIds failed, error: %{public}d", error);
         return error;
@@ -379,7 +390,8 @@ int32_t KeySessionServiceProxy::RemoveLicenses()
     return reply.ReadInt32();
 }
 
-int32_t KeySessionServiceProxy::GetOfflineKeyState(std::vector<uint8_t> &keyId, IKeySessionService::OfflineKeyState &state)
+int32_t KeySessionServiceProxy::GetOfflineKeyState(std::vector<uint8_t> &keyId,
+    IKeySessionService::OfflineKeyState &state)
 {
     DRM_INFO_LOG("KeySessionServiceProxy::GetOfflineKeyState enter.");
     MessageParcel data;
@@ -401,7 +413,8 @@ int32_t KeySessionServiceProxy::GetOfflineKeyState(std::vector<uint8_t> &keyId, 
         }
     }
 
-    int error = KeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_GET_OFFLINEKEY_STATE, data, reply, option);
+    int error = KeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_GET_OFFLINEKEY_STATE, data,
+        reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("KeySessionServiceProxy::GetOfflineKeyState failed, error: %{public}d", error);
         return error;
@@ -438,6 +451,5 @@ int32_t KeySessionServiceProxy::SetKeySessionServiceCallback(sptr<IKeySessionSer
     }
     return error;
 }
-
 } // DrmStandard
 } // OHOS

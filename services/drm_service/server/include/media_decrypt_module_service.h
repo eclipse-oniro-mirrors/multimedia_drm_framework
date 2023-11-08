@@ -24,7 +24,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 class MediaDecryptModuleService : public MediaDecryptModuleServiceStub
 {
 public:
@@ -34,11 +33,8 @@ public:
     int32_t DecryptData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo, uint64_t srcBuffer,
         uint64_t dstBuffer) override;
     int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status) override;
-
 private:
 };
-
 } // DrmStandard
 } // OHOS
-
-#endif //OHOS_DRM_MediaDecryptModuleService_H_
+#endif // OHOS_DRM_MediaDecryptModuleService_H_

@@ -21,7 +21,7 @@
 #include "xcollie/xcollie.h"
 #include "xcollie/xcollie_define.h"
 
-namespace OHOS{
+namespace OHOS {
 namespace DrmStandard
 {
 MediaKeySystemServiceStub::MediaKeySystemServiceStub()
@@ -35,15 +35,16 @@ MediaKeySystemServiceStub::~MediaKeySystemServiceStub()
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " Instances destroy", (POINTER_MASK & reinterpret_cast<uintptr_t>(this)));
 }
 
-int MediaKeySystemServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option)
+int MediaKeySystemServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
+    MessageOption &option)
 {
     DRM_INFO_LOG("OnRemoteRequest, cmd = %{public}u", code);
     if (data.ReadInterfaceToken() != GetDescriptor()) {
-        DRM_ERR_LOG("MediaKeySystemServiceStub: ReadInterfaceToken failed");
+        DRM_ERR_LOG("MediaKeySystemServiceStub ReadInterfaceToken failed");
         return -1;   
     }
 
-    switch(code) {
+    switch (code) {
         case MEDIA_KEY_SYSTEM_CREATE_KEY_SESSION: {
             DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_CREATE_KEY_SESSION enter.");
             sptr<IKeySessionService> keySessionServiceProxy = nullptr;
@@ -107,7 +108,7 @@ int MediaKeySystemServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &dat
             return ret;
         }
         case MEDIA_KEY_SYSTEM_SETCONFIGURATION: {
-            DRM_INFO_LOG("bMediaKeySystemServiceStub MEDIA_KEY_SYSTEM_SETCONFIGURATION enter.");
+            DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_SETCONFIGURATION enter.");
             int type = data.ReadInt32();
             std::string propertyName = data.ReadString();
             std::string value = data.ReadString();
@@ -152,6 +153,5 @@ int MediaKeySystemServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &dat
         }
     }
 }
-
-}//namespace DrmStandard
-}//namespace OHOS
+} // namespace DrmStandard
+} // namespace OHOS

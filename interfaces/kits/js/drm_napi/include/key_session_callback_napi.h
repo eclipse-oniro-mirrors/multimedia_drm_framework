@@ -16,6 +16,7 @@
 #ifndef OHOS_DRM_KeySessionCallbackNapi_H_
 #define OHOS_DRM_KeySessionCallbackNapi_H_
 
+#include <map>
 #include "key_session_impl.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
@@ -23,7 +24,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 class KeySessionCallbackNapi : public KeySessionImplCallback {
 public:
     explicit KeySessionCallbackNapi();
@@ -37,9 +37,7 @@ private:
     std::mutex mutex_;
     std::map<std::string, sptr<CallBackPair>> callbackMap_;
 };
-
 } // namespace DrmStandard
 } // namespace OHOS
-
 
 #endif

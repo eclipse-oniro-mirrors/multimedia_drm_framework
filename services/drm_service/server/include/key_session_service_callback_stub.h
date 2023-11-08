@@ -20,20 +20,19 @@
 #include "iremote_stub.h"
 #include "remote_request_code.h"
 
-namespace OHOS{
-namespace DrmStandard{
+namespace OHOS {
+namespace DrmStandard {
 class KeySessionServiceCallbackStub : public IRemoteStub<IKeySessionServiceCallback> {
 public:
     KeySessionServiceCallbackStub() = default;
     ~KeySessionServiceCallbackStub() = default;
     virtual int OnRemoteRequest(uint32_t code, MessageParcel &data,
-                                MessageParcel &reply, MessageOption &option) override;
-
+        MessageParcel &reply, MessageOption &option) override;
 private:
     int32_t HandleOnKeySessionKeyExpired(MessageParcel& data);
     int32_t HandleOnKeySessionReclaimed(MessageParcel& data);
 };
+} // namespace DrmStandard
+} // namespace OHOS
 
-}//namespace DrmStandard
-}//namespace OHOS
 #endif // OHOS_DRM_KEY_SESSION_SERVICE_CALLBACK_STUB_H

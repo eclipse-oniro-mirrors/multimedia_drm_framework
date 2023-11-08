@@ -13,14 +13,9 @@
  * limitations under the License.
  */
 #include "media_decrypt_module_service_proxy.h"
-#include <memory>
-#include <sys/mman.h>
-#include <unistd.h>
-#include "ashmem.h"
 
 namespace OHOS {
 namespace DrmStandard {
-
 MediaDecryptModuleServiceProxy::MediaDecryptModuleServiceProxy(const sptr<IRemoteObject> &impl)
     : IRemoteProxy<IMediaDecryptModuleService>(impl)
 {
@@ -49,7 +44,8 @@ int32_t MediaDecryptModuleServiceProxy::Release()
     return reply.ReadInt32();
 }
 
-int32_t MediaDecryptModuleServiceProxy::DecryptData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo, uint64_t srcBuffer, uint64_t dstBuffer)
+int32_t MediaDecryptModuleServiceProxy::DecryptData(bool secureDecodrtState,
+    IMediaDecryptModuleService::CryptInfo &cryptInfo, uint64_t srcBuffer, uint64_t dstBuffer)
 {
     DRM_INFO_LOG("MediaDecryptModuleServiceProxy::DecryptData enter.");
     MessageParcel data;
@@ -104,10 +100,12 @@ int32_t MediaDecryptModuleServiceProxy::DecryptData(bool secureDecodrtState, IMe
         DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptData Write cryptInfo.pattern.skipBlocks failed");
         return IPC_PROXY_ERR;
     }
+
     if (!data.WriteInt32(cryptInfo.subSample.size())) {
         DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptData Write cryptInfo.subSample.size() failed");
         return IPC_PROXY_ERR;
     }
+
     for (size_t i = 0; i < cryptInfo.subSample.size(); i++) {
         if (!data.WriteInt32(cryptInfo.subSample[i].clearHeaderLen)) {
             DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptData Write cryptInfo.subSample.clearHeaderLen failed");
@@ -118,15 +116,14 @@ int32_t MediaDecryptModuleServiceProxy::DecryptData(bool secureDecodrtState, IMe
             return IPC_PROXY_ERR;
         }
     }
+
     (void)data.WriteFileDescriptor(srcBuffer);
     (void)data.WriteFileDescriptor(dstBuffer);
-
     int error = Remote()->SendRequest(DECRYPT_MODULE_DECRYPT_DATA, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptData failed, error: %{public}d", error);
         return error;
     }
-
     DRM_INFO_LOG("MediaDecryptModuleServiceProxy::DecryptData exit.");
     return reply.ReadInt32();
 }
@@ -154,10 +151,8 @@ int32_t MediaDecryptModuleServiceProxy::RequireSecureDecoderModule(std::string &
         return error;
     }
     *status = reply.ReadBool();
-
     DRM_INFO_LOG("MediaDecryptModuleServiceProxy::RequireSecureDecoderModule exit.");
     return reply.ReadInt32();
 }
-
 } // DrmStandard
 } // OHOS

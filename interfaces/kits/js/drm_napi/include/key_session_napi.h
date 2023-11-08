@@ -15,6 +15,7 @@
 #ifndef OHOS_DRM_KEY_SESSION_H_
 #define OHOS_DRM_KEY_SESSION_H_
 
+#include <map>
 #include "key_session_impl.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
@@ -22,8 +23,6 @@
 #include "drm_log.h"
 #include "drm_napi_utils.h"
 #include "drm_error_code.h"
-
-#include <map>
 
 namespace OHOS {
 namespace DrmStandard {
@@ -56,7 +55,6 @@ public:
 private: 
     static napi_value KeySessionNapiConstructor(napi_env env, napi_callback_info info);
     static void KeySessionNapiDestructor(napi_env env, void *nativeObject, void *finalize); 
-
     napi_env env_;
     napi_ref wrapper_;
     static thread_local napi_ref sConstructor_;
@@ -65,9 +63,7 @@ private:
     sptr<KeySessionImpl> keySessionImpl_;
     sptr<KeySessionCallbackNapi> keySessionCallbackNapi_;
 };
-
 } // DrmStandard   
 } // OHOS
-
 
 #endif // OHOS_DRM_KEY_SESSION_H_

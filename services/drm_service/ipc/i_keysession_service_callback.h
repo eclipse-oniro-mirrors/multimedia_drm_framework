@@ -20,7 +20,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 enum KeyStatus {
     KEY_STATUS_NORMAL = 0,
     KEY_STATUS_EXPIRED,
@@ -38,7 +37,6 @@ public:
 
     DECLARE_INTERFACE_DESCRIPTOR(u"IKeySessionServiceCallback");
 };
-
 } // namespace DrmStandard
 } // namespace OHOS
 

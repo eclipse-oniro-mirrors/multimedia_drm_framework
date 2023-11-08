@@ -16,9 +16,9 @@
 #ifndef OHOS_DRM_MEDIA_DECRYPT_MODULE_SERVICE_PROXY_H
 #define OHOS_DRM_MEDIA_DECRYPT_MODULE_SERVICE_PROXY_H
 
-#include "i_mediadecryptmodule_service.h"
 #include "remote_request_code.h"
 #include "iremote_proxy.h"
+#include "i_mediadecryptmodule_service.h"
 #include "drm_log.h"
 #include "drm_napi_utils.h"
 
@@ -29,7 +29,8 @@ public:
     explicit MediaDecryptModuleServiceProxy(const sptr<IRemoteObject> &impl);
     virtual ~MediaDecryptModuleServiceProxy() = default;
     int32_t Release() override;
-    int32_t DecryptData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo, uint64_t srcBuffer, uint64_t dstBuffer) override;
+    int32_t DecryptData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo, uint64_t srcBuffer,
+        uint64_t dstBuffer) override;
     int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status) override;
 
 private:

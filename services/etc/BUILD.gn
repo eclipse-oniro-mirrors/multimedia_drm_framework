@@ -3,6 +3,6 @@ import("//build/ohos.gni")
 ohos_prebuilt_etc("drm_service.rc") {
   source = "drm_service.cfg"
   relative_install_dir = "init"
-  part_name = "multimedia_drm_framework"
+  part_name = "drm_framework"
   subsystem_name = "multimedia"
 }

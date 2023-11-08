@@ -22,19 +22,17 @@
 #include "iremote_stub.h"
 #include "remote_request_code.h"
 
-namespace OHOS{
-namespace DrmStandard{
+namespace OHOS {
+namespace DrmStandard {
 class KeySessionServiceStub : public IRemoteStub<IKeySessionService> {
 public:
     KeySessionServiceStub() = default;
     ~KeySessionServiceStub() = default;
     virtual int32_t OnRemoteRequest(uint32_t code, MessageParcel &data,
         MessageParcel &reply, MessageOption &option) override;
-
 private:
-
 };
+} // namespace DrmStandard
+} // namespace OHOS
 
-}//namespace DrmStandard
-}//namespace OHOS
 #endif // OHOS_DRM_MEDIA_KEY_SYSTEM_SERVICE_STUB_H

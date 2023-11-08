@@ -36,7 +36,8 @@
 
 namespace OHOS {
 namespace DrmStandard {
-class MediaKeySystemFactoryService : public SystemAbility, public MediaKeySystemFactoryServiceStub, public DrmHostManager::StatusCallback,
+class MediaKeySystemFactoryService : public SystemAbility, public MediaKeySystemFactoryServiceStub,
+    public DrmHostManager::StatusCallback,
                               public IMediaKeySystemServiceOperatorsCallback {
     DECLARE_SYSTEM_ABILITY(MediaKeySystemFactoryService);
 public:
@@ -48,7 +49,8 @@ public:
     void OnStop() override;
     int32_t IsMediaKeySystemSupported(std::string &uuid, bool *isSurpported) override;
     int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, bool *isSurpported) override;
-    int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, int32_t securityLevel, bool *isSurpported) override;
+    int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, int32_t securityLevel,
+        bool *isSurpported) override;
     int32_t CreateMediaKeySystem(std::string &uuid) override;
     int32_t CloseMediaKeySystemService(sptr<MediaKeySystemService> mediaKeySystemService) override;
 private:

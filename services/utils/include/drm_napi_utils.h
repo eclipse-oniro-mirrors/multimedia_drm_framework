@@ -34,78 +34,6 @@
         status = napi_get_cb_info(env, info, nullptr, nullptr, &(thisVar), &data);              \
     } while (0)
 
-#define DRM_NAPI_GET_JS_ASYNC_CB_REF(env, arg, count, cbRef)         \
-    do {                                                                \
-        napi_valuetype valueType = napi_undefined;                      \
-        napi_typeof(env, arg, &valueType);                              \
-        if (valueType == napi_function) {                               \
-            napi_create_reference(env, arg, count, &(cbRef));           \
-        } else {                                                        \
-            NAPI_ASSERT(env, false, "type mismatch");                   \
-        }                                                               \
-    } while (0);
-
-#define DRM_NAPI_ASSERT_NULLPTR_CHECK(env, result)       \
-    do {                                                    \
-        if ((result) == nullptr) {                          \
-            napi_get_undefined(env, &(result));             \
-            return result;                                  \
-        }                                                   \
-    } while (0);
-
-#define DRM_NAPI_CREATE_PROMISE(env, callbackRef, deferred, result)      \
-    do {                                                                    \
-        if ((callbackRef) == nullptr) {                                     \
-            napi_create_promise(env, &(deferred), &(result));               \
-        }                                                                   \
-    } while (0);
-
-#define DRM_NAPI_CREATE_RESOURCE_NAME(env, resource, resourceName)                       \
-    do {                                                                                    \
-        napi_create_string_utf8(env, resourceName, NAPI_AUTO_LENGTH, &(resource));          \
-    } while (0);
-
-#define DRM_NAPI_CHECK_NULL_PTR_RETURN_UNDEFINED(env, ptr, ret, message)     \
-    do {                                                            \
-        if ((ptr) == nullptr) {                                     \
-            HiLog::Error(LABEL, message);                           \
-            napi_get_undefined(env, &(ret));                        \
-            return ret;                                             \
-        }                                                           \
-    } while (0)
-
-#define DRM_NAPI_CHECK_NULL_PTR_RETURN_VOID(ptr, message)   \
-    do {                                           \
-        if ((ptr) == nullptr) {                    \
-            HiLog::Error(LABEL, message);          \
-            return;                                \
-        }                                          \
-    } while (0)
-
-#define DRM_NAPI_ASSERT_EQUAL(condition, errMsg)     \
-    do {                                    \
-        if (!(condition)) {                 \
-            HiLog::Error(LABEL, errMsg);    \
-            return;                         \
-        }                                   \
-    } while (0)
-
-#define DRM_NAPI_CHECK_AND_BREAK_LOG(cond, fmt, ...)            \
-    do {                                               \
-        if (!(cond)) {                                 \
-            DRM_ERR_LOG(fmt, ##__VA_ARGS__);         \
-            break;                                     \
-        }                                              \
-    } while (0)
-
-#define DRM_NAPI_CHECK_AND_RETURN_LOG(cond, fmt, ...)           \
-    do {                                               \
-        if (!(cond)) {                                 \
-            DRM_ERR_LOG(fmt, ##__VA_ARGS__);         \
-            return;                                    \
-        }                                              \
-    } while (0)
-
 namespace OHOS {
 namespace DrmStandard {
 /* Constants for array index */
@@ -118,6 +46,7 @@ const int32_t ARGS_ZERO = 0;
 const int32_t ARGS_ONE = 1;
 const int32_t ARGS_TWO = 2;
 const int32_t ARGS_THREE = 3;
+const int32_t ARGS_FOUR = 4;
 const int32_t SIZE = 100;
 
 struct AsyncContext {
@@ -145,16 +74,6 @@ enum DrmServiceError {
     DRM_HOST_ERROR,
     DRM_SERVICE_ERROR,
 };
-
-// static bool CheckError(napi_env env, int32_t retCode)
-// {
-//     if ((retCode != 0)) {
-//         std::string errorCode = std::to_string(retCode);
-//         napi_throw_error(env, errorCode.c_str(), "");
-//         return false;
-//     }
-//     return true;
-// }
 } // namespace DrmStandard
 } // namespace OHOS
 #endif /* DRM_NAPI_UTILS_H_ */

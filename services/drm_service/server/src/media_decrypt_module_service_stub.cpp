@@ -24,7 +24,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 MediaDecryptModuleServiceStub::MediaDecryptModuleServiceStub()
 {
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " Instances create", (POINTER_MASK & reinterpret_cast<uintptr_t>(this)));
@@ -35,14 +34,15 @@ MediaDecryptModuleServiceStub::~MediaDecryptModuleServiceStub()
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " Instances destroy", (POINTER_MASK & reinterpret_cast<uintptr_t>(this)));
 }
 
-int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option)
+int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
+    MessageOption &option)
 {
     DRM_INFO_LOG("OnRemoteRequest, cmd = %{public}u", code);
     if (data.ReadInterfaceToken() != GetDescriptor()) {
         DRM_ERR_LOG("MediaDecryptModuleServiceStub: ReadInterfaceToken failed");
-        return -1;   
+        return DRM_ERROR;
     }
-    switch(code) {
+    switch (code) {
         case DECRYPT_MODULE_DECRYPT_DATA: {
             DRM_INFO_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_DECRYPT_DATA enter.");
             IMediaDecryptModuleService::CryptInfo cryptInfo;
@@ -98,8 +98,7 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
         }
     }
-    return -1;
+    return DRM_ERROR;
 }
-
 } // DrmStandard
 } // OHOS

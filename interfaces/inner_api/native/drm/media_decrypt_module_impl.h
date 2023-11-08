@@ -26,19 +26,18 @@
 
 namespace OHOS{
 namespace DrmStandard{
-
 class MediaDecryptModuleImpl : public RefBase {
 public:
     explicit MediaDecryptModuleImpl(sptr<IMediaDecryptModuleService> &decryptModule);
     ~MediaDecryptModuleImpl();
     int32_t Release();
-    int32_t DecryptData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo, uint64_t srcBuffer, uint64_t dstBuffer);
+    int32_t DecryptData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo,
+        uint64_t srcBuffer, uint64_t dstBuffer);
     int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status);
 private:
     std::mutex mutex_;
     sptr<OHOS::DrmStandard::IMediaDecryptModuleService> serviceProxy_;
 };
-
 } // DrmStandard
 } // OHOS
 

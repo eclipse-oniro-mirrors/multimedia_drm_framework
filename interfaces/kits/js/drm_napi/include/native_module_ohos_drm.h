@@ -22,4 +22,5 @@
 #include "media_decrypt_module_napi.h"
 #include "drm_napi.h"
 #include "drm_enum_napi.h"
-#endif /* NATIVE_MODULE_OHOS_DRM_H_*/
+
+#endif /* NATIVE_MODULE_OHOS_DRM_H_ */

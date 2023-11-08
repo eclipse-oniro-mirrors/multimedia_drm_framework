@@ -219,8 +219,8 @@ napi_value MediaDecryptModuleNapi::DecryptData(napi_env env, napi_callback_info 
 {
     DRM_INFO_LOG("MediaDecryptModuleNapi::DecryptData enter.");
     napi_value result = nullptr;
-    size_t argc = 4; // 4 is argc number
-    napi_value argv[4] = {0}; // 4 is argc number
+    size_t argc = ARGS_FOUR;
+    napi_value argv[ARGS_FOUR] = {0};
     napi_value thisVar = nullptr;
     napi_status status;
     IMediaDecryptModuleService::CryptInfo cryptInfo;
@@ -250,7 +250,7 @@ napi_value MediaDecryptModuleNapi::DecryptData(napi_env env, napi_callback_info 
 
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
     napi_get_undefined(env, &result);
-    NAPI_ASSERT(env, argc <= 4, "requires 4 parameters maximum");
+    NAPI_ASSERT(env, argc <= ARGS_FOUR, "requires 4 parameters maximum");
     status = napi_get_value_bool(env, argv[PARAM0], &secureDecodrtState);
     if (status != napi_ok) {
         DRM_ERR_LOG("Could not able to read secureDecodrtState argument!");
@@ -260,19 +260,19 @@ napi_value MediaDecryptModuleNapi::DecryptData(napi_env env, napi_callback_info 
     napi_get_value_int32(env, type_property, &type);
     if (type == 0) {
         cryptInfo.type = IMediaDecryptModuleService::ALGTYPE_UNENCRYPTED;
-        DRM_DEBUG_LOG("cryptInfo.type:%{public}d.",(int)cryptInfo.type);
-    } else if (type == 1) {
+        DRM_DEBUG_LOG("cryptInfo.type:%{public}d.", (int)cryptInfo.type);
+    } else if (type == IMediaDecryptModuleService::ALGTYPE_AES_CTR) {
         cryptInfo.type = IMediaDecryptModuleService::ALGTYPE_AES_CTR;
-        DRM_DEBUG_LOG("cryptInfo.type:%{public}d.",(int)cryptInfo.type);
-    } else if (type == 2) {
+        DRM_DEBUG_LOG("cryptInfo.type:%{public}d.", (int)cryptInfo.type);
+    } else if (type == IMediaDecryptModuleService::ALGTYPE_AES_WV) {
         cryptInfo.type = IMediaDecryptModuleService::ALGTYPE_AES_WV;
-        DRM_DEBUG_LOG("cryptInfo.type:%{public}d.",(int)cryptInfo.type);
-    } else if (type == 3) {
+        DRM_DEBUG_LOG("cryptInfo.type:%{public}d.", (int)cryptInfo.type);
+    } else if (type == IMediaDecryptModuleService::ALGTYPE_AES_CBC) {
         cryptInfo.type = IMediaDecryptModuleService::ALGTYPE_AES_CBC;
-        DRM_DEBUG_LOG("cryptInfo.type:%{public}d.",(int)cryptInfo.type);
-    } else if (type == 4) {
+        DRM_DEBUG_LOG("cryptInfo.type:%{public}d.", (int)cryptInfo.type);
+    } else if (type == IMediaDecryptModuleService::ALGTYPE_SM4_CBC) {
         cryptInfo.type = IMediaDecryptModuleService::ALGTYPE_SM4_CBC;
-        DRM_DEBUG_LOG("cryptInfo.type:%{public}d.",(int)cryptInfo.type);
+        DRM_DEBUG_LOG("cryptInfo.type:%{public}d.", (int)cryptInfo.type);
     }
 
     napi_get_named_property(env, argv[PARAM1], "keyId", &keyId_property);
@@ -337,7 +337,8 @@ napi_value MediaDecryptModuleNapi::DecryptData(napi_env env, napi_callback_info 
     status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&decryptModuleNapi));
     if (status == napi_ok && decryptModuleNapi != nullptr) {
         if (decryptModuleNapi->mediaDecryptModuleImpl_ != nullptr) {
-            decryptModuleNapi->mediaDecryptModuleImpl_->DecryptData(secureDecodrtState, cryptInfo, srcBuffer, dstBuffer);
+            decryptModuleNapi->mediaDecryptModuleImpl_->DecryptData(secureDecodrtState, cryptInfo, srcBuffer,
+                dstBuffer);
         } else {
             DRM_ERR_LOG("mediaDecryptModuleImpl_ == nullptr.");
             return nullptr;

@@ -34,18 +34,16 @@ public:
     static napi_value Release(napi_env env, napi_callback_info info);
     static napi_value RequireSecureDecoderModule(napi_env env, napi_callback_info info);
     static napi_value DecryptData(napi_env env, napi_callback_info info);
-private: 
+private:
     static napi_value MediaDecryptModuleNapiConstructor(napi_env env, napi_callback_info info);
-    static void MediaDecryptModuleNapiDestructor(napi_env env, void *nativeObject, void *finalize); 
+    static void MediaDecryptModuleNapiDestructor(napi_env env, void *nativeObject, void *finalize);
 
     napi_env env_;
     napi_ref wrapper_;
     static thread_local napi_ref sConstructor_;
     static thread_local sptr<MediaDecryptModuleImpl> sMediaDecryptModuleImpl_;
     sptr<MediaDecryptModuleImpl> mediaDecryptModuleImpl_;
-
 };
-
 } // DrmStandard   
 } // OHOS
 
