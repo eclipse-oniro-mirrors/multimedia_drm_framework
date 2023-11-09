@@ -49,12 +49,13 @@ public:
     static napi_value GetOfflineKeyState(napi_env env, napi_callback_info info);
     static napi_value SetEventCallback(napi_env env, napi_callback_info info);
     static napi_value UnsetEventCallback(napi_env env, napi_callback_info info);
-    static bool SetKeySessionNativeProperty(napi_env env, napi_value obj, const std::string &name, sptr<KeySessionImpl> keySessionImpl);
+    static bool SetKeySessionNativeProperty(napi_env env, napi_value obj, const std::string &name,
+        sptr<KeySessionImpl> keySessionImpl);
     void SetEventCallbackReference(const std::string eventType, sptr<CallBackPair> callbackPair);
     void ClearEventCallbackReference(const std::string eventType);
-private: 
+private:
     static napi_value KeySessionNapiConstructor(napi_env env, napi_callback_info info);
-    static void KeySessionNapiDestructor(napi_env env, void *nativeObject, void *finalize); 
+    static void KeySessionNapiDestructor(napi_env env, void *nativeObject, void *finalize);
     napi_env env_;
     napi_ref wrapper_;
     static thread_local napi_ref sConstructor_;
@@ -63,7 +64,7 @@ private:
     sptr<KeySessionImpl> keySessionImpl_;
     sptr<KeySessionCallbackNapi> keySessionCallbackNapi_;
 };
-} // DrmStandard   
+} // DrmStandard
 } // OHOS
 
 #endif // OHOS_DRM_KEY_SESSION_H_

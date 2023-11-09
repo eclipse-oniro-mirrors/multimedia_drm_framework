@@ -15,7 +15,6 @@
 #include "key_session_impl.h"
 #include "drm_log.h"
 #include "drm_error_code.h"
-#include "common_napi.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -146,17 +145,16 @@ sptr<MediaDecryptModuleImpl> KeySessionImpl::GetDecryptModule()
         }
         retCode = keySessionServiceProxy_->CreateMediaDecryptModule(decryptModuleProxy);
         if (retCode == DRM_OK) {
-            if (decryptModuleProxy != nullptr) {
-                localDecryptModuleImpl = new(std::nothrow) MediaDecryptModuleImpl(decryptModuleProxy);
-                if (localDecryptModuleImpl == nullptr) {
-                    DRM_ERR_LOG("Failed to alloc new MediaDecryptModuleImpl");
-                    return nullptr;
-                } else {
-                    mediaDecryptModuleImpl_ = localDecryptModuleImpl;
-                }
-            } else {
+            if (decryptModuleProxy == nullptr) {
                 DRM_ERR_LOG("Failed to Create MediaDecryptModuleImpl because decryptModuleProxy nullptr");
                 return nullptr;
+            }
+            localDecryptModuleImpl = new(std::nothrow) MediaDecryptModuleImpl(decryptModuleProxy);
+            if (localDecryptModuleImpl == nullptr) {
+                DRM_ERR_LOG("Failed to alloc new MediaDecryptModuleImpl");
+                return nullptr;
+            } else {
+                mediaDecryptModuleImpl_ = localDecryptModuleImpl;
             }
         } else {
             DRM_ERR_LOG("Failed to keySessionServiceProxy_->CreateMediaDecryptModule!, %{public}d", retCode);
@@ -339,7 +337,7 @@ int32_t KeySessionStatusCallback::OnKeySessionKeyExpired(const KeyStatus status)
     if (keySessionImpl_ != nullptr) {
         sptr<KeySessionImplCallback> callback = keySessionImpl_->GetKeySessionApplicationCallback();
         if (callback != nullptr) {
-            callback->OnKeySessionKeyExpired(DrmEvent::DRM_EVENT_KEY_EXPIRED, status);
+            callback->OnKeySessionKeyExpired("keyExpired", status);
             return DRM_SUCCESS;
         }
     }
@@ -353,7 +351,7 @@ int32_t KeySessionStatusCallback::OnKeySessionReclaimed(const SessionStatus stat
     if (keySessionImpl_ != nullptr) {
         sptr<KeySessionImplCallback> callback = keySessionImpl_->GetKeySessionApplicationCallback();
         if (callback != nullptr) {
-            callback->OnKeySessionReclaimed(DrmEvent::DRM_EVENT_KEY_SESSION_RECLAIMED, status);
+            callback->OnKeySessionReclaimed("keySessionReclaimed", status);
             return DRM_SUCCESS;
         }
     }

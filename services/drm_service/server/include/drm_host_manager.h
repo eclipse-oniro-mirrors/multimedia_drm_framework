@@ -29,7 +29,7 @@ namespace OHOS {
 namespace DrmStandard {
 class DrmHostManager : public virtual RefBase, public HDI::ServiceManager::V1_0::ServStatListenerStub {
 public:
-    class StatusCallback{
+    class StatusCallback {
     public:
         virtual ~StatusCallback() = default;
     };
@@ -55,4 +55,4 @@ private:
 } // DrmStandard
 } // OHOS
 
-#endif //OHOS_DRM_DRM_HOST_MANAGER_H
+#endif // OHOS_DRM_DRM_HOST_MANAGER_H

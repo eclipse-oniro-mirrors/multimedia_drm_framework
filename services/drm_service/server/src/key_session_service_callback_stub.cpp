@@ -48,8 +48,7 @@ int32_t KeySessionServiceCallbackStub::HandleOnKeySessionKeyExpired(MessageParce
 {
     int32_t status = data.ReadInt32();
     DRM_INFO_LOG("KeySessionServiceCallbackStub::HandleOnKeySessionKeyExpired called status = %{public}d", status);
-    switch (status)
-    {
+    switch (status) {
         case KEY_STATUS_NORMAL:
             return OnKeySessionKeyExpired(KEY_STATUS_NORMAL);
         case KEY_STATUS_EXPIRED:
@@ -64,8 +63,7 @@ int32_t KeySessionServiceCallbackStub::HandleOnKeySessionReclaimed(MessageParcel
 {
     int32_t status = data.ReadInt32();
     DRM_INFO_LOG("KeySessionServiceCallbackStub::HandleOnKeySessionReclaimed called status = %{public}d", status);
-    switch (status)
-    {
+    switch (status) {
         case SESSION_STATUS_NORMAL:
             return OnKeySessionReclaimed(SESSION_STATUS_NORMAL);
         case SESSION_STATUS_RECLAIMED:

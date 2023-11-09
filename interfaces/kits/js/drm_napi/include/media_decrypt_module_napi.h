@@ -44,7 +44,7 @@ private:
     static thread_local sptr<MediaDecryptModuleImpl> sMediaDecryptModuleImpl_;
     sptr<MediaDecryptModuleImpl> mediaDecryptModuleImpl_;
 };
-} // DrmStandard   
+} // DrmStandard
 } // OHOS
 
 

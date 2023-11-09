@@ -22,8 +22,7 @@
 #include "xcollie/xcollie_define.h"
 
 namespace OHOS {
-namespace DrmStandard
-{
+namespace DrmStandard {
 MediaKeySystemServiceStub::MediaKeySystemServiceStub()
 {
     deathRecipientMap_.clear();
@@ -41,9 +40,8 @@ int MediaKeySystemServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &dat
     DRM_INFO_LOG("OnRemoteRequest, cmd = %{public}u", code);
     if (data.ReadInterfaceToken() != GetDescriptor()) {
         DRM_ERR_LOG("MediaKeySystemServiceStub ReadInterfaceToken failed");
-        return -1;   
+        return -1;
     }
-
     switch (code) {
         case MEDIA_KEY_SYSTEM_CREATE_KEY_SESSION: {
             DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_CREATE_KEY_SESSION enter.");
@@ -98,7 +96,7 @@ int MediaKeySystemServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &dat
         }
         case MEDIA_KEY_SYSTEM_GETSECURITYLEVEL: {
             DRM_INFO_LOG("KeySessionServiceStub MEDIA_KEY_SYSTEM_GETSECURITYLEVEL enter.");
-            IKeySessionService::SecurityLevel securityLevel = IKeySessionService::SECURITY_LEVEL_UNKNOWN;            
+            IKeySessionService::SecurityLevel securityLevel = IKeySessionService::SECURITY_LEVEL_UNKNOWN;
             int32_t ret = GetSecurityLevel(&securityLevel);
             if (!reply.WriteInt32(securityLevel)) {
                 DRM_ERR_LOG("KeySessionServiceStub Write GetSecurityLevel failed");

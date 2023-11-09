@@ -44,8 +44,8 @@ int32_t MediaDecryptModuleImpl::Release()
     return errCode;
 }
 
-int32_t MediaDecryptModuleImpl::DecryptData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo, uint64_t srcBuffer,
-    uint64_t dstBuffer)
+int32_t MediaDecryptModuleImpl::DecryptData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo,
+    uint64_t srcBuffer, uint64_t dstBuffer)
 {
     DRM_INFO_LOG("MediaDecryptModuleImpl::DecryptData enter");
     std::lock_guard<std::mutex> lock(mutex_);

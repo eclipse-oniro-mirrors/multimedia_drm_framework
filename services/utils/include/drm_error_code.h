@@ -20,7 +20,7 @@ namespace OHOS {
 namespace DrmStandard {
 /*
  * @brief drm remote request code for IPC.
- * 
+ *
  * @since 1.0
  * @version 1.0
 */

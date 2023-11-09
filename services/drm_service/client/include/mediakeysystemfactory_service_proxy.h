@@ -28,7 +28,8 @@ public:
     virtual ~MediaKeySystemFactoryServiceProxy() = default;
     int32_t IsMediaKeySystemSupported(std::string &uuid, bool *isSurpported) override;
     int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, bool *isSurpported) override;
-    int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, int32_t securityLevel, bool *isSurpported) override;
+    int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, int32_t securityLevel,
+        bool *isSurpported) override;
     int32_t CreateMediaKeySystem(std::string &uuid) override;
 
 private:

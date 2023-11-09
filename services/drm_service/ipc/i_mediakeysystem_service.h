@@ -41,7 +41,7 @@ public:
         HDCP_NONE,
         HDCP_V1,
         HDCP_V2,
-        HDCP_V2_1, 
+        HDCP_V2_1,
         HDCP_V2_2,
         HDCP_V2_3,
         HDCP_NO_OUTPUT = 0x7fff,
@@ -60,11 +60,13 @@ public:
 
     virtual ~IMediaKeySystemService() = default;
     virtual int32_t Release() = 0;
-    virtual int32_t GenerateKeySystemRequest(RequestType type, std::vector<uint8_t> &request, std::string &defaultUrl) = 0;
+    virtual int32_t GenerateKeySystemRequest(RequestType type, std::vector<uint8_t> &request,
+        std::string &defaultUrl) = 0;
     virtual int32_t ProcessKeySystemResponse(RequestType type, const std::vector<uint8_t> &response) = 0;
     virtual int32_t SetConfiguration(ConfigType type, std::string &propertyName, std::string &value) = 0;
     virtual int32_t GetConfiguration(ConfigType type, std::string &propertyName, std::string &value) = 0;
-    virtual int32_t CreateKeySession(IKeySessionService::SecurityLevel securityLevel, sptr<IKeySessionService> &keySessionProxy) = 0;
+    virtual int32_t CreateKeySession(IKeySessionService::SecurityLevel securityLevel,
+        sptr<IKeySessionService> &keySessionProxy) = 0;
     virtual int32_t GetMetric(std::vector<IMediaKeySystemService::KeyValue> &infoMap) = 0;
     virtual int32_t GetSecurityLevel(IKeySessionService::SecurityLevel *securityLevel) = 0;
 

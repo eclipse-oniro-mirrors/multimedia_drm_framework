@@ -27,8 +27,8 @@
 #include "drm_error_code.h"
 #include "drm_napi_utils.h"
 
-namespace OHOS{
-namespace DrmStandard{
+namespace OHOS {
+namespace DrmStandard {
 class MediaKeySystemImpl : public RefBase {
 public:
     explicit MediaKeySystemImpl(sptr<IMediaKeySystemService> &mediaKeysystem);
@@ -48,5 +48,5 @@ private:
     sptr<OHOS::DrmStandard::IMediaKeySystemService> serviceProxy_;
 };
 } // DrmStandard
-} //OHOS
+} // OHOS
 #endif // OHOS_DRM_MEDIA_KEY_SYSTEMP_IMPL_H

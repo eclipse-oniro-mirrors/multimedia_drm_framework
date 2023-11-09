@@ -21,7 +21,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 class DrmDeathRecipient : public IRemoteObject::DeathRecipient, public NoCopyable {
 public:
     explicit DrmDeathRecipient(pid_t pid) : pid_(pid) {}
@@ -42,7 +41,7 @@ private:
     pid_t pid_ = 0;
     NotifyCbFunc diedCb_ = nullptr;
 };
-} // DrmStandard   
+} // DrmStandard
 } // OHOS
 
 #endif

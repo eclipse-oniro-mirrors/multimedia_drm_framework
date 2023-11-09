@@ -88,7 +88,7 @@ int32_t MediaKeySystemServiceProxy::ProcessKeySystemResponse(IMediaKeySystemServ
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
-    
+
     if (!data.WriteInterfaceToken(GetDescriptor())) {
         DRM_ERR_LOG("MediaKeySystemServiceProxy ProcessKeySystemResponse Write interface token failed");
         return IPC_PROXY_ERR;
@@ -281,6 +281,5 @@ int32_t MediaKeySystemServiceProxy::GetMetric(std::vector<IMediaKeySystemService
     DRM_INFO_LOG("MediaKeySystemServiceProxy::GetMetric exit.");
     return reply.ReadInt32();
 }
-
 } // DrmStandard
 } // OHOS

@@ -29,7 +29,8 @@ public:
     virtual ~IMediaKeySystemFactoryService() = default;
     virtual int32_t IsMediaKeySystemSupported(std::string &uuid, bool *isSurpported) = 0;
     virtual int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, bool *isSurpported) = 0;
-    virtual int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, int32_t securityLevel, bool *isSurpported) = 0;
+    virtual int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, int32_t securityLevel,
+        bool *isSurpported) = 0;
     virtual int32_t CreateMediaKeySystem(std::string &uuid) = 0;
     DECLARE_INTERFACE_DESCRIPTOR(u"IMediaKeySystemSystemFactoryService");
 };

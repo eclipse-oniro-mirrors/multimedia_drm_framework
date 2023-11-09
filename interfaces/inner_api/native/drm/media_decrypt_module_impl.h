@@ -24,8 +24,8 @@
 #include "drm_napi_utils.h"
 #include <cstring>
 
-namespace OHOS{
-namespace DrmStandard{
+namespace OHOS {
+namespace DrmStandard {
 class MediaDecryptModuleImpl : public RefBase {
 public:
     explicit MediaDecryptModuleImpl(sptr<IMediaDecryptModuleService> &decryptModule);

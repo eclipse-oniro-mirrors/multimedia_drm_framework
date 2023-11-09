@@ -32,4 +32,4 @@ DRM组件目前主要提供以下功能：
 ## 使用说明
 
 ## 相关仓
-[multimedia\_drm\_framework](https://gitee.com/openharmony-sig/multimedia_drm_framework/tree/master)
+[multimedia\_drm\_framework](https://gitee.com/openharmony-sig/multimedia_drm_framework)

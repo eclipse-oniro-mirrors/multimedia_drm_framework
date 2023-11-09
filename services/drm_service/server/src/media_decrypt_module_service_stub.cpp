@@ -68,8 +68,8 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
             uint64_t dstBuffer = data.ReadFileDescriptor();
             int32_t ret = DecryptData(secureDecodrtState, cryptInfo, srcBuffer, dstBuffer);
             if (ret != 0) {
-                 DRM_ERR_LOG("DecryptData faild.");
-                 return ret;
+                DRM_ERR_LOG("DecryptData faild.");
+                return ret;
             }
             DRM_INFO_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_DECRYPT_DATA exit.");
             return ret;

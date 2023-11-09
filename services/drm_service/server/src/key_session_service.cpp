@@ -148,6 +148,5 @@ void KeySessionService::OnKeySessionReclaimed(const SessionStatus status)
 {
     DRM_INFO_LOG("KeySessionService::OnKeySessionReclaimed status %{public}d.", status);
 }
-
 } // DrmStandard 
 } // OHOS
