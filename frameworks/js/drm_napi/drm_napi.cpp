@@ -116,9 +116,9 @@ napi_value DrmNapi::CreateMediaKeySystemInstance(napi_env env, napi_callback_inf
 {
     DRM_INFO_LOG("DrmNapi CreateMediaKeySystemInstance enter.");
     napi_value result = nullptr;
-    result = MediaKeySystemNapi::CreateMediaKeySystemInstance(env,info);
+    result = MediaKeySystemNapi::CreateMediaKeySystemInstance(env, info);
     DRM_INFO_LOG("DrmNapi CreateMediaKeySystemInstance exit.");
     return result;
 }
-} //namespace OHOS 
-} //namespace DrmStandard
+} // namespace OHOS
+} // namespace DrmStandard

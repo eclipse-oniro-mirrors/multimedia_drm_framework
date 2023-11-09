@@ -32,11 +32,13 @@ public:
         }
     }
 
-    napi_env GetEnv() {
+    napi_env GetEnv()
+    {
         return env_;
     }
 
-    napi_ref GetCallback() {
+    napi_ref GetCallback()
+    {
         return callback_;
     }
 private:

@@ -27,8 +27,8 @@
 #include "drm_error_code.h"
 #include "drm_napi_utils.h"
 
-namespace OHOS{
-namespace DrmStandard{
+namespace OHOS {
+namespace DrmStandard {
 class MediaKeySystemFactoryImpl : public RefBase {
 public:
     MediaKeySystemFactoryImpl();
@@ -48,5 +48,5 @@ private:
     sptr<DrmDeathRecipient> deathRecipient_;
 };
 } // DrmStandard
-} //OHOS
+} // OHOS
 #endif // OHOS_DRM_MEDIA_KEY_SYSTEMP_FACTORY_IMPL_H

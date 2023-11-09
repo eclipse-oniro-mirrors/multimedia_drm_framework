@@ -33,10 +33,10 @@ int KeySessionServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
 
     if (data.ReadInterfaceToken() != GetDescriptor()) {
         DRM_ERR_LOG("KeySessionServiceStub: ReadInterfaceToken failed");
-        return errCode;   
+        return errCode;
     }
 
-    switch(code) {
+    switch (code) {
         case CREATE_MEDIA_DECRYPT_MODULE: {
             DRM_INFO_LOG("KeySessionServiceStub GET_MEDIA_DECRYPT_MODULE enter.");
             sptr<IMediaDecryptModuleService> decryptModuleServiceProxy = nullptr;
@@ -153,8 +153,8 @@ int KeySessionServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
             std::vector<IKeySessionService::KeyValue> infoMap;
             int32_t ret = CheckLicenseStatus(infoMap);
             if (ret != 0) {
-                 DRM_ERR_LOG("CheckLicenseStatus faild.");
-                 return ret;
+                DRM_ERR_LOG("CheckLicenseStatus faild.");
+                return ret;
             }
             reply.WriteInt32(infoMap.size());
             for (auto info : infoMap) {
@@ -197,7 +197,7 @@ int KeySessionServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
                 if (!reply.WriteBuffer(keyId.data(), keyId.size())) {
                     DRM_ERR_LOG("KeySessionServiceProxy GenerateLicenseRequest Write keyIds failed");
                     return IPC_STUB_WRITE_PARCEL_ERR;
-               }
+                }
             }
             DRM_INFO_LOG("KeySessionServiceStub MEDIA_KEY_SESSION_GET_OFFLINEKEYIDS exit.");
             return ret;
@@ -218,8 +218,8 @@ int KeySessionServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
             IKeySessionService::OfflineKeyState state;
             int32_t ret = GetOfflineKeyState(keyId, state);
             if (ret != DRM_OK) {
-               DRM_ERR_LOG("MEDIA_KEY_SESSION_GET_OFFLINEKEY_STATE failed");
-               return ret;
+                DRM_ERR_LOG("MEDIA_KEY_SESSION_GET_OFFLINEKEY_STATE failed");
+                return ret;
             }
             if (!reply.WriteInt32((int32_t)state)) {
                 DRM_ERR_LOG("KeySessionServiceStub Write state failed");

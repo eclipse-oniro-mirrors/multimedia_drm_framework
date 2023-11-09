@@ -55,7 +55,7 @@ public:
     int32_t CloseMediaKeySystemService(sptr<MediaKeySystemService> mediaKeySystemService) override;
 private:
 };
-} // DrmStandard 
+} // DrmStandard
 } // OHOS
 
 #endif // OHOS_DRM_MEDIA_KEY_SYSTEM_FACTORY_SERVICE_H

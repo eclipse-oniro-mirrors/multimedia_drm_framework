@@ -30,7 +30,8 @@ MediaKeySystemService::MediaKeySystemService()
     DRM_DEBUG_LOG("~MediaKeySystemService");
 }
 
-MediaKeySystemService::~MediaKeySystemService() {
+MediaKeySystemService::~MediaKeySystemService()
+{
     DRM_DEBUG_LOG("~MediaKeySystemService");
 }
 
@@ -48,7 +49,7 @@ int32_t MediaKeySystemService::Release()
     return DRM_OK;
 }
 
-int32_t MediaKeySystemService::SetMediaKeySystemServiceOperatorsCallback(wptr<IMediaKeySystemServiceOperatorsCallback> callback)
+int32_t MediaKeySystemService::SetMediaKeySystemCallback(wptr<IMediaKeySystemServiceOperatorsCallback> callback)
 {
     return DRM_OK;
 }

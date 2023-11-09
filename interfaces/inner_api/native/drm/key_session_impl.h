@@ -71,7 +71,8 @@ public:
     explicit KeySessionStatusCallback(const sptr<KeySessionImpl> &KeySessionImpl)
         : keySessionImpl_(KeySessionImpl) {}
 
-    ~KeySessionStatusCallback() {
+    ~KeySessionStatusCallback()
+    {
         keySessionImpl_ = nullptr;
     }
 

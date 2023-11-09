@@ -15,17 +15,16 @@
 #ifndef OHOS_DRM_MediaDecryptModuleService_H_
 #define OHOS_DRM_MediaDecryptModuleService_H_
 
-#include "media_decrypt_module_service_stub.h"
+#include <iostream>
+#include <refbase.h>
 #include "drm_host_manager.h"
 #include "drm_log.h"
 #include "drm_error_code.h"
-#include <iostream>
-#include <refbase.h>
+#include "media_decrypt_module_service_stub.h"
 
 namespace OHOS {
 namespace DrmStandard {
-class MediaDecryptModuleService : public MediaDecryptModuleServiceStub
-{
+class MediaDecryptModuleService : public MediaDecryptModuleServiceStub {
 public:
     MediaDecryptModuleService();
     ~MediaDecryptModuleService();

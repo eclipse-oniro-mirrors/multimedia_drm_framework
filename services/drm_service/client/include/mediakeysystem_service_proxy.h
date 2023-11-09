@@ -27,11 +27,16 @@ public:
     explicit MediaKeySystemServiceProxy(const sptr<IRemoteObject> &impl);
     virtual ~MediaKeySystemServiceProxy() = default;
     int32_t Release() override;
-    int32_t GenerateKeySystemRequest(IMediaKeySystemService::RequestType type, std::vector<uint8_t> &request, std::string &defaultUrl) override;
-    int32_t ProcessKeySystemResponse(IMediaKeySystemService::RequestType type, const std::vector<uint8_t> &response) override;
-    int32_t SetConfiguration(IMediaKeySystemService::ConfigType type, std::string &propertyName, std::string &value) override;
-    int32_t GetConfiguration(IMediaKeySystemService::ConfigType configType, std::string &propertyName, std::string &value) override;
-    int32_t CreateKeySession(IKeySessionService::SecurityLevel securityLevel, sptr<IKeySessionService> &keySessionProxy) override;
+    int32_t GenerateKeySystemRequest(IMediaKeySystemService::RequestType type, std::vector<uint8_t> &request,
+        std::string &defaultUrl) override;
+    int32_t ProcessKeySystemResponse(IMediaKeySystemService::RequestType type,
+        const std::vector<uint8_t> &response) override;
+    int32_t SetConfiguration(IMediaKeySystemService::ConfigType type, std::string &propertyName,
+        std::string &value) override;
+    int32_t GetConfiguration(IMediaKeySystemService::ConfigType configType, std::string &propertyName,
+        std::string &value) override;
+    int32_t CreateKeySession(IKeySessionService::SecurityLevel securityLevel,
+        sptr<IKeySessionService> &keySessionProxy) override;
     int32_t GetMetric(std::vector<IMediaKeySystemService::KeyValue> &infoMap) override;
     int32_t GetSecurityLevel(IKeySessionService::SecurityLevel *securityLevel) override;
 private:

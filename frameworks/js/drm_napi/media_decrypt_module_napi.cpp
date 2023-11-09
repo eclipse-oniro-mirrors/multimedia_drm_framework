@@ -19,7 +19,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 thread_local napi_ref MediaDecryptModuleNapi::sConstructor_ = nullptr;
 thread_local sptr<MediaDecryptModuleImpl> MediaDecryptModuleNapi::sMediaDecryptModuleImpl_ = nullptr;
 
@@ -148,7 +147,7 @@ napi_value MediaDecryptModuleNapi::GetDecryptModule(napi_env env, sptr<MediaDecr
 napi_value MediaDecryptModuleNapi::Release(napi_env env, napi_callback_info info)
 {
     DRM_INFO_LOG("MediaDecryptModuleNapi::Release enter.");
-    int32_t currentPid = IPCSkeleton::GetCallingPid();     
+    int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaDecryptModuleNapi GetCallingPID: %{public}d", currentPid);
 
     napi_status status;
@@ -191,17 +190,15 @@ napi_value MediaDecryptModuleNapi::RequireSecureDecoderModule(napi_env env, napi
         MediaDecryptModuleNapi* decryptModuleNapi = nullptr;
         status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&decryptModuleNapi));
         if (status == napi_ok && decryptModuleNapi != nullptr) {
-            if (decryptModuleNapi->mediaDecryptModuleImpl_ != nullptr) {
-                decryptModuleNapi->mediaDecryptModuleImpl_->RequireSecureDecoderModule(mimeType, &statusValue);
-                status = napi_get_boolean(env, statusValue, &result);
-                DRM_INFO_LOG("napi_get_boolean call success!,statusValue:%{public}d.", statusValue);
-                if (status != napi_ok) {
-                    DRM_ERR_LOG("napi_get_boolean call faild!");
-                    return nullptr;
-                }
-            } else {
-                    DRM_ERR_LOG("mediaDecryptModuleImpl_ == nullptr.");
-                    return nullptr;
+            if (decryptModuleNapi->mediaDecryptModuleImpl_ == nullptr) {
+                DRM_ERR_LOG("mediaDecryptModuleImpl_ == nullptr.");
+                return nullptr;
+            }
+            decryptModuleNapi->mediaDecryptModuleImpl_->RequireSecureDecoderModule(mimeType, &statusValue);
+            status = napi_get_boolean(env, statusValue, &result);
+            if (status != napi_ok) {
+                DRM_ERR_LOG("napi_get_boolean call faild!");
+                return nullptr;
             }
         } else {
             DRM_ERR_LOG("MediaDecryptModuleNapi DecryptData call Failed!");
@@ -217,7 +214,6 @@ napi_value MediaDecryptModuleNapi::RequireSecureDecoderModule(napi_env env, napi
 
 napi_value MediaDecryptModuleNapi::DecryptData(napi_env env, napi_callback_info info)
 {
-    DRM_INFO_LOG("MediaDecryptModuleNapi::DecryptData enter.");
     napi_value result = nullptr;
     size_t argc = ARGS_FOUR;
     napi_value argv[ARGS_FOUR] = {0};
@@ -328,7 +324,7 @@ napi_value MediaDecryptModuleNapi::DecryptData(napi_env env, napi_callback_info 
         DRM_ERR_LOG("Could not able to read srcBuffer argument!");
         return nullptr;
     }
-    status = napi_get_value_int32(env, argv[3], &dstBuffer);
+    status = napi_get_value_int32(env, argv[PARAM3], &dstBuffer);
     if (status != napi_ok) {
         DRM_ERR_LOG("Could not able to read dstBuffer argument!");
         return nullptr;
@@ -346,7 +342,6 @@ napi_value MediaDecryptModuleNapi::DecryptData(napi_env env, napi_callback_info 
     } else {
         DRM_ERR_LOG("MediaDecryptModuleNapi DecryptData call Failed!");
     }
-    DRM_INFO_LOG("MediaDecryptModuleNapi::DecryptData exit.");
     return result;
 }
 } // DrmStandardr

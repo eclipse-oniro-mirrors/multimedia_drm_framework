@@ -118,11 +118,8 @@ napi_value MediaKeySystemNapi::CreateMediaKeySystemInstance(napi_env env, napi_c
         size_t argc = ARGS_ONE;
         napi_value argv[ARGS_ONE] = {0};
         napi_value thisVar = nullptr;
-
         DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
-
         napi_get_undefined(env, &result);
-
         std::string uuid;
         char uuidBuffer[PATH_MAX];
         size_t uuidBufferLen = 0;
@@ -204,7 +201,6 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
         return nullptr;
     }
     std::string uuid = std::string(buffer);
-    memset(buffer, '\0', PATH_MAX);
     // search by uuid
     if (argc == ARGS_ONE) {
         bool isSurpportted = MediaKeySystemFactoryImpl::GetInstance()->IsMediaKeySystemSupported(uuid);
@@ -217,7 +213,6 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
         return nullptr;
     }
     std::string mimeType = std::string(buffer);
-    memset(buffer, '\0', PATH_MAX);
     // search by uuid and mineType
     if (argc == ARGS_TWO) {
         bool isSurpportted = MediaKeySystemFactoryImpl::GetInstance()->IsMediaKeySystemSupported(uuid, mimeType);
@@ -233,25 +228,25 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
     }
     IKeySessionService::SecurityLevel securityLevel = IKeySessionService::SECURITY_LEVEL_UNKNOWN;
     switch (jsSecurityLevel) {
-        case 0:
+        case IKeySessionService::SECURITY_LEVEL_UNKNOWN:
             securityLevel = IKeySessionService::SECURITY_LEVEL_UNKNOWN;
             break;
-        case 1:
+        case IKeySessionService::SECURITY_LEVEL_SW_CRYPTO:
             securityLevel = IKeySessionService::SECURITY_LEVEL_SW_CRYPTO;
             break;
-        case 2:
+        case IKeySessionService::SECURITY_LEVEL_SW_DECODE:
             securityLevel = IKeySessionService::SECURITY_LEVEL_SW_DECODE;
             break;
-        case 3:
+        case IKeySessionService::SECURITY_LEVEL_HW_CRYPTO:
             securityLevel = IKeySessionService::SECURITY_LEVEL_HW_CRYPTO;
             break;
-        case 4:
+        case IKeySessionService::SECURITY_LEVEL_HW_DECODE:
             securityLevel = IKeySessionService::SECURITY_LEVEL_HW_DECODE;
             break;
-        case 5:
+        case IKeySessionService::SECURITY_LEVEL_HW_ALL:
             securityLevel = IKeySessionService::SECURITY_LEVEL_HW_ALL;
             break;
-        case 6:
+        case IKeySessionService::SECURITY_LEVEL_MAX:
             securityLevel = IKeySessionService::SECURITY_LEVEL_MAX;
             break;
         default:
@@ -261,7 +256,8 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
 
     // search by uuid, mineType and securityLevel
     if (argc == ARGS_THREE) {
-        bool isSurpportted = MediaKeySystemFactoryImpl::GetInstance()->IsMediaKeySystemSupported(uuid, mimeType, securityLevel);
+        bool isSurpportted =
+            MediaKeySystemFactoryImpl::GetInstance()->IsMediaKeySystemSupported(uuid, mimeType, securityLevel);
         napi_get_boolean(env, isSurpportted, &result);
         return result;
     }
@@ -292,7 +288,6 @@ napi_value MediaKeySystemNapi::CreateKeySession(napi_env env, napi_callback_info
     // not check the securityLevel is valid.
     IKeySessionService::SecurityLevel securityLevel = static_cast<IKeySessionService::SecurityLevel>(jsSecurityLevel);
     status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&mediaKeySystemNapi));
-
     if (status == napi_ok && mediaKeySystemNapi != nullptr) {
         int ret = mediaKeySystemNapi->keySystem_->CreateKeySession((IKeySessionService::SecurityLevel)securityLevel,
             &keySessionImpl);

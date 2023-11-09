@@ -40,6 +40,7 @@ namespace DrmStandard {
 const int32_t PARAM0 = 0;
 const int32_t PARAM1 = 1;
 const int32_t PARAM2 = 2;
+const int32_t PARAM3 = 3;
 
 /* Constants for array size */
 const int32_t ARGS_ZERO = 0;

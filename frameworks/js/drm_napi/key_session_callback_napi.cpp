@@ -101,5 +101,5 @@ void KeySessionCallbackNapi::OnKeySessionReclaimed(const std::string eventType, 
     CHECK_AND_RETURN_LOG(state == napi_ok,
         "%{public}s failed to napi_call_function", eventType.c_str());
 }
-}    
-}
+} // namespace DrmStandard
+} // namespace OHOS

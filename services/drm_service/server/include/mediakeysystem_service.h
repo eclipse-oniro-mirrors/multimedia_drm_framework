@@ -43,7 +43,7 @@ public:
     explicit MediaKeySystemService();
     ~MediaKeySystemService() override;
     int32_t Release() override;
-    int32_t SetMediaKeySystemServiceOperatorsCallback(wptr<IMediaKeySystemServiceOperatorsCallback> callback);
+    int32_t SetMediaKeySystemCallback(wptr<IMediaKeySystemServiceOperatorsCallback> callback);
     int32_t CloseMediaKeySystemServiceByCallback();
     
     int32_t GenerateKeySystemRequest(IMediaKeySystemService::RequestType type, std::vector<uint8_t> &request,
@@ -68,7 +68,7 @@ public:
     virtual ~IMediaKeySystemServiceOperatorsCallback() = default;
     virtual int32_t CloseMediaKeySystemService(sptr<MediaKeySystemService> mediaKeySystemService) = 0;
 };
-} // DrmStandard 
+} // DrmStandard
 } // OHOS
 
 #endif // OHOS_DRM_MEDIA_KEY_SYSTEM_SERVICE_H

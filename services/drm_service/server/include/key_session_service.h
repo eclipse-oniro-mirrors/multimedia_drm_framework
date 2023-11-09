@@ -57,7 +57,7 @@ public:
     virtual ~IKeySessionServiceOperatorsCallback() = default;
     virtual int32_t CloseKeySessionService(sptr<KeySessionService> sessionService) = 0;
 };
-} // DrmStandard 
+} // DrmStandard
 } // OHOS
 
 #endif // OHOS_DRM_KEY_SESSION_SERVICE_H

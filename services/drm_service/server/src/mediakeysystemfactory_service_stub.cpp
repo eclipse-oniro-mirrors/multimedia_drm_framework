@@ -39,10 +39,10 @@ int MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, MessageParc
 {
     if (data.ReadInterfaceToken() != GetDescriptor()) {
         DRM_DEBUG_LOG("MediaKeySystemFactoryServiceStub: ReadInterfaceToken failed");
-        return -1;   
+        return -1;
     }
 
-    switch(code) {
+    switch (code) {
         case MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED: {
             DRM_INFO_LOG("MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED enter.");
             int paramNum = data.ReadInt32();

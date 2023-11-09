@@ -49,12 +49,13 @@ public:
         std::vector<uint8_t> keyId;
         std::vector<uint8_t> iv;
         Pattern pattern;
-         std::vector<SubSample> subSample;
+        std::vector<SubSample> subSample;
     };
 
     virtual ~IMediaDecryptModuleService() = default;
     virtual int32_t Release() = 0;
-    virtual int32_t DecryptData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo, uint64_t srcBuffer, uint64_t dstBuffer) = 0;
+    virtual int32_t DecryptData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo,
+        uint64_t srcBuffer, uint64_t dstBuffer) = 0;
     virtual int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status) = 0;
     DECLARE_INTERFACE_DESCRIPTOR(u"IMediaDecryptModuleService");
 };

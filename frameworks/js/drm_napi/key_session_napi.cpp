@@ -140,7 +140,7 @@ bool KeySessionNapi::SetKeySessionNativeProperty(napi_env env, napi_value obj, c
     CHECK_AND_RETURN_RET_LOG(obj != nullptr, false, "obj is nullptr");
 
     napi_value keySessionImplNative = nullptr;
-	int64_t nativePointer = reinterpret_cast<int64_t>(keySessionImpl.GetRefPtr());
+    int64_t nativePointer = reinterpret_cast<int64_t>(keySessionImpl.GetRefPtr());
     DRM_DEBUG_LOG("SetKeySessionNativeProperty get nativePointer:%{public}lld", nativePointer);
     napi_status status = napi_create_int64(env, nativePointer, &keySessionImplNative);
     CHECK_AND_RETURN_RET_LOG(status == napi_ok, false, "create int failed");
@@ -164,7 +164,6 @@ napi_value KeySessionNapi::CreateKeySession(napi_env env, sptr<KeySessionImpl> k
     napi_value constructor;
 
     status = napi_get_reference_value(env, sConstructor_, &constructor);
-
     if (status == napi_ok) {
         sKeySessionImpl_ = keySessionImpl;
         if (sKeySessionImpl_ == nullptr) {
@@ -190,7 +189,7 @@ napi_value KeySessionNapi::CreateKeySession(napi_env env, sptr<KeySessionImpl> k
 napi_value KeySessionNapi::Release(napi_env env, napi_callback_info info)
 {
     DRM_INFO_LOG("KeySessionNapi::Release enter.");
-    int32_t currentPid = IPCSkeleton::GetCallingPid();     
+    int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("KeySessionNapi GetCallingPID: %{public}d", currentPid);
     napi_status status;
     napi_value result = nullptr;
@@ -422,7 +421,6 @@ napi_value KeySessionNapi::GenerateOfflineReleaseRequest(napi_env env, napi_call
 
 napi_value KeySessionNapi::ProcessOfflineReleaseResponse(napi_env env, napi_callback_info info)
 {
-    DRM_INFO_LOG("KeySessionNapi::ProcessOfflineReleaseResponse enter.");
     napi_value result = nullptr;
     size_t argc = ARGS_TWO;
     napi_value argv[ARGS_TWO] = {0};
@@ -436,16 +434,13 @@ napi_value KeySessionNapi::ProcessOfflineReleaseResponse(napi_env env, napi_call
     napi_typedarray_type type;
     void *response = nullptr;
     size_t responseLen;
-
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
     NAPI_ASSERT(env, argc <= ARGS_TWO, "requires 2 parameters maximum");
-
     napi_is_typedarray(env, argv[PARAM0], &isTypeArray);
     if (!isTypeArray) {
         DRM_ERR_LOG("argv[PARAM0] is not array!");
         return nullptr;
     }
-
     napi_get_typedarray_info(env, argv[PARAM0], &type, &keyIdLen, &keyId, &arraybuffer, &offset);
     if (keyId == nullptr) {
         DRM_ERR_LOG("napi_get_typedarray_info faild!");
@@ -459,26 +454,18 @@ napi_value KeySessionNapi::ProcessOfflineReleaseResponse(napi_env env, napi_call
         return nullptr;
     }
     napi_get_typedarray_info(env, argv[PARAM1], &type, &responseLen, &response, &arraybuffer, &offset);
-    if (response == nullptr) {
-        DRM_ERR_LOG("napi_get_typedarray_info faild!");
-        return nullptr;
-    }
     uint8_t* responsePtr = reinterpret_cast<uint8_t*>(response);
     std::vector<uint8_t> responseVec(responsePtr, responsePtr + responseLen);
-
     KeySessionNapi* keySessionNapi = nullptr;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&keySessionNapi));
-    if (status == napi_ok && keySessionNapi != nullptr) {
-        int ret = keySessionNapi->keySessionImpl_->ProcessOfflineReleaseResponse(keyIdVec, responseVec);
-        if (ret != napi_ok) {
-            DRM_ERR_LOG("napi ProcessOfflineReleaseResponse faild!");
-            return nullptr;
-        }
-    } else {
-        DRM_ERR_LOG("KeySessionNapi ProcessOfflineReleaseResponse call Failed!");
+    if (status != napi_ok || keySessionNapi == nullptr) {
+        return nullptr;
     }
-
-    DRM_INFO_LOG("KeySessionNapi::ProcessOfflineReleaseResponse exit.");
+    int ret = keySessionNapi->keySessionImpl_->ProcessOfflineReleaseResponse(keyIdVec, responseVec);
+    if (ret != napi_ok) {
+        DRM_ERR_LOG("napi ProcessOfflineReleaseResponse faild!");
+        return nullptr;
+    }
     return result;
 }
 
@@ -678,7 +665,7 @@ napi_value KeySessionNapi::RemoveLicenses(napi_env env, napi_callback_info info)
     napi_value argv[ARGS_ZERO];
     napi_value thisVar = nullptr;
     napi_status status;
-    int32_t currentPid = IPCSkeleton::GetCallingPid();     
+    int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("KeySessionNapi GetCallingPID: %{public}d", currentPid);
 
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
@@ -881,7 +868,6 @@ napi_value KeySessionNapi::UnsetEventCallback(napi_env env, napi_callback_info i
         DRM_ERR_LOG("KeySessionNapi UnsetEventCallback failed!");
     }
     return result;
-
 }
 } // DrmStandardr
 } // OHOS

@@ -21,7 +21,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 class KeySessionServiceCallbackProxy : public IRemoteProxy<IKeySessionServiceCallback> {
 public:
     explicit KeySessionServiceCallbackProxy(const sptr<IRemoteObject> &impl);
@@ -31,7 +30,6 @@ public:
 private:
     static inline BrokerDelegator<KeySessionServiceCallbackProxy> delegator_;
 };
-
 } // DrmStandard
 } // OHOS
 
