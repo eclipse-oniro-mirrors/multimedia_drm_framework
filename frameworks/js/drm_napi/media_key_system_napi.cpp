@@ -252,7 +252,6 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
             return nullptr;
         }
     }
-
     napi_get_undefined(env, &result);
     IMediaKeySessionService::SecurityLevel securityLevel =
         static_cast<IMediaKeySessionService::SecurityLevel>(jsSecurityLevel);
@@ -262,7 +261,6 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
         return nullptr;
     }
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
-
     if (status == napi_ok && mediaKeySystemNapi != nullptr) {
         int ret = mediaKeySystemNapi->mediaKeySystemImpl_->CreateMediaKeySession(
             (IMediaKeySessionService::SecurityLevel)securityLevel, &keySessionImpl);
@@ -274,7 +272,6 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
         DRM_ERR_LOG("mediaKeySystemNapi CreateMediaKeySession call Failed!");
         return nullptr;
     }
-
     result = MediaKeySessionNapi::CreateMediaKeySession(env, keySessionImpl);
     DRM_INFO_LOG("MediaKeySystemNapi::CreateMediaKeySession exit.");
     return result;
