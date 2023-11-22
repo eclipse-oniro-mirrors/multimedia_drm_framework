@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Copyright (c) 2023-2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -10,47 +10,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import("//build/ohos.gni")
 
 ohos_shared_library("drm_service") {
   install_enable = true
 
   include_dirs = [
-    "//foundation/graphic/graphic_2d/frameworks/surface/include",
-    "//foundation/multimedia/drm_framework/services/drm_service/client/include",
-    "//foundation/multimedia/drm_framework/services/drm_service/server/include",
-    "//foundation/multimedia/drm_framework/services/drm_service/ipc",
-    "//foundation/multimedia/drm_framework/interfaces/inner_api/native",
-    "//foundation/multimedia/drm_framework/interfaces/inner_api/native/drm",
-    "//foundation/multimedia/drm_framework/services/utils/include",
-    "//base/security/access_token/interfaces/innerkits/accesstoken/include",
+    "./client/include",
+    "./server/include",
+    "./ipc",
+    "./../../interfaces/inner_api/native",
+    "./../../interfaces/inner_api/native/drm",
+    "./../utils/include",
     "//third_party/glib/glibmemdfx",
-    "//drivers/hdf_core/interfaces/inner_api/utils",
-    "//drivers/hdf_core/adapter/khdf/uniproton/osal/include",
-    "//drivers/hdf_core/adapter/uhdf2/ipc/include",
-    "//drivers/hdf_core/interfaces/inner_api/ipc",
-    "//drivers/hdf_core/interfaces/inner_api/hdi",
     "//foundation//arkui/napi/interfaces/kits",
-  ]
-  include_dirs += [
-    "//utils/system/safwk/native/include",
   ]
 
   sources = [
-    "//foundation/multimedia/drm_framework/services/drm_service/server/src/drm_host_manager.cpp",
-    "//foundation/multimedia/drm_framework/services/drm_service/server/src/mediakeysystemfactory_service.cpp",
-    "//foundation/multimedia/drm_framework/services/drm_service/server/src/mediakeysystemfactory_service_stub.cpp",
-    "//foundation/multimedia/drm_framework/services/drm_service/server/src/mediakeysystem_service.cpp",
-    "//foundation/multimedia/drm_framework/services/drm_service/server/src/mediakeysystem_service_stub.cpp",
-    "//foundation/multimedia/drm_framework/services/drm_service/server/src/key_session_service.cpp",
-    "//foundation/multimedia/drm_framework/services/drm_service/server/src/key_session_service_stub.cpp",
-    "//foundation/multimedia/drm_framework/services/drm_service/server/src/media_decrypt_module_service.cpp",
-    "//foundation/multimedia/drm_framework/services/drm_service/server/src/media_decrypt_module_service_stub.cpp",
-    "//foundation/multimedia/drm_framework/services/drm_service/client/src/key_session_service_callback_proxy.cpp"
-  ]
-
-  deps = [  
+    "./server/src/drm_host_manager.cpp",
+    "./server/src/key_session_service.cpp",
+    "./server/src/key_session_service_stub.cpp",
+    "./server/src/media_decrypt_module_service.cpp",
+    "./server/src/media_decrypt_module_service_stub.cpp",
+    "./server/src/mediakeysystem_service.cpp",
+    "./server/src/mediakeysystem_service_stub.cpp",
+    "./server/src/mediakeysystemfactory_service.cpp",
+    "./server/src/mediakeysystemfactory_service_stub.cpp",
   ]
 
   external_deps = [
@@ -59,17 +44,23 @@ ohos_shared_library("drm_service") {
     "access_token:libprivacy_sdk",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
-    "hilog:libhilog",
-    "hitrace:hitrace_meter",
+    "c_utils:utils",
+    "drivers_interface_drm:libdrm_proxy_1.0",
+    "drivers_peripheral_clearplay:libclearplay_driver",
+    "graphic_2d:surface",
+    "hdf_core:libhdf_host",
+    "hdf_core:libhdf_ipc_adapter",
+    "hdf_core:libhdf_utils",
+    "hdf_core:libhdi",
     "hicollie:libhicollie",
+    "hilog:libhilog",
     "hisysevent:libhisysevent",
+    "hitrace:hitrace_meter",
     "ipc:ipc_core",
     "ipc:ipc_single",
+    "napi:ace_napi",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "c_utils:utils",
-    "hdf_core:libhdi",
-    "napi:ace_napi",
   ]
 
   cflags = [

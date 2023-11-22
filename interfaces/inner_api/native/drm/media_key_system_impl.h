@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,16 +33,28 @@ class MediaKeySystemImpl : public RefBase {
 public:
     explicit MediaKeySystemImpl(sptr<IMediaKeySystemService> &mediaKeysystem);
     ~MediaKeySystemImpl();
+
+    int32_t SetConfigurationString(std::string &configName, std::string &value);
+    int32_t GetConfigurationString(std::string &configName, std::string &value);
+    int32_t SetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value);
+    int32_t GetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value);
+    int32_t CreateMediaKeySession(IMediaKeySessionService::SecurityLevel securityLevel,
+        sptr<MediaKeySessionImpl> *keySessionImpl);
+    int32_t GetMetrics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics);
+    int32_t GetMaxSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel);
+
+    int32_t GenerateKeySystemRequest(std::vector<uint8_t> &request, std::string &defaultUrl);
+    int32_t ProcessKeySystemResponse(const std::vector<uint8_t> &response);
+
+    int32_t GetOfflineLicenseIds(std::vector<std::vector<uint8_t>> &licenseIds);
+    int32_t GetOfflineLicenseStatus(std::vector<uint8_t> &licenseId,
+        IMediaKeySessionService::OfflineLicenseStatus &status);
+    int32_t RemoveOfflineLicense(std::vector<uint8_t> &licenseId);
+
+    int32_t GetCertificateStatus(IMediaKeySystemService::CertificateStatus *certStatus);
+
     int32_t Release();
-    int32_t GenerateKeySystemRequest(IMediaKeySystemService::RequestType type, std::vector<uint8_t> &request,
-        std::string &defaultUrl);
-    int32_t ProcessKeySystemResponse(IMediaKeySystemService::RequestType type, const std::vector<uint8_t> &response);
-    int32_t SetConfiguration(IMediaKeySystemService::ConfigType type, std::string &propertyName, std::string &value);
-    int32_t GetConfiguration(IMediaKeySystemService::ConfigType configType, std::string &propertyName,
-        std::string &value);
-    int32_t CreateKeySession(IKeySessionService::SecurityLevel securityLevel, sptr<KeySessionImpl> *keySessionImpl);
-    int32_t GetMetric(std::vector<IMediaKeySystemService::KeyValue> &infoMap);
-    int32_t GetSecurityLevel(IKeySessionService::SecurityLevel *securityLevel);
+
 private:
     std::mutex mutex_;
     sptr<OHOS::DrmStandard::IMediaKeySystemService> serviceProxy_;

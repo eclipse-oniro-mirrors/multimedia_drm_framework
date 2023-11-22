@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,7 +19,6 @@
 namespace OHOS {
 namespace DrmStandard {
 sptr<MediaKeySystemFactoryImpl> MediaKeySystemFactoryImpl::mediaKeySystemFactoryImpl_;
-
 MediaKeySystemFactoryImpl::MediaKeySystemFactoryImpl()
 {
     DRM_DEBUG_LOG("MediaKeySystemFactoryImpl:0x%{public}06" PRIXPTR "MediaKeySystemFactoryImpl Instances create",
@@ -33,8 +32,6 @@ MediaKeySystemFactoryImpl::~MediaKeySystemFactoryImpl()
     if (serviceProxy_ != nullptr) {
         serviceProxy_ = nullptr;
     }
-    DRM_DEBUG_LOG("MediaKeySystemFactoryImpl:0x%{public}06" PRIXPTR "MediaKeySystemFactoryImpl Instances destroy",
-        FAKE_POINTER(this));
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::~MediaKeySystemFactoryImpl exit.");
     deathRecipient_ = nullptr;
 }
@@ -44,7 +41,7 @@ sptr<MediaKeySystemFactoryImpl> &MediaKeySystemFactoryImpl::GetInstance()
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::GetInstance enter.");
     if (MediaKeySystemFactoryImpl::mediaKeySystemFactoryImpl_ == nullptr) {
         DRM_DEBUG_LOG("Initializing MediaKeySystemFactoryImpl for first time!");
-        MediaKeySystemFactoryImpl::mediaKeySystemFactoryImpl_ = new(std::nothrow) MediaKeySystemFactoryImpl();
+        MediaKeySystemFactoryImpl::mediaKeySystemFactoryImpl_ = new (std::nothrow) MediaKeySystemFactoryImpl();
         if (MediaKeySystemFactoryImpl::mediaKeySystemFactoryImpl_ == nullptr) {
             DRM_ERR_LOG("MediaKeySystemFactoryImpl::GetInstance failed to new MediaKeySystemFactoryImpl");
         }
@@ -74,10 +71,10 @@ void MediaKeySystemFactoryImpl::Init()
         return;
     }
     pid_t pid = 0;
-    deathRecipient_ = new(std::nothrow) DrmDeathRecipient(pid);
+    deathRecipient_ = new (std::nothrow) DrmDeathRecipient(pid);
 
-    deathRecipient_->SetNotifyCb(std::bind(&MediaKeySystemFactoryImpl::MediaKeySystemServerDied, this,
-        std::placeholders::_1));
+    deathRecipient_->SetNotifyCb(
+        std::bind(&MediaKeySystemFactoryImpl::MediaKeySystemServerDied, this, std::placeholders::_1));
     bool result = object->AddDeathRecipient(deathRecipient_);
     if (!result) {
         DRM_ERR_LOG("failed to add deathRecipient");
@@ -136,7 +133,7 @@ bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &uuid, std
 }
 
 bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType,
-    IKeySessionService::SecurityLevel securityLevel)
+    IMediaKeySessionService::SecurityLevel securityLevel)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::IsMediaKeySystemSupported enter.");
     std::lock_guard<std::mutex> lock(mutex_);
@@ -156,10 +153,10 @@ bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &uuid, std
     return isSurpported;
 }
 
-int32_t MediaKeySystemFactoryImpl::CreateMediaKeySystem(std::string &uuid,
-    sptr<MediaKeySystemImpl> *mediaKeySystemImpl)
+int32_t MediaKeySystemFactoryImpl::CreateMediaKeySystem(std::string &uuid, sptr<MediaKeySystemImpl> *mediaKeySystemImpl)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryImpl:: CreateMediaKeySystem enter.");
+    sptr<IMediaKeySystemService> mediaKeySystemProxy = nullptr;
     sptr<MediaKeySystemImpl> localMediaKeySystemImpl = nullptr;
     int retCode = DRM_OK;
 
@@ -168,8 +165,18 @@ int32_t MediaKeySystemFactoryImpl::CreateMediaKeySystem(std::string &uuid,
         return DRM_SERVICE_ERROR;
     }
 
-    retCode = serviceProxy_->CreateMediaKeySystem(uuid);
+    retCode = serviceProxy_->CreateMediaKeySystem(uuid, mediaKeySystemProxy);
     if (retCode == DRM_OK) {
+        if (mediaKeySystemProxy != nullptr) {
+            localMediaKeySystemImpl = new (std::nothrow) MediaKeySystemImpl(mediaKeySystemProxy);
+            if (localMediaKeySystemImpl == nullptr) {
+                DRM_ERR_LOG("Failed to new MediaKeySystemImpl");
+                return DRM_ALLOC_ERROR;
+            }
+        } else {
+            DRM_ERR_LOG("Failed to CreateMediaKeySystemImpl with session is null");
+            return DRM_UNKNOWN_ERROR;
+        }
     } else {
         DRM_ERR_LOG("Failed to get session object from mediakeysystem service!, %{public}d", retCode);
         return DRM_SERVICE_ERROR;

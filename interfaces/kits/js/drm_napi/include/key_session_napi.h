@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,6 @@
 #ifndef OHOS_DRM_KEY_SESSION_H_
 #define OHOS_DRM_KEY_SESSION_H_
 
-#include <map>
 #include "key_session_impl.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
@@ -24,47 +23,51 @@
 #include "drm_napi_utils.h"
 #include "drm_error_code.h"
 
+#include <map>
+
 namespace OHOS {
 namespace DrmStandard {
-static const char KEY_SESSION_NAPI_CLASS_NAME[] = "KeySession";
-class KeySessionNapi {
+static const char KEY_SESSION_NAPI_CLASS_NAME[] = "MediaKeySession";
+class MediaKeySessionNapi {
 public:
-    KeySessionNapi();
-    ~KeySessionNapi();
+    MediaKeySessionNapi();
+    ~MediaKeySessionNapi();
     static napi_value Init(napi_env env, napi_value exports);
-    static napi_value CreateKeySession(napi_env env, sptr<KeySessionImpl> keySessionImpl);
-    static napi_value Release(napi_env env, napi_callback_info info);
+    static napi_value CreateMediaKeySession(napi_env env, sptr<MediaKeySessionImpl> keySessionImpl);
     static napi_value GenerateLicenseRequest(napi_env env, napi_callback_info info);
     static napi_value ProcessLicenseResponse(napi_env env, napi_callback_info info);
     static napi_value GenerateOfflineReleaseRequest(napi_env env, napi_callback_info info);
     static napi_value ProcessOfflineReleaseResponse(napi_env env, napi_callback_info info);
     static napi_value CheckLicenseStatus(napi_env env, napi_callback_info info);
-    static napi_value RestoreOfflineKeys(napi_env env, napi_callback_info info);
-    static napi_value RemoveOfflineKeys(napi_env env, napi_callback_info info);
-    static napi_value GetOfflineKeyIds(napi_env env, napi_callback_info info);
-    static napi_value RemoveLicenses(napi_env env, napi_callback_info info);
+    static napi_value RestoreOfflineLicense(napi_env env, napi_callback_info info);
+    static napi_value RemoveLicense(napi_env env, napi_callback_info info);
+    static napi_value GetSecurityLevel(napi_env env, napi_callback_info info);
     static napi_value GetDecryptModule(napi_env env, napi_callback_info info);
     static napi_value AddEventListener(napi_env env, napi_callback_info info);
     static napi_value DeleteEventListener(napi_env env, napi_callback_info info);
-    static napi_value GetOfflineKeyState(napi_env env, napi_callback_info info);
+    static napi_value RequireSecureDecoderModule(napi_env env, napi_callback_info info);
     static napi_value SetEventCallback(napi_env env, napi_callback_info info);
     static napi_value UnsetEventCallback(napi_env env, napi_callback_info info);
-    static bool SetKeySessionNativeProperty(napi_env env, napi_value obj, const std::string &name,
-        sptr<KeySessionImpl> keySessionImpl);
+    static bool SetMediaKeySessionNativeProperty(napi_env env, napi_value obj, const std::string &name,
+        sptr<MediaKeySessionImpl> keySessionImpl);
     void SetEventCallbackReference(const std::string eventType, sptr<CallBackPair> callbackPair);
     void ClearEventCallbackReference(const std::string eventType);
+    static napi_value Destroy(napi_env env, napi_callback_info info);
+
 private:
-    static napi_value KeySessionNapiConstructor(napi_env env, napi_callback_info info);
-    static void KeySessionNapiDestructor(napi_env env, void *nativeObject, void *finalize);
+    static napi_value MediaKeySessionNapiConstructor(napi_env env, napi_callback_info info);
+    static void MediaKeySessionNapiDestructor(napi_env env, void *nativeObject, void *finalize);
+
     napi_env env_;
     napi_ref wrapper_;
     static thread_local napi_ref sConstructor_;
     std::mutex mutex_;
-    static thread_local sptr<KeySessionImpl> sKeySessionImpl_;
-    sptr<KeySessionImpl> keySessionImpl_;
-    sptr<KeySessionCallbackNapi> keySessionCallbackNapi_;
+    static thread_local sptr<MediaKeySessionImpl> sMediaKeySessionImpl_;
+    sptr<MediaKeySessionImpl> keySessionImpl_;
+    sptr<MediaKeySessionCallbackNapi> keySessionCallbackNapi_;
 };
 } // DrmStandard
 } // OHOS
+
 
 #endif // OHOS_DRM_KEY_SESSION_H_

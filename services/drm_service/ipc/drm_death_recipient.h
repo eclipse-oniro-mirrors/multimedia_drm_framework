@@ -1,10 +1,10 @@
 /*
- * Copyright (C) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,18 +25,22 @@ class DrmDeathRecipient : public IRemoteObject::DeathRecipient, public NoCopyabl
 public:
     explicit DrmDeathRecipient(pid_t pid) : pid_(pid) {}
     virtual ~DrmDeathRecipient() = default;
+
     void OnRemoteDied(const wptr<IRemoteObject> &remote) override
     {
-        (void) remote;
+        (void)remote;
         if (diedCb_ != nullptr) {
             diedCb_(pid_);
         }
     }
+
     using NotifyCbFunc = std::function<void(pid_t)>;
+
     void SetNotifyCb(NotifyCbFunc func)
     {
         diedCb_ = func;
     }
+
 private:
     pid_t pid_ = 0;
     NotifyCbFunc diedCb_ = nullptr;

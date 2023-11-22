@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,7 +40,7 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
     DRM_INFO_LOG("OnRemoteRequest, cmd = %{public}u", code);
     if (data.ReadInterfaceToken() != GetDescriptor()) {
         DRM_ERR_LOG("MediaDecryptModuleServiceStub: ReadInterfaceToken failed");
-        return DRM_ERROR;
+        return -1;
     }
     switch (code) {
         case DECRYPT_MODULE_DECRYPT_DATA: {
@@ -66,25 +66,12 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
             }
             uint64_t srcBuffer = data.ReadFileDescriptor();
             uint64_t dstBuffer = data.ReadFileDescriptor();
-            int32_t ret = DecryptData(secureDecodrtState, cryptInfo, srcBuffer, dstBuffer);
+            int32_t ret = DecryptMediaData(secureDecodrtState, cryptInfo, srcBuffer, dstBuffer);
             if (ret != 0) {
-                DRM_ERR_LOG("DecryptData faild.");
+                DRM_ERR_LOG("DecryptMediaData faild.");
                 return ret;
             }
             DRM_INFO_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_DECRYPT_DATA exit.");
-            return ret;
-        }
-        case DECRYPT_MODULE_REQUIRE_SECURE_DECODER: {
-            DRM_INFO_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_REQUIRE_SECURE_DECODER enter.");
-            std::string mimeType = data.ReadString();
-            bool status;
-            int32_t ret = RequireSecureDecoderModule(mimeType, &status);
-            if (ret != 0) {
-                DRM_ERR_LOG("RequireSecureDecoderModule faild.");
-                return ret;
-            }
-            reply.WriteBool(status);
-            DRM_INFO_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_REQUIRE_SECURE_DECODER exit.");
             return ret;
         }
         case DECRYPT_MODULE_RELEASE: {
@@ -98,7 +85,7 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
         }
     }
-    return DRM_ERROR;
+    return -1;
 }
 } // DrmStandard
 } // OHOS

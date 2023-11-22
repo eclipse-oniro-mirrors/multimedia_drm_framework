@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,7 +22,7 @@
 
 namespace OHOS {
 namespace DrmStandard {
-class IKeySessionService : public IRemoteBroker {
+class IMediaKeySessionService : public IRemoteBroker {
 public:
     enum ListenerType {
         LISTENER_DRM_EVENT = 200,
@@ -33,23 +33,23 @@ public:
         LISTENER_KEYSESSION_RECLAIMED = 205,
         LISTENER_EXPIRATION_UPDATE = 206,
         LISTENER_KEY_CHANGE = 207,
-        LISTENER_KEYSESSION_LOSE = 208,
+        LISTENER_KEYSESSION_LOST = 208,
     };
 
-    struct KeyValue {
+    struct LicenseStatus {
         std::string name;
         std::string value;
     };
 
-    enum KeyType {
-        KEYTYPE_OFFLINE = 0,
-        KEYTYPE_ONLINE,
+    enum LicenseType {
+        LICENSETYPE_OFFLINE = 0,
+        LICENSETYPE_ONLINE,
     };
 
-    enum OfflineKeyState {
-        OFFLINEKEYSTATE_UNKNOWN = 0,
-        OFFLINEKEYSTATE_USABLE = 1,
-        OFFLINEKEYSTATE_INACTIVE = 2,
+    enum OfflineLicenseStatus {
+        OFFLINELICENSESTATUS_UNKNOWN = 0,
+        OFFLINELICENSESTATUS_USABLE = 1,
+        OFFLINELICENSESTATUS_INACTIVE = 2,
     };
 
     enum RequestType {
@@ -59,7 +59,6 @@ public:
         REQUEST_TYPE_RELEASE = 3,
         REQUEST_TYPE_NONE = 4,
         REQUEST_TYPE_UPDATE = 5,
-        REQUEST_TYPE_DOWNLOADCERT = 6,
     };
 
     enum SecurityLevel {
@@ -72,35 +71,43 @@ public:
         SECURITY_LEVEL_MAX = 6,
     };
 
-    struct DrmInfo {
-        KeyType keyType;
-        std::string mimeType;
-        std::vector<uint8_t> indexInfo;
+    struct OptionalData {
+        std::string name;
+        std::string value;
     };
 
-    struct LicenseInfo {
+    struct LicenseRequestInfo {
+        LicenseType licenseType;
+        std::string mimeType;
+        std::vector<uint8_t> initData;
+        std::vector<struct OptionalData> optionalData;
+    };
+
+    struct LicenseRequest {
         RequestType requestType;
         std::vector<uint8_t> mData;
         std::string mDefaultURL;
     };
 
-    virtual ~IKeySessionService() = default;
+    virtual ~IMediaKeySessionService() = default;
     virtual int32_t Release() = 0;
     virtual int32_t CreateMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule) = 0;
-    virtual int32_t GenerateLicenseRequest(DrmInfo &drmInfo, LicenseInfo &licenseInfo) = 0;
-    virtual int32_t ProcessLicenseResponse(std::vector<uint8_t> &keyId, std::vector<uint8_t> &licenseResponse) = 0;
-    virtual int32_t GenerateOfflineReleaseRequest(std::vector<uint8_t> &keyId,
+    virtual int32_t GenerateLicenseRequest(LicenseRequestInfo &licenseRequestInfo, LicenseRequest &licenseInfo) = 0;
+    virtual int32_t ProcessLicenseResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &licenseResponse) = 0;
+    virtual int32_t GenerateOfflineReleaseRequest(std::vector<uint8_t> &licenseId,
         std::vector<uint8_t> &releaseRequest) = 0;
-    virtual int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &keyId,
+    virtual int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &licenseId,
         std::vector<uint8_t> &releaseReponse) = 0;
-    virtual int32_t CheckLicenseStatus(std::vector<KeyValue> &infoMap) = 0;
-    virtual int32_t RestoreOfflineKeys(std::vector<uint8_t> &keyId) = 0;
-    virtual int32_t RemoveOfflineKeys(std::vector<uint8_t> &keyId) = 0;
-    virtual int32_t GetOfflineKeyIds(std::vector<std::vector<uint8_t>> &keyIds) = 0;
-    virtual int32_t RemoveLicenses() = 0;
-    virtual int32_t GetOfflineKeyState(std::vector<uint8_t> &keyId, IKeySessionService::OfflineKeyState &state) = 0;
-    virtual int32_t SetKeySessionServiceCallback(sptr<IKeySessionServiceCallback> &callback) = 0;
-    DECLARE_INTERFACE_DESCRIPTOR(u"IKeySessionService");
+    virtual int32_t CheckLicenseStatus(std::vector<LicenseStatus> &licenseStatus) = 0;
+    virtual int32_t RestoreOfflineLicense(std::vector<uint8_t> &licenseId) = 0;
+    virtual int32_t RemoveLicense() = 0;
+
+    virtual int32_t GetSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel) = 0;
+
+    virtual int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status) = 0;
+
+    virtual int32_t SetMediaKeySessionServiceCallback(sptr<IMediaKeySessionServiceCallback> &callback) = 0;
+    DECLARE_INTERFACE_DESCRIPTOR(u"IMediaKeySessionService");
 };
 } // DrmStandard
 } // OHOS

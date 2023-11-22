@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -44,43 +44,24 @@ int32_t MediaDecryptModuleImpl::Release()
     return errCode;
 }
 
-int32_t MediaDecryptModuleImpl::DecryptData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo,
-    uint64_t srcBuffer, uint64_t dstBuffer)
+int32_t MediaDecryptModuleImpl::DecryptMediaData(bool secureDecodrtState,
+    IMediaDecryptModuleService::CryptInfo &cryptInfo, uint64_t srcBuffer, uint64_t dstBuffer)
 {
-    DRM_INFO_LOG("MediaDecryptModuleImpl::DecryptData enter");
+    DRM_INFO_LOG("MediaDecryptModuleImpl::DecryptMediaData enter");
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t retCode = DRM_OK;
 
     if (serviceProxy_ == nullptr) {
-        DRM_ERR_LOG("MediaDecryptModuleImpl::DecryptData serviceProxy_ is null");
+        DRM_ERR_LOG("MediaDecryptModuleImpl::DecryptMediaData serviceProxy_ is null");
         return DRM_SERVICE_ERROR;
     }
-    retCode = serviceProxy_->DecryptData(secureDecodrtState, cryptInfo, srcBuffer, dstBuffer);
+    retCode = serviceProxy_->DecryptMediaData(secureDecodrtState, cryptInfo, srcBuffer, dstBuffer);
     if (retCode != DRM_OK) {
-        DRM_ERR_LOG("MediaDecryptModuleImpl::DecryptData failed, retCode: %{public}d", retCode);
+        DRM_ERR_LOG("MediaDecryptModuleImpl::DecryptMediaData failed, retCode: %{public}d", retCode);
         return DRM_SERVICE_ERROR;
     }
 
-    DRM_INFO_LOG("MediaDecryptModuleImpl::DecryptData exit");
-    return DRM_OK;
-}
-
-int32_t MediaDecryptModuleImpl::RequireSecureDecoderModule(std::string &mimeType, bool *status)
-{
-    DRM_INFO_LOG("MediaDecryptModuleImpl::RequireSecureDecoderModule enter.");
-    std::lock_guard<std::mutex> lock(mutex_);
-    int32_t retCode = DRM_OK;
-
-    if (serviceProxy_ == nullptr) {
-        DRM_ERR_LOG("MediaDecryptModuleImpl::RequireSecureDecoderModule serviceProxy_ is null");
-        return DRM_SERVICE_ERROR;
-    }
-    retCode = serviceProxy_->RequireSecureDecoderModule(mimeType, status);
-    if (retCode != DRM_OK) {
-        DRM_ERR_LOG("status: %{public}d", *status);
-        return retCode;
-    }
-    DRM_INFO_LOG("MediaDecryptModuleImpl::RequireSecureDecoderModule exit.");
+    DRM_INFO_LOG("MediaDecryptModuleImpl::DecryptMediaData exit");
     return DRM_OK;
 }
 } // DrmStandard

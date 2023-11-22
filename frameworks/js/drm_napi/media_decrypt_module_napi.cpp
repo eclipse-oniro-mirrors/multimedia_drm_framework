@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -48,15 +48,12 @@ napi_value MediaDecryptModuleNapi::Init(napi_env env, napi_value exports)
 
     napi_property_descriptor decryptModule_props[] = {
         DECLARE_NAPI_FUNCTION("release", Release),
-        DECLARE_NAPI_FUNCTION("requireSecureDecoderModule", RequireSecureDecoderModule),
-        DECLARE_NAPI_FUNCTION("decryptData", DecryptData),
+        DECLARE_NAPI_FUNCTION("decryptData", DecryptMediaData),
     };
 
     DRM_DEBUG_LOG("MediaDecryptModuleNapi napi_define_class");
-    status = napi_define_class(env, DECYPT_MODULE_NAPI_CLASS_NAME, NAPI_AUTO_LENGTH,
-                               MediaDecryptModuleNapiConstructor, nullptr,
-                               sizeof(decryptModule_props) / sizeof(decryptModule_props[PARAM0]),
-                               decryptModule_props, &ctorObj);
+    status = napi_define_class(env, DECYPT_MODULE_NAPI_CLASS_NAME, NAPI_AUTO_LENGTH, MediaDecryptModuleNapiConstructor,
+        nullptr, sizeof(decryptModule_props) / sizeof(decryptModule_props[PARAM0]), decryptModule_props, &ctorObj);
     if (status == napi_ok) {
         status = napi_create_reference(env, ctorObj, refCount, &sConstructor_);
         if (status == napi_ok) {
@@ -90,8 +87,8 @@ napi_value MediaDecryptModuleNapi::MediaDecryptModuleNapiConstructor(napi_env en
                 return result;
             }
             obj->mediaDecryptModuleImpl_ = sMediaDecryptModuleImpl_;
-            status = napi_wrap(env, thisVar, reinterpret_cast<void*>(obj.get()),
-                               MediaDecryptModuleNapi::MediaDecryptModuleNapiDestructor, nullptr, nullptr);
+            status = napi_wrap(env, thisVar, reinterpret_cast<void *>(obj.get()),
+                MediaDecryptModuleNapi::MediaDecryptModuleNapiDestructor, nullptr, nullptr);
             if (status == napi_ok) {
                 obj.release();
                 return thisVar;
@@ -107,7 +104,7 @@ napi_value MediaDecryptModuleNapi::MediaDecryptModuleNapiConstructor(napi_env en
 void MediaDecryptModuleNapi::MediaDecryptModuleNapiDestructor(napi_env env, void *nativeObject, void *finalize)
 {
     DRM_INFO_LOG("MediaDecryptModuleNapi::MediaDecryptModuleNapiDestructor enter.");
-    MediaDecryptModuleNapi* decryptModuleNapiObj = reinterpret_cast<MediaDecryptModuleNapi*>(nativeObject);
+    MediaDecryptModuleNapi *decryptModuleNapiObj = reinterpret_cast<MediaDecryptModuleNapi *>(nativeObject);
     if (decryptModuleNapiObj != nullptr) {
         decryptModuleNapiObj->~MediaDecryptModuleNapi();
     }
@@ -159,8 +156,8 @@ napi_value MediaDecryptModuleNapi::Release(napi_env env, napi_callback_info info
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
 
     napi_get_undefined(env, &result);
-    MediaDecryptModuleNapi* decryptModuleNapi = nullptr;
-    status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&decryptModuleNapi));
+    MediaDecryptModuleNapi *decryptModuleNapi = nullptr;
+    status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&decryptModuleNapi));
     if (status == napi_ok && decryptModuleNapi != nullptr) {
         decryptModuleNapi->mediaDecryptModuleImpl_->Release();
     } else {
@@ -170,77 +167,73 @@ napi_value MediaDecryptModuleNapi::Release(napi_env env, napi_callback_info info
     return result;
 }
 
-napi_value MediaDecryptModuleNapi::RequireSecureDecoderModule(napi_env env, napi_callback_info info)
+static napi_value DealDecryptParam1(napi_env env, napi_value *argv, IMediaDecryptModuleService::CryptInfo &cryptInfo)
 {
-    DRM_INFO_LOG("MediaDecryptModuleNapi::RequireSecureDecoderModule enter.");
-    napi_value result = nullptr;
-    size_t argc = ARGS_ONE;
-    napi_value argv[ARGS_ONE] = {0};
-    napi_value thisVar = nullptr;
-    napi_status status;
-
-    DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
-    napi_get_undefined(env, &result);
-    NAPI_ASSERT(env, argc <= ARGS_ONE, "requires 1 parameters maximum");
-    char mimeTypeBuf[PATH_MAX];
-    size_t length = 0;
-    if (napi_get_value_string_utf8(env, argv[PARAM0], mimeTypeBuf, PATH_MAX, &length) == napi_ok) {
-        std::string mimeType = std::string(mimeTypeBuf);
-        bool statusValue;
-        MediaDecryptModuleNapi* decryptModuleNapi = nullptr;
-        status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&decryptModuleNapi));
-        if (status == napi_ok && decryptModuleNapi != nullptr) {
-            if (decryptModuleNapi->mediaDecryptModuleImpl_ == nullptr) {
-                DRM_ERR_LOG("mediaDecryptModuleImpl_ == nullptr.");
-                return nullptr;
-            }
-            decryptModuleNapi->mediaDecryptModuleImpl_->RequireSecureDecoderModule(mimeType, &statusValue);
-            status = napi_get_boolean(env, statusValue, &result);
-            if (status != napi_ok) {
-                DRM_ERR_LOG("napi_get_boolean call faild!");
-                return nullptr;
-            }
-        } else {
-            DRM_ERR_LOG("MediaDecryptModuleNapi DecryptData call Failed!");
-            return nullptr;
-        }
-    } else {
-        DRM_ERR_LOG("-Could not able to read response argument!");
-        return nullptr;
-    }
-    DRM_INFO_LOG("MediaDecryptModuleNapi::RequireSecureDecoderModule exit.");
-    return result;
-}
-
-napi_value MediaDecryptModuleNapi::DecryptData(napi_env env, napi_callback_info info)
-{
-    napi_value result = nullptr;
-    size_t argc = ARGS_FOUR;
-    napi_value argv[ARGS_FOUR] = {0};
-    napi_value thisVar = nullptr;
-    napi_status status;
-    IMediaDecryptModuleService::CryptInfo cryptInfo;
-    napi_value type_property;
-    napi_value keyId_property;
-    napi_value iv_property;
-    napi_value pattern_property;
+    napi_value tmpProperty;
     napi_value subSample_property;
-    napi_value subSampleNumber_property;
-    bool secureDecodrtState = false;
-    int32_t type = 0;
     bool isTypeArray;
     void *keyId = nullptr;
-    size_t keyIdLen;
     size_t offset;
     napi_value arraybuffer = nullptr;
     napi_typedarray_type array_type;
     void *iv = nullptr;
-    size_t ivLen;
+    size_t tmpLen = 0;
+    int32_t subSampleLen = 0;
     napi_value pattern_property_encryptBlocks;
     napi_value pattern_property_skipBlocks;
-    int32_t subSampleLen = 0;
-    napi_value jsClearHeaderLen;
-    napi_value jsPayLoadLen;
+
+    napi_get_named_property(env, argv[PARAM1], "keyId", &tmpProperty);
+    napi_is_typedarray(env, tmpProperty, &isTypeArray);
+    DRM_CHECK_AND_RETURN_RET_LOG(isTypeArray, nullptr, "argv[PARAM1] keyId is not array!");
+    napi_get_typedarray_info(env, tmpProperty, &array_type, &tmpLen, &keyId, &arraybuffer, &offset);
+    DRM_CHECK_AND_RETURN_RET_LOG(keyId != nullptr, nullptr, "napi_get_typedarray_info faild!");
+    uint8_t *keyIdPtr = reinterpret_cast<uint8_t *>(keyId);
+    std::vector<uint8_t> keyIdVec(keyIdPtr, keyIdPtr + tmpLen);
+    cryptInfo.keyId.assign(keyIdVec.begin(), keyIdVec.end());
+
+    napi_get_named_property(env, argv[PARAM1], "iv", &tmpProperty);
+    napi_is_typedarray(env, tmpProperty, &isTypeArray);
+    DRM_CHECK_AND_RETURN_RET_LOG(isTypeArray, nullptr, "argv[PARAM1] iv is not array!");
+    napi_get_typedarray_info(env, tmpProperty, &array_type, &tmpLen, &iv, &arraybuffer, &offset);
+    DRM_CHECK_AND_RETURN_RET_LOG(iv != nullptr, nullptr, "napi_get_typedarray_info faild!");
+    uint8_t *ivPtr = reinterpret_cast<uint8_t *>(iv);
+    std::vector<uint8_t> ivVec(ivPtr, ivPtr + tmpLen);
+    cryptInfo.iv.assign(ivVec.begin(), ivVec.end());
+
+    napi_get_named_property(env, argv[PARAM1], "pattern", &tmpProperty);
+    napi_get_named_property(env, tmpProperty, "encryptBlocks", &pattern_property_encryptBlocks);
+    napi_get_named_property(env, tmpProperty, "skipBlocks", &pattern_property_skipBlocks);
+    napi_get_value_int32(env, pattern_property_encryptBlocks, &cryptInfo.pattern.encryptBlocks);
+    napi_get_value_int32(env, pattern_property_skipBlocks, &cryptInfo.pattern.skipBlocks);
+    napi_get_named_property(env, argv[PARAM1], "subSampleNumber", &tmpProperty);
+    napi_get_value_int32(env, tmpProperty, &subSampleLen);
+    napi_get_named_property(env, argv[PARAM1], "subSample", &subSample_property);
+    for (uint32_t i = 0; i < subSampleLen; i++) {
+        napi_value jsSubSample;
+        IMediaDecryptModuleService::SubSample subSampleTmp = { 0 };
+        napi_get_element(env, subSample_property, i, &jsSubSample);
+        napi_get_named_property(env, jsSubSample, "clearHeaderLen", &tmpProperty);
+        napi_get_value_int32(env, tmpProperty, &subSampleTmp.clearHeaderLen);
+        napi_get_named_property(env, jsSubSample, "payLoadLen", &tmpProperty);
+        napi_get_value_int32(env, tmpProperty, &subSampleTmp.payLoadLen);
+        cryptInfo.subSample.push_back(subSampleTmp);
+    }
+    return nullptr;
+}
+
+napi_value MediaDecryptModuleNapi::DecryptMediaData(napi_env env, napi_callback_info info)
+{
+    DRM_INFO_LOG("MediaDecryptModuleNapi::DecryptMediaData enter.");
+    napi_value result = nullptr;
+    size_t argc = ARGS_FOUR;            // 4 is argc number
+    napi_value argv[ARGS_FOUR] = {0}; // 4 is argc number
+    napi_value thisVar = nullptr;
+    napi_status status;
+    IMediaDecryptModuleService::CryptInfo cryptInfo;
+    napi_value type_property;
+    bool secureDecodrtState = false;
+    int32_t type = 0;
+    IMediaDecryptModuleService::CryptAlgorithmType algType;
     int32_t srcBuffer = 0;
     int32_t dstBuffer = 0;
 
@@ -248,100 +241,31 @@ napi_value MediaDecryptModuleNapi::DecryptData(napi_env env, napi_callback_info 
     napi_get_undefined(env, &result);
     NAPI_ASSERT(env, argc <= ARGS_FOUR, "requires 4 parameters maximum");
     status = napi_get_value_bool(env, argv[PARAM0], &secureDecodrtState);
-    if (status != napi_ok) {
-        DRM_ERR_LOG("Could not able to read secureDecodrtState argument!");
-        return nullptr;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "Could not able to read secureDecodrtState argument!");
     napi_get_named_property(env, argv[PARAM1], "type", &type_property);
     napi_get_value_int32(env, type_property, &type);
-    if (type == 0) {
-        cryptInfo.type = IMediaDecryptModuleService::ALGTYPE_UNENCRYPTED;
-        DRM_DEBUG_LOG("cryptInfo.type:%{public}d.", (int)cryptInfo.type);
-    } else if (type == IMediaDecryptModuleService::ALGTYPE_AES_CTR) {
-        cryptInfo.type = IMediaDecryptModuleService::ALGTYPE_AES_CTR;
-        DRM_DEBUG_LOG("cryptInfo.type:%{public}d.", (int)cryptInfo.type);
-    } else if (type == IMediaDecryptModuleService::ALGTYPE_AES_WV) {
-        cryptInfo.type = IMediaDecryptModuleService::ALGTYPE_AES_WV;
-        DRM_DEBUG_LOG("cryptInfo.type:%{public}d.", (int)cryptInfo.type);
-    } else if (type == IMediaDecryptModuleService::ALGTYPE_AES_CBC) {
-        cryptInfo.type = IMediaDecryptModuleService::ALGTYPE_AES_CBC;
-        DRM_DEBUG_LOG("cryptInfo.type:%{public}d.", (int)cryptInfo.type);
-    } else if (type == IMediaDecryptModuleService::ALGTYPE_SM4_CBC) {
-        cryptInfo.type = IMediaDecryptModuleService::ALGTYPE_SM4_CBC;
-        DRM_DEBUG_LOG("cryptInfo.type:%{public}d.", (int)cryptInfo.type);
-    }
-
-    napi_get_named_property(env, argv[PARAM1], "keyId", &keyId_property);
-    napi_is_typedarray(env, keyId_property, &isTypeArray);
-    if (!isTypeArray) {
-        DRM_ERR_LOG("argv[PARAM1] keyId is not array!");
-        return nullptr;
-    }
-    napi_get_typedarray_info(env, keyId_property, &array_type, &keyIdLen, &keyId, &arraybuffer, &offset);
-    if (keyId == nullptr) {
-        DRM_ERR_LOG("napi_get_typedarray_info faild!");
-        return nullptr;
-    }
-    uint8_t* keyIdPtr = reinterpret_cast<uint8_t*>(keyId);
-    std::vector<uint8_t> keyIdVec(keyIdPtr, keyIdPtr + keyIdLen);
-    cryptInfo.keyId.assign(keyIdVec.begin(), keyIdVec.end());
-
-    napi_get_named_property(env, argv[PARAM1], "iv", &iv_property);
-    napi_is_typedarray(env, iv_property, &isTypeArray);
-    if (!isTypeArray) {
-        DRM_ERR_LOG("argv[PARAM1] iv is not array!");
-        return nullptr;
-    }
-    napi_get_typedarray_info(env, iv_property, &array_type, &ivLen, &iv, &arraybuffer, &offset);
-    if (iv == nullptr) {
-        DRM_ERR_LOG("napi_get_typedarray_info faild!");
-        return nullptr;
-    }
-    uint8_t* ivPtr = reinterpret_cast<uint8_t*>(iv);
-    std::vector<uint8_t> ivVec(ivPtr, ivPtr + ivLen);
-    cryptInfo.iv.assign(ivVec.begin(), ivVec.end());
-
-    napi_get_named_property(env, argv[PARAM1], "pattern", &pattern_property);
-    napi_get_named_property(env, pattern_property, "encryptBlocks", &pattern_property_encryptBlocks);
-    napi_get_named_property(env, pattern_property, "skipBlocks", &pattern_property_skipBlocks);
-    napi_get_value_int32(env, pattern_property_encryptBlocks, &cryptInfo.pattern.encryptBlocks);
-    napi_get_value_int32(env, pattern_property_skipBlocks, &cryptInfo.pattern.skipBlocks);
-    napi_get_named_property(env, argv[PARAM1], "subSampleNumber", &subSampleNumber_property);
-    napi_get_value_int32(env, subSampleNumber_property, &subSampleLen);
-    napi_get_named_property(env, argv[PARAM1], "subSample", &subSample_property);
-    for (uint32_t i = 0; i < subSampleLen; i++) {
-        napi_value jsSubSample;
-        IMediaDecryptModuleService::SubSample subSampleTmp = {0};
-        napi_get_element(env, subSample_property, i, &jsSubSample);
-        napi_get_named_property(env, jsSubSample, "clearHeaderLen", &jsClearHeaderLen);
-        napi_get_named_property(env, jsSubSample, "payLoadLen", &jsPayLoadLen);
-        napi_get_value_int32(env, jsClearHeaderLen, &subSampleTmp.clearHeaderLen);
-        napi_get_value_int32(env, jsPayLoadLen, &subSampleTmp.payLoadLen);
-        cryptInfo.subSample.push_back(subSampleTmp);
-    }
+    algType = (IMediaDecryptModuleService::CryptAlgorithmType)type;
+    DRM_CHECK_AND_RETURN_RET_LOG((algType < IMediaDecryptModuleService::ALGTYPE_UNENCRYPTED) ||
+        (algType > IMediaDecryptModuleService::ALGTYPE_SM4_CTR),
+        nullptr, "argv[PARAM1] type is wrong!");
+    cryptInfo.type = IMediaDecryptModuleService::ALGTYPE_UNENCRYPTED;
+    DRM_DEBUG_LOG("cryptInfo.type:%{public}d.", (int)cryptInfo.type);
+    (void)DealDecryptParam1(env, argv, cryptInfo);
     status = napi_get_value_int32(env, argv[PARAM2], &srcBuffer);
-    if (status != napi_ok) {
-        DRM_ERR_LOG("Could not able to read srcBuffer argument!");
-        return nullptr;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "Could not able to read srcBuffer argument!");
     status = napi_get_value_int32(env, argv[PARAM3], &dstBuffer);
-    if (status != napi_ok) {
-        DRM_ERR_LOG("Could not able to read dstBuffer argument!");
-        return nullptr;
-    }
-    MediaDecryptModuleNapi* decryptModuleNapi = nullptr;
-    status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&decryptModuleNapi));
-    if (status == napi_ok && decryptModuleNapi != nullptr) {
-        if (decryptModuleNapi->mediaDecryptModuleImpl_ != nullptr) {
-            decryptModuleNapi->mediaDecryptModuleImpl_->DecryptData(secureDecodrtState, cryptInfo, srcBuffer,
-                dstBuffer);
-        } else {
-            DRM_ERR_LOG("mediaDecryptModuleImpl_ == nullptr.");
-            return nullptr;
-        }
-    } else {
-        DRM_ERR_LOG("MediaDecryptModuleNapi DecryptData call Failed!");
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "Could not able to read dstBuffer argument!");
+    MediaDecryptModuleNapi *decryptModuleNapi = nullptr;
+    status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&decryptModuleNapi));
+    DRM_CHECK_AND_RETURN_RET_LOG(decryptModuleNapi != nullptr, nullptr,
+        "MediaDecryptModuleNapi decryptModuleNapi == nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(decryptModuleNapi->mediaDecryptModuleImpl_ != nullptr, nullptr,
+        "MediaDecryptModuleNapi mediaDecryptModuleImpl_ == nullptr!");
+
+    int ret = decryptModuleNapi->mediaDecryptModuleImpl_->DecryptMediaData(secureDecodrtState, cryptInfo, srcBuffer,
+        dstBuffer);
+    DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr, "MediaDecryptModuleNapi::DecryptMediaData call Failed!");
+    DRM_INFO_LOG("MediaDecryptModuleNapi::DecryptMediaData exit.");
     return result;
 }
 } // DrmStandardr

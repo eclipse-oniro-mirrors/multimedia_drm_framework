@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,6 +31,7 @@ public:
     static napi_value Init(napi_env env, napi_value exports);
     static napi_value CreateMediaKeySystemInstance(napi_env env, napi_callback_info info);
     static napi_value IsMediaKeySystemSupported(napi_env env, napi_callback_info info);
+
 private:
     static napi_value DrmNapiConstructor(napi_env env, napi_callback_info info);
     static void DrmNapiDestructor(napi_env env, void *nativeObject, void *finalize);
