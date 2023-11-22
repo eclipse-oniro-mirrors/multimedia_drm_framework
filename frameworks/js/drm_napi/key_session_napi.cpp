@@ -270,13 +270,14 @@ static napi_value DealLicenseRequest(napi_env env, IMediaKeySessionService::Lice
         requestTypeEnum = "REQUEST_TYPE_NONE";
     } else if (licenseRequest.requestType == IMediaKeySessionService::REQUEST_TYPE_UPDATE) {
         requestTypeEnum = "REQUEST_TYPE_UPDATE";
-    } else if (licenseRequest.requestType < IMediaKeySessionService::REQUEST_TYPE_UNKNOWN || licenseRequest.requestType > IMediaKeySessionService::REQUEST_TYPE_UPDATE) {
+    } else if (licenseRequest.requestType < IMediaKeySessionService::REQUEST_TYPE_UNKNOWN ||
+        licenseRequest.requestType > IMediaKeySessionService::REQUEST_TYPE_UPDATE) {
         DRM_ERR_LOG("Do not understand licenseRequest.requestType enum!");
         return result;
     }
 
     napi_status status = napi_create_string_utf8(env, requestTypeEnum, NAPI_AUTO_LENGTH, &requestType);
-    if(status != napi_ok) {
+    if (status != napi_ok) {
         DRM_ERR_LOG("requestType error!");
         return result;
     }
@@ -293,7 +294,7 @@ static napi_value DealLicenseRequest(napi_env env, IMediaKeySessionService::Lice
     napi_set_named_property(env, result, "mData", mData);
 
     status = napi_create_string_utf8(env, licenseRequest.mDefaultURL.c_str(), NAPI_AUTO_LENGTH, &mDefaultURL);
-    if(status != napi_ok) {
+    if (status != napi_ok) {
         DRM_ERR_LOG("mDefaultURL error!");
         return result;
     }

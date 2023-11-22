@@ -46,9 +46,9 @@ int32_t MediaKeySessionServiceCallbackStub::OnRemoteRequest(uint32_t code, Messa
 int32_t MediaKeySessionServiceCallbackStub::HandleOnMediaKeySessionKeyExpired(MessageParcel &data)
 {
     int32_t status = data.ReadInt32();
-    DRM_INFO_LOG("MediaKeySessionServiceCallbackStub::HandleOnMediaKeySessionKeyExpired called status = %{public}d", status);
-    switch (status)
-    {
+    DRM_INFO_LOG("MediaKeySessionServiceCallbackStub::HandleOnMediaKeySessionKeyExpired called status = %{public}d",
+        status);
+    switch (status) {
         case KEY_STATUS_NORMAL:
             return OnMediaKeySessionKeyExpired(KEY_STATUS_NORMAL);
         case KEY_STATUS_EXPIRED:
@@ -62,9 +62,9 @@ int32_t MediaKeySessionServiceCallbackStub::HandleOnMediaKeySessionKeyExpired(Me
 int32_t MediaKeySessionServiceCallbackStub::HandleOnMediaKeySessionReclaimed(MessageParcel &data)
 {
     int32_t status = data.ReadInt32();
-    DRM_INFO_LOG("MediaKeySessionServiceCallbackStub::HandleOnMediaKeySessionReclaimed called status = %{public}d", status);
-    switch (status)
-    {
+    DRM_INFO_LOG("MediaKeySessionServiceCallbackStub::HandleOnMediaKeySessionReclaimed called status = %{public}d",
+        status);
+    switch (status) {
         case SESSION_STATUS_NORMAL:
             return OnMediaKeySessionReclaimed(SESSION_STATUS_NORMAL);
         case SESSION_STATUS_RECLAIMED:

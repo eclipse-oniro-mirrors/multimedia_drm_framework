@@ -208,7 +208,7 @@ static napi_value DealDecryptParam1(napi_env env, napi_value *argv, IMediaDecryp
     napi_get_value_int32(env, pattern_property_skipBlocks, &cryptInfo.pattern.skipBlocks);
     napi_get_named_property(env, argv[PARAM1], "subSampleNumber", &tmpProperty);
     status = napi_get_value_int32(env, tmpProperty, &subSampleLen);
-    if (status != napi_ok ) {
+    if (status != napi_ok) {
         DRM_ERR_LOG("napi_get_value_int32 Faild! Could not able to read subSampleLen argument!");
         return nullptr;
     }

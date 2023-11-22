@@ -113,15 +113,19 @@ int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySy
     }
 
 
-    DRM_DEBUG_LOG("MediaKeySystemFactoryService mediaKeySystemForPid_ size:%{public}u", mediaKeySystemForPid_[pid].size());
+    DRM_DEBUG_LOG("MediaKeySystemFactoryService mediaKeySystemForPid_ size:%{public}u",
+        mediaKeySystemForPid_[pid].size());
     if (mediaKeySystemForPid_[pid].find(mediaKeySystemService) != mediaKeySystemForPid_[pid].end()) {
-        DRM_DEBUG_LOG("MediaKeySystemFactoryService before sessionSet size:%{public}u", mediaKeySystemForPid_[pid].size());
+        DRM_DEBUG_LOG("MediaKeySystemFactoryService before sessionSet size:%{public}u",
+            mediaKeySystemForPid_[pid].size());
         mediaKeySystemForPid_[pid].erase(mediaKeySystemService);
-        DRM_DEBUG_LOG("MediaKeySystemFactoryService after sessionSet size:%{public}u", mediaKeySystemForPid_[pid].size());
+        DRM_DEBUG_LOG("MediaKeySystemFactoryService after sessionSet size:%{public}u",
+            mediaKeySystemForPid_[pid].size());
     } else {
         DRM_ERR_LOG("MediaKeySystemFactoryService not find sessions for PID:%{public}d", pid);
     }
-    DRM_DEBUG_LOG("MediaKeySystemFactoryService mediaKeySystemForPid_ size:%{public}u", mediaKeySystemForPid_[pid].size());
+    DRM_DEBUG_LOG("MediaKeySystemFactoryService mediaKeySystemForPid_ size:%{public}u",
+        mediaKeySystemForPid_[pid].size());
 
     mediaKeySystemService = nullptr;
     DRM_INFO_LOG("MediaKeySystemFactoryService CloseMediaKeySystemService exit.");

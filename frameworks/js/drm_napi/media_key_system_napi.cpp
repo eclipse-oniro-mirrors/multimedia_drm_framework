@@ -254,13 +254,14 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
     }
 
     napi_get_undefined(env, &result);
-    IMediaKeySessionService::SecurityLevel securityLevel = static_cast<IMediaKeySessionService::SecurityLevel>(jsSecurityLevel);
-    if(securityLevel < IMediaKeySessionService::SecurityLevel::SECURITY_LEVEL_UNKNOWN || 
-		securityLevel > IMediaKeySessionService::SecurityLevel::SECURITY_LEVEL_MAX) {
+    IMediaKeySessionService::SecurityLevel securityLevel =
+        static_cast<IMediaKeySessionService::SecurityLevel>(jsSecurityLevel);
+    if (securityLevel < IMediaKeySessionService::SecurityLevel::SECURITY_LEVEL_UNKNOWN ||
+        securityLevel > IMediaKeySessionService::SecurityLevel::SECURITY_LEVEL_MAX) {
         DRM_ERR_LOG("securityLevel is error!!!");
         return nullptr;
     }
-    status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&mediaKeySystemNapi));
+    status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
 
     if (status == napi_ok && mediaKeySystemNapi != nullptr) {
         int ret = mediaKeySystemNapi->mediaKeySystemImpl_->CreateMediaKeySession(
@@ -310,11 +311,11 @@ napi_value MediaKeySystemNapi::SetConfigurationString(napi_env env, napi_callbac
         return nullptr;
     }
     value = std::string(valueBuffer);
-    if(value.length() == 0) {
+    if (value.length() == 0) {
         DRM_ERR_LOG("String Parameter length cannot be zero!");
         return nullptr;
     }
-    status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&mediaKeySystemNapi));
+    status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
     if (status == napi_ok && mediaKeySystemNapi != nullptr) {
         int ret = mediaKeySystemNapi->mediaKeySystemImpl_->SetConfigurationString(name, value);
         if (ret != napi_ok) {

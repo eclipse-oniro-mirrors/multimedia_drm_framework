@@ -159,7 +159,7 @@ int32_t MediaKeySystemFactoryImpl::CreateMediaKeySystem(std::string &uuid, sptr<
     sptr<IMediaKeySystemService> mediaKeySystemProxy = nullptr;
     sptr<MediaKeySystemImpl> localMediaKeySystemImpl = nullptr;
     int32_t retCode = DRM_OK;
-    if(mediaKeySystemImpl == nullptr) {
+    if (mediaKeySystemImpl == nullptr) {
         DRM_ERR_LOG("MediaKeySystemImpl:: mediaKeySystemImpl is nullptr");
         return DRM_INVALID_ARG;
     }

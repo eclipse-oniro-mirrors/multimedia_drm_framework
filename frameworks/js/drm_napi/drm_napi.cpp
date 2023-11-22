@@ -72,11 +72,11 @@ napi_value DrmNapi::DrmNapiConstructor(napi_env env, napi_callback_info info)
         std::unique_ptr<DrmNapi> obj = std::make_unique<DrmNapi>();
         if (obj != nullptr) {
             obj->env_ = env;
-            status = napi_wrap(env, thisVar, reinterpret_cast<void *>(obj.get()),
-                DrmNapi::DrmNapiDestructor, nullptr, nullptr);
+            status = napi_wrap(env, thisVar, reinterpret_cast<void *>(obj.get()), DrmNapi::DrmNapiDestructor, nullptr,
+                nullptr);
             if (status == napi_ok) {
                 obj.release();
-				DRM_INFO_LOG("DrmNapi DrmNapiConstructor exit.");
+                DRM_INFO_LOG("DrmNapi DrmNapiConstructor exit.");
                 return thisVar;
             } else {
                 DRM_ERR_LOG("DrmNapiDestructor Failure wrapping js to native napi");
