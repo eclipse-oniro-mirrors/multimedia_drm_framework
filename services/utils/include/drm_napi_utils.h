@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,16 +22,88 @@
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 
-#define DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar)                 \
-    do {                                                                        \
-        void* data;                                                             \
-        napi_get_cb_info(env, info, &(argc), argv, &(thisVar), &data);          \
+#define DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar)           \
+    do {                                                               \
+        void *data;                                                    \
+        napi_get_cb_info(env, info, &(argc), argv, &(thisVar), &data); \
     } while (0)
 
-#define DRM_NAPI_GET_JS_OBJ_WITH_ZERO_ARGS(env, info, status, thisVar)                       \
-    do {                                                                                        \
-        void* data;                                                                             \
-        status = napi_get_cb_info(env, info, nullptr, nullptr, &(thisVar), &data);              \
+#define DRM_NAPI_GET_JS_OBJ_WITH_ZERO_ARGS(env, info, status, thisVar)             \
+    do {                                                                           \
+        void *data;                                                                \
+        status = napi_get_cb_info(env, info, nullptr, nullptr, &(thisVar), &data); \
+    } while (0)
+
+#define DRM_NAPI_GET_JS_ASYNC_CB_REF(env, arg, count, cbRef)  \
+    do {                                                      \
+        napi_valuetype valueType = napi_undefined;            \
+        napi_typeof(env, arg, &valueType);                    \
+        if (valueType == napi_function) {                     \
+            napi_create_reference(env, arg, count, &(cbRef)); \
+        } else {                                              \
+            NAPI_ASSERT(env, false, "type mismatch");         \
+        }                                                     \
+    } while (0)
+
+#define DRM_NAPI_ASSERT_NULLPTR_CHECK(env, result) \
+    do {                                           \
+        if ((result) == nullptr) {                 \
+            napi_get_undefined(env, &(result));    \
+            return result;                         \
+        }                                          \
+    } while (0)
+
+#define DRM_NAPI_CREATE_PROMISE(env, callbackRef, deferred, result) \
+    do {                                                            \
+        if ((callbackRef) == nullptr) {                             \
+            napi_create_promise(env, &(deferred), &(result));       \
+        }                                                           \
+    } while (0);
+
+#define DRM_NAPI_CREATE_RESOURCE_NAME(env, resource, resourceName)                 \
+    do {                                                                           \
+        napi_create_string_utf8(env, resourceName, NAPI_AUTO_LENGTH, &(resource)); \
+    } while (0)
+
+#define DRM_NAPI_CHECK_NULL_PTR_RETURN_UNDEFINED(env, ptr, ret, message) \
+    do {                                                                 \
+        if ((ptr) == nullptr) {                                          \
+            HiLog::Error(LABEL, message);                                \
+            napi_get_undefined(env, &(ret));                             \
+            return ret;                                                  \
+        }                                                                \
+    } while (0)
+
+#define DRM_NAPI_CHECK_NULL_PTR_RETURN_VOID(ptr, message) \
+    do {                                                  \
+        if ((ptr) == nullptr) {                           \
+            HiLog::Error(LABEL, message);                 \
+            return;                                       \
+        }                                                 \
+    } while (0)
+
+#define DRM_NAPI_ASSERT_EQUAL(condition, errMsg) \
+    do {                                         \
+        if (!(condition)) {                      \
+            HiLog::Error(LABEL, errMsg);         \
+            return;                              \
+        }                                        \
+    } while (0)
+
+#define DRM_NAPI_CHECK_AND_BREAK_LOG(cond, fmt, ...) \
+    do {                                             \
+        if (!(cond)) {                               \
+            DRM_ERR_LOG(fmt, ##__VA_ARGS__);         \
+            break;                                   \
+        }                                            \
+    } while (0)
+
+#define DRM_NAPI_DRM_CHECK_AND_RETURN_LOG(cond, fmt, ...) \
+    do {                                                  \
+        if (!(cond)) {                                    \
+            DRM_ERR_LOG(fmt, ##__VA_ARGS__);              \
+            return;                                       \
+        }                                                 \
     } while (0)
 
 namespace OHOS {
@@ -61,19 +133,6 @@ struct AsyncContext {
     std::string errorMsg;
     std::string funcName;
     bool isInvalidArgument;
-};
-
-enum DrmServiceError {
-    DRM_OK = 0,
-    DRM_ALLOC_ERROR,
-    DRM_INVALID_ARG,
-    DRM_UNSUPPORTED,
-    DRM_INVALID_SESSION_CFG,
-    DRM_INVALID_STATE,
-    DRM_UNKNOWN_ERROR,
-    DRM_OPERATION_NOT_ALLOWED,
-    DRM_HOST_ERROR,
-    DRM_SERVICE_ERROR,
 };
 } // namespace DrmStandard
 } // namespace OHOS

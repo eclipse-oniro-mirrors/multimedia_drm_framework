@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,7 +37,7 @@ int32_t MediaKeySystemServiceProxy::Release()
         DRM_ERR_LOG("MediaKeySystemServiceProxy Release Write interface token failed");
         return IPC_PROXY_ERR;
     }
-    int error = MediaKeySystemServiceProxy::Remote()->SendRequest(MEDIA_KEY_SYSTEM_RELEASE, data, reply, option);
+    int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_RELEASE, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySystemServiceProxy Release failed, error: %{public}d", error);
         return error;
@@ -46,10 +46,8 @@ int32_t MediaKeySystemServiceProxy::Release()
     return 0;
 }
 
-int32_t MediaKeySystemServiceProxy::GenerateKeySystemRequest(IMediaKeySystemService::RequestType type,
-    std::vector<uint8_t> &request, std::string &defaultUrl)
+int32_t MediaKeySystemServiceProxy::GenerateKeySystemRequest(std::vector<uint8_t> &request, std::string &defaultUrl)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceProxy::GenerateKeySystemRequest enter. type:%{public}d.", type);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
@@ -59,13 +57,7 @@ int32_t MediaKeySystemServiceProxy::GenerateKeySystemRequest(IMediaKeySystemServ
         return IPC_PROXY_ERR;
     }
 
-    if (!data.WriteInt32((int)type)) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy GenerateKeySystemRequest two params Write RequestType failed");
-        return IPC_PROXY_ERR;
-    }
-
-    uint32_t error = MediaKeySystemServiceProxy::Remote()->SendRequest(MEDIA_KEY_SYSTEM_GENERATE_KEYSYSTEM_REQUEST,
-        data, reply, option);
+    uint32_t error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_GENERATE_KEYSYSTEM_REQUEST, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySystemServiceProxy::GenerateKeySystemRequest failed, error: %{public}d", error);
         return error;
@@ -81,21 +73,14 @@ int32_t MediaKeySystemServiceProxy::GenerateKeySystemRequest(IMediaKeySystemServ
     return reply.ReadInt32();
 }
 
-int32_t MediaKeySystemServiceProxy::ProcessKeySystemResponse(IMediaKeySystemService::RequestType type,
-    const std::vector<uint8_t> &response)
+int32_t MediaKeySystemServiceProxy::ProcessKeySystemResponse(const std::vector<uint8_t> &response)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceProxy::ProcessKeySystemResponse enter. type:%{public}d.", type);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
 
     if (!data.WriteInterfaceToken(GetDescriptor())) {
         DRM_ERR_LOG("MediaKeySystemServiceProxy ProcessKeySystemResponse Write interface token failed");
-        return IPC_PROXY_ERR;
-    }
-
-    if (!data.WriteInt32((int)type)) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy ProcessKeySystemResponse Write RequestType failed");
         return IPC_PROXY_ERR;
     }
 
@@ -111,36 +96,78 @@ int32_t MediaKeySystemServiceProxy::ProcessKeySystemResponse(IMediaKeySystemServ
         }
     }
 
-    int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_GENERATE_KEYSYSTEM_RESPONSE, data, reply, option);
+    int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_PROCESS_KEYSYSTEM_RESPONSE, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySystemServiceProxy ProcessKeySystemResponse failed, error: %{public}d", error);
         return error;
     }
 
-    DRM_INFO_LOG("MediaKeySystemServiceProxy ProcessKeySystemResponse exit.");
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::ProcessKeySystemResponse exit.");
     return reply.ReadInt32();
 }
 
-int32_t MediaKeySystemServiceProxy::SetConfiguration(IMediaKeySystemService::ConfigType type,
-    std::string &propertyName, std::string &value)
+int32_t MediaKeySystemServiceProxy::GetMaxSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel)
 {
-    DRM_INFO_LOG("SetConfiguration enter, configType:%{public}d, propertyName:%{public}s, value:%{public}s.",
-        (int)type, propertyName.c_str(), value.c_str());
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetMaxSecurityLevel enter.");
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
-    
+
+    if (!data.WriteInterfaceToken(MediaKeySystemServiceProxy::GetDescriptor())) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy GetMaxSecurityLevel Write interface token failed");
+        return IPC_PROXY_ERR;
+    }
+
+    int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_GETMAXSECURITYLEVEL, data, reply, option);
+    if (error != ERR_NONE) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy GetMaxSecurityLevel failed, error: %{public}d", error);
+        return error;
+    }
+
+    *securityLevel = (IMediaKeySessionService::SecurityLevel)reply.ReadInt32();
+
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetMaxSecurityLevel exit.");
+    return reply.ReadInt32();
+}
+
+int32_t MediaKeySystemServiceProxy::GetCertificateStatus(IMediaKeySystemService::CertificateStatus *certStatus)
+{
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetCertificateStatus enter.");
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+
+    if (!data.WriteInterfaceToken(MediaKeySystemServiceProxy::GetDescriptor())) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy GetCertificateStatus Write interface token failed");
+        return IPC_PROXY_ERR;
+    }
+
+    int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_GETCERTIFICATESTATUS, data, reply, option);
+    if (error != ERR_NONE) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy GetCertificateStatus failed, error: %{public}d", error);
+        return error;
+    }
+
+    *certStatus = (IMediaKeySystemService::CertificateStatus)reply.ReadInt32();
+
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetCertificateStatus exit.");
+    return reply.ReadInt32();
+}
+
+int32_t MediaKeySystemServiceProxy::SetConfigurationString(std::string &configName, std::string &value)
+{
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::SetConfiguration enter, configName:%{public}s, value:%{public}s.",
+        configName.c_str(), value.c_str());
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+
     if (!data.WriteInterfaceToken(GetDescriptor())) {
         DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration Write interface token failed");
         return IPC_PROXY_ERR;
     }
 
-    if (!data.WriteInt32((int32_t)type)) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration Write RequestType failed");
-        return IPC_PROXY_ERR;
-    }
-
-    if (!data.WriteString(propertyName)) {
+    if (!data.WriteString(configName)) {
         DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration Write response failed");
         return IPC_PROXY_ERR;
     }
@@ -149,46 +176,19 @@ int32_t MediaKeySystemServiceProxy::SetConfiguration(IMediaKeySystemService::Con
         return IPC_PROXY_ERR;
     }
 
-    int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_SETCONFIGURATION, data, reply, option);
+    int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_SETCONFIGURATION_STRING, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration failed, error: %{public}d", error);
         return error;
     }
 
-    DRM_INFO_LOG("SetConfiguration exit.");
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::SetConfiguration exit.");
     return reply.ReadInt32();
 }
 
-int32_t MediaKeySystemServiceProxy::GetSecurityLevel(IKeySessionService::SecurityLevel *securityLevel)
+int32_t MediaKeySystemServiceProxy::GetConfigurationString(std::string &configName, std::string &value)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetSecurityLevel enter.");
-    MessageParcel data;
-    MessageParcel reply;
-    MessageOption option;
-
-    if (!data.WriteInterfaceToken(MediaKeySystemServiceProxy::GetDescriptor())) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy GetSecurityLevel Write interface token failed");
-        return IPC_PROXY_ERR;
-    }
-
-    int error = MediaKeySystemServiceProxy::Remote()->SendRequest(MEDIA_KEY_SYSTEM_GETSECURITYLEVEL, data,
-        reply, option);
-    if (error != ERR_NONE) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy GetSecurityLevel failed, error: %{public}d", error);
-        return error;
-    }
-
-    *securityLevel = (IKeySessionService::SecurityLevel)reply.ReadInt32();
-
-    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetSecurityLevel exit.");
-    return reply.ReadInt32();
-}
-
-int32_t MediaKeySystemServiceProxy::GetConfiguration(IMediaKeySystemService::ConfigType configType,
-    std::string &propertyName, std::string &value)
-{
-    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetConfiguration enter, configType:%{public}d, propertyName:%{public}s.",
-        (int)configType, propertyName.c_str());
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetConfiguration enter, configName:%{public}s.", configName.c_str());
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
@@ -198,17 +198,12 @@ int32_t MediaKeySystemServiceProxy::GetConfiguration(IMediaKeySystemService::Con
         return IPC_PROXY_ERR;
     }
 
-    if (!data.WriteInt32((int)configType)) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy GetConfiguration Write RequestType failed");
-        return IPC_PROXY_ERR;
-    }
-
-    if (!data.WriteString(propertyName)) {
+    if (!data.WriteString(configName)) {
         DRM_ERR_LOG("MediaKeySystemServiceProxy GetConfiguration Write response failed");
         return IPC_PROXY_ERR;
     }
 
-    int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_GETCONFIGURATION, data, reply, option);
+    int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_GETCONFIGURATION_STRING, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySystemServiceProxy GetConfiguration failed, error: %{public}d", error);
         return error;
@@ -220,65 +215,234 @@ int32_t MediaKeySystemServiceProxy::GetConfiguration(IMediaKeySystemService::Con
     return reply.ReadInt32();
 }
 
-int32_t MediaKeySystemServiceProxy::CreateKeySession(IKeySessionService::SecurityLevel securityLevel,
-    sptr<IKeySessionService> &keySessionProxy)
+int32_t MediaKeySystemServiceProxy::SetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceProxy::CreateKeySession enter, securityLevel:%{public}d.", securityLevel);
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::SetConfiguration enter, configName:%{public}s.", configName.c_str());
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
-    
+
     if (!data.WriteInterfaceToken(GetDescriptor())) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy CreateKeySession Write interface token failed");
+        DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration Write interface token failed");
+        return IPC_PROXY_ERR;
+    }
+
+    if (!data.WriteString(configName)) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration Write response failed");
+        return IPC_PROXY_ERR;
+    }
+
+    if (!data.WriteInt32(value.size())) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration Write response size failed");
+        return IPC_PROXY_ERR;
+    }
+
+    for (auto res : value) {
+        if (!data.WriteUint8(res)) {
+            DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration Write response failed");
+            return IPC_PROXY_ERR;
+        }
+    }
+
+    int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_SETCONFIGURATION_BYTEARRAY, data, reply, option);
+    if (error != ERR_NONE) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration failed, error: %{public}d", error);
+        return error;
+    }
+
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::SetConfiguration exit.");
+    return reply.ReadInt32();
+}
+
+int32_t MediaKeySystemServiceProxy::GetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value)
+{
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetConfiguration enter, configName:%{public}s.", configName.c_str());
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+
+    if (!data.WriteInterfaceToken(GetDescriptor())) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy GetConfiguration Write interface token failed");
+        return IPC_PROXY_ERR;
+    }
+
+    if (!data.WriteString(configName)) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy GetConfiguration Write response failed");
+        return IPC_PROXY_ERR;
+    }
+
+    int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_GETCONFIGURATION_BYTEARRAY, data, reply, option);
+    if (error != ERR_NONE) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy GetConfiguration failed, error: %{public}d", error);
+        return error;
+    }
+
+    uint32_t configSize = reply.ReadInt32();
+    for (uint32_t i = 0; i < configSize; i++) {
+        value.push_back(reply.ReadUint8());
+    }
+
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetConfiguration exit.");
+    return reply.ReadInt32();
+}
+
+int32_t MediaKeySystemServiceProxy::CreateMediaKeySession(IMediaKeySessionService::SecurityLevel securityLevel,
+    sptr<IMediaKeySessionService> &keySessionProxy)
+{
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::CreateMediaKeySession enter, securityLevel:%{public}d.", securityLevel);
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+
+    if (!data.WriteInterfaceToken(GetDescriptor())) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy CreateMediaKeySession Write interface token failed");
         return IPC_PROXY_ERR;
     }
     if (!data.WriteInt32(securityLevel)) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy CreateKeySession Write format failed");
+        DRM_ERR_LOG("MediaKeySystemServiceProxy CreateMediaKeySession Write format failed");
         return IPC_PROXY_ERR;
     }
 
     int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_CREATE_KEY_SESSION, data, reply, option);
     if (error != ERR_NONE) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy::CreateKeySession failed, error: %{public}d", error);
+        DRM_ERR_LOG("MediaKeySystemServiceProxy::CreateMediaKeySession failed, error: %{public}d", error);
         return error;
     }
 
     auto remoteObject = reply.ReadRemoteObject();
     if (remoteObject != nullptr) {
-        keySessionProxy = iface_cast<IKeySessionService>(remoteObject);
+        keySessionProxy = iface_cast<IMediaKeySessionService>(remoteObject);
     } else {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy CreateKeySession keySessionProxy is nullptr");
+        DRM_ERR_LOG("MediaKeySystemServiceProxy CreateMediaKeySession keySessionProxy is nullptr");
         error = IPC_PROXY_ERR;
     }
-    DRM_INFO_LOG("MediaKeySystemServiceProxy::CreateKeySession exit.");
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::CreateMediaKeySession exit.");
     return error;
 }
 
-int32_t MediaKeySystemServiceProxy::GetMetric(std::vector<IMediaKeySystemService::KeyValue> &infoMap)
+int32_t MediaKeySystemServiceProxy::GetMetrics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetMetric enter.");
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetMetrics enter.");
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
 
     if (!data.WriteInterfaceToken(GetDescriptor())) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy GetMetric two params Write interface token failed");
+        DRM_ERR_LOG("MediaKeySystemServiceProxy GetMetrics two params Write interface token failed");
         return IPC_PROXY_ERR;
     }
 
     int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_GETMETRIC, data, reply, option);
     if (error != ERR_NONE) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy::GetMetric failed, error: %{public}d", error);
+        DRM_ERR_LOG("MediaKeySystemServiceProxy::GetMetrics failed, error: %{public}d", error);
         return error;
     }
-    int infoMapSize = reply.ReadInt32();
-    for (int i = 0; i < infoMapSize; i++) {
-        IMediaKeySystemService::KeyValue keyValue;
+    int metricsSize = reply.ReadInt32();
+    for (int i = 0; i < metricsSize; i++) {
+        IMediaKeySystemService::MetircKeyValue keyValue;
         keyValue.name = reply.ReadString();
         keyValue.value = reply.ReadString();
-        infoMap.push_back(keyValue);
+        metrics.push_back(keyValue);
     }
-    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetMetric exit.");
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetMetrics exit.");
+    return reply.ReadInt32();
+}
+
+int32_t MediaKeySystemServiceProxy::GetOfflineLicenseIds(std::vector<std::vector<uint8_t>> &licenseIds)
+{
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetOfflineLicenseIds enter.");
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+
+    if (!data.WriteInterfaceToken(MediaKeySystemServiceProxy::GetDescriptor())) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy GetOfflineLicenseIds Write interface token failed");
+        return IPC_PROXY_ERR;
+    }
+    int32_t error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_GET_OFFLINELICENSEIDS, data, reply, option);
+    if (error != ERR_NONE) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy::GetOfflineLicenseIds failed, error: %{public}d", error);
+        return error;
+    }
+    int32_t licenseIdsSize = reply.ReadInt32();
+    for (int i = 0; i < licenseIdsSize; i++) {
+        int32_t licenseIdSize = reply.ReadInt32();
+        std::vector<uint8_t> licenseId;
+        const uint8_t *licenseIdBuf = static_cast<const uint8_t *>(reply.ReadBuffer(licenseIdSize));
+        if (licenseIdBuf == nullptr) {
+            DRM_ERR_LOG("MediaKeySystemServiceProxy::GetOfflineLicenseIds ReadBuffer failed");
+            return error;
+        }
+        licenseId.assign(licenseIdBuf, licenseIdBuf + licenseIdSize);
+        licenseIds.push_back(licenseId);
+    }
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetOfflineLicenseIds exit.");
+    return reply.ReadInt32();
+}
+
+int32_t MediaKeySystemServiceProxy::GetOfflineLicenseStatus(std::vector<uint8_t> &licenseId,
+    IMediaKeySessionService::OfflineLicenseStatus &status)
+{
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetOfflineLicenseStatus enter.");
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+
+    if (!data.WriteInterfaceToken(MediaKeySystemServiceProxy::GetDescriptor())) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy GetOfflineLicenseStatus Write interface token failed");
+        return IPC_PROXY_ERR;
+    }
+    if (!data.WriteInt32(licenseId.size())) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy GetOfflineLicenseStatus Write licenseId size failed");
+        return IPC_PROXY_ERR;
+    }
+    for (auto id : licenseId) {
+        if (!data.WriteUint8(id)) {
+            DRM_ERR_LOG("MediaKeySystemServiceProxy GetOfflineLicenseStatus Write licenseId failed");
+            return IPC_PROXY_ERR;
+        }
+    }
+
+    int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_GET_OFFLINEKEY_STATUS, data, reply, option);
+    if (error != ERR_NONE) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy::GetOfflineLicenseStatus failed, error: %{public}d", error);
+        return error;
+    }
+    status = (IMediaKeySessionService::OfflineLicenseStatus)reply.ReadInt32();
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::GetOfflineLicenseStatus exit.");
+    return reply.ReadInt32();
+}
+
+int32_t MediaKeySystemServiceProxy::RemoveOfflineLicense(std::vector<uint8_t> &licenseId)
+{
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::RemoveOfflineLicense enter.");
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+
+    if (!data.WriteInterfaceToken(MediaKeySystemServiceProxy::GetDescriptor())) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy RemoveOfflineLicense Write interface token failed");
+        return IPC_PROXY_ERR;
+    }
+
+    if (!data.WriteInt32(licenseId.size())) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy RestoreOfflineLicense Write licenseId size failed");
+        return IPC_PROXY_ERR;
+    }
+    for (auto id : licenseId) {
+        if (!data.WriteUint8(id)) {
+            DRM_ERR_LOG("MediaKeySystemServiceProxy RestoreOfflineLicense Write licenseId failed");
+            return IPC_PROXY_ERR;
+        }
+    }
+
+    int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_REMOVE_OFFLINELICENSE, data, reply, option);
+    if (error != ERR_NONE) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy::RemoveOfflineLicense failed, error: %{public}d", error);
+        return error;
+    }
+
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::RemoveOfflineLicense exit.");
     return reply.ReadInt32();
 }
 } // DrmStandard

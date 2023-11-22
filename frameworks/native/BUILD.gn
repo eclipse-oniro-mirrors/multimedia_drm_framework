@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2022 Huawei Device Co., Ltd.
+# Copyright (c) 2023-2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -17,41 +17,38 @@ import("//build/ohos.gni")
 
 config("drm_framework_public_config") {
   include_dirs = [
-    "//foundation/multimedia/drm_framework/interfaces/inner_api/native/drm",
-    "//foundation/multimedia/drm_framework/services/include",
+    "./../../interfaces/inner_api/native/drm",
+    "./../../services/drm_service",
   ]
 }
 
 config("drm_framework_local_config") {
   include_dirs = [
-    "//foundation/multimedia/drm_framework/services/drm_service",
-    "//foundation/multimedia/drm_framework/services/include",
-    "//foundation/multimedia/drm_framework/services/utils/include",
-    "//foundation/multimedia/drm_framework/services/drm_service/client/include",
-    "//foundation/multimedia/drm_framework/services/drm_service/ipc",
-    "//foundation/multimedia/drm_framework/services/drm_service/server/include",
-    "//foundation/multimedia/drm_framework/interfaces/inner_api/native/drm",
+    "./../../interfaces/inner_api/native/drm",
+    "./../../services/drm_service/client/include",
+    "./../../services/drm_service/ipc",
+    "./../../services/drm_service/server/include",
+    "./../../services/include",
+    "./../../services/utils/include",
   ]
 }
 
 config("drm_framework_drivers_config") {
-  include_dirs = [
-    "//foundation/multimedia/drm_framework/services/drm_service/ipc/",
-  ]
+  include_dirs = [ "./../../services/drm_service/ipc/" ]
 }
 
 ohos_shared_library("drm_framework") {
   install_enable = true
   sources = [
-    "//foundation/multimedia/drm_framework/frameworks/native/drm/media_key_system_factory_impl.cpp",
-    "//foundation/multimedia/drm_framework/services/drm_service/client/src/mediakeysystemfactory_service_proxy.cpp",
-    "//foundation/multimedia/drm_framework/frameworks/native/drm/media_key_system_impl.cpp",
-    "//foundation/multimedia/drm_framework/services/drm_service/client/src/mediakeysystem_service_proxy.cpp",
-    "//foundation/multimedia/drm_framework/frameworks/native/drm/key_session_impl.cpp",
-    "//foundation/multimedia/drm_framework/services/drm_service/client/src/key_session_service_proxy.cpp",
-    "//foundation/multimedia/drm_framework/frameworks/native/drm/media_decrypt_module_impl.cpp",
-    "//foundation/multimedia/drm_framework/services/drm_service/client/src/media_decrypt_module_service_proxy.cpp",
-    "//foundation/multimedia/drm_framework/services/drm_service/server/src/key_session_service_callback_stub.cpp",
+    "./../../services/drm_service/client/src/key_session_service_proxy.cpp",
+    "./../../services/drm_service/client/src/media_decrypt_module_service_proxy.cpp",
+    "./../../services/drm_service/client/src/mediakeysystem_service_proxy.cpp",
+    "./../../services/drm_service/client/src/mediakeysystemfactory_service_proxy.cpp",
+    "./../../services/drm_service/server/src/key_session_service_callback_stub.cpp",
+    "./drm/key_session_impl.cpp",
+    "./drm/media_decrypt_module_impl.cpp",
+    "./drm/media_key_system_factory_impl.cpp",
+    "./drm/media_key_system_impl.cpp",
   ]
 
   cflags = [
@@ -68,30 +65,28 @@ ohos_shared_library("drm_framework") {
   }
 
   public_configs = [
-    ":drm_framework_public_config",
-    ":drm_framework_local_config",
     ":drm_framework_drivers_config",
+    ":drm_framework_local_config",
+    ":drm_framework_public_config",
   ]
 
   include_dirs = [
-    "//foundation/multimedia/drm_framework/frameworks/native/drm",
-    "//foundation/graphic/graphic_2d/frameworks/surface/include",
-    "//utils/system/safwk/native/include",
+    "./drm",
     "//foundation//arkui/napi/interfaces/kits",
   ]
 
-  deps = [
-  ]
+  deps = []
 
   external_deps = [
     "c_utils:utils",
+    "graphic_2d:surface",
+    "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:hitrace_meter",
-    "hilog:libhilog",
     "ipc:ipc_core",
+    "napi:ace_napi",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "napi:ace_napi",
   ]
 
   cflags_cc = cflags

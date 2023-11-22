@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,6 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#include "ashmem.h"
 #include "media_decrypt_module_service_proxy.h"
 
 namespace OHOS {
@@ -28,7 +30,7 @@ int32_t MediaDecryptModuleServiceProxy::Release()
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
-    
+
     if (!data.WriteInterfaceToken(GetDescriptor())) {
         DRM_ERR_LOG("MediaDecryptModuleServiceProxy Release Write interface token failed");
         return IPC_PROXY_ERR;
@@ -44,114 +46,70 @@ int32_t MediaDecryptModuleServiceProxy::Release()
     return reply.ReadInt32();
 }
 
-int32_t MediaDecryptModuleServiceProxy::DecryptData(bool secureDecodrtState,
+int32_t MediaDecryptModuleServiceProxy::DecryptMediaData(bool secureDecodrtState,
     IMediaDecryptModuleService::CryptInfo &cryptInfo, uint64_t srcBuffer, uint64_t dstBuffer)
 {
-    DRM_INFO_LOG("MediaDecryptModuleServiceProxy::DecryptData enter.");
+    DRM_INFO_LOG("MediaDecryptModuleServiceProxy::DecryptMediaData enter.");
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
 
-    if (!data.WriteInterfaceToken(GetDescriptor())) {
-        DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptData Write interface token failed");
-        return IPC_PROXY_ERR;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteInterfaceToken(GetDescriptor()), IPC_PROXY_ERR,
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write interface token failed");
 
-    if (!data.WriteBool(secureDecodrtState)) {
-        DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptData Write secureDecodrtState failed");
-        return IPC_PROXY_ERR;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteBool(secureDecodrtState), IPC_PROXY_ERR,
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write secureDecodrtState failed");
 
-    if (!data.WriteInt32(cryptInfo.type)) {
-        DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptData Write cryptInfo.type failed");
-        return IPC_PROXY_ERR;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteInt32(cryptInfo.type), IPC_PROXY_ERR,
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.type failed");
 
-    if (!data.WriteInt32(cryptInfo.keyId.size())) {
-        DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptData Write cryptInfo.keyId size failed");
-        return IPC_PROXY_ERR;
-    }
-
+    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteInt32(cryptInfo.keyId.size()), IPC_PROXY_ERR,
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.keyId size failed");
     for (auto keyId : cryptInfo.keyId) {
-        if (!data.WriteUint8(keyId)) {
-            DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptData Write cryptInfo.keyId failed");
-            return IPC_PROXY_ERR;
-        }
+        DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint8(keyId), IPC_PROXY_ERR,
+            "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.keyId failed");
     }
 
-    if (!data.WriteInt32(cryptInfo.iv.size())) {
-        DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptData Write cryptInfo.iv size failed");
-        return IPC_PROXY_ERR;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteInt32(cryptInfo.iv.size()), IPC_PROXY_ERR,
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.iv size failed");
 
     for (auto iv : cryptInfo.iv) {
-        if (!data.WriteUint8(iv)) {
-            DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptData Write cryptInfo.iv failed");
-            return IPC_PROXY_ERR;
-        }
+        DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint8(iv), IPC_PROXY_ERR,
+            "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.iv failed");
     }
 
-    if (!data.WriteInt32(cryptInfo.pattern.encryptBlocks)) {
-        DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptData Write cryptInfo.pattern.encryptBlocks failed");
-        return IPC_PROXY_ERR;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteInt32(cryptInfo.pattern.encryptBlocks), IPC_PROXY_ERR,
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.pattern.encryptBlocks failed");
 
-    if (!data.WriteInt32(cryptInfo.pattern.skipBlocks)) {
-        DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptData Write cryptInfo.pattern.skipBlocks failed");
-        return IPC_PROXY_ERR;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteInt32(cryptInfo.pattern.skipBlocks), IPC_PROXY_ERR,
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.pattern.skipBlocks failed");
 
-    if (!data.WriteInt32(cryptInfo.subSample.size())) {
-        DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptData Write cryptInfo.subSample.size() failed");
-        return IPC_PROXY_ERR;
-    }
-
+    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteInt32(cryptInfo.subSample.size()), IPC_PROXY_ERR,
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.subSample size failed");
     for (size_t i = 0; i < cryptInfo.subSample.size(); i++) {
         if (!data.WriteInt32(cryptInfo.subSample[i].clearHeaderLen)) {
-            DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptData Write cryptInfo.subSample.clearHeaderLen failed");
+            DRM_ERR_LOG(
+                "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.subSample.clearHeaderLen failed");
             return IPC_PROXY_ERR;
         }
-        if (!data.WriteInt32(cryptInfo.subSample[i].payLoadLen)) {
-            DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptData Write cryptInfo.subSample.payLoadLen failed");
-            return IPC_PROXY_ERR;
-        }
-    }
+        DRM_CHECK_AND_RETURN_RET_LOG(data.WriteInt32(cryptInfo.subSample[i].clearHeaderLen), IPC_PROXY_ERR,
+            "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.subSample.clearHeaderLen failed");
 
+        DRM_CHECK_AND_RETURN_RET_LOG(data.WriteInt32(cryptInfo.subSample[i].payLoadLen), IPC_PROXY_ERR,
+            "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.subSample.payLoadLen failed");
+    }
     (void)data.WriteFileDescriptor(srcBuffer);
     (void)data.WriteFileDescriptor(dstBuffer);
+
     int error = Remote()->SendRequest(DECRYPT_MODULE_DECRYPT_DATA, data, reply, option);
     if (error != ERR_NONE) {
-        DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptData failed, error: %{public}d", error);
+        DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptMediaData failed, error: %{public}d", error);
         return error;
     }
-    DRM_INFO_LOG("MediaDecryptModuleServiceProxy::DecryptData exit.");
-    return reply.ReadInt32();
-}
+    DRM_CHECK_AND_RETURN_RET_LOG(error == ERR_NONE, IPC_PROXY_ERR,
+        "MediaDecryptModuleServiceProxy DecryptMediaData failed, error: %{public}d", error);
 
-int32_t MediaDecryptModuleServiceProxy::RequireSecureDecoderModule(std::string &mimeType, bool *status)
-{
-    DRM_INFO_LOG("MediaDecryptModuleServiceProxy::RequireSecureDecoderModule enter.");
-    MessageParcel data;
-    MessageParcel reply;
-    MessageOption option;
-    
-    if (!data.WriteInterfaceToken(GetDescriptor())) {
-        DRM_ERR_LOG("MediaDecryptModuleServiceProxy RequireSecureDecoderModule Write interface token failed");
-        return IPC_PROXY_ERR;
-    }
-
-    if (!data.WriteString(mimeType)) {
-        DRM_ERR_LOG("MediaDecryptModuleServiceProxy RequireSecureDecoderModule Write response failed");
-        return IPC_PROXY_ERR;
-    }
-
-    int error = Remote()->SendRequest(DECRYPT_MODULE_REQUIRE_SECURE_DECODER, data, reply, option);
-    if (error != ERR_NONE) {
-        DRM_ERR_LOG("MediaDecryptModuleServiceProxy RequireSecureDecoderModule failed, error: %{public}d", error);
-        return error;
-    }
-    *status = reply.ReadBool();
-    DRM_INFO_LOG("MediaDecryptModuleServiceProxy::RequireSecureDecoderModule exit.");
+    DRM_INFO_LOG("MediaDecryptModuleServiceProxy::DecryptMediaData exit.");
     return reply.ReadInt32();
 }
 } // DrmStandard

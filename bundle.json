@@ -44,6 +44,8 @@
               "hdf_core",
               "eventhandler",
               "bundle_framework",
+              "drivers_interface_drm",
+              "drivers_peripheral_clearplay",
               "ability_base"
             ],
             "third_party": [

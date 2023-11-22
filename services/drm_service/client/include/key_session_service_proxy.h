@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,31 +16,37 @@
 #ifndef OHOS_DRM_KEY_SESSION_PROXY_H
 #define OHOS_DRM_KEY_SESSION_PROXY_H
 
-#include "iremote_proxy.h"
 #include "i_keysession_service.h"
+#include "iremote_proxy.h"
 
 namespace OHOS {
 namespace DrmStandard {
-class KeySessionServiceProxy : public IRemoteProxy<IKeySessionService> {
+class MediaKeySessionServiceProxy : public IRemoteProxy<IMediaKeySessionService> {
 public:
-    explicit KeySessionServiceProxy(const sptr<IRemoteObject> &impl);
-    virtual ~KeySessionServiceProxy() = default;
+    explicit MediaKeySessionServiceProxy(const sptr<IRemoteObject> &impl);
+    virtual ~MediaKeySessionServiceProxy() = default;
     int32_t Release() override;
+
+    int32_t GenerateLicenseRequest(IMediaKeySessionService::LicenseRequestInfo &licenseRequestInfo,
+        IMediaKeySessionService::LicenseRequest &licenseRequest) override;
+    int32_t ProcessLicenseResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &licenseResponse) override;
+    int32_t GenerateOfflineReleaseRequest(std::vector<uint8_t> &licenseId,
+        std::vector<uint8_t> &releaseRequest) override;
+    int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &licenseId,
+        std::vector<uint8_t> &releaseReponse) override;
+    int32_t CheckLicenseStatus(std::vector<LicenseStatus> &licenseStatus) override;
+    int32_t RestoreOfflineLicense(std::vector<uint8_t> &licenseId) override;
+    int32_t RemoveLicense() override;
+
     int32_t CreateMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule) override;
-    int32_t GenerateLicenseRequest(IKeySessionService::DrmInfo &drmInfo,
-        IKeySessionService::LicenseInfo &licenseInfo) override;
-    int32_t ProcessLicenseResponse(std::vector<uint8_t> &keyId, std::vector<uint8_t> &licenseResponse) override;
-    int32_t GenerateOfflineReleaseRequest(std::vector<uint8_t> &keyId, std::vector<uint8_t> &releaseRequest) override;
-    int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &keyId, std::vector<uint8_t> &releaseReponse) override;
-    int32_t CheckLicenseStatus(std::vector<KeyValue> &infoMap) override;
-    int32_t RestoreOfflineKeys(std::vector<uint8_t> &keyId) override;
-    int32_t RemoveOfflineKeys(std::vector<uint8_t> &keyId) override;
-    int32_t GetOfflineKeyIds(std::vector<std::vector<uint8_t>> &keyIds) override;
-    int32_t RemoveLicenses() override;
-    int32_t GetOfflineKeyState(std::vector<uint8_t> &keyId, IKeySessionService::OfflineKeyState &state) override;
-    int32_t SetKeySessionServiceCallback(sptr<IKeySessionServiceCallback> &callback) override;
+    int32_t GetSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel) override;
+
+    int32_t SetMediaKeySessionServiceCallback(sptr<IMediaKeySessionServiceCallback> &callback) override;
+
+    int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status) override;
+
 private:
-    static inline BrokerDelegator<KeySessionServiceProxy> delegator_;
+    static inline BrokerDelegator<MediaKeySessionServiceProxy> delegator_;
 };
 } // DrmStandard
 } // OHOS

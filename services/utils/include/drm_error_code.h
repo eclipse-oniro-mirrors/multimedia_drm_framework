@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,24 +18,24 @@
 
 namespace OHOS {
 namespace DrmStandard {
-/*
+/**
  * @brief drm remote request code for IPC.
  *
  * @since 1.0
  * @version 1.0
-*/
+ */
 enum DrmErrorCode {
     DRM_ERROR = -1,
-    DRM_SUCCESS = 0,
-    NO_SYSTEMP_APP_PERMISSION = 202,
-    INVALID_ARGUMENT = 7400101,
-    OPERATION_NOT_ALLOWED = 7400102,
-    SESSION_NOT_CONFIG = 7400103,
-    SESSION_NOT_RUNNING = 7400104,
-    SESSION_CONFIG_LOCKED = 7400105,
-    DEVICE_SETTING_LOCKED = 7400106,
-    DEVICE_DISABLED = 7400108,
-    SERVICE_FATAL_ERROR = 7400201
+    DRM_OK = 0,
+    DRM_ALLOC_ERROR,
+    DRM_INVALID_ARG,
+    DRM_UNSUPPORTED,
+    DRM_INVALID_SESSION_CFG,
+    DRM_INVALID_STATE,
+    DRM_UNKNOWN_ERROR,
+    DRM_OPERATION_NOT_ALLOWED,
+    DRM_HOST_ERROR,
+    DRM_SERVICE_ERROR,
 };
 } // namespace DrmStandard
 } // namespace OHOS

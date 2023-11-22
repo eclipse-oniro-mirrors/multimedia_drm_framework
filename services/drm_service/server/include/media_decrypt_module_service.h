@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,18 +22,29 @@
 #include "drm_error_code.h"
 #include "media_decrypt_module_service_stub.h"
 
+#include "media_key_session_proxy.h"
+#include "media_decrypt_module_proxy.h"
+#include "media_key_system_factory_proxy.h"
+#include "media_key_system_proxy.h"
+
 namespace OHOS {
 namespace DrmStandard {
+using namespace OHOS::HDI::Drm::V1_0;
+using namespace OHOS::HDI;
+
 class MediaDecryptModuleService : public MediaDecryptModuleServiceStub {
 public:
-    MediaDecryptModuleService();
+    MediaDecryptModuleService(sptr<OHOS::HDI::Drm::V1_0::IMediaDecryptModule> hdiMediaDecryptModule);
     ~MediaDecryptModuleService();
     int32_t Release() override;
-    int32_t DecryptData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo, uint64_t srcBuffer,
-        uint64_t dstBuffer) override;
-    int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status) override;
+    int32_t DecryptMediaData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo,
+        uint64_t srcBuffer, uint64_t dstBuffer) override;
+
 private:
+    std::mutex moduleLock_;
+    sptr<OHOS::HDI::Drm::V1_0::IMediaDecryptModule> hdiMediaDecryptModule_;
 };
 } // DrmStandard
 } // OHOS
+
 #endif // OHOS_DRM_MediaDecryptModuleService_H_

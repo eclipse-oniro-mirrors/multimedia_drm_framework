@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,16 +26,6 @@ namespace OHOS {
 namespace DrmStandard {
 class IMediaKeySystemService : public IRemoteBroker {
 public:
-    enum RequestType {
-        REQUEST_TYPE_UNKNOWN = 0,
-        REQUEST_TYPE_INITIAL = 1,
-        REQUEST_TYPE_RENEWAL = 2,
-        REQUEST_TYPE_RELEASE = 3,
-        REQUEST_TYPE_NONE = 4,
-        REQUEST_TYPE_UPDATE = 5,
-        REQUEST_TYPE_DOWNLOADCERT = 6,
-    };
-
     enum HdcpLevel {
         HDCP_UNKNOWN,
         HDCP_NONE,
@@ -47,28 +37,44 @@ public:
         HDCP_NO_OUTPUT = 0x7fff,
     };
 
-    enum ConfigType {
-        CONFIGTYPE_DEVICEPROPERTY = 0,
-        CONFIGTYPE_KEYSESSION = 1,
-        CONFIGTYPE_OUTPUTPROTECTTYPE = 2,
+    enum AdcpLevel {
+        ADCP_UNKNOWN = 0,
+        ADCP_V1_L1,
+        ADCP_V1_L2,
+        ADCP_V1_L3,
+        ADCP_NO_OUTPUT = 0x7fff,
     };
 
-    struct KeyValue {
+    enum CertificateStatus {
+        CERT_STATUS_PROVISIONED = 0,
+        CERT_STATUS_NOT_PROVISIONED = 1,
+        CERT_STATUS_EXPIRED = 3,
+        CERT_STATUS_INVALID = 4,
+        CERT_STATUS_GET_FAILED = 5,
+    };
+
+    struct MetircKeyValue {
         std::string name;
         std::string value;
     };
 
     virtual ~IMediaKeySystemService() = default;
     virtual int32_t Release() = 0;
-    virtual int32_t GenerateKeySystemRequest(RequestType type, std::vector<uint8_t> &request,
-        std::string &defaultUrl) = 0;
-    virtual int32_t ProcessKeySystemResponse(RequestType type, const std::vector<uint8_t> &response) = 0;
-    virtual int32_t SetConfiguration(ConfigType type, std::string &propertyName, std::string &value) = 0;
-    virtual int32_t GetConfiguration(ConfigType type, std::string &propertyName, std::string &value) = 0;
-    virtual int32_t CreateKeySession(IKeySessionService::SecurityLevel securityLevel,
-        sptr<IKeySessionService> &keySessionProxy) = 0;
-    virtual int32_t GetMetric(std::vector<IMediaKeySystemService::KeyValue> &infoMap) = 0;
-    virtual int32_t GetSecurityLevel(IKeySessionService::SecurityLevel *securityLevel) = 0;
+    virtual int32_t GenerateKeySystemRequest(std::vector<uint8_t> &request, std::string &defaultUrl) = 0;
+    virtual int32_t ProcessKeySystemResponse(const std::vector<uint8_t> &response) = 0;
+    virtual int32_t SetConfigurationString(std::string &configName, std::string &value) = 0;
+    virtual int32_t GetConfigurationString(std::string &configName, std::string &value) = 0;
+    virtual int32_t SetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value) = 0;
+    virtual int32_t GetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value) = 0;
+    virtual int32_t CreateMediaKeySession(IMediaKeySessionService::SecurityLevel securityLevel,
+        sptr<IMediaKeySessionService> &keySessionProxy) = 0;
+    virtual int32_t GetMetrics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics) = 0;
+    virtual int32_t GetMaxSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel) = 0;
+    virtual int32_t GetCertificateStatus(IMediaKeySystemService::CertificateStatus *certStatus) = 0;
+    virtual int32_t GetOfflineLicenseIds(std::vector<std::vector<uint8_t>> &licenseIds) = 0;
+    virtual int32_t GetOfflineLicenseStatus(std::vector<uint8_t> &licenseId,
+        IMediaKeySessionService::OfflineLicenseStatus &status) = 0;
+    virtual int32_t RemoveOfflineLicense(std::vector<uint8_t> &licenseId) = 0;
 
     DECLARE_INTERFACE_DESCRIPTOR(u"IMediaKeySystemSystemService");
 };

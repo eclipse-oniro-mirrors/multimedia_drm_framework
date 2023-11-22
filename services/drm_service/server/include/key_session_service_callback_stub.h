@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,17 +22,17 @@
 
 namespace OHOS {
 namespace DrmStandard {
-class KeySessionServiceCallbackStub : public IRemoteStub<IKeySessionServiceCallback> {
+class MediaKeySessionServiceCallbackStub : public IRemoteStub<IMediaKeySessionServiceCallback> {
 public:
-    KeySessionServiceCallbackStub() = default;
-    ~KeySessionServiceCallbackStub() = default;
-    virtual int OnRemoteRequest(uint32_t code, MessageParcel &data,
-        MessageParcel &reply, MessageOption &option) override;
+    MediaKeySessionServiceCallbackStub() = default;
+    ~MediaKeySessionServiceCallbackStub() = default;
+    virtual int OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
+        MessageOption &option) override;
+
 private:
-    int32_t HandleOnKeySessionKeyExpired(MessageParcel& data);
-    int32_t HandleOnKeySessionReclaimed(MessageParcel& data);
+    int32_t HandleOnMediaKeySessionKeyExpired(MessageParcel &data);
+    int32_t HandleOnMediaKeySessionReclaimed(MessageParcel &data);
 };
 } // namespace DrmStandard
 } // namespace OHOS
-
 #endif // OHOS_DRM_KEY_SESSION_SERVICE_CALLBACK_STUB_H

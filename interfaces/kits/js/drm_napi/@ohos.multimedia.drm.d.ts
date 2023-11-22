@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2023 Huawei Device Co., Ltd.
+* Copyright (C) 2023-2024 Huawei Device Co., Ltd.
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
@@ -22,22 +22,30 @@ import { Context } from './app/context';
  */
 declare namespace drm {
     /**
+     * Find a MediaKeySystem name.
+     * @since 8
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @param uuid Used to point a Digital Right Managements solution.
+     * @returns return the MediaKeySystem name.
+     */
+    function findMediaKeySystem(uuid: string): string;
+    /**
      * Creates a Mediakeysystem instance.
      * @since 8
      * @syscap SystemCapability.Multimedia.Drm.Core
      * @param uuid Used to point a Digital Right Managements solution.
      * @param callback Callback used to return the Mediakeysystem instance.
      */
-    function getMediaKeySystem(uuid: string, callback: AsyncCallback<MediaKeySystem>): void;
+    function createMediaKeySystem(uuid: string, callback: Callback<MediaKeySystem>): void;
 
     /**
      * Creates a MediaKeySystem instance.
      * @since 8
      * @syscap SystemCapability.Multimedia.Drm.Core
      * @param uuid Used to point a Digital Right Managements solution.
-     * @returns Promise used to return the MediaKeySystem instance.
+     * @returns return the MediaKeySystem instance.
      */
-    function getMediaKeySystem(uuid: string): Promise<MediaKeySystem>;
+    function createMediaKeySystem(uuid: string): MediaKeySystem;
 
     /**
      * Judge whether a system that specifies UUID, mimetype and security level is supported.
@@ -70,8 +78,8 @@ declare namespace drm {
     function isMediaKeySystemSupported(uuid: string): boolean;
 
     /**
-     * Manages and record key sessions. Before calling an MediaKeySystem method, we must use getMediaKeySystem
-     * to get a MediaKeySystem instance, then we can call functions.
+     * Manages and record key sessions. Before calling an MediaKeySystem method,
+     * we must use getMediaKeySystem to get a MediaKeySystem instance, then we can call functions.
      * @since 8
      * @syscap SystemCapability.Multimedia.Drm.Core
      */
@@ -81,48 +89,37 @@ declare namespace drm {
          * Get the specified configuration.
          * @since 8
          * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param configType Used to specify the config type.
-         * @param propertyName Used to specify the property name.
+         * @param configName Used to specify the config name.
          * @returns The result.
          */
-        getConfiguration(configType: ConfigType, propertyName: PropertyName): string;
+        getConfigurationString(configName: string): string;
 
         /**
          * Set the specified configuration.
          * @since 8
          * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param configType Used to specify the config type.
-         * @param propertyName Used to specify the property name.
+         * @param configName Used to specify the config name.
          * @param value The value to be set.
          */
-        setConfiguration(configType: ConfigType, propertyName: PropertyName, value: string): void;
+        setConfigurationString(configName: string, value: string): void;
 
         /**
-         * Generate the media key system provision request.
+         * Get the specified configuration.
          * @since 8
          * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param type Used to specify the request type.
-         * @returns Promise used to return a DrmRequest
+         * @param configName Used to specify the config name.
+         * @returns The result.
          */
-        generateKeySystemRequest(type: RequestType): Promise<DrmRequest>;
+        getConfigurationByteArray(configName: string): Uint8Array;
 
         /**
-         * Process the response corresponding the key system request obtained by the application.
+         * Set the specified configuration.
          * @since 8
          * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param type Used to specify the request type.
-         * @param response Response corresponding to the request.
+         * @param configName Used to specify the config name.
+         * @param value The value to be set.
          */
-        processKeySystemResponse(type: RequestType, response: Uint8Array): Promise<void>;
-
-        /**
-         * Create a key session instance.
-         * @since 8
-         * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param level Used to specify the Security level.
-         * @returns Promise used to return a KeySession instance.
-         */
-        createKeySession(level: SecurityLevel): Promise<KeySession>;
+        setConfigurationByteArray(configName: string, value: Uint8Array): void;
 
         /**
          * Get performance statistics information.That includes currentSessionNum, version, decryptNumber,
@@ -131,124 +128,39 @@ declare namespace drm {
          * @syscap SystemCapability.Multimedia.Drm.Core
          * @returns A map that includes perfaormence index and corresponding statistics.
          */
-        getMetric(): {[key: string]: string};
+        getMetrics(): MetricKeyValue[];
 
         /**
          * Get security level.
          * @since 8
          * @syscap SystemCapability.Multimedia.Drm.Core
-         * @returns Promise used to return SecurityLevel.
+         * @returns return SecurityLevel.
          */
-        getSecurityLevel(): Promise<SecurityLevel>;
-    }
-
-    /**
-     * Provide functions and keep a decrypt module. Before calling an KeySession method, we must use MediaKeySystem's
-     * createKeySession to get a key session instance.
-     * @since 8
-     * @syscap SystemCapability.Multimedia.Drm.Core
-     */
-    interface KeySession {
+        getMaxSecurityLevel(): SecurityLevel;
 
         /**
-         * Generate the license request.
+         * Generate the media key system provision request.
          * @since 8
          * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param mimeType Media type.
-         * @param initData pssh after base64.
-         * @param keyType Offline or online.
+         * @returns return a ProvisionRequest
          */
-        generateLicenseRequest(mimeType: string, initData: Uint8Array, keyType: number): Promise<DrmRequest>;
+        generateKeySystemRequest(): ProvisionRequest;
 
         /**
-         * Process the response corresponding the license request obtained by the application.
+         * Process the response corresponding the key system request obtained by the application.
          * @since 8
          * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param response The response.
-         * @returns Return keyID.
+         * @param response Response corresponding to the request.
          */
-        processLicenseResponse(response: Uint8Array): Promise<string>;
+        processKeySystemResponse(response: Uint8Array): void;
 
         /**
-         * Check the license status
+         * Get certificate status of DRM system.
          * @since 8
          * @syscap SystemCapability.Multimedia.Drm.Core
-         * @returns License status pair.
+         * @returns Certificate Status.
          */
-        checkLicenseStatus(): Promise<KeyValue[]>;
-
-        /**
-         * Release the resource before the session gonna be unused.
-         * @since 8
-         * @syscap SystemCapability.Multimedia.Drm.Core
-         */
-        release(): void;
-
-        /**
-         * Remove license.
-         * @since 8
-         * @syscap SystemCapability.Multimedia.Drm.Core
-         */
-        removeLicenses(): void;
-
-        /**
-         * Generate offline license request.
-         * @since 8
-         * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param keyId The keyId specifies which media content's license request should be generated.
-         * @returns Return the license request.
-         */
-        generateOfflineReleaseRequest(keyId: Uint8Array): Promise<Uint8Array>;
-
-        /**
-         * Process offline license response.
-         * @since 8
-         * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param keyId The keyId specifies which media content's license it is
-         * @param response The offline license.
-         */
-        processOfflineReleaseResponse(keyId: Uint8Array, response: Uint8Array): void;
-
-        /**
-         * Restore offline license response.
-         * @since 8
-         * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param keyId The keyId specifies which license should be restore.
-         */
-        restoreOfflineKeys(keyId: Uint8Array): void;
-
-        /**
-         * Get the list of offline keyIds.
-         * @since 8
-         * @syscap SystemCapability.Multimedia.Drm.Core
-         * @returns The list of offline keyIds.
-         */
-        getOfflineKeyIds(): Uint8Array[];
-
-        /**
-         * Remove license corresponding to the keyId.
-         * @since 8
-         * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param keyId The keyId specifies which license should be remove.
-         */
-        removeOfflineKeys(keyId: Uint8Array): void;
-
-        /**
-         * Get offline license status corresponding to the keyId.
-         * @since 8
-         * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param keyId The keyId specifies license.
-         * @returns OfflineKeyState.
-         */
-        getOfflineKeyState(keyId: Uint8Array): Promise<OfflineKeyState>;
-
-        /**
-         * Get decrypt module.
-         * @since 8
-         * @syscap SystemCapability.Multimedia.Drm.Core
-         * @returns Return the media decrypt module instance.
-         */
-        getDecryptModule(): Promise<MediaDecryptModule>;
+        getCertificateStatus():CertificateStatus;
 
         /**
          * Register or unregister listens for drm events.
@@ -257,56 +169,134 @@ declare namespace drm {
          * @param type Type of the drm event to listen for.
          * @param callback Callback used to listen for the key system required event.
          */
-        on(type: 'keySystemRequired', callback: Callback<number>): void;
+        on(type: 'keySystemRequired', callback: Callback<EventInfo>): void;
         off(type: 'keySystemRequired'): void;
 
         /**
-         * Register or unregister listens for drm events.
+         * Create a key session instance with level.
          * @since 8
          * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param type Type of the drm event to listen for.
-         * @param callback Callback used to listen for the key required event.
+         * @param level Used to specify the Security level.
+         * @returns return a MediaKeySession instance.
          */
-        on(type: 'keyRequired', callback: Callback<number>): void;
-        off(type: 'keyRequired'): void;
+        createMediaKeySession(level: SecurityLevel): MediaKeySession;
 
         /**
-         * Register or unregister listens for drm events.
+         * Create a key session instance.
          * @since 8
          * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param type Type of the drm event to listen for.
-         * @param callback Callback used to listen for the key required event.
+         * @returns return a MediaKeySession instance.
          */
-        on(type: 'keyExpired', callback: Callback<number>): void;
-        off(type: 'keyExpired'): void;
+        createMediaKeySession(): MediaKeySession;
 
         /**
-         * Register or unregister listens for drm events.
+         * Get the list of offline LicenseIds.
          * @since 8
          * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param type Type of the drm event to listen for.
-         * @param callback Callback used to listen for the vendor defined event.
+         * @returns The list of offline LicenseIds.
          */
-        on(type: 'vendorDefined', callback: Callback<number>): void;
-        off(type: 'vendorDefined'): void;
+        getOfflineLicenseIds(): Uint8Array[];
 
         /**
-         * Register or unregister listens for drm events.
+         * Get offline license status corresponding to the licenseId.
          * @since 8
          * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param type Type of the drm event to listen for.
-         * @param callback Callback used to listen for keySession reclaimed event.
+         * @param licenseId The licenseId specifies license.
+         * @returns OfflineKeyState.
          */
-        on(type: 'keySessionReclaimed', callback: Callback<number>): void;
-        off(type: 'keySessionReclaimed'): void;
+        getOfflineLicenseStatus(licenseId: Uint8Array): OfflineLicenseStatus;
+
+        /**
+         * Remove license corresponding to the licenseId.
+         * @since 8
+         * @syscap SystemCapability.Multimedia.Drm.Core
+         * @param licenseId The licenseId specifies which license should be remove.
+         */
+        removeOfflineLicense(licenseId: Uint8Array): void;
+        /**
+         * Release the resource before the mediakeysystem gonna be unused.
+         * @since 8
+         * @syscap SystemCapability.Multimedia.Drm.Core
+         */
+        destory(): void;
     }
 
     /**
-     * Provide decrypt functions. Before we gonna use a decrypt module, we shoud call getDecryptModule.
+     * Provide functions and keep a decrypt module. Before calling an MediaKeySession method,
+     * we must use MediaKeySystem's createMediaKeySession to get a key session instance.
      * @since 8
      * @syscap SystemCapability.Multimedia.Drm.Core
      */
-    interface MediaDecryptModule {
+    interface MediaKeySession {
+
+        /**
+         * Generate the license request.
+         * @since 8
+         * @syscap SystemCapability.Multimedia.Drm.Core
+         * @param mimeType Media type.
+         * @param initData pssh after base64.
+         * @param licenseType Offline or online.
+         */
+        generateLicenseRequest(mimeType: string, initData: Uint8Array, licenseType: number,
+            optionalData: OptionalData[]): LicenseRequest;
+
+        /**
+         * Process the response corresponding the license request obtained by the application.
+         * @since 8
+         * @syscap SystemCapability.Multimedia.Drm.Core
+         * @param response The response.
+         * @returns Return licenseId.
+         */
+        processLicenseResponse(response: Uint8Array): Uint8Array;
+
+        /**
+         * Check the license status
+         * @since 8
+         * @syscap SystemCapability.Multimedia.Drm.Core
+         * @returns License status pair.
+         */
+        checkLicenseStatus(): LicenseStatus[];
+
+        /**
+         * Remove license.
+         * @since 8
+         * @syscap SystemCapability.Multimedia.Drm.Core
+         */
+        removeLicense(): void;
+
+        /**
+         * Generate offline license request.
+         * @since 8
+         * @syscap SystemCapability.Multimedia.Drm.Core
+         * @param licenseId The licenseId specifies which media content's license request should be generated.
+         * @returns Return the license request.
+         */
+        generateOfflineReleaseRequest(licenseId: Uint8Array): Uint8Array;
+
+        /**
+         * Process offline license response.
+         * @since 8
+         * @syscap SystemCapability.Multimedia.Drm.Core
+         * @param licenseId The licenseId specifies which media content's license it is
+         * @param response The offline license.
+         */
+        processOfflineReleaseResponse(licenseId: Uint8Array, response: Uint8Array): void;
+
+        /**
+         * Restore offline license response.
+         * @since 8
+         * @syscap SystemCapability.Multimedia.Drm.Core
+         * @param licenseId The licenseId specifies which license should be restore.
+         */
+        restoreOfflineLicense(licenseId: Uint8Array): void;
+
+        /**
+         * Get security level.
+         * @since 8
+         * @syscap SystemCapability.Multimedia.Drm.Core
+         * @returns return SecurityLevel.
+         */
+        getSecurityLevel(): SecurityLevel;
 
         /**
          * When the decrypt content need a secure decoder, return true, otherwise return false.
@@ -318,24 +308,101 @@ declare namespace drm {
         requireSecureDecoderModule(mimeType: string): boolean;
 
         /**
-         * Decrypt content.
+         * Register or unregister listens for drm events.
          * @since 8
          * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param secureDecoderStatus Secure decoder status.
-         * @param cryptInfo Crypt info.
-         * @param srcBuffer Source buffer.
-         * @param dstBuffer Destination buffer.
+         * @param type Type of the drm event to listen for.
+         * @param callback Callback used to listen for the key required event.
          */
-        decryptData(secureDecoderStatus: boolean, cryptInfo: CryptInfo, srcBuffer: number,
-            dstBuffer: number): Promise<void>;
+        on(type: 'keyRequired', callback: Callback<EventInfo>): void;
+        off(type: 'keyRequired'): void;
 
         /**
-         * Release the resource that a decrypt module owned. When a decrypt module will be unused,
-         * we should call this function.
+         * Register or unregister listens for drm events.
+         * @since 8
+         * @syscap SystemCapability.Multimedia.Drm.Core
+         * @param type Type of the drm event to listen for.
+         * @param callback Callback used to listen for the key required event.
+         */
+        on(type: 'keyExpired', callback: Callback<EventInfo>): void;
+        off(type: 'keyExpired'): void;
+
+        /**
+         * Register or unregister listens for drm events.
+         * @since 8
+         * @syscap SystemCapability.Multimedia.Drm.Core
+         * @param type Type of the drm event to listen for.
+         * @param callback Callback used to listen for the vendor defined event.
+         */
+        on(type: 'vendorDefined', callback: Callback<EventInfo>): void;
+        off(type: 'vendorDefined'): void;
+
+        /**
+         * Register or unregister listens for drm events.
+         * @since 8
+         * @syscap SystemCapability.Multimedia.Drm.Core
+         * @param type Type of the drm event to listen for.
+         * @param callback Callback used to listen for keySession reclaimed event.
+         */
+        on(type: 'sessionReclaimed', callback: Callback<EventInfo>): void;
+        off(type: 'sessionReclaimed'): void;
+
+        /**
+         * Register or unregister listens for drm events.
+         * @since 8
+         * @syscap SystemCapability.Multimedia.Drm.Core
+         * @param type Type of the drm event to listen for.
+         * @param callback Callback used to listen for expiration update event.
+         */
+        on(type: 'expirationUpdate', callback: Callback<EventInfo>): void;
+        off(type: 'expirationUpdate'): void;
+
+        /**
+         * Register or unregister listens for drm events.
+         * @since 8
+         * @syscap SystemCapability.Multimedia.Drm.Core
+         * @param type Type of the drm event to listen for.
+         * @param callback Callback used to listen for keys change event.
+         */
+        on(type: 'keysChange', callback: Callback<KeysInfo[]>): void;
+        off(type: 'keysChange'): void;
+
+        /**
+         * Register or unregister listens for drm events.
+         * @since 8
+         * @syscap SystemCapability.Multimedia.Drm.Core
+         * @param type Type of the drm event to listen for.
+         * @param callback Callback used to listen for Session lost event.
+         */
+        on(type: 'sessionLost', callback: Callback<EventInfo>): void;
+        off(type: 'sessionLost'): void;
+
+        /**
+         * Release the resource before the session gonna be unused.
          * @since 8
          * @syscap SystemCapability.Multimedia.Drm.Core
          */
-        release(): void;
+        destory(): void;
+
+    }
+
+    /**
+     * Enumerates which properties we can get.
+     * @since 8
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     */
+    enum PreDefinedConfigName {
+        CONFIG_DEVICE_VENDOR = "vendor",
+        CONFIG_DEVICE_VERSION = "version",
+        CONFIG_DEVICE_DESCRIPTION = "description",
+        CONFIG_DEVICE_ALGORITHMS = "algorithms",
+        CONFIG_DEVICE_UNIQUE_ID = "deviceUniqueId",
+        CONFIG_SESSION_MAX = "maxSessionNum",
+        CONFIG_SESSION_CURRENT = "currentSessionNum",
+        CONFIG_OUTPUT_HDCP_MAX = "maxHDCPLevel",
+        CONFIG_OUTPUT_HDCP_CURRENT = "currentHDCPLevel",
+        CONFIG_OUTPUT_ADCP_MAX = "maxADCPLevel",
+        CONFIG_OUTPUT_ADCP_CURRENT = "currentADCPLevel",
     }
 
     /**
@@ -347,29 +414,12 @@ declare namespace drm {
         LISTENER_DRM_EVENT = 200,
         LISTENER_PROVISION_REQUIRED = 201,
         LISTENER_KEY_NEEDED = 202,
-        LISTENER_KEY_EXPIRED = 203,     
-        LISTENER_VENDOR_DEFINED = 204,       
-        LISTENER_KEYSESSION_RECLAIMED = 205,          
-        LISTENER_EXPIRATION_UPDATE = 206,    
-        LISTENER_KEY_CHANGE = 207,        
-        LISTENER_KEYSESSION_LOSE = 208,
-    }
-
-    /**
-     * Enumerates which properties we can get.
-     * @since 8
-     * @syscap SystemCapability.Multimedia.Drm.Core
-     */
-    enum PropertyName {
-        PROPERTY_DEVICE_VENDOR = "vendor",
-        PROPERTY_DEVICE_VERSION = "version",
-        PROPERTY_DEVICE_DESCRIPTION = "description",
-        PROPERTY_DEVICE_ALGORITHMS = "algorithms",
-        PROPERTY_DEVICE_UNIQUE_ID = "deviceUniqueId",
-        PROPERTY_SESSION_MAX = "maxSessionNum",
-        PROPERTY_SESSION_CURRENT = "currentSessionNum",
-        PROPERTY_OUTPUT_HDCP_MAX = "maxHDCPLevel",
-        PROPERTY_OUTPUT_HDCP_CURRENT = "currentHDCPLevel",
+        LISTENER_KEY_EXPIRED = 203,
+        LISTENER_VENDOR_DEFINED = 204,
+        LISTENER_KEYSESSION_RECLAIMED = 205,
+        LISTENER_EXPIRATION_UPDATE = 206,
+        LISTENER_KEY_CHANGE = 207,
+        LISTENER_KEYSESSION_LOST = 208,
     }
 
     /**
@@ -389,14 +439,16 @@ declare namespace drm {
     }
 
     /**
-     * Enumerates which configurations.
+     * Enumerates adcp level.
      * @since 8
      * @syscap SystemCapability.Multimedia.Drm.Core
      */
-    enum ConfigType {
-        CONFIGTYPE_DEVICEPROPERTY = 0,
-        CONFIGTYPE_KEYSESSION = 1,
-        CONFIGTYPE_OUTPUTPROTECTTYPE = 2,
+    enum AdcpLevel {
+        ADCP_UNKNOWN = 0,
+        ADCP_V1_L1,
+        ADCP_V1_L2,
+        ADCP_V1_L3,
+        ADCP_NO_OUTPUT = 0x7fff,
     }
 
     /**
@@ -404,20 +456,33 @@ declare namespace drm {
      * @since 8
      * @syscap SystemCapability.Multimedia.Drm.Core
      */
-    enum KeyType {
-        KEYTYPE_OFFLINE = 0,
-        KEYTYPE_ONLINE,
+    enum LicenseType {
+        LICENSE_TYPE_OFFLINE = 0,
+        LICENSE_TYPE_ONLINE,
     }
 
     /**
-     * Enumerates offline license state.
+     * Enumerates offline license status.
      * @since 8
      * @syscap SystemCapability.Multimedia.Drm.Core
      */
-    enum OfflineKeyState {
-        OFFLINEKEYSTATE_UNKNOWN = 0,
-        OFFLINEKEYSTATE_USABLE = 1,               
-        OFFLINEKEYSTATE_INACTIVE = 2,
+    enum OfflineLicenseStatus {
+        OFFLINELICENSE_STATUS_UNKNOWN = 0,
+        OFFLINELICENSE_STATUS_USABLE = 1,
+        OFFLINELICENSE_STATUS_INACTIVE = 2,
+    }
+
+    /**
+     * Enumerates certificate status.
+     * @since 8
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     */
+    enum CertificateStatus {
+        CERT_STATUS_PROVISIONED = 0,
+        CERT_STATUS_NOT_PROVISIONED,
+        CERT_STATUS_EXPIRED,
+        CERT_STATUS_INVALID,
+        CERT_STATUS_GET_FAILED,
     }
 
     /**
@@ -432,7 +497,6 @@ declare namespace drm {
         REQUEST_TYPE_RELEASE = 3,
         REQUEST_TYPE_NONE = 4,
         REQUEST_TYPE_UPDATE = 5,
-        REQUEST_TYPE_DOWNLOADCERT = 6,
     }
 
     /**
@@ -451,14 +515,64 @@ declare namespace drm {
     }
 
     /**
-     * Provides the drm request definations.
+     * Provides the drm provision request definations.
      * @since 8
      * @syscap SystemCapability.Multimedia.Drm.Core
      */
-    interface DrmRequest {
-        keyRequestType: RequestType;
+    interface ProvisionRequest {
         mData: Uint8Array;
         mDefaultURL: string;
+    }
+
+    /**
+     * Provides the drm license request info optional data.
+     * @since 8
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     */
+    interface OptionalData {
+        name: string;
+        value: string;
+    }
+
+     /**
+     * Provides the drm license request definations.
+     * @since 8
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     */
+     interface LicenseRequest {
+        licnseRequestType: RequestType;
+        mData: Uint8Array;
+        mDefaultURL: string;
+    }
+
+    /**
+     * Used to indicates the event info.
+     * @since 8
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     */
+    interface EventInfo {
+        name: string;
+        value: string;
+    }
+
+    /**
+     * Used to indicates the metrics info.
+     * @since 8
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     */
+    interface MetricKeyValue {
+        name: string;
+        value: string;
+    }
+
+    /**
+     * Used to indicates the license status.
+     * @since 8
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     */
+    interface LicenseStatus {
+        name: string;
+        value: string;
     }
 
     /**
@@ -466,65 +580,9 @@ declare namespace drm {
      * @since 8
      * @syscap SystemCapability.Multimedia.Drm.Core
      */
-    interface KeyValue {
-        name: string;
+    interface KeysInfo {
+        licenseId: Uint8Array;
         value: string;
-    }
-
-    /**
-     * Used to indicates the length of clear bytes and decrypt length in a subsample.
-     * @since 8
-     * @syscap SystemCapability.Multimedia.Drm.Core
-     */
-    interface SubSample {
-        clearHeaderLen: number;
-        payLoadLen: number;
-    }
-
-    /**
-     * Decryption pattern.
-     * @since 8
-     * @syscap SystemCapability.Multimedia.Drm.Core
-     */
-    interface Pattern {
-        encryptBlocks: number;
-        skipBlocks: number;
-    }
-
-    /**
-     * Enumerates encryption Algorithm types.
-     * @since 8
-     * @syscap SystemCapability.Multimedia.Drm.Core
-     */
-    enum CryptAlgorithmType {
-        ALGTYPE_UNENCRYPTED = 0,
-        ALGTYPE_AES_CTR = 1,
-        ALGTYPE_AES_WV = 2,
-        ALGTYPE_AES_CBC = 3,
-        ALGTYPE_SM4_CBC = 4,
-    }
-
-    /**
-     * Provides the defination of encryption info.
-     * @since 8
-     * @syscap SystemCapability.Multimedia.Drm.Core
-     */
-    interface CryptInfo {
-        type: CryptAlgorithmType;
-        keyId: Uint8Array;
-        iv: Uint8Array;
-        pattern: Pattern;
-        subSample: SubSample[];
-    }
-
-    /**
-     * Provides the defination of decryption data buffer.
-     * @since 8
-     * @syscap SystemCapability.Multimedia.Drm.Core
-     */
-    interface DecryptDataBuffer {
-        bufferLen: number;
-        buffer: ArrayBuffer;
     }
 }
 

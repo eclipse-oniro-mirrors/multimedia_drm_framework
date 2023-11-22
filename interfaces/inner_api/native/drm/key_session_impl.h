@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,74 +15,80 @@
 #ifndef OHOS_DRM_KEY_SESSION_IMPL_H_
 #define OHOS_DRM_KEY_SESSION_IMPL_H_
 
+#include <cstring>
+#include "nocopyable.h"
+#include "ipc_skeleton.h"
+#include "iservice_registry.h"
+#include "drm_napi_utils.h"
+#include "common_napi.h"
 #include "media_decrypt_module_impl.h"
 #include "i_keysession_service.h"
 #include "i_keysession_service_callback.h"
 #include "key_session_service_callback_stub.h"
-#include "drm_napi_utils.h"
-#include "ipc_skeleton.h"
-#include "iservice_registry.h"
-#include "nocopyable.h"
-#include <cstring>
 
 namespace OHOS {
 namespace DrmStandard {
-class KeySessionImplCallback : public RefBase {
+class MediaKeySessionImplCallback : public RefBase {
 public:
-    KeySessionImplCallback() = default;
-    virtual ~KeySessionImplCallback() = default;
-    virtual void OnKeySessionKeyExpired(const std::string eventType, const KeyStatus status) = 0;
-    virtual void OnKeySessionReclaimed(const std::string eventType, const SessionStatus status) = 0;
+    MediaKeySessionImplCallback() = default;
+    virtual ~MediaKeySessionImplCallback() = default;
+    virtual void OnMediaKeySessionKeyExpired(const std::string eventType, const KeyStatus status) = 0;
+    virtual void OnMediaKeySessionReclaimed(const std::string eventType, const SessionStatus status) = 0;
 };
 
-class KeySessionImpl : public RefBase {
+class MediaKeySessionImpl : public RefBase {
 public:
-    explicit KeySessionImpl(sptr<IKeySessionService> &keySession);
-    ~KeySessionImpl();
+    explicit MediaKeySessionImpl(sptr<IMediaKeySessionService> &keySession);
+    ~MediaKeySessionImpl();
     int32_t Release();
     int32_t Init();
+
+    int32_t GenerateLicenseRequest(IMediaKeySessionService::LicenseRequestInfo &licenseRequestInfo,
+        IMediaKeySessionService::LicenseRequest &licenseRequest);
+    int32_t ProcessLicenseResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &licenseResponse);
+    int32_t GenerateOfflineReleaseRequest(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &releaseRequest);
+    int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &releaseReponse);
+    int32_t CheckLicenseStatus(std::vector<IMediaKeySessionService::LicenseStatus> &licenseStatusVec);
+    int32_t RestoreOfflineLicense(std::vector<uint8_t> &licenseId);
+
+    int32_t RemoveLicense();
+
     sptr<MediaDecryptModuleImpl> GetDecryptModule();
-    int32_t GenerateLicenseRequest(IKeySessionService::DrmInfo &drmInfo,
-        IKeySessionService::LicenseInfo &licenseInfo);
-    int32_t ProcessLicenseResponse(std::vector<uint8_t> &keyId, std::vector<uint8_t> &licenseResponse);
-    int32_t GenerateOfflineReleaseRequest(std::vector<uint8_t> &keyId, std::vector<uint8_t> &releaseRequest);
-    int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &keyId, std::vector<uint8_t> &releaseReponse);
-    int32_t CheckLicenseStatus(std::vector<IKeySessionService::KeyValue> &infoMap);
-    int32_t RestoreOfflineKeys(std::vector<uint8_t> &keyId);
-    int32_t RemoveOfflineKeys(std::vector<uint8_t> &keyId);
-    int32_t GetOfflineKeyIds(std::vector<std::vector<uint8_t>> &keyIds);
-    int32_t RemoveLicenses();
-    int32_t GetOfflineKeyState(std::vector<uint8_t> &keyId, IKeySessionService::OfflineKeyState &state);
-    sptr<IKeySessionService> GetKeySessionServiceProxy();
-    sptr<KeySessionImplCallback> GetKeySessionApplicationCallback();
-    int32_t SetKeySessionCallback(const sptr<KeySessionImplCallback> &callback);
-    int32_t SetKeySessionServiceCallback(sptr<IKeySessionServiceCallback> &callback);
+    int32_t GetSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel);
+
+    sptr<IMediaKeySessionService> GetMediaKeySessionServiceProxy();
+    sptr<MediaKeySessionImplCallback> GetMediaKeySessionApplicationCallback();
+    int32_t SetMediaKeySessionCallback(const sptr<MediaKeySessionImplCallback> &callback);
+    int32_t SetMediaKeySessionServiceCallback(sptr<IMediaKeySessionServiceCallback> &callback);
+
+    int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status);
+
 private:
-    sptr<KeySessionImplCallback> keySessionNapiCallback_;
-    sptr<IKeySessionServiceCallback> keySessionServiceCallback_;
-    sptr<OHOS::DrmStandard::IKeySessionService> keySessionServiceProxy_;
+    sptr<MediaKeySessionImplCallback> keySessionNapiCallback_;
+    sptr<IMediaKeySessionServiceCallback> keySessionServiceCallback_;
+    sptr<OHOS::DrmStandard::IMediaKeySessionService> keySessionServiceProxy_;
     sptr<MediaDecryptModuleImpl> mediaDecryptModuleImpl_;
     std::mutex mutex_;
 };
 
-class KeySessionStatusCallback : public KeySessionServiceCallbackStub {
+class MediaKeySessionStatusCallback : public MediaKeySessionServiceCallbackStub {
 public:
-    KeySessionStatusCallback() : keySessionImpl_(nullptr) {};
-    explicit KeySessionStatusCallback(const sptr<KeySessionImpl> &KeySessionImpl)
-        : keySessionImpl_(KeySessionImpl) {}
+    MediaKeySessionStatusCallback() : keySessionImpl_(nullptr) {};
+    explicit MediaKeySessionStatusCallback(const sptr<MediaKeySessionImpl> &MediaKeySessionImpl)
+        : keySessionImpl_(MediaKeySessionImpl)
+    {}
 
-    ~KeySessionStatusCallback()
+    ~MediaKeySessionStatusCallback()
     {
         keySessionImpl_ = nullptr;
     }
 
-    int32_t OnKeySessionKeyExpired(const KeyStatus status) override;
-    int32_t OnKeySessionReclaimed(const SessionStatus status) override;
+    int32_t OnMediaKeySessionKeyExpired(const KeyStatus status) override;
+    int32_t OnMediaKeySessionReclaimed(const SessionStatus status) override;
 
 private:
-    sptr<KeySessionImpl> keySessionImpl_;
+    sptr<MediaKeySessionImpl> keySessionImpl_;
 };
-
 } // DrmStandard
 } // OHOS
 

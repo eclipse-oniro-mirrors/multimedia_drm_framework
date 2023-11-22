@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,11 +37,12 @@ public:
     };
 
     enum CryptAlgorithmType {
-        ALGTYPE_UNENCRYPTED,
+        ALGTYPE_UNENCRYPTED = 0,
         ALGTYPE_AES_CTR,
         ALGTYPE_AES_WV,
         ALGTYPE_AES_CBC,
         ALGTYPE_SM4_CBC,
+        ALGTYPE_SM4_CTR,
     };
 
     struct CryptInfo {
@@ -52,14 +53,18 @@ public:
         std::vector<SubSample> subSample;
     };
 
+    struct DrmBuffer {
+        uint32_t bufferType;
+        uint32_t bufferLen;
+        int fd;
+    };
+
     virtual ~IMediaDecryptModuleService() = default;
     virtual int32_t Release() = 0;
-    virtual int32_t DecryptData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo,
+    virtual int32_t DecryptMediaData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo,
         uint64_t srcBuffer, uint64_t dstBuffer) = 0;
-    virtual int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status) = 0;
     DECLARE_INTERFACE_DESCRIPTOR(u"IMediaDecryptModuleService");
 };
 } // DrmStandard
 } // OHOS
-
 #endif // OHOS_DRM_I_MEDIA_DECRYPT_MODULE_SERVICE_H

@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,8 +20,7 @@ namespace OHOS {
 namespace DrmStandard {
 MediaKeySystemImpl::MediaKeySystemImpl(sptr<IMediaKeySystemService> &mediaKeysystem)
 {
-    DRM_DEBUG_LOG("MediaKeySystemImpl:0x%{public}06" PRIXPTR "MediaKeySystemImpl Instances create",
-        FAKE_POINTER(this));
+    DRM_DEBUG_LOG("MediaKeySystemImpl:0x%{public}06" PRIXPTR "MediaKeySystemImpl Instances create", FAKE_POINTER(this));
     serviceProxy_ = mediaKeysystem;
 }
 
@@ -49,10 +48,8 @@ int32_t MediaKeySystemImpl::Release()
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::GenerateKeySystemRequest(IMediaKeySystemService::RequestType type,
-    std::vector<uint8_t> &request, std::string &defaultUrl)
+int MediaKeySystemImpl::GenerateKeySystemRequest(std::vector<uint8_t> &request, std::string &defaultUrl)
 {
-    DRM_INFO_LOG("MediaKeySystemImpl::GenerateKeySystemRequest enter. type:%{public}d.", type);
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t retCode = DRM_OK;
 
@@ -60,7 +57,7 @@ int MediaKeySystemImpl::GenerateKeySystemRequest(IMediaKeySystemService::Request
         DRM_ERR_LOG("MediaKeySystemImpl::GenerateKeySystemRequest serviceProxy_ is null");
         return DRM_SERVICE_ERROR;
     }
-    retCode = serviceProxy_->GenerateKeySystemRequest(type, request, defaultUrl);
+    retCode = serviceProxy_->GenerateKeySystemRequest(request, defaultUrl);
     if (retCode != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemImpl::GenerateKeySystemRequest failed, retCode: %{public}d", retCode);
         return DRM_SERVICE_ERROR;
@@ -69,8 +66,7 @@ int MediaKeySystemImpl::GenerateKeySystemRequest(IMediaKeySystemService::Request
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::ProcessKeySystemResponse(IMediaKeySystemService::RequestType type,
-    const std::vector<uint8_t> &response)
+int MediaKeySystemImpl::ProcessKeySystemResponse(const std::vector<uint8_t> &response)
 {
     DRM_INFO_LOG("MediaKeySystemImpl::ProcessKeySystemResponse enter.");
     std::lock_guard<std::mutex> lock(mutex_);
@@ -80,7 +76,7 @@ int MediaKeySystemImpl::ProcessKeySystemResponse(IMediaKeySystemService::Request
         DRM_ERR_LOG("MediaKeySystemImpl::ProcessKeySystemResponse serviceProxy_ is null");
         return DRM_SERVICE_ERROR;
     }
-    retCode = serviceProxy_->ProcessKeySystemResponse(type, response);
+    retCode = serviceProxy_->ProcessKeySystemResponse(response);
     if (retCode != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemImpl::ProcessKeySystemResponse failed, retCode: %{public}d", retCode);
         return DRM_SERVICE_ERROR;
@@ -89,11 +85,10 @@ int MediaKeySystemImpl::ProcessKeySystemResponse(IMediaKeySystemService::Request
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::SetConfiguration(IMediaKeySystemService::ConfigType type, std::string &propertyName,
-    std::string &value)
+int MediaKeySystemImpl::SetConfigurationString(std::string &configName, std::string &value)
 {
-    DRM_INFO_LOG("SetConfiguration enter, configType:%{public}d, propertyName:%{public}s, value:%{public}s.",
-        (int)type, propertyName.c_str(), value.c_str());
+    DRM_INFO_LOG("MediaKeySystemImpl::SetConfiguration enter, configName:%{public}s, value:%{public}s.",
+        configName.c_str(), value.c_str());
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t retCode = DRM_OK;
 
@@ -101,20 +96,18 @@ int MediaKeySystemImpl::SetConfiguration(IMediaKeySystemService::ConfigType type
         DRM_ERR_LOG("MediaKeySystemImpl::SetConfiguration serviceProxy_ is null");
         return DRM_SERVICE_ERROR;
     }
-    retCode = serviceProxy_->SetConfiguration(type, propertyName, value);
+    retCode = serviceProxy_->SetConfigurationString(configName, value);
     if (retCode != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemImpl::SetConfiguration failed, retCode: %{public}d", retCode);
         return DRM_SERVICE_ERROR;
     }
-    DRM_INFO_LOG("SetConfiguration exit.");
+    DRM_INFO_LOG("MediaKeySystemImpl::SetConfiguration exit.");
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::GetConfiguration(IMediaKeySystemService::ConfigType configType, std::string &propertyName,
-    std::string &value)
+int MediaKeySystemImpl::GetConfigurationString(std::string &configName, std::string &value)
 {
-    DRM_INFO_LOG("MediaKeySystemImpl::GetConfiguration enter, configType:%{public}d, propertyName:%{public}s.",
-        (int)configType, propertyName.c_str());
+    DRM_INFO_LOG("MediaKeySystemImpl::GetConfiguration enter, configName:%{public}s.", configName.c_str());
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t retCode = DRM_OK;
 
@@ -122,7 +115,7 @@ int MediaKeySystemImpl::GetConfiguration(IMediaKeySystemService::ConfigType conf
         DRM_ERR_LOG("MediaKeySystemImpl::GetConfiguration serviceProxy_ is null");
         return DRM_SERVICE_ERROR;
     }
-    retCode = serviceProxy_->GetConfiguration(configType, propertyName, value);
+    retCode = serviceProxy_->GetConfigurationString(configName, value);
     if (retCode != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemImpl::GetConfiguration failed, retCode: %{public}d", retCode);
         return DRM_SERVICE_ERROR;
@@ -132,12 +125,50 @@ int MediaKeySystemImpl::GetConfiguration(IMediaKeySystemService::ConfigType conf
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::CreateKeySession(IKeySessionService::SecurityLevel securityLevel,
-    sptr<KeySessionImpl> *keySessionImpl)
+int MediaKeySystemImpl::SetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value)
 {
-    DRM_INFO_LOG("MediaKeySystemImpl::CreateKeySession enter.");
-    sptr<IKeySessionService> keySessionProxy = nullptr;
-    sptr<KeySessionImpl> localKeySessionImpl = nullptr;
+    DRM_INFO_LOG("MediaKeySystemImpl::SetConfiguration enter, configName:%{public}s.", configName.c_str());
+    std::lock_guard<std::mutex> lock(mutex_);
+    int32_t retCode = DRM_OK;
+
+    if (serviceProxy_ == nullptr) {
+        DRM_ERR_LOG("MediaKeySystemImpl::SetConfiguration serviceProxy_ is null");
+        return DRM_SERVICE_ERROR;
+    }
+    retCode = serviceProxy_->SetConfigurationByteArray(configName, value);
+    if (retCode != DRM_OK) {
+        DRM_ERR_LOG("MediaKeySystemImpl::SetConfiguration failed, retCode: %{public}d", retCode);
+        return DRM_SERVICE_ERROR;
+    }
+    DRM_INFO_LOG("MediaKeySystemImpl::SetConfiguration exit.");
+    return DRM_OK;
+}
+
+int MediaKeySystemImpl::GetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value)
+{
+    DRM_INFO_LOG("MediaKeySystemImpl::GetConfiguration enter, configName:%{public}s.", configName.c_str());
+    std::lock_guard<std::mutex> lock(mutex_);
+    int32_t retCode = DRM_OK;
+
+    if (serviceProxy_ == nullptr) {
+        DRM_ERR_LOG("MediaKeySystemImpl::GetConfiguration serviceProxy_ is null");
+        return DRM_SERVICE_ERROR;
+    }
+    retCode = serviceProxy_->GetConfigurationByteArray(configName, value);
+    if (retCode != DRM_OK) {
+        DRM_ERR_LOG("MediaKeySystemImpl::GetConfiguration failed, retCode: %{public}d", retCode);
+        return DRM_SERVICE_ERROR;
+    }
+
+    return DRM_OK;
+}
+
+int MediaKeySystemImpl::CreateMediaKeySession(IMediaKeySessionService::SecurityLevel securityLevel,
+    sptr<MediaKeySessionImpl> *keySessionImpl)
+{
+    DRM_INFO_LOG("MediaKeySystemImpl::CreateMediaKeySession enter.");
+    sptr<IMediaKeySessionService> keySessionProxy = nullptr;
+    sptr<MediaKeySessionImpl> localMediaKeySessionImpl = nullptr;
     int retCode = DRM_OK;
 
     if (serviceProxy_ == nullptr) {
@@ -145,63 +176,143 @@ int MediaKeySystemImpl::CreateKeySession(IKeySessionService::SecurityLevel secur
         return DRM_SERVICE_ERROR;
     }
 
-    retCode = serviceProxy_->CreateKeySession(securityLevel, keySessionProxy);
+    retCode = serviceProxy_->CreateMediaKeySession(securityLevel, keySessionProxy);
     if (retCode == DRM_OK) {
         if (keySessionProxy != nullptr) {
-            localKeySessionImpl = new(std::nothrow) KeySessionImpl(keySessionProxy);
-            if (localKeySessionImpl == nullptr) {
-                DRM_ERR_LOG("Failed to new KeySessionImpl");
+            localMediaKeySessionImpl = new (std::nothrow) MediaKeySessionImpl(keySessionProxy);
+            if (localMediaKeySessionImpl == nullptr) {
+                DRM_ERR_LOG("Failed to new MediaKeySessionImpl");
                 return DRM_ALLOC_ERROR;
             }
         } else {
-            DRM_ERR_LOG("Failed to CreateKeySessionImpl with session is null");
+            DRM_ERR_LOG("Failed to CreateMediaKeySessionImpl with session is null");
             return DRM_UNKNOWN_ERROR;
         }
     } else {
         DRM_ERR_LOG("Failed to get session object from mediakeysystem service!, %{public}d", retCode);
         return DRM_SERVICE_ERROR;
     }
-    *keySessionImpl = localKeySessionImpl;
-    DRM_INFO_LOG("MediaKeySystemImpl::CreateKeySession exit.");
+    *keySessionImpl = localMediaKeySessionImpl;
+    DRM_INFO_LOG("MediaKeySystemImpl::CreateMediaKeySession exit.");
     return DRM_OK;
 }
 
-int32_t MediaKeySystemImpl::GetMetric(std::vector<IMediaKeySystemService::KeyValue> &infoMap)
+int32_t MediaKeySystemImpl::GetMetrics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics)
 {
-    DRM_INFO_LOG("MediaKeySystemImpl::GetMetric enter.");
+    DRM_INFO_LOG("MediaKeySystemImpl::GetMetrics enter.");
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t retCode = DRM_OK;
 
     if (serviceProxy_ == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemImpl::GetMetric serviceProxy_ is null");
+        DRM_ERR_LOG("MediaKeySystemImpl::GetMetrics serviceProxy_ is null");
         return DRM_SERVICE_ERROR;
     }
-    retCode = serviceProxy_->GetMetric(infoMap);
+    retCode = serviceProxy_->GetMetrics(metrics);
     if (retCode != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemImpl::GetMetric failed, retCode: %{public}d", retCode);
+        DRM_ERR_LOG("MediaKeySystemImpl::GetMetrics failed, retCode: %{public}d", retCode);
         return DRM_SERVICE_ERROR;
     }
-    DRM_INFO_LOG("MediaKeySystemImpl::GetMetric exit.");
+    DRM_INFO_LOG("MediaKeySystemImpl::GetMetrics exit.");
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::GetSecurityLevel(IKeySessionService::SecurityLevel *securityLevel)
+int MediaKeySystemImpl::GetMaxSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel)
 {
-    DRM_INFO_LOG("MediaKeySystemImpl::GetSecurityLevel enter.");
+    DRM_INFO_LOG("MediaKeySystemImpl::GetMaxSecurityLevel enter.");
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t retCode = DRM_OK;
 
     if (serviceProxy_ == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemImpl::GetSecurityLevel serviceProxy_ is null");
+        DRM_ERR_LOG("MediaKeySystemImpl::GetMaxSecurityLevel serviceProxy_ is null");
         return DRM_SERVICE_ERROR;
     }
-    retCode = serviceProxy_->GetSecurityLevel((IKeySessionService::SecurityLevel *)securityLevel);
-    DRM_ERR_LOG("MediaKeySystemImpl::GetSecurityLevel 277");
+    retCode = serviceProxy_->GetMaxSecurityLevel((IMediaKeySessionService::SecurityLevel *)securityLevel);
+    DRM_ERR_LOG("MediaKeySystemImpl::GetMaxSecurityLevel 277");
     if (retCode != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemImpl::GetSecurityLevel failed, retCode: %{public}d", retCode);
+        DRM_ERR_LOG("MediaKeySystemImpl::GetMaxSecurityLevel failed, retCode: %{public}d", retCode);
         return DRM_SERVICE_ERROR;
     }
-    DRM_INFO_LOG("MediaKeySystemImpl::GetSecurityLevel exit.");
+    DRM_INFO_LOG("MediaKeySystemImpl::GetMaxSecurityLevel exit.");
+    return DRM_OK;
+}
+
+int32_t MediaKeySystemImpl::GetOfflineLicenseIds(std::vector<std::vector<uint8_t>> &licenseIds)
+{
+    DRM_INFO_LOG("MediaKeySystemImpl::GetOfflineLicenseIds enter.");
+    std::lock_guard<std::mutex> lock(mutex_);
+    int32_t retCode = DRM_OK;
+
+    if (serviceProxy_ == nullptr) {
+        DRM_ERR_LOG("MediaKeySystemImpl::GetOfflineLicenseIds serviceProxy_ is null");
+        return DRM_SERVICE_ERROR;
+    }
+    retCode = serviceProxy_->GetOfflineLicenseIds(licenseIds);
+    if (retCode != DRM_OK) {
+        DRM_ERR_LOG("MediaKeySystemImpl::GetOfflineLicenseIds failed, retCode: %{public}d", retCode);
+        return DRM_SERVICE_ERROR;
+    }
+    DRM_INFO_LOG("MediaKeySystemImpl::GetOfflineLicenseIds exit");
+    return DRM_OK;
+}
+
+int MediaKeySystemImpl::GetOfflineLicenseStatus(std::vector<uint8_t> &licenseId,
+    IMediaKeySessionService::OfflineLicenseStatus &status)
+{
+    DRM_INFO_LOG("MediaKeySystemImpl::GetOfflineLicenseStatus enter.");
+    std::lock_guard<std::mutex> lock(mutex_);
+    int32_t retCode = DRM_OK;
+
+    if (serviceProxy_ == nullptr) {
+        DRM_ERR_LOG("MediaKeySystemImpl::GetOfflineLicenseStatus serviceProxy_ is null");
+        return DRM_SERVICE_ERROR;
+    }
+    retCode = serviceProxy_->GetOfflineLicenseStatus(licenseId, status);
+    if (retCode != DRM_OK) {
+        DRM_ERR_LOG("MediaKeySystemImpl::GetOfflineLicenseStatus failed, retCode: %{public}d", retCode);
+        return DRM_SERVICE_ERROR;
+    }
+    DRM_INFO_LOG("MediaKeySystemImpl::GetOfflineLicenseStatus exit.");
+    return DRM_OK;
+}
+
+int32_t MediaKeySystemImpl::RemoveOfflineLicense(std::vector<uint8_t> &licenseId)
+{
+    DRM_INFO_LOG("MediaKeySystemImpl::RemoveOfflineLicense enter.");
+    std::lock_guard<std::mutex> lock(mutex_);
+    int32_t retCode = DRM_OK;
+    for (auto a : licenseId) {
+        DRM_ERR_LOG("--licenseId:%{public}u", a);
+    }
+    if (serviceProxy_ == nullptr) {
+        DRM_ERR_LOG("MediaKeySystemImpl::RemoveOfflineLicense serviceProxy_ is null");
+        return DRM_SERVICE_ERROR;
+    }
+    retCode = serviceProxy_->RemoveOfflineLicense(licenseId);
+    if (retCode != DRM_OK) {
+        DRM_ERR_LOG("MediaKeySystemImpl::RemoveOfflineLicense failed, retCode: %{public}d", retCode);
+        return DRM_SERVICE_ERROR;
+    }
+    DRM_INFO_LOG("MediaKeySystemImpl::RemoveOfflineLicense exit");
+    return DRM_OK;
+}
+
+int32_t MediaKeySystemImpl::GetCertificateStatus(IMediaKeySystemService::CertificateStatus *certStatus)
+{
+    DRM_INFO_LOG("MediaKeySystemImpl::GetCertificateStatus enter.");
+    std::lock_guard<std::mutex> lock(mutex_);
+    int32_t retCode = DRM_OK;
+
+    if (serviceProxy_ == nullptr) {
+        DRM_ERR_LOG("MediaKeySystemImpl::GetCertificateStatus serviceProxy_ is null");
+        return DRM_SERVICE_ERROR;
+    }
+    retCode = serviceProxy_->GetCertificateStatus((IMediaKeySystemService::CertificateStatus *)certStatus);
+    DRM_ERR_LOG("MediaKeySystemImpl::GetCertificateStatus 277");
+    if (retCode != DRM_OK) {
+        DRM_ERR_LOG("MediaKeySystemImpl::GetCertificateStatus failed, retCode: %{public}d", retCode);
+        return DRM_SERVICE_ERROR;
+    }
+    DRM_INFO_LOG("MediaKeySystemImpl::GetCertificateStatus exit.");
     return DRM_OK;
 }
 } // namespace DrmStandard

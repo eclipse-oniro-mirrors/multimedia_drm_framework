@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,19 +16,20 @@
 #ifndef OHOS_DRM_KEY_SESSION_SERVICE_CALLBACK_PROXY_H
 #define OHOS_DRM_KEY_SESSION_SERVICE_CALLBACK_PROXY_H
 
-#include "iremote_proxy.h"
 #include "i_keysession_service_callback.h"
+#include "iremote_proxy.h"
 
 namespace OHOS {
 namespace DrmStandard {
-class KeySessionServiceCallbackProxy : public IRemoteProxy<IKeySessionServiceCallback> {
+class MediaKeySessionServiceCallbackProxy : public IRemoteProxy<IMediaKeySessionServiceCallback> {
 public:
-    explicit KeySessionServiceCallbackProxy(const sptr<IRemoteObject> &impl);
-    virtual ~KeySessionServiceCallbackProxy() = default;
-    int32_t OnKeySessionKeyExpired(const KeyStatus status) override;
-    int32_t OnKeySessionReclaimed(const SessionStatus status) override;
+    explicit MediaKeySessionServiceCallbackProxy(const sptr<IRemoteObject> &impl);
+    virtual ~MediaKeySessionServiceCallbackProxy() = default;
+    int32_t OnMediaKeySessionKeyExpired(const KeyStatus status) override;
+    int32_t OnMediaKeySessionReclaimed(const SessionStatus status) override;
+
 private:
-    static inline BrokerDelegator<KeySessionServiceCallbackProxy> delegator_;
+    static inline BrokerDelegator<MediaKeySessionServiceCallbackProxy> delegator_;
 };
 } // DrmStandard
 } // OHOS
