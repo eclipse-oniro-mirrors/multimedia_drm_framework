@@ -20,8 +20,9 @@ namespace OHOS {
 namespace DrmStandard {
 MediaDecryptModuleImpl::MediaDecryptModuleImpl(sptr<IMediaDecryptModuleService> &decryptModule)
 {
-    DRM_DEBUG_LOG("Enter Init MediaDecryptModuleImpl()");
+    DRM_DEBUG_LOG("Init MediaDecryptModuleImpl::MediaDecryptModuleImpl enter");
     serviceProxy_ = decryptModule;
+    DRM_DEBUG_LOG("Deinit MediaDecryptModuleImpl::MediaDecryptModuleImpl exit");
 }
 
 MediaDecryptModuleImpl::~MediaDecryptModuleImpl()

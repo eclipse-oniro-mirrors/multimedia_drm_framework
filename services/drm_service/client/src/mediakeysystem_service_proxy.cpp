@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -53,7 +53,7 @@ int32_t MediaKeySystemServiceProxy::GenerateKeySystemRequest(std::vector<uint8_t
     MessageOption option;
 
     if (!data.WriteInterfaceToken(MediaKeySystemServiceProxy::GetDescriptor())) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy GenerateKeySystemRequest two params Write interface token failed");
+        DRM_ERR_LOG("MediaKeySystemServiceProxy GenerateKeySystemRequest Write interface token failed");
         return IPC_PROXY_ERR;
     }
 
@@ -168,11 +168,11 @@ int32_t MediaKeySystemServiceProxy::SetConfigurationString(std::string &configNa
     }
 
     if (!data.WriteString(configName)) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration Write response failed");
+        DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration Write configName failed");
         return IPC_PROXY_ERR;
     }
     if (!data.WriteString(value)) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration Write response failed");
+        DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration Write value failed");
         return IPC_PROXY_ERR;
     }
 
@@ -199,7 +199,7 @@ int32_t MediaKeySystemServiceProxy::GetConfigurationString(std::string &configNa
     }
 
     if (!data.WriteString(configName)) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy GetConfiguration Write response failed");
+        DRM_ERR_LOG("MediaKeySystemServiceProxy GetConfiguration Write configName failed");
         return IPC_PROXY_ERR;
     }
 
@@ -228,18 +228,18 @@ int32_t MediaKeySystemServiceProxy::SetConfigurationByteArray(std::string &confi
     }
 
     if (!data.WriteString(configName)) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration Write response failed");
+        DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration Write configName failed");
         return IPC_PROXY_ERR;
     }
 
     if (!data.WriteInt32(value.size())) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration Write response size failed");
+        DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration Write value.size size failed");
         return IPC_PROXY_ERR;
     }
 
     for (auto res : value) {
         if (!data.WriteUint8(res)) {
-            DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration Write response failed");
+            DRM_ERR_LOG("MediaKeySystemServiceProxy SetConfiguration Write value failed");
             return IPC_PROXY_ERR;
         }
     }
@@ -267,7 +267,7 @@ int32_t MediaKeySystemServiceProxy::GetConfigurationByteArray(std::string &confi
     }
 
     if (!data.WriteString(configName)) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy GetConfiguration Write response failed");
+        DRM_ERR_LOG("MediaKeySystemServiceProxy GetConfiguration Write configName failed");
         return IPC_PROXY_ERR;
     }
 
@@ -299,7 +299,7 @@ int32_t MediaKeySystemServiceProxy::CreateMediaKeySession(IMediaKeySessionServic
         return IPC_PROXY_ERR;
     }
     if (!data.WriteInt32(securityLevel)) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy CreateMediaKeySession Write format failed");
+        DRM_ERR_LOG("MediaKeySystemServiceProxy CreateMediaKeySession Write securityLevel failed");
         return IPC_PROXY_ERR;
     }
 
@@ -328,7 +328,7 @@ int32_t MediaKeySystemServiceProxy::GetMetrics(std::vector<IMediaKeySystemServic
     MessageOption option;
 
     if (!data.WriteInterfaceToken(GetDescriptor())) {
-        DRM_ERR_LOG("MediaKeySystemServiceProxy GetMetrics two params Write interface token failed");
+        DRM_ERR_LOG("MediaKeySystemServiceProxy GetMetrics  Write interface token failed");
         return IPC_PROXY_ERR;
     }
 

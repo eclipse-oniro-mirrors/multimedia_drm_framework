@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,10 +21,7 @@
 #include "hilog/log.h"
 #include "hisysevent.h"
 
-#undef LOG_DOMAIN
-#undef LOG_TAG
-#define LOG_DOMAIN 0xD002B00
-#define LOG_TAG "DRM"
+
 #define MAX_STRING_SIZE 256
 
 #define __DRM_FILE_NAME__ (__builtin_strrchr(__FILE__, '/') ? __builtin_strrchr(__FILE__, '/') + 1 : __FILE__)

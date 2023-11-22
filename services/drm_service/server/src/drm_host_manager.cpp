@@ -107,14 +107,16 @@ int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &uuid, bool *isSur
         return ret;
     }
     *isSurpported = true;
-    DRM_INFO_LOG("IsMediaKeySystemSupported one parameters exit, isSurpported:%{public}d.", *isSurpported);
+    DRM_INFO_LOG("DrmHostManager::IsMediaKeySystemSupported one parameters exit, isSurpported:%{public}d.",
+        *isSurpported);
     return DRM_OK;
 }
 
 int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, bool *isSurpported)
 {
-    DRM_INFO_LOG("IsMediaKeySystemSupported two parameters enter, uuid:%{public}s, mimeType:%{public}s.", uuid.c_str(),
-        mimeType.c_str());
+    DRM_INFO_LOG(
+        "DrmHostManager::IsMediaKeySystemSupported two parameters enter, uuid:%{public}s, mimeType:%{public}s.",
+        uuid.c_str(), mimeType.c_str());
     int32_t ret = GetSevices(uuid, isSurpported);
     if (ret != DRM_OK) {
         *isSurpported = false;
@@ -129,14 +131,16 @@ int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &uuid, std::string
     if (ret != 0) {
         DRM_ERR_LOG("drmHostServieProxy_ return Code:%{public}d", ret);
     }
-    DRM_INFO_LOG("IsMediaKeySystemSupported two parameters exit, isSurpported:%{public}d.", *isSurpported);
+    DRM_INFO_LOG("DrmHostManager::IsMediaKeySystemSupported two parameters exit, isSurpported:%{public}d.",
+        *isSurpported);
     return DRM_OK;
 }
 
-int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType,
-    int32_t securityLevel, bool *isSurpported)
+int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, int32_t securityLevel,
+    bool *isSurpported)
 {
-    DRM_INFO_LOG("IsSupported three parameters, uuid:%{public}s, mimeType:%{public}s, securityLevel:%{public}d.",
+    DRM_INFO_LOG("DrmHostManager::IsMediaKeySystemSupported three parameters enter, uuid:%{public}s, "
+        "mimeType:%{public}s, securityLevel:%{public}d.",
         uuid.c_str(), mimeType.c_str(), securityLevel);
     int32_t ret = GetSevices(uuid, isSurpported);
     if (ret != DRM_OK) {
@@ -153,7 +157,8 @@ int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &uuid, std::string
     if (ret != 0) {
         DRM_ERR_LOG("drmHostServieProxy_ return Code:%{public}d", ret);
     }
-    DRM_INFO_LOG("IsMediaKeySystemSupported three parameters exit, isSurpported:%{public}d.", *isSurpported);
+    DRM_INFO_LOG("DrmHostManager::IsMediaKeySystemSupported three parameters exit, isSurpported:%{public}d.",
+        *isSurpported);
     return DRM_OK;
 }
 

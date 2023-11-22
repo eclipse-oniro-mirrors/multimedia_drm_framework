@@ -158,8 +158,11 @@ int32_t MediaKeySystemFactoryImpl::CreateMediaKeySystem(std::string &uuid, sptr<
     DRM_INFO_LOG("MediaKeySystemFactoryImpl:: CreateMediaKeySystem enter.");
     sptr<IMediaKeySystemService> mediaKeySystemProxy = nullptr;
     sptr<MediaKeySystemImpl> localMediaKeySystemImpl = nullptr;
-    int retCode = DRM_OK;
-
+    int32_t retCode = DRM_OK;
+    if (mediaKeySystemImpl == nullptr) {
+        DRM_ERR_LOG("MediaKeySystemImpl:: mediaKeySystemImpl is nullptr");
+        return DRM_INVALID_ARG;
+    }
     if (serviceProxy_ == nullptr) {
         DRM_ERR_LOG("MediaKeySystemFactoryImpl:: serviceProxy_ == nullptr");
         return DRM_SERVICE_ERROR;
@@ -174,7 +177,7 @@ int32_t MediaKeySystemFactoryImpl::CreateMediaKeySystem(std::string &uuid, sptr<
                 return DRM_ALLOC_ERROR;
             }
         } else {
-            DRM_ERR_LOG("Failed to CreateMediaKeySystemImpl with session is null");
+            DRM_ERR_LOG("mediaKeySystemProxy is nullptr");
             return DRM_UNKNOWN_ERROR;
         }
     } else {

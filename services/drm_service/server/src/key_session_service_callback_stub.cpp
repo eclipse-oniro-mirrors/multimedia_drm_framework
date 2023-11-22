@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -46,7 +46,8 @@ int32_t MediaKeySessionServiceCallbackStub::OnRemoteRequest(uint32_t code, Messa
 int32_t MediaKeySessionServiceCallbackStub::HandleOnMediaKeySessionKeyExpired(MessageParcel &data)
 {
     int32_t status = data.ReadInt32();
-    DRM_INFO_LOG("HandleOnMediaKeySessionKeyExpired called status = %{public}d", status);
+    DRM_INFO_LOG("MediaKeySessionServiceCallbackStub::HandleOnMediaKeySessionKeyExpired called status = %{public}d",
+        status);
     switch (status) {
         case KEY_STATUS_NORMAL:
             return OnMediaKeySessionKeyExpired(KEY_STATUS_NORMAL);
@@ -61,7 +62,8 @@ int32_t MediaKeySessionServiceCallbackStub::HandleOnMediaKeySessionKeyExpired(Me
 int32_t MediaKeySessionServiceCallbackStub::HandleOnMediaKeySessionReclaimed(MessageParcel &data)
 {
     int32_t status = data.ReadInt32();
-    DRM_INFO_LOG("HandleOnMediaKeySessionReclaimed called status = %{public}d", status);
+    DRM_INFO_LOG("MediaKeySessionServiceCallbackStub::HandleOnMediaKeySessionReclaimed called status = %{public}d",
+        status);
     switch (status) {
         case SESSION_STATUS_NORMAL:
             return OnMediaKeySessionReclaimed(SESSION_STATUS_NORMAL);
