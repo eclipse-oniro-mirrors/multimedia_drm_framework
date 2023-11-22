@@ -21,10 +21,7 @@
 #include "hilog/log.h"
 #include "hisysevent.h"
 
-#undef LOG_DOMAIN
-#undef LOG_TAG
-#define LOG_DOMAIN 0xD002B00
-#define LOG_TAG "DRM"
+
 #define MAX_STRING_SIZE 256
 
 #define __DRM_FILE_NAME__ (__builtin_strrchr(__FILE__, '/') ? __builtin_strrchr(__FILE__, '/') + 1 : __FILE__)

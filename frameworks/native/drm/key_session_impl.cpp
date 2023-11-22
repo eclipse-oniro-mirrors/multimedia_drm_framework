@@ -145,7 +145,6 @@ int MediaKeySessionImpl::GetSecurityLevel(IMediaKeySessionService::SecurityLevel
         return DRM_SERVICE_ERROR;
     }
     retCode = keySessionServiceProxy_->GetSecurityLevel((IMediaKeySessionService::SecurityLevel *)securityLevel);
-    DRM_ERR_LOG("MediaKeySessionImpl::GetSecurityLevel 277");
     if (retCode != DRM_OK) {
         DRM_ERR_LOG("MediaKeySessionImpl::GetSecurityLevel failed, retCode: %{public}d", retCode);
         return DRM_SERVICE_ERROR;
@@ -262,6 +261,10 @@ int32_t MediaKeySessionImpl::RequireSecureDecoderModule(std::string &mimeType, b
 
 sptr<IMediaKeySessionService> MediaKeySessionImpl::GetMediaKeySessionServiceProxy()
 {
+    DRM_INFO_LOG("MediaKeySessionImpl::GetMediaKeySessionServiceProxy enter.");
+    if (keySessionServiceProxy_ != nullptr) {
+        DRM_DEBUG_LOG("MediaKeySessionImpl MediaKeySessionServiceProxy is not nullptr");
+    }
     DRM_INFO_LOG("MediaKeySessionImpl::GetMediaKeySessionServiceProxy enter.");
     return keySessionServiceProxy_;
 }

@@ -41,8 +41,8 @@ int32_t MediaKeySystemImpl::Release()
         }
         serviceProxy_ = nullptr;
     } else {
-        DRM_ERR_LOG("serviceProxy_ == nullptr");
-        return -1;
+        DRM_ERR_LOG("serviceProxy_ is nullptr");
+        return errCode;
     }
     DRM_INFO_LOG("MediaKeySystemImpl::Release exit.");
     return DRM_OK;

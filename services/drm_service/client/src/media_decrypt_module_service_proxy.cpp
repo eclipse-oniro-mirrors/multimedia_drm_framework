@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,12 +21,12 @@ namespace DrmStandard {
 MediaDecryptModuleServiceProxy::MediaDecryptModuleServiceProxy(const sptr<IRemoteObject> &impl)
     : IRemoteProxy<IMediaDecryptModuleService>(impl)
 {
-    DRM_DEBUG_LOG("MediaKeySystemServiceProxy Initialized.");
+    DRM_DEBUG_LOG("MediaDecryptModuleServiceProxy::MediaKeySystemServiceProxy Initialized.");
 }
 
 int32_t MediaDecryptModuleServiceProxy::Release()
 {
-    DRM_INFO_LOG("MediaDecryptModuleServiceProxy::Release() enter.");
+    DRM_INFO_LOG("MediaDecryptModuleServiceProxy::Release enter.");
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
@@ -42,7 +42,7 @@ int32_t MediaDecryptModuleServiceProxy::Release()
         return error;
     }
 
-    DRM_INFO_LOG("MediaDecryptModuleServiceProxy::Release() exit.");
+    DRM_INFO_LOG("MediaDecryptModuleServiceProxy::Release exit.");
     return reply.ReadInt32();
 }
 

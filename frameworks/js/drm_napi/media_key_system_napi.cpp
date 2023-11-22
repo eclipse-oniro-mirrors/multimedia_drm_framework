@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -40,7 +40,7 @@ MediaKeySystemNapi::~MediaKeySystemNapi()
 
 napi_value MediaKeySystemNapi::Init(napi_env env, napi_value exports)
 {
-    DRM_INFO_LOG("MediaKeySystemNapi Init enter.");
+    DRM_INFO_LOG("MediaKeySystemNapi::Init enter.");
     napi_status status;
     napi_value ctorObj;
     int32_t refCount = 1;
@@ -72,7 +72,7 @@ napi_value MediaKeySystemNapi::Init(napi_env env, napi_value exports)
             }
         }
     }
-    DRM_INFO_LOG("MediaKeySystemNapi Init exit.");
+    DRM_INFO_LOG("MediaKeySystemNapi::Init exit.");
     return nullptr;
 }
 
@@ -117,7 +117,7 @@ napi_value MediaKeySystemNapi::CreateMediaKeySystemInstance(napi_env env, napi_c
     DRM_INFO_LOG("MediaKeySystemNapi::CreateMediaKeySystemInstance enter.");
     napi_status status;
     napi_value result = nullptr;
-    napi_value ctor;
+    napi_value ctor = nullptr;
 
     status = napi_get_reference_value(env, sConstructor_, &ctor);
     if (status == napi_ok) {
@@ -130,7 +130,7 @@ napi_value MediaKeySystemNapi::CreateMediaKeySystemInstance(napi_env env, napi_c
         napi_get_undefined(env, &result);
 
         std::string uuid;
-        char uuidBuffer[PATH_MAX];
+        char uuidBuffer[PATH_MAX] = { 0 };
         size_t uuidBufferLen = 0;
         status = napi_get_value_string_utf8(env, argv[PARAM0], uuidBuffer, PATH_MAX, &uuidBufferLen);
         if (status != napi_ok) {
@@ -154,7 +154,7 @@ napi_value MediaKeySystemNapi::CreateMediaKeySystemInstance(napi_env env, napi_c
         }
     }
     napi_get_undefined(env, &result);
-    DRM_INFO_LOG("CreateMediaKeySystemInstance exit.");
+    DRM_INFO_LOG("MediaKeySystemNapi::CreateMediaKeySystemInstance exit.");
     return result;
 }
 
@@ -184,7 +184,10 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
         return nullptr;
     }
     std::string uuid = std::string(buffer);
-
+    if (uuid.length() == 0) {
+        DRM_ERR_LOG("uuid lenth is not able to zero!");
+        return nullptr;
+    }
     if (argc == ARGS_ONE) {
         bool isSurpportted = MediaKeySystemFactoryImpl::GetInstance()->IsMediaKeySystemSupported(uuid);
         napi_get_boolean(env, isSurpportted, &result);
@@ -220,6 +223,7 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
         bool isSurpportted =
             MediaKeySystemFactoryImpl::GetInstance()->IsMediaKeySystemSupported(uuid, mimeType, securityLevel);
         napi_get_boolean(env, isSurpportted, &result);
+        DRM_INFO_LOG("MediaKeySystemNapi::IsMediaKeySystemSupported exit.");
         return result;
     }
     DRM_INFO_LOG("MediaKeySystemNapi::IsMediaKeySystemSupported exit.");
@@ -250,9 +254,14 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
     }
 
     napi_get_undefined(env, &result);
-    IMediaKeySessionService::SecurityLevel securityLevel =
-        static_cast<IMediaKeySessionService::SecurityLevel>(jsSecurityLevel);
-    status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
+    IMediaKeySessionService::SecurityLevel securityLevel = static_cast<IMediaKeySessionService::SecurityLevel>(jsSecurityLevel);
+    if(securityLevel < IMediaKeySessionService::SecurityLevel::SECURITY_LEVEL_UNKNOWN || 
+		securityLevel > IMediaKeySessionService::SecurityLevel::SECURITY_LEVEL_MAX) {
+        DRM_ERR_LOG("securityLevel is error!!!");
+        return nullptr;
+    }
+    status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&mediaKeySystemNapi));
+
     if (status == napi_ok && mediaKeySystemNapi != nullptr) {
         int ret = mediaKeySystemNapi->mediaKeySystemImpl_->CreateMediaKeySession(
             (IMediaKeySessionService::SecurityLevel)securityLevel, &keySessionImpl);
@@ -301,7 +310,11 @@ napi_value MediaKeySystemNapi::SetConfigurationString(napi_env env, napi_callbac
         return nullptr;
     }
     value = std::string(valueBuffer);
-    status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
+    if(value.length() == 0) {
+        DRM_ERR_LOG("String Parameter length cannot be zero!");
+        return nullptr;
+    }
+    status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&mediaKeySystemNapi));
     if (status == napi_ok && mediaKeySystemNapi != nullptr) {
         int ret = mediaKeySystemNapi->mediaKeySystemImpl_->SetConfigurationString(name, value);
         if (ret != napi_ok) {

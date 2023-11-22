@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -171,6 +171,7 @@ static napi_value DealDecryptParam1(napi_env env, napi_value *argv, IMediaDecryp
 {
     napi_value tmpProperty;
     napi_value subSample_property;
+    napi_status status;
     bool isTypeArray;
     void *keyId = nullptr;
     size_t offset;
@@ -206,7 +207,11 @@ static napi_value DealDecryptParam1(napi_env env, napi_value *argv, IMediaDecryp
     napi_get_value_int32(env, pattern_property_encryptBlocks, &cryptInfo.pattern.encryptBlocks);
     napi_get_value_int32(env, pattern_property_skipBlocks, &cryptInfo.pattern.skipBlocks);
     napi_get_named_property(env, argv[PARAM1], "subSampleNumber", &tmpProperty);
-    napi_get_value_int32(env, tmpProperty, &subSampleLen);
+    status = napi_get_value_int32(env, tmpProperty, &subSampleLen);
+    if (status != napi_ok ) {
+        DRM_ERR_LOG("napi_get_value_int32 Faild! Could not able to read subSampleLen argument!");
+        return nullptr;
+    }
     napi_get_named_property(env, argv[PARAM1], "subSample", &subSample_property);
     for (uint32_t i = 0; i < subSampleLen; i++) {
         napi_value jsSubSample;

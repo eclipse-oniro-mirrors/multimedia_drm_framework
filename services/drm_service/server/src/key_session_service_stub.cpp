@@ -125,22 +125,22 @@ static int ProcessLicenseRequest(MediaKeySessionServiceStub *stub, MessageParcel
     licenseRequestInfo.initData.assign(initDataBuf, initDataBuf + initDataSize);
     int32_t ret = stub->GenerateLicenseRequest(licenseRequestInfo, licenseRequest);
     if (!reply.WriteInt32(licenseRequest.requestType)) {
-        DRM_ERR_LOG("MediaKeySessionServiceStub Write GenerateLicenseRequest failed");
+        DRM_ERR_LOG("MediaKeySessionServiceStub Write requestType GenerateLicenseRequest failed");
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     if (!reply.WriteInt32(licenseRequest.mData.size())) {
-        DRM_ERR_LOG("MediaKeySessionServiceStub Write GenerateLicenseRequest failed");
+        DRM_ERR_LOG("MediaKeySessionServiceStub Write licenseRequestmDatasize GenerateLicenseRequest failed");
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
 
     for (auto data : licenseRequest.mData) {
         if (!reply.WriteUint8(data)) {
-            DRM_ERR_LOG("MediaKeySessionServiceStub Write GenerateLicenseRequest failed");
+            DRM_ERR_LOG("MediaKeySessionServiceStub Write data GenerateLicenseRequest failed");
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
     }
     if (!reply.WriteString(licenseRequest.mDefaultURL)) {
-        DRM_ERR_LOG("MediaKeySessionServiceStub Write GenerateLicenseRequest failed");
+        DRM_ERR_LOG("MediaKeySessionServiceStub Write licenseRequest.mDefaultURL GenerateLicenseRequest failed");
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     DRM_INFO_LOG("MediaKeySessionServiceStub MEDIA_KEY_SESSION_GENERATE_LICENSE_REQUEST exit.");
@@ -159,12 +159,12 @@ static int ProcessLicenseResponse(MediaKeySessionServiceStub *stub, MessageParce
     }
     int32_t ret = stub->ProcessLicenseResponse(licenseId, response);
     if (!reply.WriteInt32(licenseId.size())) {
-        DRM_ERR_LOG("MediaKeySessionServiceStub Write GenerateLicenseRequest failed");
+        DRM_ERR_LOG("MediaKeySessionServiceStub Write licenseId.size GenerateLicenseRequest failed");
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     for (auto id : licenseId) {
         if (!reply.WriteUint8(id)) {
-            DRM_ERR_LOG("MediaKeySessionServiceStub Write GenerateLicenseRequest failed");
+            DRM_ERR_LOG("MediaKeySessionServiceStub Write id GenerateLicenseRequest failed");
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
     }
@@ -185,13 +185,13 @@ static int ProcessOfflineReleaseRequest(MediaKeySessionServiceStub *stub, Messag
     std::vector<uint8_t> releaseRequest;
     int32_t ret = stub->GenerateOfflineReleaseRequest(licenseId, releaseRequest);
     if (!reply.WriteInt32(releaseRequest.size())) {
-        DRM_ERR_LOG("MediaKeySessionServiceStub Write GenerateLicenseRequest failed");
+        DRM_ERR_LOG("MediaKeySessionServiceStub Write releaseRequest.size GenerateLicenseRequest failed");
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
 
     for (auto request : releaseRequest) {
         if (!reply.WriteUint8(request)) {
-            DRM_ERR_LOG("MediaKeySessionServiceStub Write GenerateLicenseRequest failed");
+            DRM_ERR_LOG("MediaKeySessionServiceStub Write request GenerateLicenseRequest failed");
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
     }

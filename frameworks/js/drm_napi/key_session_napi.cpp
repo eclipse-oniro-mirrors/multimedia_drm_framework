@@ -171,6 +171,7 @@ napi_value MediaKeySessionNapi::CreateMediaKeySession(napi_env env, sptr<MediaKe
         sMediaKeySessionImpl_ = nullptr;
         if (status == napi_ok && result != nullptr) {
             DRM_INFO_LOG("success to CreateMediaKeySession napi instance");
+            DRM_INFO_LOG("MediaKeySessionNapi::CreateMediaKeySession exit.");
             return result;
         } else {
             DRM_ERR_LOG("Failed to CreateMediaKeySession napi instance");
@@ -269,8 +270,16 @@ static napi_value DealLicenseRequest(napi_env env, IMediaKeySessionService::Lice
         requestTypeEnum = "REQUEST_TYPE_NONE";
     } else if (licenseRequest.requestType == IMediaKeySessionService::REQUEST_TYPE_UPDATE) {
         requestTypeEnum = "REQUEST_TYPE_UPDATE";
+    } else if (licenseRequest.requestType < IMediaKeySessionService::REQUEST_TYPE_UNKNOWN || licenseRequest.requestType > IMediaKeySessionService::REQUEST_TYPE_UPDATE) {
+        DRM_ERR_LOG("Do not understand licenseRequest.requestType enum!");
+        return result;
     }
-    napi_create_string_utf8(env, requestTypeEnum, NAPI_AUTO_LENGTH, &requestType);
+
+    napi_status status = napi_create_string_utf8(env, requestTypeEnum, NAPI_AUTO_LENGTH, &requestType);
+    if(status != napi_ok) {
+        DRM_ERR_LOG("requestType error!");
+        return result;
+    }
     napi_create_object(env, &result);
     napi_set_named_property(env, result, "licnseRequestType", requestType);
 
@@ -283,7 +292,11 @@ static napi_value DealLicenseRequest(napi_env env, IMediaKeySessionService::Lice
     }
     napi_set_named_property(env, result, "mData", mData);
 
-    napi_create_string_utf8(env, licenseRequest.mDefaultURL.c_str(), NAPI_AUTO_LENGTH, &mDefaultURL);
+    status = napi_create_string_utf8(env, licenseRequest.mDefaultURL.c_str(), NAPI_AUTO_LENGTH, &mDefaultURL);
+    if(status != napi_ok) {
+        DRM_ERR_LOG("mDefaultURL error!");
+        return result;
+    }
     napi_set_named_property(env, result, "mDefaultURL", mDefaultURL);
     return result;
 }
@@ -364,13 +377,13 @@ napi_value MediaKeySessionNapi::ProcessLicenseResponse(napi_env env, napi_callba
 
     napi_is_typedarray(env, argv[PARAM0], &isTypeArray);
     if (!isTypeArray) {
-        DRM_ERR_LOG("argv[PARAM0] is not array!");
+        DRM_ERR_LOG("reponse is not array! ");
         return nullptr;
     }
 
     napi_get_typedarray_info(env, argv[PARAM0], &type, &reponseDataLen, &reponseData, &arraybuffer, &offset);
     if (reponseData == nullptr) {
-        DRM_ERR_LOG("napi_get_typedarray_info faild!");
+        DRM_ERR_LOG("napi_get_typedarray_info faild! Could not able to read reponseData argument!");
         return nullptr;
     }
     uint8_t *reponseDataPtr = reinterpret_cast<uint8_t *>(reponseData);
@@ -420,12 +433,12 @@ napi_value MediaKeySessionNapi::GenerateOfflineReleaseRequest(napi_env env, napi
 
     napi_is_typedarray(env, argv[PARAM0], &isTypeArray);
     if (!isTypeArray) {
-        DRM_ERR_LOG("argv[PARAM0] is not array!");
+        DRM_ERR_LOG("licenseId is not array!");
         return nullptr;
     }
     napi_get_typedarray_info(env, argv[PARAM0], &type, &licenseIdLen, &licenseId, &arraybuffer, &offset);
     if (licenseId == nullptr) {
-        DRM_ERR_LOG("napi_get_typedarray_info faild!");
+        DRM_ERR_LOG("napi_get_typedarray_info faild! Could not able to read licenseId argument!");
         return nullptr;
     }
     uint8_t *licenseIdPtr = reinterpret_cast<uint8_t *>(licenseId);
@@ -568,12 +581,12 @@ napi_value MediaKeySessionNapi::RestoreOfflineLicense(napi_env env, napi_callbac
 
     napi_is_typedarray(env, argv[PARAM0], &isTypeArray);
     if (!isTypeArray) {
-        DRM_ERR_LOG("argv[PARAM0] is not array!");
+        DRM_ERR_LOG("licenseId is not array!");
         return nullptr;
     }
     napi_get_typedarray_info(env, argv[PARAM0], &type, &licenseIdLen, &licenseId, &arraybuffer, &offset);
     if (licenseId == nullptr) {
-        DRM_ERR_LOG("napi_get_typedarray_info faild!");
+        DRM_ERR_LOG("napi_get_typedarray_info faild! Could not able to read licenseId argument!");
         return nullptr;
     }
     uint8_t *licenseIdPtr = reinterpret_cast<uint8_t *>(licenseId);
@@ -707,7 +720,7 @@ napi_value MediaKeySessionNapi::GetDecryptModule(napi_env env, napi_callback_inf
             return nullptr;
         }
     } else {
-        DRM_ERR_LOG("MediaKeySessionNapi RemoveLicense call Failed!");
+        DRM_ERR_LOG("KeySessionNapi unwrap Failed!");
     }
 
     result = MediaDecryptModuleNapi::GetDecryptModule(env, mediaDecryptModuleImpl);
@@ -729,12 +742,12 @@ napi_value MediaKeySessionNapi::DeleteEventListener(napi_env env, napi_callback_
 
 void MediaKeySessionNapi::SetEventCallbackReference(const std::string eventType, sptr<CallBackPair> callbackPair)
 {
-    DRM_INFO_LOG("MediaKeySessionNapi::SetCallbackReference");
+    DRM_INFO_LOG("MediaKeySessionNapi::SetEventCallbackReference");
     std::lock_guard<std::mutex> lock(mutex_);
     if (keySessionCallbackNapi_ != nullptr) {
         keySessionCallbackNapi_->SetCallbackReference(eventType, callbackPair);
     } else {
-        DRM_ERR_LOG("MediaKeySessionNapi::SetCallbackReference failed");
+        DRM_ERR_LOG("MediaKeySessionNapi::SetEventCallbackReference failed");
     }
 }
 
