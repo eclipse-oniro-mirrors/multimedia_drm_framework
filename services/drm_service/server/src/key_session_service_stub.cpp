@@ -222,16 +222,16 @@ static int ProcessCheckLicenseStatus(MediaKeySessionServiceStub *stub, MessagePa
     MessageOption &option)
 {
     DRM_INFO_LOG("MediaKeySessionServiceStub MEDIA_KEY_SESSION_GENERATE_CHECK_LICENSE_STATUS enter.");
-    std::vector<IMediaKeySessionService::LicenseStatus> licenseStatusVec;
-    int32_t ret = stub->CheckLicenseStatus(licenseStatusVec);
+    std::map<std::string, IMediaKeySessionService::MediaKeySessionKeyStatus> licenseStatus;
+    int32_t ret = stub->CheckLicenseStatus(licenseStatus);
     if (ret != 0) {
         DRM_ERR_LOG("CheckLicenseStatus faild.");
         return ret;
     }
-    reply.WriteInt32(licenseStatusVec.size());
-    for (auto info : licenseStatusVec) {
-        reply.WriteString(info.name);
-        reply.WriteString(info.value);
+    reply.WriteInt32(licenseStatus.size());
+    for (auto licenseStatu : licenseStatus) {
+        reply.WriteString(licenseStatu.first);
+        reply.WriteInt32(licenseStatu.second);
     }
     DRM_INFO_LOG("MediaKeySessionServiceStub MEDIA_KEY_SESSION_GENERATE_CHECK_LICENSE_STATUS exit.");
     return ret;

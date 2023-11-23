@@ -34,7 +34,8 @@ public:
         std::vector<uint8_t> &releaseRequest) override;
     int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &licenseId,
         std::vector<uint8_t> &releaseReponse) override;
-    int32_t CheckLicenseStatus(std::vector<LicenseStatus> &licenseStatus) override;
+    int32_t CheckLicenseStatus(std::map<std::string,
+        IMediaKeySessionService::MediaKeySessionKeyStatus>& licenseStatus) override;
     int32_t RestoreOfflineLicense(std::vector<uint8_t> &licenseId) override;
     int32_t RemoveLicense() override;
 

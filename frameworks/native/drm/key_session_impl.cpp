@@ -184,7 +184,8 @@ sptr<MediaDecryptModuleImpl> MediaKeySessionImpl::GetDecryptModule()
     return mediaDecryptModuleImpl_;
 }
 
-int32_t MediaKeySessionImpl::CheckLicenseStatus(std::vector<IMediaKeySessionService::LicenseStatus> &licenseStatusVec)
+int32_t MediaKeySessionImpl::CheckLicenseStatus(std::map<std::string,
+    IMediaKeySessionService::MediaKeySessionKeyStatus>& licenseStatus)
 {
     DRM_INFO_LOG("MediaKeySessionImpl::CheckLicenseStatus enter.");
     std::lock_guard<std::mutex> lock(mutex_);
@@ -194,7 +195,7 @@ int32_t MediaKeySessionImpl::CheckLicenseStatus(std::vector<IMediaKeySessionServ
         DRM_ERR_LOG("MediaKeySessionImpl::CheckLicenseStatus keySessionServiceProxy_ is null");
         return DRM_SERVICE_ERROR;
     }
-    retCode = keySessionServiceProxy_->CheckLicenseStatus(licenseStatusVec);
+    retCode = keySessionServiceProxy_->CheckLicenseStatus(licenseStatus);
     if (retCode != DRM_OK) {
         DRM_ERR_LOG("MediaKeySessionImpl::CheckLicenseStatus failed, retCode: %{public}d", retCode);
         return DRM_SERVICE_ERROR;

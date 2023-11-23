@@ -36,11 +36,6 @@ public:
         LISTENER_KEYSESSION_LOST = 208,
     };
 
-    struct LicenseStatus {
-        std::string name;
-        std::string value;
-    };
-
     enum LicenseType {
         LICENSETYPE_OFFLINE = 0,
         LICENSETYPE_ONLINE,
@@ -89,6 +84,15 @@ public:
         std::string mDefaultURL;
     };
 
+    enum MediaKeySessionKeyStatus {
+        MEDIA_KEY_SESSION_KEY_STATUS_USABLE = 0,
+        MEDIA_KEY_SESSION_KEY_STATUS_EXPIRED = 1,
+        MEDIA_KEY_SESSION_KEY_STATUS_OUTPUT_NOT_ALLOWED = 2,
+        MEDIA_KEY_SESSION_KEY_STATUS_PENDING = 3,
+        MEDIA_KEY_SESSION_KEY_STATUS_INTERNAL_ERROR = 4,
+        MEDIA_KEY_SESSION_KEY_STATUS_USABLE_IN_FUTURE = 5,
+    };
+
     virtual ~IMediaKeySessionService() = default;
     virtual int32_t Release() = 0;
     virtual int32_t CreateMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule) = 0;
@@ -98,7 +102,7 @@ public:
         std::vector<uint8_t> &releaseRequest) = 0;
     virtual int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &licenseId,
         std::vector<uint8_t> &releaseReponse) = 0;
-    virtual int32_t CheckLicenseStatus(std::vector<LicenseStatus> &licenseStatus) = 0;
+    virtual int32_t CheckLicenseStatus(std::map<std::string, MediaKeySessionKeyStatus>& licenseStatus) = 0;
     virtual int32_t RestoreOfflineLicense(std::vector<uint8_t> &licenseId) = 0;
     virtual int32_t RemoveLicense() = 0;
 
