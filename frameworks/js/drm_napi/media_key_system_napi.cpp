@@ -184,7 +184,7 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
         return nullptr;
     }
     std::string uuid = std::string(buffer);
-    if (uuid.length() == 0 || > MAX_STRING_SIZE) {
+    if (uuid.length() == 0 || uuid.length() > MAX_STRING_SIZE) {
         DRM_ERR_LOG("uuid lenth is not able to zero or more 256!");
         return nullptr;
     }
