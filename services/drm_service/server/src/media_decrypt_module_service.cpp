@@ -46,7 +46,7 @@ int32_t MediaDecryptModuleService::Release()
     DRM_INFO_LOG("MediaDecryptModuleService::Release enter.");
     int32_t errCode = DRM_OK;
     if (hdiMediaDecryptModule_ != nullptr) {
-        DRM_ERR_LOG("hdiMediaDecryptModule_ call Close");
+        DRM_INFO_LOG("hdiMediaDecryptModule_ call Close");
         hdiMediaDecryptModule_ = nullptr;
     }
     DRM_INFO_LOG("MediaDecryptModuleService::Release exit.");
