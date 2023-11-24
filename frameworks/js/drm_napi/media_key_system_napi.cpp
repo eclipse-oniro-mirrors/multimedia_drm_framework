@@ -184,7 +184,7 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
         return nullptr;
     }
     std::string uuid = std::string(buffer);
-    if (uuid.length() == 0 || > MAX_STRING_SIZE) {
+    if (uuid.length() == 0 || uuid.length() > MAX_STRING_SIZE) {
         DRM_ERR_LOG("uuid lenth is not able to zero or more 256!");
         return nullptr;
     }
@@ -246,9 +246,13 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
     if (argc == ARGS_ZERO) {
         jsSecurityLevel = IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN;
     } else {
-        status = napi_get_value_int32(env, argv[PARAM0], &jsSecurityLevel);
-        if (status != napi_ok) {
-            DRM_ERR_LOG("MediaKeySystemNapi napi get jsSecurityLevel failure!");
+        DRM_CHECK_AND_RETURN_RET_LOG(napi_get_value_int32(env, argv[PARAM0], &jsSecurityLevel) ==
+            napi_ok, nullptr, "MediaKeySystemNapi napi get jsSecurityLevel failure!");
+        IMediaKeySessionService::SecurityLevel securityLevel;
+        securityLevel = (IMediaKeySessionService::SecurityLevel)jsSecurityLevel;
+        if ((securityLevel < IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN) ||
+            (securityLevel > IMediaKeySessionService::SECURITY_LEVEL_MAX)) {
+            DRM_ERR_LOG("SecurityLevel is invalid");
             return nullptr;
         }
     }
