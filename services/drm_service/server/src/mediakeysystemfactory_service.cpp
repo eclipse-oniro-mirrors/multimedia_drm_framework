@@ -108,7 +108,7 @@ int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySy
 
     int32_t pid = currentPid;
     if (mediaKeySystemService != nullptr) {
-        DRM_ERR_LOG("MediaKeySystemFactoryService call CloseMediaKeySystemService ");
+        DRM_INFO_LOG("MediaKeySystemFactoryService call CloseMediaKeySystemService ");
         errCode = mediaKeySystemService->CloseMediaKeySystemServiceByCallback();
     }
     DRM_DEBUG_LOG("MediaKeySystemFactoryService mediaKeySystemForPid_ size:%{public}u",

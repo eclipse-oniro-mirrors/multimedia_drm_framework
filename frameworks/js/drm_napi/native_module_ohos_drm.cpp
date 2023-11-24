@@ -49,7 +49,7 @@ static napi_module g_module = {
  */
 extern "C" __attribute__((constructor)) void RegisterModule(void)
 {
-    DRM_ERR_LOG("RegisterModule() is called");
+    DRM_INFO_LOG("RegisterModule() is called");
     napi_module_register(&g_module);
 }
 } // namespace DrmStandard

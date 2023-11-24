@@ -205,7 +205,7 @@ int32_t MediaKeySystemService::CloseMediaKeySessionService(sptr<MediaKeySessionS
 
     int32_t pid = currentPid;
     if (sessionService != nullptr) {
-        DRM_ERR_LOG("MediaKeySystemService call CloseMediaKeySessionServiceByCallback ");
+        DRM_INFO_LOG("MediaKeySystemService call CloseMediaKeySessionServiceByCallback ");
         ret = sessionService->CloseMediaKeySessionServiceByCallback();
     }
 

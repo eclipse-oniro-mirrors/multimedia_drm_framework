@@ -184,8 +184,8 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
         return nullptr;
     }
     std::string uuid = std::string(buffer);
-    if (uuid.length() == 0) {
-        DRM_ERR_LOG("uuid lenth is not able to zero!");
+    if (uuid.length() == 0 || > MAX_STRING_SIZE) {
+        DRM_ERR_LOG("uuid lenth is not able to zero or more 256!");
         return nullptr;
     }
     if (argc == ARGS_ONE) {
@@ -199,7 +199,7 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
         return nullptr;
     }
     std::string mimeType = std::string(buffer);
-    if (argc == ARGS_TWO) {
+    if (argc == ARGS_TWO && mimeType.length() != 0) {
         bool isSurpportted = MediaKeySystemFactoryImpl::GetInstance()->IsMediaKeySystemSupported(uuid, mimeType);
         napi_get_boolean(env, isSurpportted, &result);
         return result;
@@ -265,11 +265,11 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
         int ret = mediaKeySystemNapi->mediaKeySystemImpl_->CreateMediaKeySession(
             (IMediaKeySessionService::SecurityLevel)securityLevel, &keySessionImpl);
         if (ret != DRM_OK || keySessionImpl == nullptr) {
-            DRM_ERR_LOG("MediaKeySystemNapi CreateMediaKeySession get failed!!!");
+            DRM_ERR_LOG("MediaKeySystemNapi::CreateMediaKeySession get failed!!!");
             return nullptr;
         }
     } else {
-        DRM_ERR_LOG("mediaKeySystemNapi CreateMediaKeySession call Failed!");
+        DRM_ERR_LOG("mediaKeySystemNapi::CreateMediaKeySession call Failed!");
         return nullptr;
     }
     result = MediaKeySessionNapi::CreateMediaKeySession(env, keySessionImpl);

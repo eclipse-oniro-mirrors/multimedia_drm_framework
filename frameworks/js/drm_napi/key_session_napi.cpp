@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2023  Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -158,7 +158,23 @@ napi_value MediaKeySessionNapi::CreateMediaKeySession(napi_env env, sptr<MediaKe
     napi_status status;
     napi_value result = nullptr;
     napi_value constructor;
+    size_t argc = 0;
+    napi_value argv[ARGS_ONE] = { 0 };
+    napi_value thisVar = nullptr;
+    DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
 
+    if (argc == ARGS_ONE) {
+        int32_t jsSecurityLevel = -1;
+        DRM_CHECK_AND_RETURN_RET_LOG(napi_get_value_int32(env, argv[PARAM0], &jsSecurityLevel) ==
+            napi_ok, nullptr, "Could not able to read mimetype!");
+        IMediaKeySessionService::SecurityLevel securityLevel;
+        securityLevel = (IMediaKeySessionService::SecurityLevel)jsSecurityLevel;
+        if ((securityLevel < IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN) ||
+            (securityLevel > IMediaKeySessionService::SECURITY_LEVEL_MAX)) {
+            DRM_ERR_LOG("SecurityLevel is invalid");
+            return nullptr;
+        }
+    }
     status = napi_get_reference_value(env, sConstructor_, &constructor);
     if (status == napi_ok) {
         sMediaKeySessionImpl_ = keySessionImpl;
