@@ -262,8 +262,8 @@ int32_t MediaKeySessionServiceProxy::ProcessOfflineReleaseResponse(std::vector<u
     return reply.ReadInt32();
 }
 
-int32_t MediaKeySessionServiceProxy::CheckLicenseStatus(
-    std::vector<IMediaKeySessionService::LicenseStatus> &licenseStatusVec)
+int32_t MediaKeySessionServiceProxy::CheckLicenseStatus(std::map<std::string,
+    IMediaKeySessionService::MediaKeySessionKeyStatus>& licenseStatus)
 {
     DRM_INFO_LOG("MediaKeySessionServiceProxy::GenerateOfflineReleaseRequest enter.");
     MessageParcel data;
@@ -281,12 +281,12 @@ int32_t MediaKeySessionServiceProxy::CheckLicenseStatus(
         DRM_ERR_LOG("MediaKeySessionServiceProxy::GenerateOfflineReleaseRequest failed, error: %{public}d", error);
         return error;
     }
-    int licenseStatusVecSize = reply.ReadInt32();
-    for (int i = 0; i < licenseStatusVecSize; i++) {
-        LicenseStatus keyValue;
-        keyValue.name = reply.ReadString();
-        keyValue.value = reply.ReadString();
-        licenseStatusVec.push_back(keyValue);
+    int licenseStatusMapSize = reply.ReadInt32();
+    for (int i = 0; i < licenseStatusMapSize; i++) {
+        std::string name = reply.ReadString();
+        IMediaKeySessionService::MediaKeySessionKeyStatus status =
+            (IMediaKeySessionService::MediaKeySessionKeyStatus)reply.ReadInt32();
+        licenseStatus.insert(std::make_pair(name, status));
     }
     DRM_INFO_LOG("MediaKeySessionServiceProxy::GenerateOfflineReleaseRequest exit.");
     return reply.ReadInt32();

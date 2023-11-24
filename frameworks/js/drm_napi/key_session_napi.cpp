@@ -512,21 +512,25 @@ napi_value MediaKeySessionNapi::ProcessOfflineReleaseResponse(napi_env env, napi
     return result;
 }
 
-static napi_value vectorToJsArray(napi_env env, std::vector<IMediaKeySessionService::LicenseStatus> &licenseStatusVec)
+static napi_value vectorToJsArray(napi_env env,
+    std::map<std::string, IMediaKeySessionService::MediaKeySessionKeyStatus> &licenseStatus)
 {
     DRM_INFO_LOG("vectorToJsArray enter.");
     napi_value jsArray;
     napi_value jsName;
     napi_value jsValue;
-    napi_create_array_with_length(env, licenseStatusVec.size(), &jsArray);
-    for (size_t i = 0; i < licenseStatusVec.size(); i++) {
+    napi_create_array_with_length(env, licenseStatus.size(), &jsArray);
+    size_t i = 0;
+    for (auto it = licenseStatus.begin(); it != licenseStatus.end(); ++it) {
         napi_value jsObject;
         napi_create_object(env, &jsObject);
-        napi_create_string_utf8(env, licenseStatusVec[i].name.c_str(), NAPI_AUTO_LENGTH, &jsName);
+        std::string name = it->first;
+        IMediaKeySessionService::MediaKeySessionKeyStatus status = it->second;
+        napi_create_string_utf8(env, name.c_str(), NAPI_AUTO_LENGTH, &jsName);
         napi_set_named_property(env, jsObject, "name", jsName);
-        napi_create_string_utf8(env, licenseStatusVec[i].value.c_str(), NAPI_AUTO_LENGTH, &jsValue);
-        napi_set_named_property(env, jsObject, "value", jsValue);
-        napi_set_element(env, jsArray, i, jsObject);
+        napi_create_int32(env, status, &jsValue);
+        napi_set_named_property(env, jsObject, "status", jsValue);
+        napi_set_element(env, jsArray, i++, jsObject);
     }
     DRM_INFO_LOG("vectorToJsArray exit.");
     return jsArray;
@@ -541,13 +545,13 @@ napi_value MediaKeySessionNapi::CheckLicenseStatus(napi_env env, napi_callback_i
     napi_value thisVar = nullptr;
     napi_status status;
     MediaKeySessionNapi *keySessionNapi = nullptr;
-    std::vector<IMediaKeySessionService::LicenseStatus> licenseStatusVec;
+    std::map<std::string, IMediaKeySessionService::MediaKeySessionKeyStatus> licenseStatus;
 
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
 
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
     if (status == napi_ok && keySessionNapi != nullptr) {
-        int ret = keySessionNapi->keySessionImpl_->CheckLicenseStatus(licenseStatusVec);
+        int ret = keySessionNapi->keySessionImpl_->CheckLicenseStatus(licenseStatus);
         if (ret != napi_ok) {
             DRM_ERR_LOG("napi CheckLicenseStatus faild!");
             return nullptr;
@@ -556,7 +560,7 @@ napi_value MediaKeySessionNapi::CheckLicenseStatus(napi_env env, napi_callback_i
         DRM_ERR_LOG("MediaKeySessionNapi CheckLicenseStatus call Failed!");
     }
 
-    result = vectorToJsArray(env, licenseStatusVec);
+    result = vectorToJsArray(env, licenseStatus);
     DRM_INFO_LOG("MediaKeySessionNapi::CheckLicenseStatus exit.");
     return result;
 }

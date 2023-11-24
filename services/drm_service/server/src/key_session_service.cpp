@@ -149,21 +149,22 @@ int32_t MediaKeySessionService::ProcessOfflineReleaseResponse(std::vector<uint8_
     return ret;
 }
 
-int32_t MediaKeySessionService::CheckLicenseStatus(std::vector<IMediaKeySessionService::LicenseStatus> &licenseStatus)
+int32_t MediaKeySessionService::CheckLicenseStatus(std::map<std::string,
+    IMediaKeySessionService::MediaKeySessionKeyStatus>& licenseStatus)
 {
     DRM_INFO_LOG("MediaKeySessionService::CheckLicenseStatus enter.");
     int32_t ret = DRM_OK;
-    std::vector<OHOS::HDI::Drm::V1_0::LicenseStatusString> map;
-    ret = hdiMediaKeySession_->CheckLicenseStatus(map);
+    std::map<std::string, OHOS::HDI::Drm::V1_0::MediaKeySessionKeyStatus> mp;
+    ret = hdiMediaKeySession_->CheckLicenseStatus(mp);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySessionService::CheckLicenseStatus failed");
         return ret;
     }
-    for (auto m : map) {
-        IMediaKeySessionService::LicenseStatus keyValue;
-        keyValue.name = m.name;
-        keyValue.value = m.value;
-        licenseStatus.push_back(keyValue);
+    for (auto m : mp) {
+        std::string name = m.first;
+        IMediaKeySessionService::MediaKeySessionKeyStatus status =
+            (IMediaKeySessionService::MediaKeySessionKeyStatus)m.second;
+        licenseStatus.insert(std::make_pair(name, status));
     }
     if (licenseStatus.size() == 0) {
         DRM_ERR_LOG("MediaKeySessionService::CheckLicenseStatus licenseStatus is empty.");

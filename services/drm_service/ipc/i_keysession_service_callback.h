@@ -42,15 +42,6 @@ enum EventType : int32_t {
     EVENTTYPE_KEYSESSION_LOST = 8,
 };
 
-enum MediaKeySessionLicenseStatus : int32_t {
-    MEDIA_KEY_SESSION_LICENSE_STATUS_USABLE = 0,
-    MEDIA_KEY_SESSION_LICENSE_STATUS_EXPIRED = 1,
-    MEDIA_KEY_SESSION_LICENSE_STATUS_OUTPUT_NOT_ALLOWED = 2,
-    MEDIA_KEY_SESSION_LICENSE_STATUS_PENDING = 3,
-    MEDIA_KEY_SESSION_LICENSE_STATUS_INTERNAL_ERROR = 4,
-    MEDIA_KEY_SESSION_LICENSE_STATUS_USABLE_IN_FUTURE = 5,
-};
-
 class IMediaKeySessionServiceCallback : public IRemoteBroker {
 public:
     virtual int32_t OnMediaKeySessionKeyExpired(const KeyStatus status) = 0;
