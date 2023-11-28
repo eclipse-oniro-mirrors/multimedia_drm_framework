@@ -189,7 +189,10 @@ int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::Se
 
     int32_t pid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemService CreateMediaKeySession GetCallingPID: %{public}d", pid);
-    sessionsForPid_[pid].insert(keySessionService);
+    auto fn = [&](std::set<sptr<MediaKeySessionService>> &value) -> void {
+        value.insert(keySessionService);
+    };
+    sessionsForPid_.ChangeValueByLambda(pid, fn);
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " is Current keySessionService", FAKE_POINTER(keySessionService.GetRefPtr()));
     keySessionProxy = keySessionService;
     DRM_INFO_LOG("MediaKeySystemService::CreateMediaKeySession exit.");
@@ -208,18 +211,19 @@ int32_t MediaKeySystemService::CloseMediaKeySessionService(sptr<MediaKeySessionS
         DRM_INFO_LOG("MediaKeySystemService call CloseMediaKeySessionServiceByCallback ");
         ret = sessionService->CloseMediaKeySessionServiceByCallback();
     }
-
-    DRM_DEBUG_LOG("MediaKeySystemService sessionsForPid_ size:%{public}u", sessionsForPid_[pid].size());
-    if (sessionsForPid_[pid].find(sessionService) != sessionsForPid_[pid].end()) {
-        DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " will be deleted", FAKE_POINTER(sessionService.GetRefPtr()));
-        DRM_DEBUG_LOG("MediaKeySystemService before sessionSet size:%{public}u", sessionsForPid_[pid].size());
-        sessionsForPid_[pid].erase(sessionService);
-        DRM_DEBUG_LOG("MediaKeySystemService after sessionSet size:%{public}u", sessionsForPid_[pid].size());
-    } else {
-        DRM_DEBUG_LOG("MediaKeySystemService not find sessions for PID:%{public}d", pid);
-    }
-    DRM_DEBUG_LOG("MediaKeySystemService sessionsForPid_ size:%{public}u", sessionsForPid_[pid].size());
-
+    auto fn = [&](std::set<sptr<MediaKeySessionService>> &value) -> void {
+        DRM_DEBUG_LOG("MediaKeySystemService sessionsForPid_ size:%{public}u", value.size());
+        if (value.find(sessionService) != value.end()) {
+            DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " will be deleted", FAKE_POINTER(sessionService.GetRefPtr()));
+            DRM_DEBUG_LOG("MediaKeySystemService before sessionSet size:%{public}u", value.size());
+            value.erase(sessionService);
+            DRM_DEBUG_LOG("MediaKeySystemService after sessionSet size:%{public}u", value.size());
+        } else {
+            DRM_DEBUG_LOG("MediaKeySystemService not find sessions for PID:%{public}d", pid);
+        }
+        DRM_DEBUG_LOG("MediaKeySystemService sessionsForPid_ size:%{public}u", value.size());
+    };
+    sessionsForPid_.ChangeValueByLambda(pid, fn);
     sessionService = nullptr;
     DRM_INFO_LOG("MediaKeySystemService::CloseMediaKeySessionService exit.");
     return ret;

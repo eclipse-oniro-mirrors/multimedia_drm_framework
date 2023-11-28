@@ -91,7 +91,10 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &uuid,
     mediaKeySystemService->SetMediaKeySystemServiceOperatorsCallback(this);
     int32_t pid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemFactoryService CreateMediaKeySystem GetCallingPID: %{public}d", pid);
-    mediaKeySystemForPid_[pid].insert(mediaKeySystemService);
+    auto fn = [&](std::set<sptr<MediaKeySystemService>> &value) -> void {
+        value.insert(mediaKeySystemService);
+    };
+    mediaKeySystemForPid_.ChangeValueByLambda(pid, fn);
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " is Current mediaKeySystemService",
         FAKE_POINTER(mediaKeySystemService.GetRefPtr()));
     mediaKeySystemProxy = mediaKeySystemService;
@@ -107,23 +110,23 @@ int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySy
     DRM_DEBUG_LOG("MediaKeySystemFactoryService GetCallingPID: %{public}d", currentPid);
 
     int32_t pid = currentPid;
-    if (mediaKeySystemService != nullptr) {
-        DRM_INFO_LOG("MediaKeySystemFactoryService call CloseMediaKeySystemService ");
-        errCode = mediaKeySystemService->CloseMediaKeySystemServiceByCallback();
-    }
-    DRM_DEBUG_LOG("MediaKeySystemFactoryService mediaKeySystemForPid_ size:%{public}u",
-        mediaKeySystemForPid_[pid].size());
-    if (mediaKeySystemForPid_[pid].find(mediaKeySystemService) != mediaKeySystemForPid_[pid].end()) {
-        DRM_DEBUG_LOG("MediaKeySystemFactoryService before sessionSet size:%{public}u",
-            mediaKeySystemForPid_[pid].size());
-        mediaKeySystemForPid_[pid].erase(mediaKeySystemService);
-        DRM_DEBUG_LOG("MediaKeySystemFactoryService after sessionSet size:%{public}u",
-            mediaKeySystemForPid_[pid].size());
-    } else {
-        DRM_ERR_LOG("MediaKeySystemFactoryService not find sessions for PID:%{public}d", pid);
-    }
-    DRM_DEBUG_LOG("MediaKeySystemFactoryService mediaKeySystemForPid_ size:%{public}u",
-        mediaKeySystemForPid_[pid].size());
+    auto fn = [&](std::set<sptr<MediaKeySystemService>> &value) -> void {
+        if (mediaKeySystemService != nullptr) {
+            DRM_INFO_LOG("MediaKeySystemFactoryService call CloseMediaKeySystemService ");
+            errCode = mediaKeySystemService->CloseMediaKeySystemServiceByCallback();
+        }
+        DRM_DEBUG_LOG("MediaKeySystemFactoryService mediaKeySystemForPid_ size:%{public}u", value.size());
+        if (value.find(mediaKeySystemService) != value.end()) {
+            DRM_DEBUG_LOG("MediaKeySystemFactoryService before sessionSet size:%{public}u", value.size());
+            value.erase(mediaKeySystemService);
+            DRM_DEBUG_LOG("MediaKeySystemFactoryService after sessionSet size:%{public}u", value.size());
+        } else {
+            DRM_ERR_LOG("MediaKeySystemFactoryService not find sessions for PID:%{public}d", pid);
+        }
+        DRM_DEBUG_LOG("MediaKeySystemFactoryService mediaKeySystemForPid_ size:%{public}u", value.size());
+    };
+
+    mediaKeySystemForPid_.ChangeValueByLambda(pid, fn);
 
     mediaKeySystemService = nullptr;
     DRM_INFO_LOG("MediaKeySystemFactoryService CloseMediaKeySystemService exit.");
