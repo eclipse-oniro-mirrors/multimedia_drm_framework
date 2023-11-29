@@ -61,7 +61,7 @@ ohos_shared_library("drm_framework") {
   sanitize = {
     cfi = true
     cfi_cross_dso = true
-    debug = true
+    debug = false
   }
 
   public_configs = [
