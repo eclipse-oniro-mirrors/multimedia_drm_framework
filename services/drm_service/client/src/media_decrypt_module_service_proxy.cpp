@@ -60,17 +60,17 @@ int32_t MediaDecryptModuleServiceProxy::DecryptMediaData(bool secureDecodrtState
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteBool(secureDecodrtState), IPC_PROXY_ERR,
         "MediaDecryptModuleServiceProxy DecryptMediaData Write secureDecodrtState failed");
 
-    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteInt32(cryptInfo.type), IPC_PROXY_ERR,
+    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.type), IPC_PROXY_ERR,
         "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.type failed");
 
-    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteInt32(cryptInfo.keyId.size()), IPC_PROXY_ERR,
+    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.keyId.size()), IPC_PROXY_ERR,
         "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.keyId size failed");
     for (auto keyId : cryptInfo.keyId) {
         DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint8(keyId), IPC_PROXY_ERR,
             "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.keyId failed");
     }
 
-    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteInt32(cryptInfo.iv.size()), IPC_PROXY_ERR,
+    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.iv.size()), IPC_PROXY_ERR,
         "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.iv size failed");
 
     for (auto iv : cryptInfo.iv) {
@@ -78,24 +78,19 @@ int32_t MediaDecryptModuleServiceProxy::DecryptMediaData(bool secureDecodrtState
             "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.iv failed");
     }
 
-    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteInt32(cryptInfo.pattern.encryptBlocks), IPC_PROXY_ERR,
+    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.pattern.encryptBlocks), IPC_PROXY_ERR,
         "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.pattern.encryptBlocks failed");
 
-    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteInt32(cryptInfo.pattern.skipBlocks), IPC_PROXY_ERR,
+    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.pattern.skipBlocks), IPC_PROXY_ERR,
         "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.pattern.skipBlocks failed");
 
-    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteInt32(cryptInfo.subSample.size()), IPC_PROXY_ERR,
+    DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.subSample.size()), IPC_PROXY_ERR,
         "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.subSample size failed");
     for (size_t i = 0; i < cryptInfo.subSample.size(); i++) {
-        if (!data.WriteInt32(cryptInfo.subSample[i].clearHeaderLen)) {
-            DRM_ERR_LOG(
-                "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.subSample.clearHeaderLen failed");
-            return IPC_PROXY_ERR;
-        }
-        DRM_CHECK_AND_RETURN_RET_LOG(data.WriteInt32(cryptInfo.subSample[i].clearHeaderLen), IPC_PROXY_ERR,
+        DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.subSample[i].clearHeaderLen), IPC_PROXY_ERR,
             "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.subSample.clearHeaderLen failed");
 
-        DRM_CHECK_AND_RETURN_RET_LOG(data.WriteInt32(cryptInfo.subSample[i].payLoadLen), IPC_PROXY_ERR,
+        DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.subSample[i].payLoadLen), IPC_PROXY_ERR,
             "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.subSample.payLoadLen failed");
     }
     (void)data.WriteFileDescriptor(srcBuffer);

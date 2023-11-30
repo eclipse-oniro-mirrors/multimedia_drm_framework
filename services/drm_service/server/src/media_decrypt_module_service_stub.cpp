@@ -47,22 +47,22 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
             DRM_INFO_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_DECRYPT_DATA enter.");
             IMediaDecryptModuleService::CryptInfo cryptInfo;
             bool secureDecodrtState = data.ReadBool();
-            cryptInfo.type = (OHOS::DrmStandard::IMediaDecryptModuleService::CryptAlgorithmType)data.ReadInt32();
-            uint32_t keyIdSize = data.ReadInt32();
+            cryptInfo.type = (OHOS::DrmStandard::IMediaDecryptModuleService::CryptAlgorithmType)data.ReadUint32();
+            uint32_t keyIdSize = data.ReadUint32();
             for (uint32_t i = 0; i < keyIdSize; i++) {
                 cryptInfo.keyId.push_back(data.ReadUint8());
             }
-            uint32_t ivSize = data.ReadInt32();
+            uint32_t ivSize = data.ReadUint32();
             for (uint32_t i = 0; i < ivSize; i++) {
                 cryptInfo.iv.push_back(data.ReadUint8());
             }
-            cryptInfo.pattern.encryptBlocks = data.ReadInt32();
-            cryptInfo.pattern.skipBlocks = data.ReadInt32();
-            uint32_t subSampleNumber = data.ReadInt32();
+            cryptInfo.pattern.encryptBlocks = data.ReadUint32();
+            cryptInfo.pattern.skipBlocks = data.ReadUint32();
+            uint32_t subSampleNumber = data.ReadUint32();
             cryptInfo.subSample.resize(subSampleNumber);
             for (int32_t i = 0; i < subSampleNumber; i++) {
-                cryptInfo.subSample[i].clearHeaderLen = data.ReadInt32();
-                cryptInfo.subSample[i].payLoadLen = data.ReadInt32();
+                cryptInfo.subSample[i].clearHeaderLen = data.ReadUint32();
+                cryptInfo.subSample[i].payLoadLen = data.ReadUint32();
             }
             uint64_t srcBuffer = data.ReadFileDescriptor();
             uint64_t dstBuffer = data.ReadFileDescriptor();

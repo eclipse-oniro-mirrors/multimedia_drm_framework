@@ -137,7 +137,6 @@ bool MediaKeySessionNapi::SetMediaKeySessionNativeProperty(napi_env env, napi_va
 
     napi_value keySessionImplNative = nullptr;
     int64_t nativePointer = reinterpret_cast<int64_t>(keySessionImpl.GetRefPtr());
-    DRM_DEBUG_LOG("SetMediaKeySessionNativeProperty get nativePointer:%{public}lld", nativePointer);
     napi_status status = napi_create_int64(env, nativePointer, &keySessionImplNative);
     DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, false, "create int failed");
 
@@ -213,7 +212,7 @@ static napi_value DealOptionalData(napi_env env, napi_value param3,
 {
     napi_status status;
     bool isArray;
-    size_t optionalDataCount = 0;
+    uint32_t optionalDataCount = 0;
 
     napi_is_array(env, param3, &isArray);
     DRM_CHECK_AND_RETURN_RET_LOG(isArray, nullptr, "param3 is not array!");
