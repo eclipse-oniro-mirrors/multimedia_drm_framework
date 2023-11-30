@@ -115,15 +115,11 @@ int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySy
             DRM_INFO_LOG("MediaKeySystemFactoryService call CloseMediaKeySystemService ");
             errCode = mediaKeySystemService->CloseMediaKeySystemServiceByCallback();
         }
-        DRM_DEBUG_LOG("MediaKeySystemFactoryService mediaKeySystemForPid_ size:%{public}u", value.size());
         if (value.find(mediaKeySystemService) != value.end()) {
-            DRM_DEBUG_LOG("MediaKeySystemFactoryService before sessionSet size:%{public}u", value.size());
             value.erase(mediaKeySystemService);
-            DRM_DEBUG_LOG("MediaKeySystemFactoryService after sessionSet size:%{public}u", value.size());
         } else {
             DRM_ERR_LOG("MediaKeySystemFactoryService not find sessions for PID:%{public}d", pid);
         }
-        DRM_DEBUG_LOG("MediaKeySystemFactoryService mediaKeySystemForPid_ size:%{public}u", value.size());
     };
 
     mediaKeySystemForPid_.ChangeValueByLambda(pid, fn);
