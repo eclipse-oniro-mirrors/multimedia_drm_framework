@@ -34,7 +34,6 @@ DrmNapi::~DrmNapi()
 
 napi_value DrmNapi::Init(napi_env env, napi_value exports)
 {
-    napi_status status;
     DRM_INFO_LOG("DrmNapi Init enter.");
     napi_property_descriptor drmproperty[] = {
         DECLARE_NAPI_FUNCTION("getMediaKeySystemTest", CreateMediaKeySystemInstance),
