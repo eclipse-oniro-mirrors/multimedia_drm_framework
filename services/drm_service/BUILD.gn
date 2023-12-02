@@ -75,7 +75,7 @@ ohos_shared_library("drm_service") {
   sanitize = {
     cfi = true
     cfi_cross_dso = true
-    debug = false
+    debug = true
   }
 
   if (use_musl) {
