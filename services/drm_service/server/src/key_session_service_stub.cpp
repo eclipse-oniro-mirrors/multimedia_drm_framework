@@ -123,6 +123,12 @@ static int ProcessLicenseRequest(MediaKeySessionServiceStub *stub, MessageParcel
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     licenseRequestInfo.initData.assign(initDataBuf, initDataBuf + initDataSize);
+    int optionalDataMapSize = data.ReadInt32();
+    for (int i = 0; i < optionalDataMapSize; i++) {
+        std::string name = data.ReadString();
+        std::string value = data.ReadString();
+        licenseRequestInfo.optionalData.insert(std::make_pair(name, value));
+    }
     int32_t ret = stub->GenerateLicenseRequest(licenseRequestInfo, licenseRequest);
     if (!reply.WriteInt32(licenseRequest.requestType)) {
         DRM_ERR_LOG("MediaKeySessionServiceStub Write requestType GenerateLicenseRequest failed");

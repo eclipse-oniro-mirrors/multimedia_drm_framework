@@ -208,7 +208,7 @@ napi_value MediaKeySessionNapi::Destroy(napi_env env, napi_callback_info info)
 }
 
 static napi_value DealOptionalData(napi_env env, napi_value param3,
-    std::vector<IMediaKeySessionService::OptionalData> &tmpOptionalData)
+    std::map<std::string, std::string> &tmpOptionalData)
 {
     napi_status status;
     bool isArray;
@@ -235,14 +235,13 @@ static napi_value DealOptionalData(napi_env env, napi_value param3,
             status = napi_get_value_string_utf8(env, tmpName, tmpBuffer, MAX_OPTIONAL_DATA_LEN, &tmpLength);
             DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr,
                 "-Could not able to transfer optionalData buffer info!");
-            tmpOptionalData[i].name = std::string(tmpBuffer);
             status = napi_get_named_property(env, tmpData, "value", &tmpValue);
             DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "-Could not able to read optionalData property!");
             tmpBuffer[0] = 0;
             status = napi_get_value_string_utf8(env, tmpValue, tmpBuffer, MAX_OPTIONAL_DATA_LEN, &tmpLength);
             DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr,
-                "-Could not able to  transfer optionalData buffer info!");
-            tmpOptionalData[i].value = std::string(tmpBuffer);
+                "Could not able to transfer optionalData buffer info!");
+            tmpOptionalData.insert(std::make_pair(std::string(tmpBuffer), std::string(tmpBuffer)));
         }
     }
     return nullptr;
@@ -336,7 +335,7 @@ napi_value MediaKeySessionNapi::GenerateLicenseRequest(napi_env env, napi_callba
     status = napi_get_value_int32(env, argv[PARAM2], &licenseType);
     DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "-Could not able to read licenseType argument!");
     // optional data
-    std::vector<IMediaKeySessionService::OptionalData> tmpOptionalData(0);
+    std::map<std::string, std::string> tmpOptionalData;
     if (argc >= ARGS_FOUR) {
         (void)DealOptionalData(env, argv[PARAM3], tmpOptionalData);
     }
@@ -558,6 +557,10 @@ napi_value MediaKeySessionNapi::CheckLicenseStatus(napi_env env, napi_callback_i
         DRM_ERR_LOG("MediaKeySessionNapi CheckLicenseStatus call Failed!");
     }
 
+    if (licenseStatus.size() == 0) {
+        DRM_ERR_LOG("Licence not exist.");
+        return nullptr;
+    }
     result = vectorToJsArray(env, licenseStatus);
     DRM_INFO_LOG("MediaKeySessionNapi::CheckLicenseStatus exit.");
     return result;

@@ -552,7 +552,7 @@ napi_value MediaKeySystemNapi::ProcessKeySystemResponse(napi_env env, napi_callb
     MediaKeySystemNapi *mediaKeySystemNapi = nullptr;
 
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
-    NAPI_ASSERT(env, argc <= ARGS_TWO, "requires 2 parameters maximum");
+    NAPI_ASSERT(env, argc <= ARGS_ONE, "requires 1 parameters maximum");
     napi_is_typedarray(env, argv[PARAM0], &isTypeArray);
     if (!isTypeArray) {
         DRM_ERR_LOG("argv[PARAM0] reponse is not array!");

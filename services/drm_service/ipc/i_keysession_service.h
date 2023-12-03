@@ -75,7 +75,7 @@ public:
         LicenseType licenseType;
         std::string mimeType;
         std::vector<uint8_t> initData;
-        std::vector<struct OptionalData> optionalData;
+        std::map<std::string, std::string> optionalData;
     };
 
     struct LicenseRequest {

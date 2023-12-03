@@ -127,6 +127,10 @@ int32_t MediaKeySessionServiceProxy::GenerateLicenseRequest(
         DRM_ERR_LOG("MediaKeySessionServiceProxy GenerateLicenseRequest Write initData.size failed");
         return IPC_PROXY_ERR;
     }
+    for (auto optionalData : licenseRequestInfo.optionalData) {
+        data.WriteString(optionalData.first);
+        data.WriteString(optionalData.second);
+    }
     int error = MediaKeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_GENERATE_LICENSE_REQUEST, data,
         reply, option);
     if (error != ERR_NONE) {
