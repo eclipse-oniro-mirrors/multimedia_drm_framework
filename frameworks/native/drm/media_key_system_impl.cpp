@@ -280,9 +280,6 @@ int32_t MediaKeySystemImpl::RemoveOfflineLicense(std::vector<uint8_t> &licenseId
     DRM_INFO_LOG("MediaKeySystemImpl::RemoveOfflineLicense enter.");
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t retCode = DRM_OK;
-    for (auto a : licenseId) {
-        DRM_ERR_LOG("--licenseId:%{public}u", a);
-    }
     if (serviceProxy_ == nullptr) {
         DRM_ERR_LOG("MediaKeySystemImpl::RemoveOfflineLicense serviceProxy_ is null");
         return DRM_SERVICE_ERROR;
