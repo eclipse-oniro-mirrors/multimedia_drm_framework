@@ -101,8 +101,6 @@ napi_value MediaKeySessionNapi::MediaKeySessionNapiConstructor(napi_env env, nap
                 return result;
             }
             obj->keySessionImpl_ = sMediaKeySessionImpl_;
-            obj->keySessionCallbackNapi_ = new MediaKeySessionCallbackNapi();
-            obj->keySessionImpl_->SetMediaKeySessionCallback(obj->keySessionCallbackNapi_);
             status = napi_wrap(env, thisVar, reinterpret_cast<void *>(obj.get()),
                 MediaKeySessionNapi::MediaKeySessionNapiDestructor, nullptr, nullptr);
             if (status == napi_ok) {
