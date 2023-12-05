@@ -20,7 +20,6 @@
 #include "iservice_registry.h"
 #include "access_token.h"
 #include "drm_log.h"
-#include "drm_napi_utils.h"
 #include "key_session_service.h"
 #include "mediakeysystem_service.h"
 

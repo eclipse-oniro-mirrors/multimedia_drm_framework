@@ -19,7 +19,6 @@
 #include <securec.h>
 #include "ashmem.h"
 #include "ipc_skeleton.h"
-#include "drm_napi_utils.h"
 #include "media_decrypt_module_service.h"
 
 namespace OHOS {

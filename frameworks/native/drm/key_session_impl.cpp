@@ -19,6 +19,13 @@
 
 namespace OHOS {
 namespace DrmStandard {
+
+namespace DrmEvent {
+const std::string DRM_EVENT_KEY_EXPIRED = "keyExpired";
+const std::string DRM_EVENT_KEY_SESSION_RECLAIMED = "keySessionReclaimed";
+const std::string DRM_EVENT_SYSTEM_PROVISION_REQUIRED = "keySystemProvisionRequired";
+}
+
 MediaKeySessionImpl::MediaKeySessionImpl(sptr<IMediaKeySessionService> &keySession)
 {
     DRM_DEBUG_LOG("MediaKeySessionImpl::MediaKeySessionImpl enter.");

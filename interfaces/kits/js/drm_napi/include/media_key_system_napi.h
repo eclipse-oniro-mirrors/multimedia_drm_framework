@@ -29,7 +29,6 @@
 #include "napi/native_node_api.h"
 #include "hilog/log.h"
 #include "drm_log.h"
-#include "drm_napi_utils.h"
 #include "key_session_impl.h"
 #include "media_key_system_impl.h"
 #include "media_key_system_factory_impl.h"

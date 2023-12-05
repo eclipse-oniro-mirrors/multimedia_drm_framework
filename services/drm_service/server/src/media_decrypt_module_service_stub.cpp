@@ -16,7 +16,6 @@
 #include "media_decrypt_module_service_stub.h"
 #include "drm_error_code.h"
 #include "drm_log.h"
-#include "drm_napi_utils.h"
 #include "ipc_skeleton.h"
 #include "xcollie/xcollie.h"
 #include "xcollie/xcollie_define.h"

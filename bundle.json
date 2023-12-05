@@ -17,7 +17,7 @@
         "adapted_system_type": [ "standard" ],
         "rom": "",
         "ram": "",
-	"hisysevent_config": [ ],
+        "hisysevent_config": [ ],
         "deps": {
           "components": [
               "safwk",
@@ -62,6 +62,7 @@
             ],
             "fwk_group": [
               "//foundation/multimedia/drm_framework/frameworks/native:drm_framework",
+              "//foundation/multimedia/drm_framework/interfaces/kits/c/drm_capi:native_drm",
               "//foundation/multimedia/drm_framework/interfaces/kits/js/drm_napi:drm_napi",
               "//foundation/multimedia/drm_framework/interfaces/kits/js/drm_napi:drm_js"
             ],
@@ -84,6 +85,23 @@
                   "media_key_system_impl.h",
                   "key_session_impl.h",
                   "media_decrypt_module_impl.h"
+                ]
+              }
+            },
+            {
+              "type": "none",
+              "name": "//foundation/multimedia/drm_framework/interfaces/kits/c/drm_capi:native_drm",
+              "header": {
+                "header_base": [
+                    "foundation/multimedia/drm_framework/interfaces/kits/c/drm_capi/common",
+                    "foundation/multimedia/drm_framework/interfaces/kits/c/drm_capi/include"
+                ],
+                "header_files": [
+                  "native_mediakeysession.h",
+                  "native_mediakeysystem.h",
+                  "native_drm_common.h",
+                  "native_drm_object.h",
+                  "native_drm_err.h"
                 ]
               }
             },

@@ -12,9 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "key_session_callback_napi.h"
+#include "drm_napi_utils.h"
 #include "drm_log.h"
 #include "drm_error_code.h"
+#include "key_session_callback_napi.h"
 
 namespace OHOS {
 namespace DrmStandard {
