@@ -19,7 +19,6 @@
 #include "xcollie/xcollie_define.h"
 #include "drm_error_code.h"
 #include "drm_log.h"
-#include "drm_napi_utils.h"
 #include "mediakeysystemfactory_service_stub.h"
 
 namespace OHOS {

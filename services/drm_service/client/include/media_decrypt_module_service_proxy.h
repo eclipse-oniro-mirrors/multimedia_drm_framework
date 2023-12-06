@@ -20,7 +20,6 @@
 #include "remote_request_code.h"
 #include "iremote_proxy.h"
 #include "drm_log.h"
-#include "drm_napi_utils.h"
 
 namespace OHOS {
 namespace DrmStandard {

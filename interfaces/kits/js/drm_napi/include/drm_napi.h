@@ -19,7 +19,6 @@
 #include "key_session_napi.h"
 #include "drm_log.h"
 #include "drm_error_code.h"
-#include "drm_napi_utils.h"
 
 namespace OHOS {
 namespace DrmStandard {

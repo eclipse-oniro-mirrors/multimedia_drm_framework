@@ -16,6 +16,7 @@ import("//build/ohos.gni")
 group("drm_framework") {
   deps = [
     "./drm_framework/frameworks/native:drm_framework",
+    "./drm_framework/interfaces/kits/c/drm_capi:native_drm",
     "./drm_framework/interfaces/kits/js/drm_napi:drm_napi",
     "./drm_framework/services:drm_service",
   ]

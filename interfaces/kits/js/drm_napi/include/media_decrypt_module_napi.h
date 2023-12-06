@@ -19,7 +19,6 @@
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 #include "drm_log.h"
-#include "drm_napi_utils.h"
 #include "drm_error_code.h"
 
 namespace OHOS {

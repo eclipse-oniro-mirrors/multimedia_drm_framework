@@ -12,9 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "media_key_system_napi.h"
+#include "drm_napi_utils.h"
 #include "key_session_napi.h"
-
+#include "media_key_system_napi.h"
 namespace OHOS {
 namespace DrmStandard {
 thread_local napi_ref MediaKeySystemNapi::sConstructor_ = nullptr;

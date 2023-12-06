@@ -15,6 +15,7 @@
 
 #include <map>
 #include <vector>
+#include "drm_napi_utils.h"
 #include "drm_enum_napi.h"
 
 namespace OHOS {

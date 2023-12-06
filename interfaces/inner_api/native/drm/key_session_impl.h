@@ -19,8 +19,6 @@
 #include "nocopyable.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
-#include "drm_napi_utils.h"
-#include "common_napi.h"
 #include "media_decrypt_module_impl.h"
 #include "i_keysession_service.h"
 #include "i_keysession_service_callback.h"

@@ -12,10 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "media_decrypt_module_napi.h"
+#include "ipc_skeleton.h"
+#include "drm_napi_utils.h"
 #include "media_decrypt_module_impl.h"
 #include "key_session_impl.h"
-#include "ipc_skeleton.h"
+#include "media_decrypt_module_napi.h"
 
 namespace OHOS {
 namespace DrmStandard {

@@ -19,9 +19,6 @@
 #include "nocopyable.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
-#include "drm_log.h"
-#include "drm_error_code.h"
-#include "drm_napi_utils.h"
 #include "i_mediadecryptmodule_service.h"
 
 namespace OHOS {

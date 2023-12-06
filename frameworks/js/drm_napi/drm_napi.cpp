@@ -13,8 +13,10 @@
  * limitations under the License.
  */
 
-#include "drm_napi.h"
 #include "ipc_skeleton.h"
+#include "drm_napi_utils.h"
+#include "drm_napi.h"
+
 namespace OHOS {
 namespace DrmStandard {
 thread_local napi_ref DrmNapi::sConstructor_ = nullptr;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023  Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -50,12 +50,7 @@ private:
     napi_ref callback_;
 };
 
-namespace DrmEvent {
-const std::string DRM_EVENT_KEY_EXPIRED = "keyExpired";
-const std::string DRM_EVENT_KEY_SESSION_RECLAIMED = "keySessionReclaimed";
-const std::string DRM_EVENT_SYSTEM_PROVISION_REQUIRED = "keySystemProvisionRequired";
-}
 } // namespace DrmStandard
 } // namespace OHOS
 
-#endif
+#endif // OHOS_DRM_COMMON_NAPI_H_
