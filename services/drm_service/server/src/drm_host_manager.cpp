@@ -13,17 +13,28 @@
  * limitations under the License.
  */
 
+#include <dlfcn.h>
+#include <dirent.h>
+#include <iostream>
 #include "hdf_device_class.h"
 #include "iremote_broker.h"
 #include "iservmgr_hdi.h"
 #include "servmgr_hdi.h"
 #include "drm_log.h"
 #include "drm_error_code.h"
+#include "drm_napi_utils.h"
 #include "drm_host_manager.h"
 
 namespace OHOS {
 namespace DrmStandard {
 using OHOS::HDI::ServiceManager::V1_0::IServiceManager;
+std::queue<Message> DrmHostManager::messageQueue;
+std::mutex DrmHostManager::queueMutex;
+std::mutex DrmHostManager::libMutex;
+std::condition_variable DrmHostManager::cv;
+std::mutex DrmHostManager::libMapMutex;
+std::map<std::string, void*> DrmHostManager::libMap;
+
 void DrmHostManager::DrmHostDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
     DRM_DEBUG_LOG("Remote died, do clean works.");
@@ -41,6 +52,133 @@ DrmHostManager::~DrmHostManager()
     if (statusCallback_ != nullptr) {
         statusCallback_ = nullptr;
     }
+    if (serviceThreadRunning) {
+        StopServiceThread();
+    }
+}
+
+void DrmHostManager::StopServiceThread()
+{
+    DRM_INFO_LOG("DrmHostManager::StopServiceThread enter.");
+    serviceThreadRunning = false;
+    if (serviceThread.joinable()) {
+        serviceThread.join();
+    }
+    for (auto libHandle : loadedLibs) {
+        StopThreadFuncType StopThread = (StopThreadFuncType)dlsym(libHandle, "StopThread");
+        if (StopThread) {
+            StopThread();
+        }
+        dlclose(libHandle);
+    }
+    loadedLibs.clear();
+    DRM_INFO_LOG("DrmHostManager::StopServiceThread exit.");
+}
+
+void DrmHostManager::ProcessMessage()
+{
+    DRM_INFO_LOG("DrmHostManager::ProcessMessage enter.");
+    std::thread([this] {
+        while (serviceThreadRunning) {
+            std::unique_lock<std::mutex> lock(queueMutex);
+            cv.wait(lock, [this] {
+                return !this->messageQueue.empty();
+            });
+            while (!messageQueue.empty()) {
+                auto message = messageQueue.front();
+                messageQueue.pop();
+                if (message.type == Message::UnLoadOEMCertifaicateService) {
+                    void *libHandle = nullptr;
+                    std::lock_guard<std::mutex> lock(libMapMutex);
+                    auto it = libMap.find(message.uuid);
+                    if (it != libMap.end()) {
+                        libHandle = it->second;
+                    }
+                    if (libHandle) {
+                        std::lock_guard<std::mutex> lock(libMutex);
+                        dlclose(libHandle);
+                        loadedLibs.erase(std::remove(loadedLibs.begin(), loadedLibs.end(), libHandle),
+                            loadedLibs.end());
+                        libHandle = nullptr;
+                    }
+                }
+            }
+            lock.unlock();
+            DRM_INFO_LOG("DrmHostManager::ProcessMessage exit.");
+        }
+    }).detach();
+}
+
+void DrmHostManager::ServiceThreadMain()
+{
+    DRM_INFO_LOG("DrmHostManager::ServiceThreadMain enter.");
+    DIR* dir = nullptr;
+    struct dirent* entry = nullptr;
+    if ((dir = opendir("/system/lib/drmoemservices")) != nullptr) {
+        while ((entry = readdir(dir)) != nullptr) {
+            std::string fileName = entry->d_name;
+            DRM_DEBUG_LOG("DrmHostManager::ServiceThreadMain fileName:%{public}s.", fileName.c_str());
+            if (fileName.find(".so") == std::string::npos) {
+                continue;
+            }
+            std::string fullPath = "/system/lib/drmoemservices/" + fileName;
+            DRM_DEBUG_LOG("DrmHostManager::ServiceThreadMain fullPath:%{public}s.", fullPath.c_str());
+            libsToLoad.push_back(fullPath);
+        }
+    }
+    for (const auto& libpath : libsToLoad) {
+        std::lock_guard<std::mutex> lock(libMutex);
+        void *handle = dlopen(libpath.c_str(), RTLD_LAZY);
+        if (handle) {
+            loadedLibs.push_back(handle);
+            auto QueryMediaKeySystemName = (QueryMediaKeySystemNameFuncType)dlsym(handle, "QueryMediaKeySystemName");
+            auto IsProvisionRequired = (IsProvisionRequiredFuncType)dlsym(handle, "IsProvisionRequired");
+            auto SetMediaKeySystem = (SetMediaKeySystemFuncType)dlsym(handle, "SetMediaKeySystem");
+            auto ThreadExitNotify = (ThreadExitNotifyFuncType)dlsym(handle, "ThreadExitNotify");
+            auto StartThread = (StartThreadFuncType)dlsym(handle, "StartThread");
+            auto StopThread = (StopThreadFuncType)dlsym(handle, "StopThread");
+            if (QueryMediaKeySystemName && SetMediaKeySystem && ThreadExitNotify && StartThread && StopThread) {
+                std::string uuid;
+                int32_t ret = QueryMediaKeySystemName(uuid);
+                DRM_CHECK_AND_RETURN_LOG(ret == DRM_OK, "QueryMediaKeySystemName faild.");
+                ret = CreateMediaKeySystem(uuid, hdiMediaKeySystem);
+                DRM_CHECK_AND_RETURN_LOG(ret == DRM_OK && hdiMediaKeySystem != nullptr, "CreateMediaKeySystem faild.");
+                ret = SetMediaKeySystem(hdiMediaKeySystem);
+                DRM_CHECK_AND_RETURN_LOG(ret == DRM_OK, "SetMediaKeySystem faild.");
+                if (IsProvisionRequired()) {
+                    std::lock_guard<std::mutex> lock(libMapMutex);
+                    libMap[uuid] = handle;
+                    ret = ThreadExitNotify(DrmHostManager::UnLoadOEMCertifaicateService);
+                    DRM_CHECK_AND_RETURN_LOG(ret == DRM_OK, "ThreadExitNotify faild.");
+                    ret = StartThread();
+                    DRM_CHECK_AND_RETURN_LOG(ret == DRM_OK, "StartThread faild.");
+                } else {
+                    dlclose(handle);
+                    loadedLibs.pop_back();
+                }
+            }
+        }
+    }
+    DRM_INFO_LOG("DrmHostManager::ServiceThreadMain exit.");
+}
+
+void DrmHostManager::UnLoadOEMCertifaicateService(std::string &uuid, ExtraInfo info)
+{
+    DRM_INFO_LOG("DrmHostManager::UnLoadOEMCertifaicateService enter.");
+    std::lock_guard<std::mutex> lock(queueMutex);
+    Message message(Message::UnLoadOEMCertifaicateService, uuid, info);
+    messageQueue.push(message);
+    cv.notify_all();
+    DRM_INFO_LOG("DrmHostManager::UnLoadOEMCertifaicateService exit.");
+}
+
+void DrmHostManager::OemCertificateManager()
+{
+    DRM_INFO_LOG("DrmHostManager::OemCertificateManager enter.");
+    serviceThreadRunning = true;
+    serviceThread = std::thread(&DrmHostManager::ServiceThreadMain, this);
+    ProcessMessage();
+    DRM_INFO_LOG("DrmHostManager::OemCertificateManager exit.");
 }
 
 int32_t DrmHostManager::Init(void)
@@ -50,6 +188,7 @@ int32_t DrmHostManager::Init(void)
         DRM_ERR_LOG("DrmHostManager::Init, no drm host proxy");
         return DRM_HOST_ERROR;
     }
+    OemCertificateManager();
     DRM_INFO_LOG("DrmHostManager::Init exit.");
     return DRM_OK;
 }
