@@ -50,6 +50,8 @@ typedef enum OH_DrmErrCode {
     /* *
      * the operation completed successfully.
      */
+    DRM_ERR_ERROR = -1,
+
     DRM_ERR_OK = 0,
     /* *
      * no memory.
@@ -100,6 +102,9 @@ typedef enum OH_DrmErrCode {
      */
     DRM_ERR_EXTEND_START = 100,
 } OH_DrmErrCode;
+
+typedef int32_t OH_DrmBool;
+
 
 #ifdef __cplusplus
 }

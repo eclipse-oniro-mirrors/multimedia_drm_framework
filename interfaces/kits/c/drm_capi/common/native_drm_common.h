@@ -80,28 +80,7 @@ typedef enum OH_DRM_ListenerType {
  * @since 11
  * @version 1.0
  */
-typedef enum OH_DRM_ContentProtectionLevel {
-    /* *
-     * Content potection level unknown.
-     */
-    CONTENT_PROTECTION_LEVEL_UNKNOWN = 0,
-    /* *
-     * Content potection level software crypto.
-     */
-    CONTENT_PROTECTION_LEVEL_SW_CRYPTO,
-    /* *
-     * Content potection level hardware crypto.
-     */
-    CONTENT_PROTECTION_LEVEL_HW_CRYPTO,
-    /* *
-     * Content potection level enhanced hardware crypto.
-     */
-    CONTENT_PROTECTION_LEVEL_ENHANCED_HW_CRYPTO,
-    /* *
-     * Content potection level max stub.
-     */
-    CONTENT_PROTECTION_LEVEL_MAX,
-} OH_DRM_ContentProtectionLevel;
+
 
 /**
  * @brief Media key type.
@@ -176,28 +155,7 @@ typedef enum OH_DRM_OfflineMediaKeyStatus {
  * @since 11
  * @version 1.0
  */
-typedef enum OH_DRM_CertificateStatus {
-    /* *
-     * Device already provisioned.
-     */
-    CERT_STATUS_PROVISIONED = 0,
-    /* *
-     * Device not provisioned.
-     */
-    CERT_STATUS_NOT_PROVISIONED,
-    /* *
-     * Cert already expired.
-     */
-    CERT_STATUS_EXPIRED,
-    /* *
-     * Certs are invalid.
-     */
-    CERT_STATUS_INVALID,
-    /* *
-     * Get certs status failed.
-     */
-    CERT_STATUS_UNAVAILABLE,
-} OH_DRM_CertificateStatus;
+
 
 /**
  * @brief Media key status.

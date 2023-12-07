@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include "native_drm_common.h"
 #include "native_drm_err.h"
+#include "native_mediakeysystem.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -58,16 +59,83 @@ OH_DrmErrCode OH_MediaKeySession_ProcessLicenseResponse(OH_MediaKeySession *keyS
  * @brief Check license status.
  * @syscap SystemCapability.Multimedia.Drm.Core
  * @param mediaKeySession Media key session instance.
- * @param response License resposne.
- * @param responseLen The length of license resposne.
- * @param licenseId Specifies which license corresponded.
- * @param licenseIdLen The length of license id.
+ *
  * @returns OH_DrmErrCode refers to OH_DrmErrCode.
  * @since 9
  * @version 1.0
  */
 OH_DrmErrCode OH_MediaKeySession_CheckLicenseStatus(OH_MediaKeySession *keySession, OH_DRM_MediaKeyStatus *status,
     uint32_t *licenseStatusCount);
+
+/**
+ * @brief Remove license.
+ * @syscap SystemCapability.Multimedia.Drm.Core
+ * @param mediaKeySession Media key session instance.
+ * @returns OH_DrmErrCode refers to OH_DrmErrCode.
+ * @since 9
+ * @version 1.0
+ */
+OH_DrmErrCode OH_MediaKeySession_RemoveLicense(OH_MediaKeySession *keySession);
+
+/**
+ * @brief Process offline license response.
+ * @syscap SystemCapability.Multimedia.Drm.Core
+ * @param mediaKeySession Media key session instance.
+ * @param licenseId Specifies which license corresponded.
+ * @param licenseIdLen The length of license id.
+ * @param response License resposne.
+ * @param responseLen The length of license resposne.
+ * @returns OH_DrmErrCode refers to OH_DrmErrCode.
+ * @since 9
+ * @version 1.0
+ */
+OH_DrmErrCode OH_MediaKeySession_ProcessOfflineReleaseResponse(OH_MediaKeySession *keySession, uint8_t *licenseId,
+    size_t licenseIdLen, uint8_t *response, size_t responseLen);
+
+/**
+ * @brief Restore offline license response.
+ * @syscap SystemCapability.Multimedia.Drm.Core
+ * @param mediaKeySession Media key session instance.
+ * @param licenseId The licenseId specifies which license should be restore.
+ * @param licenseIdLen The length of license id.
+ * @returns OH_DrmErrCode refers to OH_DrmErrCode.
+ * @since 9
+ * @version 1.0
+ */
+OH_DrmErrCode OH_MediaKeySession_RestoreOfflineLicense(OH_MediaKeySession *keySession, uint8_t *licenseId,
+    size_t licenseIdLen);
+
+/**
+ * @brief Get security level.
+ * @syscap SystemCapability.Multimedia.Drm.Core
+ * @param mediaKeySession Media key session instance.
+ * @returns return SecurityLevel.
+ * @since 9
+ * @version 1.0
+ */
+OH_SecurityLevel OH_MediaKeySession_GetSecurityLevel(OH_MediaKeySession *keySession);
+
+/**
+ * @brief When the decrypt content need a secure decoder, return true, otherwise return false.
+ * @syscap SystemCapability.Multimedia.Drm.Core
+ * @param mediaKeySession Media key session instance.
+ * @param mimeType The media content type.
+ * @returns OH_DrmErrCode refers to OH_DrmErrCode.
+ * @since 9
+ * @version 1.0
+ */
+OH_DrmBool OH_MediaKeySession_RequireSecureDecoderModule(OH_MediaKeySession *keySession, const char *mimeType);
+
+/**
+ * @brief Release the resource before the session gonna be unused.
+ * @syscap SystemCapability.Multimedia.Drm.Core
+ * @param mediaKeySession Media key session instance.
+ * @returns OH_DrmErrCode refers to OH_DrmErrCode.
+ * @since 9
+ * @version 1.0
+ */
+OH_DrmErrCode OH_MediaKeySession_Destroy(OH_MediaKeySession *keySession);
+
 
 #ifdef __cplusplus
 }
