@@ -21,40 +21,21 @@
         "deps": {
           "components": [
               "safwk",
-              "window_manager",
               "napi",
               "samgr",
               "hitrace",
               "ipc",
-              "graphic_2d",
               "hisysevent",
               "c_utils",
               "hilog",
-              "zlib",
               "access_token",
-              "libhilog",
-              "ipc_core",
-              "media_client",
-              "system_ability_fwk",
-              "samgr_proxy",
-              "libaccesstoken_sdk",
-              "ipc_single",
-              "common",
               "hicollie",
               "hdf_core",
               "eventhandler",
               "bundle_framework",
               "drivers_interface_drm",
               "ability_base"
-            ],
-            "third_party": [
-              "glib",
-              "gstreamer",
-              "libffi",
-              "ffmpeg",
-              "libxml2",
-              "bounds_checking_function"
-              ]
+            ]
         },
         "build": {
           "group_type": {

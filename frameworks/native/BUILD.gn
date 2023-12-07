@@ -79,7 +79,6 @@ ohos_shared_library("drm_framework") {
 
   external_deps = [
     "c_utils:utils",
-    "graphic_2d:surface",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:hitrace_meter",
