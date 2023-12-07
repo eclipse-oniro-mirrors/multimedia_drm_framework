@@ -57,7 +57,6 @@ ohos_shared_library("drm_napi") {
   external_deps = [
     "access_token:libtokenid_sdk",
     "c_utils:utils",
-    "graphic_2d:surface",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:hitrace_meter",

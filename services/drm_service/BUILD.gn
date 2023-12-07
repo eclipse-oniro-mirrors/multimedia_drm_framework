@@ -47,7 +47,6 @@ ohos_shared_library("drm_service") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "drivers_interface_drm:libdrm_proxy_1.0",
-    "graphic_2d:surface",
     "hdf_core:libhdf_host",
     "hdf_core:libhdf_ipc_adapter",
     "hdf_core:libhdf_utils",
