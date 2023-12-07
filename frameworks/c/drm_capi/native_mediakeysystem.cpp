@@ -207,7 +207,8 @@ OH_DrmErrCode OH_SetConfigurationString(OH_MediaKeySystem *mediaKeySystem, const
     return DRM_ERR_OK;
 }
 
-OH_DrmErrCode OH_GetConfigurationByteArray(OH_MediaKeySystem *mediaKeySystem, const char *configName, unsigned char *valuePtr, uint32_t *valueLen)
+OH_DrmErrCode OH_GetConfigurationByteArray(OH_MediaKeySystem *mediaKeySystem, const char *configName,
+    unsigned char *valuePtr, uint32_t *valueLen)
 {
     DRM_INFO_LOG("OH_GetConfigurationByteArray enter");
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, DRM_ERR_INVALID_VAL,
@@ -267,7 +268,6 @@ OH_DrmErrCode OH_SetConfigurationByteArray(OH_MediaKeySystem *mediaKeySystem, co
     DRM_INFO_LOG("OH_SetConfigurationByteArray exit.");
     return DRM_ERR_OK;
 }
-
 
 
 OH_SecurityLevel OH_GetMaxSecurityLevel(OH_MediaKeySystem *mediaKeySystem)
@@ -363,7 +363,8 @@ OH_OfflineLicenseStatus OH_GetOfflineLicenseStatus(OH_MediaKeySystem *mediaKeySy
         return OFFLINELICENSE_STATUS_UNKNOWN;
     }
     OH_OfflineLicenseStatus CofflineLicenseStatus = (OH_OfflineLicenseStatus)((int32_t)(offlineLicenseStatus));
-    if (CofflineLicenseStatus < OFFLINELICENSE_STATUS_UNKNOWN || CofflineLicenseStatus > OFFLINELICENSE_STATUS_INACTIVE) {
+    if (CofflineLicenseStatus < OFFLINELICENSE_STATUS_UNKNOWN ||
+        CofflineLicenseStatus > OFFLINELICENSE_STATUS_INACTIVE) {
         DRM_ERR_LOG("OH_GetOfflineLicenseStatus faild!");
         return OFFLINELICENSE_STATUS_UNKNOWN;
     }

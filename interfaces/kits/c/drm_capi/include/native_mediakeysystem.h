@@ -37,7 +37,7 @@ typedef enum {
 } OH_SecurityLevel;
 
 typedef enum {
-    
+
     CERT_STATUS_PROVISIONED = 0,
     CERT_STATUS_NOT_PROVISIONED,
     CERT_STATUS_EXPIRED,
@@ -105,7 +105,8 @@ OH_DrmErrCode OH_GetConfigurationString(OH_MediaKeySystem *mediaKeySystem, const
  * @since 9
  * @version 1.0
  */
-OH_DrmErrCode OH_GetConfigurationByteArray(OH_MediaKeySystem *mediaKeySystem, const char *configName, unsigned char *valuePtr, uint32_t *valueLen);
+OH_DrmErrCode OH_GetConfigurationByteArray(OH_MediaKeySystem *mediaKeySystem, const char *configName,
+    unsigned char *valuePtr, uint32_t *valueLen);
 
 /**
  * @brief Set the specified configuration.
@@ -153,7 +154,7 @@ OH_DrmErrCode OH_ProcessKeySystemResponse(OH_MediaKeySystem *mediaKeySystem, uin
  */
 OH_CertificateStatus OH_GetCertificateStatus(OH_MediaKeySystem *mediaKeySystem);
 
-  /**
+/**
  * Get offline license status corresponding to the licenseId.
  * @syscap SystemCapability.Multimedia.Drm.Core
  * @param mediaKeySystem Media key system instance which will create media key session.
@@ -174,7 +175,7 @@ OH_OfflineLicenseStatus OH_GetOfflineLicenseStatus(OH_MediaKeySystem *mediaKeySy
  * @param licenseId The licenseId specifies which license should be remove.
  * @param licenseIdLen The length of the license
  * @returns OH_DrmErrCode refers to OH_DrmErrCode
- *  if the function returns DRM_ERR_OK.
+ * if the function returns DRM_ERR_OK.
  * @since 9
  * @version 1.0
  */
@@ -196,7 +197,7 @@ OH_DrmErrCode OH_MediaKeySystem_Destroy(OH_MediaKeySystem *mediaKeySystem);
  * @param OH_SecurityLevel Specifies the security level.
  * @param mediaKeySession Out parameter. Media key session instance has been created
  * @returns OH_DrmErrCode refers to OH_DrmErrCode
- *  if the function returns DRM_ERR_OK.
+ * if the function returns DRM_ERR_OK.
  * @since 9
  * @version 1.0
  */
