@@ -22,6 +22,9 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include <queue>
+#include <condition_variable>
+#include <thread>
 
 #include "i_mediakeysystem_service.h"
 #include "iservstat_listener_hdi.h"
@@ -34,6 +37,30 @@ namespace OHOS {
 namespace DrmStandard {
 using namespace OHOS::HDI::Drm::V1_0;
 using namespace OHOS::HDI;
+
+enum ExtraInfo {
+    OEM_CERT_PROVISIONED_DONE = 0,
+    MEDIA_KEY_SYSTEM_ERROR,
+    GET_OEM_CERTIFIATE_ERROE,
+};
+
+struct Message {
+    enum Type {
+        UnLoadOEMCertifaicateService
+    };
+    Type type;
+    std::string uuid;
+    ExtraInfo extraInfo;
+    Message(Type t, std::string id, ExtraInfo info) : type(t), uuid(id), extraInfo(info) {}
+};
+
+typedef void (*MediaKeySystemCallBack)(std::string &, ExtraInfo);
+typedef int32_t (*QueryMediaKeySystemNameFuncType)(std::string &);
+typedef int32_t (*SetMediaKeySystemFuncType)(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> &);
+typedef bool (*IsProvisionRequiredFuncType)();
+typedef int32_t (*ThreadExitNotifyFuncType)(MediaKeySystemCallBack);
+typedef int32_t (*StartThreadFuncType)();
+typedef void (*StopThreadFuncType)();
 
 class DrmHostManager : public virtual RefBase, public HDI::ServiceManager::V1_0::ServStatListenerStub {
 public:
@@ -59,15 +86,29 @@ public:
     int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, int32_t securityLevel,
         bool *isSurpported);
     int32_t CreateMediaKeySystem(std::string &uuid, sptr<IMediaKeySystem> &hdiMediaKeySystem);
+    static void UnLoadOEMCertifaicateService(std::string &uuid, ExtraInfo info);
+    void StopServiceThread();
+    void ProcessMessage();
+    void ServiceThreadMain();
+    void OemCertificateManager();
 
 private:
     int32_t GetSevices(std::string &uuid, bool *isSurpported);
-    int32_t OEMCertifaicateServiceManage();
     std::mutex mutex_;
     StatusCallback *statusCallback_;
     std::string service_name_ = "drm_interface_service";
     sptr<IMediaKeySystemFactory> drmHostServieProxy_;
     sptr<IMediaKeySystem> hdiMediaKeySystem;
+    std::thread serviceThread;
+    bool serviceThreadRunning = false;
+    std::vector<void *> loadedLibs;
+    std::vector<std::string> libsToLoad;
+    static std::queue<Message> messageQueue;
+    static std::mutex queueMutex;
+    static std::mutex libMutex;
+    static std::condition_variable cv;
+    static std::mutex libMapMutex;
+    static std::map<std::string, void*> libMap;
 };
 } // DrmStandard
 } // OHOS
