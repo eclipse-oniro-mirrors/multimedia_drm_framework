@@ -34,6 +34,8 @@ std::mutex DrmHostManager::libMutex;
 std::condition_variable DrmHostManager::cv;
 std::mutex DrmHostManager::libMapMutex;
 std::map<std::string, void*> DrmHostManager::libMap;
+std::mutex DrmHostManager::handleAndKeySystemMapMutex;
+std::map<void*, sptr<IMediaKeySystem>> DrmHostManager::handleAndKeySystemMap;
 
 void DrmHostManager::DrmHostDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
@@ -70,6 +72,7 @@ void DrmHostManager::StopServiceThread()
             StopThread();
         }
         dlclose(libHandle);
+        ReleaseHandleAndKeySystemMap(libHandle);
     }
     loadedLibs.clear();
     DRM_INFO_LOG("DrmHostManager::StopServiceThread exit.");
@@ -89,14 +92,15 @@ void DrmHostManager::ProcessMessage()
                 messageQueue.pop();
                 if (message.type == Message::UnLoadOEMCertifaicateService) {
                     void *libHandle = nullptr;
-                    std::lock_guard<std::mutex> lock(libMapMutex);
+                    std::lock_guard<std::mutex> lockLibMap(libMapMutex);
                     auto it = libMap.find(message.uuid);
                     if (it != libMap.end()) {
                         libHandle = it->second;
                     }
                     if (libHandle) {
-                        std::lock_guard<std::mutex> lock(libMutex);
+                        std::lock_guard<std::mutex> lockLib(libMutex);
                         dlclose(libHandle);
+	     		        ReleaseHandleAndKeySystemMap(libHandle);
                         loadedLibs.erase(std::remove(loadedLibs.begin(), loadedLibs.end(), libHandle),
                             loadedLibs.end());
                         libHandle = nullptr;
@@ -109,25 +113,36 @@ void DrmHostManager::ProcessMessage()
     }).detach();
 }
 
+void DrmHostManager::ReleaseHandleAndKeySystemMap(void *handle)
+{
+    std::lock_guard<std::mutex> lock(handleAndKeySystemMapMutex);
+    auto it = handleAndKeySystemMap.find(handle);
+    if (it != handleAndKeySystemMap.end()) {
+        it->second->Destroy();
+        it->second = nullptr;
+    }
+    handleAndKeySystemMap.erase(handle);
+}
+
 void DrmHostManager::ServiceThreadMain()
 {
     DRM_INFO_LOG("DrmHostManager::ServiceThreadMain enter.");
     DIR* dir = nullptr;
     struct dirent* entry = nullptr;
-    if ((dir = opendir("/system/lib/drmoemservices")) != nullptr) {
+    if ((dir = opendir("/system/lib64/oem_certificate_service")) != nullptr) {
         while ((entry = readdir(dir)) != nullptr) {
             std::string fileName = entry->d_name;
             DRM_DEBUG_LOG("DrmHostManager::ServiceThreadMain fileName:%{public}s.", fileName.c_str());
             if (fileName.find(".so") == std::string::npos) {
                 continue;
             }
-            std::string fullPath = "/system/lib/drmoemservices/" + fileName;
+            std::string fullPath = "/system/lib64/oem_certificate_service/" + fileName;
             DRM_DEBUG_LOG("DrmHostManager::ServiceThreadMain fullPath:%{public}s.", fullPath.c_str());
             libsToLoad.push_back(fullPath);
         }
     }
     for (const auto& libpath : libsToLoad) {
-        std::lock_guard<std::mutex> lock(libMutex);
+        std::lock_guard<std::mutex> lockLib(libMutex);
         void *handle = dlopen(libpath.c_str(), RTLD_LAZY);
         if (handle) {
             loadedLibs.push_back(handle);
@@ -142,19 +157,35 @@ void DrmHostManager::ServiceThreadMain()
                 int32_t ret = QueryMediaKeySystemName(uuid);
                 DRM_CHECK_AND_RETURN_LOG(ret == DRM_OK, "QueryMediaKeySystemName faild.");
                 ret = CreateMediaKeySystem(uuid, hdiMediaKeySystem);
+                std::lock_guard<std::mutex> lockHandle(handleAndKeySystemMapMutex);
+                handleAndKeySystemMap.insert(std::make_pair(handle, hdiMediaKeySystem));
                 DRM_CHECK_AND_RETURN_LOG(ret == DRM_OK && hdiMediaKeySystem != nullptr, "CreateMediaKeySystem faild.");
                 ret = SetMediaKeySystem(hdiMediaKeySystem);
-                DRM_CHECK_AND_RETURN_LOG(ret == DRM_OK, "SetMediaKeySystem faild.");
+                if (ret != DRM_OK) {
+                    ReleaseHandleAndKeySystemMap(handle);
+                    DRM_ERR_LOG("DrmHostManager::SetMediaKeySystem error!");
+                    return;
+                }
                 if (IsProvisionRequired()) {
-                    std::lock_guard<std::mutex> lock(libMapMutex);
+                    std::lock_guard<std::mutex> lockLibMap(libMapMutex);
                     libMap[uuid] = handle;
                     ret = ThreadExitNotify(DrmHostManager::UnLoadOEMCertifaicateService);
-                    DRM_CHECK_AND_RETURN_LOG(ret == DRM_OK, "ThreadExitNotify faild.");
+                    if (ret != DRM_OK) {
+                        ReleaseHandleAndKeySystemMap(handle);
+                        DRM_ERR_LOG("DrmHostManager::ThreadExitNotify error!");
+                        return;
+                    }
                     ret = StartThread();
-                    DRM_CHECK_AND_RETURN_LOG(ret == DRM_OK, "StartThread faild.");
+                    if (ret != DRM_OK) {
+                        ReleaseHandleAndKeySystemMap(handle);
+                        DRM_ERR_LOG("DrmHostManager::StartThread error!");
+                        return;
+                    }
                 } else {
                     dlclose(handle);
                     loadedLibs.pop_back();
+                    ReleaseHandleAndKeySystemMap(handle);
+                    DRM_DEBUG_LOG("OEM certificate exist!");
                 }
             }
         }
