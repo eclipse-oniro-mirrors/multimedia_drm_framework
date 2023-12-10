@@ -94,11 +94,14 @@ public:
 
 private:
     int32_t GetSevices(std::string &uuid, bool *isSurpported);
+    void ReleaseHandleAndKeySystemMap(void *handle);
     std::mutex mutex_;
     StatusCallback *statusCallback_;
     std::string service_name_ = "drm_interface_service";
     sptr<IMediaKeySystemFactory> drmHostServieProxy_;
     sptr<IMediaKeySystem> hdiMediaKeySystem;
+    static std::mutex handleAndKeySystemMapMutex;
+    static std::map<void*, sptr<IMediaKeySystem>> handleAndKeySystemMap;
     std::thread serviceThread;
     bool serviceThreadRunning = false;
     std::vector<void *> loadedLibs;
