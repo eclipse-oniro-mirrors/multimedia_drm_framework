@@ -46,6 +46,7 @@ public:
     int32_t GetOfflineLicenseStatus(std::vector<uint8_t> &licenseId,
         IMediaKeySessionService::OfflineLicenseStatus &status) override;
     int32_t RemoveOfflineLicense(std::vector<uint8_t> &licenseId) override;
+    int32_t SetCallback(sptr<IMeidaKeySystemServiceCallback> &callback) override;
 
 private:
     static inline BrokerDelegator<MediaKeySystemServiceProxy> delegator_;

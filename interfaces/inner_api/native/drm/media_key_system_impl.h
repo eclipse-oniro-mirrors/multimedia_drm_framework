@@ -16,18 +16,29 @@
 #ifndef OHOS_DRM_MEDIA_KEY_SYSTEMP_IMPL_H
 #define OHOS_DRM_MEDIA_KEY_SYSTEMP_IMPL_H
 
-#include "key_session_impl.h"
-#include "system_ability_definition.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "nocopyable.h"
-#include "i_mediakeysystem_service.h"
-#include "drm_death_recipient.h"
+#include "system_ability_definition.h"
+
 #include "drm_log.h"
 #include "drm_error_code.h"
 
+#include "drm_death_recipient.h"
+#include "key_session_impl.h"
+#include "i_mediakeysystem_service.h"
+#include "mediakeysystem_service_callback_stub.h"
+
 namespace OHOS {
 namespace DrmStandard {
+
+class MediaKeySystemImplCallback : public RefBase {
+public:
+    MediaKeySystemImplCallback() = default;
+    virtual ~MediaKeySystemImplCallback() = default;
+    virtual void SendEvent(const std::string event, uint32_t extra, const std::vector<uint8_t> data)  = 0;
+};
+
 class MediaKeySystemImpl : public RefBase {
 public:
     explicit MediaKeySystemImpl(sptr<IMediaKeySystemService> &mediaKeysystem);
@@ -51,13 +62,37 @@ public:
     int32_t RemoveOfflineLicense(std::vector<uint8_t> &licenseId);
 
     int32_t GetCertificateStatus(IMediaKeySystemService::CertificateStatus *certStatus);
-
+    sptr<MediaKeySystemImplCallback> GetApplicationCallback();
+    int32_t SetCallback(const sptr<MediaKeySystemImplCallback> &callback);
     int32_t Release();
 
 private:
     std::mutex mutex_;
-    sptr<OHOS::DrmStandard::IMediaKeySystemService> serviceProxy_;
+    sptr<IMediaKeySystemService> serviceProxy_;
+    sptr<MediaKeySystemImplCallback> mediaKeySystemNapiCallback_;
+    sptr<IMeidaKeySystemServiceCallback> serviceCallback_;
 };
+
+class MediaKeySystemCallback : public MeidaKeySystemServiceCallbackStub {
+public:
+    MediaKeySystemCallback() : systemImpl_(nullptr)
+    {
+        InitEventMap();
+    };
+    explicit MediaKeySystemCallback(const sptr<MediaKeySystemImpl> &systemImpl) : systemImpl_(systemImpl)
+    {
+        InitEventMap();
+    };
+    ~MediaKeySystemCallback();
+    void InitEventMap();
+    std::string GetEventName(DrmEventType event);
+    int32_t SendEvent(DrmEventType event, uint32_t extra, const std::vector<uint8_t> data) override;
+
+private:
+    sptr<MediaKeySystemImpl> systemImpl_;
+    std::unordered_map<int32_t, std::string> eventMap_;
+};
+
 } // DrmStandard
 } // OHOS
 #endif // OHOS_DRM_MEDIA_KEY_SYSTEMP_IMPL_H

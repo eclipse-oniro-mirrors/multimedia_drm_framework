@@ -35,17 +35,15 @@ public:
     int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &licenseId,
         std::vector<uint8_t> &releaseReponse) override;
     int32_t CheckLicenseStatus(std::map<std::string,
-        IMediaKeySessionService::MediaKeySessionKeyStatus>& licenseStatus) override;
+        MediaKeySessionKeyStatus>& licenseStatus) override;
     int32_t RestoreOfflineLicense(std::vector<uint8_t> &licenseId) override;
     int32_t RemoveLicense() override;
 
     int32_t CreateMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule) override;
     int32_t GetSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel) override;
-
-    int32_t SetMediaKeySessionServiceCallback(sptr<IMediaKeySessionServiceCallback> &callback) override;
-
     int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status) override;
 
+    int32_t SetCallback(sptr<IMediaKeySessionServiceCallback> &callback) override;
 private:
     static inline BrokerDelegator<MediaKeySessionServiceProxy> delegator_;
 };

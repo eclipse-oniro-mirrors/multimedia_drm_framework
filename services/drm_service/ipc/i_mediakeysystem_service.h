@@ -16,11 +16,12 @@
 #ifndef OHOS_DRM_I_MEDIA_KEY_SYSTEM_SERVICE_H
 #define OHOS_DRM_I_MEDIA_KEY_SYSTEM_SERVICE_H
 
-#include "i_keysession_service.h"
 #include "ipc_types.h"
 #include "iremote_broker.h"
 #include "iremote_proxy.h"
 #include "iremote_stub.h"
+#include "i_keysession_service.h"
+#include "i_mediakeysystem_service_callback.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -75,6 +76,7 @@ public:
     virtual int32_t GetOfflineLicenseStatus(std::vector<uint8_t> &licenseId,
         IMediaKeySessionService::OfflineLicenseStatus &status) = 0;
     virtual int32_t RemoveOfflineLicense(std::vector<uint8_t> &licenseId) = 0;
+    virtual int32_t SetCallback(sptr<IMeidaKeySystemServiceCallback> &callback) = 0;
 
     DECLARE_INTERFACE_DESCRIPTOR(u"IMediaKeySystemSystemService");
 };

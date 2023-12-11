@@ -60,6 +60,8 @@ napi_value MediaKeySystemNapi::Init(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("getOfflineLicenseStatus", GetOfflineLicenseStatus),
         DECLARE_NAPI_FUNCTION("removeOfflineLicense", RemoveOfflineLicense),
         DECLARE_NAPI_FUNCTION("destroy", Destroy),
+        DECLARE_NAPI_FUNCTION("on", SetEventCallback),
+        DECLARE_NAPI_FUNCTION("off", UnsetEventCallback),
     };
 
     status = napi_define_class(env, MEDIA_KEY_SYSTEM_NAPI_CLASS_NAME, NAPI_AUTO_LENGTH, MediaKeySystemNapiConstructor,
@@ -96,6 +98,8 @@ napi_value MediaKeySystemNapi::MediaKeySystemNapiConstructor(napi_env env, napi_
             return result;
         }
         obj->mediaKeySystemImpl_ = MediaKeySystemNapi::sMediaKeySystemImpl_;
+        obj->mediaKeySystemCallbackNapi_ = new(std::nothrow) MediaKeySystemCallbackNapi();
+        obj->mediaKeySystemImpl_->SetCallback(obj->mediaKeySystemCallbackNapi_);
 
         status = napi_wrap(env, jsThis, reinterpret_cast<void *>(obj.get()),
             MediaKeySystemNapi::MediaKeySystemNapiDestructor, nullptr, nullptr);
@@ -824,5 +828,102 @@ napi_value MediaKeySystemNapi::Destroy(napi_env env, napi_callback_info info)
     DRM_INFO_LOG("MediaKeySystemNapi::Release exit.");
     return result;
 }
+
+void MediaKeySystemNapi::SaveEventCallbackReferrence(const std::string eventType, sptr<CallBackPair> callbackPair)
+{
+    DRM_INFO_LOG("MediaKeySystemNapi::SaveEventCallbackReferrence");
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (mediaKeySystemCallbackNapi_ != nullptr) {
+        mediaKeySystemCallbackNapi_->SetCallbackReference(eventType, callbackPair);
+    } else {
+        DRM_ERR_LOG("MediaKeySystemNapi::SaveEventCallbackReferrence failed");
+    }
+}
+
+void MediaKeySystemNapi::ClearEventCallbackReferrence(const std::string eventType)
+{
+    DRM_INFO_LOG("MediaKeySystemNapi::ClearEventCallbackReference");
+    if (mediaKeySystemCallbackNapi_ != nullptr) {
+        mediaKeySystemCallbackNapi_->ClearCallbackReference(eventType);
+    } else {
+        DRM_ERR_LOG("MediaKeySystemNapi::ClearEventCallbackReference failed");
+    }
+}
+
+napi_value MediaKeySystemNapi::SetEventCallback(napi_env env, napi_callback_info info)
+{
+    DRM_INFO_LOG("MediaKeySystemNapi::SetEventCallback");
+    napi_value result = nullptr;
+    napi_get_undefined(env, &result);
+    char buffer[PATH_MAX];
+    size_t length = 0;
+    size_t argc = ARGS_TWO;
+    napi_value thisVar = nullptr;
+    napi_value argv[ARGS_TWO] = { nullptr };
+    DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
+    NAPI_ASSERT(env, argc == ARGS_TWO, "only requires 2 parameters");
+    if (thisVar == nullptr || argv[PARAM0] == nullptr || argv[PARAM1] == nullptr) {
+        DRM_ERR_LOG("Failed to retrieve arguments in SetEventCallback!");
+        return result;
+    }
+    napi_valuetype valueType = napi_undefined;
+    if (napi_typeof(env, argv[PARAM0], &valueType) != napi_ok || valueType != napi_string ||
+        napi_typeof(env, argv[PARAM1], &valueType) != napi_ok || valueType != napi_function) {
+        return result;
+    }
+
+    MediaKeySystemNapi* mediaKeySystemNapi = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&mediaKeySystemNapi));
+    if (status == napi_ok && mediaKeySystemNapi != nullptr) {
+        napi_get_value_string_utf8(env, argv[PARAM0], buffer, PATH_MAX, &length);
+        std::string eventType = std::string(buffer);
+        napi_ref callbackRef;
+        napi_create_reference(env, argv[PARAM1], 1, &callbackRef);
+        DRM_INFO_LOG("SetEventCallback event is %{public}s", eventType.c_str());
+
+        sptr<CallBackPair> callbackPair = new CallBackPair(env, callbackRef);
+        mediaKeySystemNapi->SaveEventCallbackReferrence(eventType, callbackPair);
+        DRM_INFO_LOG("mediaKeySystemNapi::SetEventCallback out");
+    } else {
+        DRM_ERR_LOG("mediaKeySystemNapi SetEventCallback failed!");
+    }
+    return result;
+}
+
+napi_value MediaKeySystemNapi::UnsetEventCallback(napi_env env, napi_callback_info info)
+{
+    DRM_INFO_LOG("MediaKeySystemNapi::UnsetEventCallback");
+    napi_value result = nullptr;
+    napi_get_undefined(env, &result);
+    napi_value thisVar = nullptr;
+    napi_value argv[ARGS_ONE] = { nullptr };
+    size_t argc = 1;
+    DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
+    NAPI_ASSERT(env, argc == ARGS_ONE, "only requires 1 parameters");
+    if (thisVar == nullptr || argv[PARAM0] == nullptr) {
+        DRM_ERR_LOG("Failed to retrieve arguments in UnsetEventCallback!");
+        return result;
+    }
+    napi_valuetype valueType = napi_undefined;
+    if (napi_typeof(env, argv[PARAM0], &valueType) != napi_ok || valueType != napi_string) {
+        DRM_ERR_LOG("Failed to retrieve reasonable arguments in UnsetEventCallback!");
+        return result;
+    }
+
+    MediaKeySystemNapi* mediaKeySystemNapi = nullptr;
+    char buffer[PATH_MAX];
+    size_t length = 0;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&mediaKeySystemNapi));
+    if (status == napi_ok && mediaKeySystemNapi != nullptr) {
+        napi_get_value_string_utf8(env, argv[PARAM0], buffer, PATH_MAX, &length);
+        std::string eventType = std::string(buffer);
+        mediaKeySystemNapi->ClearEventCallbackReferrence(eventType);
+        DRM_INFO_LOG("MediaKeySystemNapi::UnsetEventCallback out");
+    } else {
+        DRM_ERR_LOG("MediaKeySystemNapi UnsetEventCallback failed!");
+    }
+    return result;
+}
+
 } // namespace DrmStandard
 } // namespace OHOS

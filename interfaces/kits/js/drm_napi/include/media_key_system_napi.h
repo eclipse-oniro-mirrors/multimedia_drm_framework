@@ -32,6 +32,7 @@
 #include "key_session_impl.h"
 #include "media_key_system_impl.h"
 #include "media_key_system_factory_impl.h"
+#include "media_key_system_callback_napi.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -61,6 +62,11 @@ public:
     static napi_value GetCertificateStatus(napi_env env, napi_callback_info info);
     static napi_value Destroy(napi_env env, napi_callback_info info);
 
+    static napi_value SetEventCallback(napi_env env, napi_callback_info info);
+    static napi_value UnsetEventCallback(napi_env env, napi_callback_info info);
+    void SaveEventCallbackReferrence(const std::string eventType, sptr<CallBackPair> callbackPair);
+    void ClearEventCallbackReferrence(const std::string eventType);
+
 private:
     static napi_value MediaKeySystemNapiConstructor(napi_env env, napi_callback_info info);
     static void MediaKeySystemNapiDestructor(napi_env env, void *nativeObject, void *finalize);
@@ -68,8 +74,10 @@ private:
     static thread_local napi_ref sConstructor_;
     napi_env env_;
     napi_ref wrapper_;
+    std::mutex mutex_;
     sptr<MediaKeySystemImpl> mediaKeySystemImpl_;
     static thread_local sptr<MediaKeySystemImpl> sMediaKeySystemImpl_;
+    sptr<MediaKeySystemCallbackNapi> mediaKeySystemCallbackNapi_;
 };
 } // namespace DrmStandard
 } // namespace OHOS

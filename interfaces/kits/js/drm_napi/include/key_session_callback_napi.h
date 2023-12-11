@@ -16,6 +16,7 @@
 #ifndef OHOS_DRM_MediaKeySessionCallbackNapi_H_
 #define OHOS_DRM_MediaKeySessionCallbackNapi_H_
 
+#include <map>
 #include "key_session_impl.h"
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
@@ -29,8 +30,9 @@ public:
     virtual ~MediaKeySessionCallbackNapi();
     void SetCallbackReference(const std::string eventType, sptr<CallBackPair> callbackPair);
     void ClearCallbackReference(const std::string eventType);
-    void OnMediaKeySessionKeyExpired(const std::string eventType, const KeyStatus status) override;
-    void OnMediaKeySessionReclaimed(const std::string eventType, const SessionStatus status) override;
+    void SendEvent(const std::string event, uint32_t extra, const std::vector<uint8_t> data) override;
+    void SendEventKeyChanged(std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> statusTable,
+        bool hasNewGoodLicense) override;
 
 private:
     std::mutex mutex_;

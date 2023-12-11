@@ -62,9 +62,9 @@ napi_value MediaKeySessionNapi::Init(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("addEventListener", AddEventListener),
         DECLARE_NAPI_FUNCTION("deleteEventListener", DeleteEventListener),
         DECLARE_NAPI_FUNCTION("requireSecureDecoderModule", RequireSecureDecoderModule),
+        DECLARE_NAPI_FUNCTION("destroy", Destroy),
         DECLARE_NAPI_FUNCTION("on", SetEventCallback),
         DECLARE_NAPI_FUNCTION("off", UnsetEventCallback),
-        DECLARE_NAPI_FUNCTION("destroy", Destroy),
     };
     status = napi_define_class(env, KEY_SESSION_NAPI_CLASS_NAME, NAPI_AUTO_LENGTH, MediaKeySessionNapiConstructor,
         nullptr, sizeof(session_props) / sizeof(session_props[PARAM0]), session_props, &ctorObj);
@@ -102,6 +102,9 @@ napi_value MediaKeySessionNapi::MediaKeySessionNapiConstructor(napi_env env, nap
                 return result;
             }
             obj->keySessionImpl_ = sMediaKeySessionImpl_;
+            obj->keySessionCallbackNapi_ = new MediaKeySessionCallbackNapi();
+            obj->keySessionImpl_->SetCallback(obj->keySessionCallbackNapi_);
+
             status = napi_wrap(env, thisVar, reinterpret_cast<void *>(obj.get()),
                 MediaKeySessionNapi::MediaKeySessionNapiDestructor, nullptr, nullptr);
             if (status == napi_ok) {
@@ -509,7 +512,7 @@ napi_value MediaKeySessionNapi::ProcessOfflineReleaseResponse(napi_env env, napi
 }
 
 static napi_value vectorToJsArray(napi_env env,
-    std::map<std::string, IMediaKeySessionService::MediaKeySessionKeyStatus> &licenseStatus)
+    std::map<std::string, MediaKeySessionKeyStatus> &licenseStatus)
 {
     DRM_INFO_LOG("vectorToJsArray enter.");
     napi_value jsArray;
@@ -521,7 +524,7 @@ static napi_value vectorToJsArray(napi_env env,
         napi_value jsObject;
         napi_create_object(env, &jsObject);
         std::string name = it->first;
-        IMediaKeySessionService::MediaKeySessionKeyStatus status = it->second;
+        MediaKeySessionKeyStatus status = it->second;
         napi_create_string_utf8(env, name.c_str(), NAPI_AUTO_LENGTH, &jsName);
         napi_set_named_property(env, jsObject, "name", jsName);
         napi_create_int32(env, status, &jsValue);
@@ -541,7 +544,7 @@ napi_value MediaKeySessionNapi::CheckLicenseStatus(napi_env env, napi_callback_i
     napi_value thisVar = nullptr;
     napi_status status;
     MediaKeySessionNapi *keySessionNapi = nullptr;
-    std::map<std::string, IMediaKeySessionService::MediaKeySessionKeyStatus> licenseStatus;
+    std::map<std::string, MediaKeySessionKeyStatus> licenseStatus;
 
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
 

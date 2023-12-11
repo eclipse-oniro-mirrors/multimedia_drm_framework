@@ -98,7 +98,7 @@
         }                                            \
     } while (0)
 
-#define DRM_NAPI_DRM_CHECK_AND_RETURN_LOG(cond, fmt, ...) \
+#define DRM_NAPI_CHECK_AND_RETURN_LOG(cond, fmt, ...)     \
     do {                                                  \
         if (!(cond)) {                                    \
             DRM_ERR_LOG(fmt, ##__VA_ARGS__);              \

@@ -22,46 +22,81 @@ namespace DrmStandard {
 MediaKeySessionServiceCallbackProxy::MediaKeySessionServiceCallbackProxy(const sptr<IRemoteObject> &impl)
     : IRemoteProxy<IMediaKeySessionServiceCallback>(impl) {};
 
-int32_t MediaKeySessionServiceCallbackProxy::OnMediaKeySessionKeyExpired(const KeyStatus status)
+int32_t MediaKeySessionServiceCallbackProxy::SendEvent(DrmEventType event, uint32_t extra,
+    const std::vector<uint8_t> data)
 {
-    MessageParcel data;
+    MessageParcel parcelData;
     MessageParcel reply;
     MessageOption option;
-    DRM_INFO_LOG("MediaKeySessionServiceCallbackProxy OnMediaKeySessionKeyExpired called");
-    if (!data.WriteInterfaceToken(GetDescriptor())) {
-        DRM_ERR_LOG("MediaKeySessionServiceCallbackProxy OnMediaKeySessionKeyExpired Write interface token failed");
+    DRM_INFO_LOG("KeySessionServiceCallbackProxy SendEvent called, event:%{public}d", event);
+    if (!parcelData.WriteInterfaceToken(GetDescriptor())) {
+        DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent Write interface token failed");
         return IPC_PROXY_ERR;
     }
-    if (!data.WriteInt32(status)) {
-        DRM_ERR_LOG("MediaKeySessionServiceCallbackProxy OnMediaKeySessionKeyExpired Write status failed");
+    if (!parcelData.WriteInt32(event)) {
+        DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent Write event failed");
         return IPC_PROXY_ERR;
     }
-    int error = Remote()->SendRequest(KEY_SESSION_SERVICE_CALLBACK_ON_KEY_EXPIRED, data, reply, option);
+    if (!parcelData.WriteUint32(extra)) {
+        DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent Write extra failed");
+        return IPC_PROXY_ERR;
+    }
+    if (!parcelData.WriteUint32(data.size())) {
+        DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent Write data size failed");
+        return IPC_PROXY_ERR;
+    }
+    for (auto item : data) {
+        if (!parcelData.WriteUint8(item)) {
+            DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent Write data failed");
+            return IPC_PROXY_ERR;
+        }
+    }
+    int error = Remote()->SendRequest(MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT,
+        parcelData, reply, option);
     if (error != ERR_NONE) {
-        DRM_ERR_LOG("MediaKeySessionServiceCallbackProxy OnMediaKeySessionKeyExpired failed, error: %{public}d", error);
+        DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent failed, error: %{public}d", error);
     }
     return error;
 }
 
-int32_t MediaKeySessionServiceCallbackProxy::OnMediaKeySessionReclaimed(const SessionStatus status)
+int32_t MediaKeySessionServiceCallbackProxy::SendEventKeyChanged(std::map<std::vector<uint8_t>,
+    MediaKeySessionKeyStatus> statusTable, bool hasNewGoodLicense)
 {
-    MessageParcel data;
+    MessageParcel parcelData;
     MessageParcel reply;
     MessageOption option;
-    DRM_INFO_LOG("MediaKeySessionServiceCallbackProxy OnMediaKeySessionReclaimed called");
-    if (!data.WriteInterfaceToken(GetDescriptor())) {
-        DRM_ERR_LOG("MediaKeySessionServiceCallbackProxy OnMediaKeySessionReclaimed Write interface token failed");
+    DRM_INFO_LOG("SendEventKeyChanged");
+    if (!parcelData.WriteInterfaceToken(GetDescriptor())) {
+        DRM_ERR_LOG("SendEventKeyChanged Write interface token failed");
         return IPC_PROXY_ERR;
     }
-    if (!data.WriteInt32(status)) {
-        DRM_ERR_LOG("MediaKeySessionServiceCallbackProxy OnMediaKeySessionReclaimed Write status failed");
+
+    uint32_t mapSize = statusTable.size();
+    if (!parcelData.WriteUint32(mapSize)) {
+        DRM_ERR_LOG("SendEventKeyChanged Write mapSize failed");
         return IPC_PROXY_ERR;
     }
-    int error = Remote()->SendRequest(KEY_SESSION_SERVICE_CALLBACK_ON_KEY_SESSION_RECLAIMED, data, reply, option);
+    for (auto item : statusTable) {
+        uint32_t idSize = item.first.size();
+        (void)parcelData.WriteUint32(idSize);
+        for (uint32_t i = 0; i < idSize; i++) {
+            (void)parcelData.WriteUint8(item.first[i]);
+        }
+        (void)parcelData.WriteInt32(static_cast<int32_t>(item.second));
+    }
+
+    if (!parcelData.WriteBool(hasNewGoodLicense)) {
+        DRM_ERR_LOG("SendEventKeyChanged Write extra failed");
+        return IPC_PROXY_ERR;
+    }
+
+    int error = Remote()->SendRequest(MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT_KEY_CHANGED,
+        parcelData, reply, option);
     if (error != ERR_NONE) {
-        DRM_ERR_LOG("MediaKeySessionServiceCallbackProxy OnMediaKeySessionReclaimed failed, error: %{public}d", error);
+        DRM_ERR_LOG("SendEventKeyChanged failed, error: %{public}d", error);
     }
     return error;
+    return 0;
 }
 } // DrmStandard
 } // namespace OHOS

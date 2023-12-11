@@ -35,7 +35,7 @@ using namespace OHOS::HDI;
 
 class IMediaKeySessionServiceOperatorsCallback;
 
-class MediaKeySessionService : public MediaKeySessionServiceStub {
+class MediaKeySessionService : public MediaKeySessionServiceStub, public IMediaKeySessionCallback {
 public:
     explicit MediaKeySessionService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySession> hdiMediaKeySession);
     ~MediaKeySessionService();
@@ -50,18 +50,20 @@ public:
         std::vector<uint8_t> &releaseRequest) override;
     int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &licenseId,
         std::vector<uint8_t> &releaseResponse) override;
-    int32_t CheckLicenseStatus(std::map<std::string,
-        IMediaKeySessionService::MediaKeySessionKeyStatus>& licenseStatus) override;
+    int32_t CheckLicenseStatus(
+        std::map<std::string, MediaKeySessionKeyStatus> &licenseStatus) override;
     int32_t RestoreOfflineLicense(std::vector<uint8_t> &licenseId) override;
-
     int32_t RemoveLicense() override;
-
     int32_t GetSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel) override;
     int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status) override;
+    int32_t SetCallback(sptr<IMediaKeySessionServiceCallback> &callback) override;
 
-    int32_t SetMediaKeySessionServiceCallback(sptr<IMediaKeySessionServiceCallback> &callback) override;
-    void OnMediaKeySessionKeyExpiredStatus(const KeyStatus status);
-    void OnMediaKeySessionReclaimed(const SessionStatus status);
+    // for hdi callback
+    int32_t SendEvent(OHOS::HDI::Drm::V1_0::EventType eventType, int32_t extra,
+        const std::vector<uint8_t> &data) override;
+    int32_t SendEventKeyChange(
+        const std::map<std::vector<uint8_t>, OHOS::HDI::Drm::V1_0::MediaKeySessionKeyStatus> &keyStatus,
+        bool hasNewGoodLicense) override;
 
 private:
     std::mutex sessionMutex_;

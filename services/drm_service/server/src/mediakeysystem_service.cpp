@@ -328,5 +328,36 @@ int32_t MediaKeySystemService::RemoveOfflineLicense(std::vector<uint8_t> &licens
     DRM_INFO_LOG("MediaKeySystemService::RemoveOfflineLicense exit.");
     return ret;
 }
+
+int32_t MediaKeySystemService::SetCallback(sptr<IMeidaKeySystemServiceCallback> &callback)
+{
+    DRM_INFO_LOG("MediaKeySystemService:: SetCallback.");
+    int32_t ret = DRM_ERROR;
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (callback == nullptr) {
+        DRM_ERR_LOG("MediaKeySystemService::SetCallback callback is nullptr , failed.");
+        return ret;
+    }
+    callback_ = callback;
+
+    if (hdiKeySystem_ != nullptr) {
+        return hdiKeySystem_->SetCallback(this);
+    }
+    DRM_ERR_LOG("MediaKeySystemService::SetCallback hdiKeySystem_ is nullptr , failed.");
+    return ret;
+}
+
+int32_t MediaKeySystemService::SendEvent(OHOS::HDI::Drm::V1_0::EventType eventType, int32_t extra,
+    const std::vector<uint8_t> &data)
+{
+    DRM_INFO_LOG("MediaKeySystemService:: SendEvent.");
+    DrmEventType event = static_cast<DrmEventType>(eventType);
+    if (callback_ != nullptr) {
+        return callback_->SendEvent(event, extra, data);
+    }
+    DRM_INFO_LOG("MediaKeySystemService:: SendEvent failed because callback is nullptr");
+    return DRM_OPERATION_NOT_ALLOWED;
+}
+
 } // DrmStandard
 } // OHOS

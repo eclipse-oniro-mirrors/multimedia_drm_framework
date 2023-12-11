@@ -45,6 +45,7 @@ ohos_shared_library("drm_framework") {
     "./../../services/drm_service/client/src/mediakeysystem_service_proxy.cpp",
     "./../../services/drm_service/client/src/mediakeysystemfactory_service_proxy.cpp",
     "./../../services/drm_service/server/src/key_session_service_callback_stub.cpp",
+    "./../../services/drm_service/server/src/mediakeysystem_service_callback_stub.cpp",
     "./drm/key_session_impl.cpp",
     "./drm/media_decrypt_module_impl.cpp",
     "./drm/media_key_system_factory_impl.cpp",

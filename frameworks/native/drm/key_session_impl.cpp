@@ -20,12 +20,6 @@
 namespace OHOS {
 namespace DrmStandard {
 
-namespace DrmEvent {
-const std::string DRM_EVENT_KEY_EXPIRED = "keyExpired";
-const std::string DRM_EVENT_KEY_SESSION_RECLAIMED = "keySessionReclaimed";
-const std::string DRM_EVENT_SYSTEM_PROVISION_REQUIRED = "keySystemProvisionRequired";
-}
-
 MediaKeySessionImpl::MediaKeySessionImpl(sptr<IMediaKeySessionService> &keySession)
 {
     DRM_DEBUG_LOG("MediaKeySessionImpl::MediaKeySessionImpl enter.");
@@ -191,7 +185,7 @@ sptr<MediaDecryptModuleImpl> MediaKeySessionImpl::GetDecryptModule()
 }
 
 int32_t MediaKeySessionImpl::CheckLicenseStatus(std::map<std::string,
-    IMediaKeySessionService::MediaKeySessionKeyStatus>& licenseStatus)
+    MediaKeySessionKeyStatus>& licenseStatus)
 {
     DRM_INFO_LOG("MediaKeySessionImpl::CheckLicenseStatus enter.");
     std::lock_guard<std::mutex> lock(mutex_);
@@ -277,71 +271,88 @@ sptr<IMediaKeySessionService> MediaKeySessionImpl::GetMediaKeySessionServiceProx
     return keySessionServiceProxy_;
 }
 
-sptr<MediaKeySessionImplCallback> MediaKeySessionImpl::GetMediaKeySessionApplicationCallback()
+sptr<MediaKeySessionImplCallback> MediaKeySessionImpl::GetApplicationCallback()
 {
-    DRM_INFO_LOG("MediaKeySessionImpl::GetMediaKeySessionApplicationCallback enter.");
+    DRM_INFO_LOG("MediaKeySessionImpl::GetApplicationCallback enter.");
     return keySessionNapiCallback_;
 }
 
-int32_t MediaKeySessionImpl::SetMediaKeySessionServiceCallback(sptr<IMediaKeySessionServiceCallback> &callback)
+int32_t MediaKeySessionImpl::SetCallback(const sptr<MediaKeySessionImplCallback> &callback)
 {
-    DRM_INFO_LOG("MediaKeySessionImpl::SetMediaKeySessionServiceCallback");
-    std::lock_guard<std::mutex> lock(mutex_);
-    int32_t retCode = DRM_OK;
-    if (keySessionServiceProxy_ == nullptr) {
-        DRM_ERR_LOG("MediaKeySessionImpl::SetMediaKeySessionServiceCallback keySessionServiceProxy_ is null");
-        return DRM_SERVICE_ERROR;
-    }
-    retCode = keySessionServiceProxy_->SetMediaKeySessionServiceCallback(callback);
-    if (retCode != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySessionImpl::SetMediaKeySessionServiceCallback failed, retCode: %{public}d", retCode);
-        return DRM_SERVICE_ERROR;
-    }
-    DRM_INFO_LOG("MediaKeySessionImpl::SetMediaKeySessionServiceCallback exit.");
-    return DRM_OK;
-}
-
-int32_t MediaKeySessionImpl::SetMediaKeySessionCallback(const sptr<MediaKeySessionImplCallback> &callback)
-{
-    DRM_DEBUG_LOG("MediaKeySessionImpl:0x%{public}06" PRIXPTR " SetMediaKeySessionCallback in", FAKE_POINTER(this));
+    DRM_DEBUG_LOG("MediaKeySessionImpl:0x%{public}06" PRIXPTR " SetCallback in", FAKE_POINTER(this));
     DRM_CHECK_AND_RETURN_RET_LOG(callback != nullptr, DRM_INVALID_ARG, "callback is nullptr");
     keySessionNapiCallback_ = callback;
 
     int32_t errCode = DRM_ERROR;
-    keySessionServiceCallback_ = new (std::nothrow) MediaKeySessionStatusCallback(this);
+    keySessionServiceCallback_ = new (std::nothrow) MediaKeySessionServiceCallback(this);
     if (keySessionServiceCallback_ == nullptr) {
-        DRM_ERR_LOG("MediaKeySessionImpl:: MediaKeySessionStatusCallback alloc failed");
+        DRM_ERR_LOG("MediaKeySessionImpl:: MediaKeySessionServiceCallback alloc failed");
         return errCode;
     }
-    errCode = this->SetMediaKeySessionServiceCallback(keySessionServiceCallback_);
+
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (keySessionServiceProxy_ == nullptr) {
+        DRM_ERR_LOG("MediaKeySessionImpl::SetCallback keySessionServiceProxy_ is null");
+        return DRM_SERVICE_ERROR;
+    }
+    errCode = keySessionServiceProxy_->SetCallback(keySessionServiceCallback_);
+    if (errCode != DRM_OK) {
+        DRM_ERR_LOG("MediaKeySessionImpl::SetCallback failed, retCode: %{public}d", errCode);
+        return DRM_SERVICE_ERROR;
+    }
+    DRM_INFO_LOG("MediaKeySessionImpl::SetCallback exit.");
     return errCode;
 }
 
-int32_t MediaKeySessionStatusCallback::OnMediaKeySessionKeyExpired(const KeyStatus status)
+void MediaKeySessionServiceCallback::InitEventMap()
 {
-    DRM_INFO_LOG("MediaKeySessionStatusCallback::OnMediaKeySessionKeyExpired enter.");
+    DRM_INFO_LOG("KeySessionImpl::InitEventMap");
+    eventMap_[static_cast<int32_t>(DRM_EVENT_KEY_NEEDED)] = "keyNeeded";
+    eventMap_[static_cast<int32_t>(DRM_EVENT_KEY_EXPIRED)] = "keyExpired";
+    eventMap_[static_cast<int32_t>(DRM_EVENT_EXPIRATION_UPDATED)] = "expirationUpdated";
+    eventMap_[static_cast<int32_t>(DRM_EVENT_KEY_CHANGED)] = "keyChanged";
+    eventMap_[static_cast<int32_t>(DRM_EVENT_VENDOR_DEFINED)] = "vendorDefined";
+}
+
+std::string MediaKeySessionServiceCallback::GetEventName(DrmEventType event)
+{
+    DRM_INFO_LOG("MediaKeySessionServiceCallback::GetEventName");
+    std::string eventName;
+    int32_t eventType = static_cast<int32_t>(event);
+    if (eventMap_.find(eventType) == eventMap_.end()) {
+        return eventName;
+    }
+    return eventMap_[eventType];
+}
+
+int32_t MediaKeySessionServiceCallback::SendEvent(DrmEventType event, uint32_t extra,
+    const std::vector<uint8_t> data)
+{
+    DRM_INFO_LOG("MediaKeySessionServiceCallback SendEvent");
+    std::string eventName = GetEventName(event);
     if (keySessionImpl_ != nullptr) {
-        sptr<MediaKeySessionImplCallback> callback = keySessionImpl_->GetMediaKeySessionApplicationCallback();
-        if (callback != nullptr) {
-            callback->OnMediaKeySessionKeyExpired(DrmEvent::DRM_EVENT_KEY_EXPIRED, status);
+        sptr<MediaKeySessionImplCallback> napiCallback = keySessionImpl_->GetApplicationCallback();
+        if (napiCallback != nullptr) {
+            napiCallback->SendEvent(eventName, extra, data);
             return DRM_OK;
         }
     }
-    DRM_ERR_LOG("MediaKeySessionStatusCallback:: OnMediaKeySessionKeyExpired failed");
+    DRM_ERR_LOG("MediaKeySessionServiceCallback:: SendEvent failed");
     return DRM_ERROR;
 }
 
-int32_t MediaKeySessionStatusCallback::OnMediaKeySessionReclaimed(const SessionStatus status)
+int32_t MediaKeySessionServiceCallback::SendEventKeyChanged(std::map<std::vector<uint8_t>,
+    MediaKeySessionKeyStatus> statusTable, bool hasNewGoodLicense)
 {
-    DRM_INFO_LOG("MediaKeySessionStatusCallback::OnMediaKeySessionReclaimed enter.");
+    DRM_INFO_LOG("MediaKeySessionServiceCallback::SendEventKeyChanged enter.");
     if (keySessionImpl_ != nullptr) {
-        sptr<MediaKeySessionImplCallback> callback = keySessionImpl_->GetMediaKeySessionApplicationCallback();
+        sptr<MediaKeySessionImplCallback> callback = keySessionImpl_->GetApplicationCallback();
         if (callback != nullptr) {
-            callback->OnMediaKeySessionReclaimed(DrmEvent::DRM_EVENT_KEY_SESSION_RECLAIMED, status);
+            callback->SendEventKeyChanged(statusTable, hasNewGoodLicense);
             return DRM_OK;
         }
     }
-    DRM_ERR_LOG("MediaKeySessionStatusCallback:: OnMediaKeySessionReclaimed failed");
+    DRM_ERR_LOG("MediaKeySessionServiceCallback:: SendEventKeyChanged failed");
     return DRM_ERROR;
 }
 } // DrmStandard

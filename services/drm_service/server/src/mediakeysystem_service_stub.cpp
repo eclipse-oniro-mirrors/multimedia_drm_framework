@@ -72,6 +72,9 @@ static int ProcessGetOfflineLicenseStatus(MediaKeySystemServiceStub *stub, Messa
 static int ProcessRemoveOfflineLicense(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
+static int32_t ProcessSetCallabck(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+    MessageOption &option);
+
 static struct ProcessRemoteRequestFuncArray g_mediaKeySystemServiceStubRequestProcessFunc[] = {
     {MEDIA_KEY_SYSTEM_CREATE_KEY_SESSION, ProcessCreatekeySession},
     {MEDIA_KEY_SYSTEM_GENERATE_KEYSYSTEM_REQUEST, ProcessKeySystemRequest},
@@ -87,6 +90,7 @@ static struct ProcessRemoteRequestFuncArray g_mediaKeySystemServiceStubRequestPr
     {MEDIA_KEY_SYSTEM_GET_OFFLINELICENSEIDS, ProcessGetOfflineLicenseIds},
     {MEDIA_KEY_SYSTEM_GET_OFFLINEKEY_STATUS, ProcessGetOfflineLicenseStatus},
     {MEDIA_KEY_SYSTEM_REMOVE_OFFLINELICENSE, ProcessRemoveOfflineLicense},
+    {MEDIA_KEY_SYSTEM_SETCALLBACK, ProcessSetCallabck},
 };
 
 MediaKeySystemServiceStub::MediaKeySystemServiceStub()
@@ -330,6 +334,25 @@ static int ProcessRemoveOfflineLicense(MediaKeySystemServiceStub *stub, MessageP
     return ret;
 }
 
+static int32_t ProcessSetCallabck(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+    MessageOption &option)
+{
+    DRM_INFO_LOG("MediaKeySystemServiceStub SetCallback enter.");
+    auto remoteObject = data.ReadRemoteObject();
+    if (remoteObject == nullptr) {
+        DRM_ERR_LOG("MediaKeySystemServiceStub SetCallback remote is null");
+        return IPC_STUB_INVALID_DATA_ERR;
+    }
+    auto callback = iface_cast<IMeidaKeySystemServiceCallback>(remoteObject);
+    if (callback == nullptr) {
+        DRM_ERR_LOG("MediaKeySystemServiceStub SetCallback cast nullptr");
+        return IPC_STUB_INVALID_DATA_ERR;
+    }
+    int32_t errCode = stub->SetCallback(callback);
+    DRM_INFO_LOG("MediaKeySystemServiceStub SetCallback exit.");
+    return errCode;
+}
+
 int MediaKeySystemServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
@@ -338,7 +361,7 @@ int MediaKeySystemServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &dat
     DRM_INFO_LOG("OnRemoteRequest, cmd = %{public}u", code);
 
     DRM_CHECK_AND_RETURN_RET_LOG((code >= MEDIA_KEY_SYSTEM_CREATE_KEY_SESSION) &&
-        (code <= MEDIA_KEY_SYSTEM_REMOVE_OFFLINELICENSE),
+        (code <= MEDIA_KEY_SYSTEM_SETCALLBACK),
         IPCObjectStub::OnRemoteRequest(code, data, reply, option),
         "code not match, need check MediaKeySystemServiceStub");
 

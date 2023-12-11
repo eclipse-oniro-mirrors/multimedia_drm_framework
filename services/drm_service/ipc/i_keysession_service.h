@@ -16,9 +16,10 @@
 #ifndef OHOS_DRM_IKEY_SESSION_H_
 #define OHOS_DRM_IKEY_SESSION_H_
 
+#include "iremote_broker.h"
+#include "drm_types.h"
 #include "i_mediadecryptmodule_service.h"
 #include "i_keysession_service_callback.h"
-#include "iremote_broker.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -84,15 +85,6 @@ public:
         std::string mDefaultURL;
     };
 
-    enum MediaKeySessionKeyStatus {
-        MEDIA_KEY_SESSION_KEY_STATUS_USABLE = 0,
-        MEDIA_KEY_SESSION_KEY_STATUS_EXPIRED = 1,
-        MEDIA_KEY_SESSION_KEY_STATUS_OUTPUT_NOT_ALLOWED = 2,
-        MEDIA_KEY_SESSION_KEY_STATUS_PENDING = 3,
-        MEDIA_KEY_SESSION_KEY_STATUS_INTERNAL_ERROR = 4,
-        MEDIA_KEY_SESSION_KEY_STATUS_USABLE_IN_FUTURE = 5,
-    };
-
     virtual ~IMediaKeySessionService() = default;
     virtual int32_t Release() = 0;
     virtual int32_t CreateMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule) = 0;
@@ -105,12 +97,9 @@ public:
     virtual int32_t CheckLicenseStatus(std::map<std::string, MediaKeySessionKeyStatus>& licenseStatus) = 0;
     virtual int32_t RestoreOfflineLicense(std::vector<uint8_t> &licenseId) = 0;
     virtual int32_t RemoveLicense() = 0;
-
     virtual int32_t GetSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel) = 0;
-
     virtual int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status) = 0;
-
-    virtual int32_t SetMediaKeySessionServiceCallback(sptr<IMediaKeySessionServiceCallback> &callback) = 0;
+    virtual int32_t SetCallback(sptr<IMediaKeySessionServiceCallback> &callback) = 0;
     DECLARE_INTERFACE_DESCRIPTOR(u"IMediaKeySessionService");
 };
 } // DrmStandard

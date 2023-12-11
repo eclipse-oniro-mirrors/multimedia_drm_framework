@@ -267,7 +267,7 @@ int32_t MediaKeySessionServiceProxy::ProcessOfflineReleaseResponse(std::vector<u
 }
 
 int32_t MediaKeySessionServiceProxy::CheckLicenseStatus(std::map<std::string,
-    IMediaKeySessionService::MediaKeySessionKeyStatus>& licenseStatus)
+    MediaKeySessionKeyStatus>& licenseStatus)
 {
     DRM_INFO_LOG("MediaKeySessionServiceProxy::GenerateOfflineReleaseRequest enter.");
     MessageParcel data;
@@ -288,8 +288,8 @@ int32_t MediaKeySessionServiceProxy::CheckLicenseStatus(std::map<std::string,
     int licenseStatusMapSize = reply.ReadInt32();
     for (int i = 0; i < licenseStatusMapSize; i++) {
         std::string name = reply.ReadString();
-        IMediaKeySessionService::MediaKeySessionKeyStatus status =
-            (IMediaKeySessionService::MediaKeySessionKeyStatus)reply.ReadInt32();
+        MediaKeySessionKeyStatus status =
+            (MediaKeySessionKeyStatus)reply.ReadInt32();
         licenseStatus.insert(std::make_pair(name, status));
     }
     DRM_INFO_LOG("MediaKeySessionServiceProxy::GenerateOfflineReleaseRequest exit.");
@@ -381,9 +381,9 @@ int32_t MediaKeySessionServiceProxy::RequireSecureDecoderModule(std::string &mim
     return reply.ReadInt32();
 }
 
-int32_t MediaKeySessionServiceProxy::SetMediaKeySessionServiceCallback(sptr<IMediaKeySessionServiceCallback> &callback)
+int32_t MediaKeySessionServiceProxy::SetCallback(sptr<IMediaKeySessionServiceCallback> &callback)
 {
-    DRM_INFO_LOG("MediaKeySessionServiceProxy::SetMediaKeySessionServiceCallback enter.");
+    DRM_INFO_LOG("MediaKeySessionServiceProxy::SetCallback enter.");
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;

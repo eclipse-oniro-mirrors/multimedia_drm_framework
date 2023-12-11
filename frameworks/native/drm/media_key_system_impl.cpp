@@ -312,5 +312,78 @@ int32_t MediaKeySystemImpl::GetCertificateStatus(IMediaKeySystemService::Certifi
     DRM_INFO_LOG("MediaKeySystemImpl::GetCertificateStatus exit.");
     return DRM_OK;
 }
+
+int32_t MediaKeySystemImpl::SetCallback(const sptr<MediaKeySystemImplCallback> &callback)
+{
+    DRM_DEBUG_LOG("MediaKeySystemImpl:0x%{public}06" PRIXPTR " SetCallback in", FAKE_POINTER(this));
+    DRM_CHECK_AND_RETURN_RET_LOG(callback != nullptr, DRM_INVALID_ARG, "callback is nullptr");
+    mediaKeySystemNapiCallback_ = callback;
+
+    int32_t retCode = DRM_ERROR;
+    serviceCallback_ = new(std::nothrow) MediaKeySystemCallback(this);
+    if (serviceCallback_ == nullptr) {
+        DRM_ERR_LOG("MediaKeySystemImpl:: MediaKeySystemCallback alloc failed");
+        return retCode;
+    }
+
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (serviceProxy_ == nullptr) {
+        DRM_ERR_LOG("MediaKeySystemImpl::SetCallback serviceProxy_ is null");
+        return DRM_SERVICE_ERROR;
+    }
+    retCode = serviceProxy_->SetCallback(serviceCallback_);
+    if (retCode != DRM_OK) {
+        DRM_ERR_LOG("MediaKeySystemImpl::SetCallback failed, retCode: %{public}d", retCode);
+        return DRM_SERVICE_ERROR;
+    }
+    DRM_INFO_LOG("MediaKeySystemImpl::SetCallback exit.");
+    return retCode;
+}
+
+sptr<MediaKeySystemImplCallback> MediaKeySystemImpl::GetApplicationCallback()
+{
+    DRM_INFO_LOG("MediaKeySystemImpl GetApplicationCallback");
+    return mediaKeySystemNapiCallback_;
+}
+
+MediaKeySystemCallback::~MediaKeySystemCallback()
+{
+    DRM_INFO_LOG("MediaKeySystemCallback ~MediaKeySystemCallback");
+    systemImpl_ = nullptr;
+}
+
+void MediaKeySystemCallback::InitEventMap()
+{
+    DRM_INFO_LOG("MediaKeySystemCallback InitEventMap");
+    eventMap_[static_cast<int32_t>(DRM_EVENT_PROVISION_REQUIRED)] = "provisionRequired";
+    eventMap_[static_cast<int32_t>(DRM_EVENT_KEYSESSION_LOST)] = "sessionLost";
+}
+
+std::string MediaKeySystemCallback::GetEventName(DrmEventType event)
+{
+    DRM_INFO_LOG("MediaKeySystemCallback GetEventName");
+    std::string eventName;
+    int32_t eventType = static_cast<int32_t>(event);
+    if (eventMap_.find(eventType) == eventMap_.end()) {
+        return eventName;
+    }
+    return eventMap_[eventType];
+}
+
+int32_t MediaKeySystemCallback::SendEvent(DrmEventType event, uint32_t extra,
+    const std::vector<uint8_t> data)
+{
+    DRM_INFO_LOG("MediaKeySystemCallback SendEvent");
+    std::string eventName = GetEventName(event);
+    if (systemImpl_ != nullptr) {
+        sptr<MediaKeySystemImplCallback> napiCallback = systemImpl_->GetApplicationCallback();
+        if (napiCallback != nullptr) {
+            napiCallback->SendEvent(eventName, extra, data);
+            return DRM_OK;
+        }
+    }
+    DRM_ERR_LOG("MediaKeySystemCallback:: SendEvent failed");
+    return DRM_ERROR;
+}
 } // namespace DrmStandard
 } // namespace OHOS

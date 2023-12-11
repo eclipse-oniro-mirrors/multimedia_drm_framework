@@ -445,5 +445,27 @@ int32_t MediaKeySystemServiceProxy::RemoveOfflineLicense(std::vector<uint8_t> &l
     DRM_INFO_LOG("MediaKeySystemServiceProxy::RemoveOfflineLicense exit.");
     return reply.ReadInt32();
 }
+
+int32_t MediaKeySystemServiceProxy::SetCallback(sptr<IMeidaKeySystemServiceCallback> &callback)
+{
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::SetCallback enter.");
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+
+    DRM_CHECK_AND_RETURN_RET_LOG(callback != nullptr, IPC_PROXY_ERR, "callback is nullptr");
+
+    bool result = data.WriteInterfaceToken(GetDescriptor());
+    DRM_CHECK_AND_RETURN_RET_LOG(result, IPC_PROXY_ERR, "Write interface token failed");
+    result = data.WriteRemoteObject(callback->AsObject());
+    DRM_CHECK_AND_RETURN_RET_LOG(result, IPC_PROXY_ERR, "write CameraServiceCallback obj failed");
+
+    int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_SETCALLBACK, data, reply, option);
+    if (error != ERR_NONE) {
+        DRM_ERR_LOG("MediaKeySystemServiceProxy SetCallback failed, error: %{public}d", error);
+    }
+    return error;
+}
+
 } // DrmStandard
 } // OHOS
