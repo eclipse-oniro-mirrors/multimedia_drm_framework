@@ -254,11 +254,11 @@ static OH_DRM_Statistics *vectorToClist(std::vector<IMediaKeySystemService::Meti
     for (size_t i = 0; i < metrics.size(); i++) {
         dest[i].name.bufferLen = metrics[i].name.size();
         dest[i].name.buffer = (char *)((uint8_t *)dest + offset);
-        memcpy(dest[i].name.buffer, metrics[i].name.c_str(), metrics[i].name.size());
+        int32_t ret = memcpy_s(dest[i].name.buffer, metrics[i].name.size(), metrics[i].name.c_str(), metrics[i].name.size());
         offset += metrics[i].name.size();
         dest[i].value.bufferLen = metrics[i].value.size();
         dest[i].value.buffer = (char *)((uint8_t *)dest + offset);
-        memcpy(dest[i].value.buffer, metrics[i].value.c_str(), metrics[i].value.size());
+        int32_t ret = memcpy_s(dest[i].value.buffer, metrics[i].value.size(), metrics[i].value.c_str(), metrics[i].value.size());
         offset += metrics[i].value.size();
     }
     DRM_INFO_LOG("vectorToCArray exit.");
@@ -325,10 +325,10 @@ OH_DrmErrCode OH_MediaKeySystem_GenerateKeySystemRequest(OH_MediaKeySystem *medi
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_GenerateKeySystemRequest mediaKeySystem is nullptr!");
     *request = (unsigned char *)malloc(requestData.size());
-    memcpy(*request, requestData.data(), requestData.size());
+    int32_t ret = memcpy_s(*request, requestData.size(), requestData.size(), requestData.data(), requestData.size());
     *requestLen = requestData.size();
     *defaultUrl = (char *)malloc(defaultUrlData.size());
-    memcpy(*defaultUrl, defaultUrlData.data(), defaultUrlData.size());
+    int32_t ret = memcpy_s(*defaultUrl, defaultUrlData.size(), defaultUrlData.size(), defaultUrlData.data(), defaultUrlData.size());
     *defaultUrlLen = defaultUrlData.size();
     return DRM_ERR_OK;
 }
@@ -426,7 +426,7 @@ static OH_DRM_MediakeyIdArray *vectorToC2DArray(std::vector<std::vector<uint8_t>
     for (size_t i = 0; i < licenseIds.size(); i++) {
         dest[i].bufferLen = licenseIds[i].size();
         dest[i].buffer = ((uint8_t *)dest + offset);
-        memcpy(dest[i].buffer, licenseIds[i].data(), licenseIds[i].size());
+        int32_t ret = memcpy_s(dest[i].buffer, licenseIds[i].size(), licenseIds[i].data(), licenseIds[i].size());
         offset += licenseIds[i].size();
     }
     DRM_INFO_LOG("vectorToC2DArray exit.");

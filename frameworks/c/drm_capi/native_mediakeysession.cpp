@@ -53,7 +53,11 @@ OH_DrmErrCode OH_MediaKeySession_ProcessLicenseResponse(OH_MediaKeySession *keyS
     int32_t ret = sessionObject->sessionImpl_->ProcessLicenseResponse(keyIdVec, licenseResponseVec);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_INVALID_VAL, "got licenseResponse null!");
     DRM_CHECK_AND_RETURN_RET_LOG(!licenseResponseVec.empty(), DRM_ERR_INVALID_VAL, "got licenseResponse null!");
-    memcpy(keyId, keyIdVec.data(), keyIdVec.size());
+    int32_t ret = memcpy_s(keyId, keyIdVec.size(), keyIdVec.data(), keyIdVec.size());
+    if (ret != 0) {
+        DRM_ERR_LOG("OH_MediaKeySession_ProcessLicenseResponse memcpy_s faild!");
+        return DRM_ERR_ERROR;
+    }
     *keyIdLen = keyIdVec.size();
     return DRM_ERR_OK;
 }
@@ -74,7 +78,10 @@ static OH_DRM_MediaKeyDescription *MapToClist(
     for (size_t i = 0; i < licenseStatus.size(); i++) {
         dest[i].name.bufferLen = it->first.size();
         dest[i].name.buffer = (char *)((uint8_t *)dest + offset);
-        memcpy(dest[i].name.buffer, it->first.c_str(), it->first.size());
+        int32_t ret = memcpy_s(dest[i].name.buffer, it->first.size(), it->first.c_str(), it->first.size());
+        if (ret != 0) {
+            DRM_ERR_LOG("MapToClist memcpy_s faild!");
+        }
         dest[i].value = (int32_t)(it->second);
         offset += it->first.size();
         it++;
@@ -149,7 +156,7 @@ OH_DrmErrCode OH_MediaKeySession_GenerateOfflineReleaseRequest(OH_MediaKeySessio
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_GenerateOfflineReleaseRequest GenerateOfflineReleaseRequest faild!");
     *releaseRequest = (unsigned char *)malloc(ReleaseRequest.size());
-    memcpy(*releaseRequest, ReleaseRequest.data(), ReleaseRequest.size());
+    int32_t ret = memcpy_s(*releaseRequest, ReleaseRequest.size(), ReleaseRequest.data(), ReleaseRequest.size());
     *releaseRequestLen = ReleaseRequest.size();
     DRM_INFO_LOG("OH_MediaKeySession_GenerateOfflineReleaseRequest exit");
     return DRM_ERR_OK;
