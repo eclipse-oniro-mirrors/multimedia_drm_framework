@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,133 +12,197 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/**
+ * @addtogroup Drm
+ * @{
+ *
+ * @brief Provides APIs of Drm.
+ * @since 11
+ * @version 1.0
+ */
+
+/**
+ * @file native_mediakeysession.h
+ * @brief Defines the Drm MediaKeySession APIs. Provide following function:
+ * generate media key request, process media key response, event listening,
+ * get content protection level, check media key status, remove media key etc..
+ * @library libnative_drm.z.so
+ * @Syscap SystemCapability.Multimedia.Drm.Core
+ * @since 11
+ * @version 1.0
+ */
+
 #ifndef OHOS_DRM_NATIVE_MEDIA_KEY_SESSION_H
 #define OHOS_DRM_NATIVE_MEDIA_KEY_SESSION_H
 
 #include <stdint.h>
 #include <stdio.h>
-#include "native_drm_common.h"
 #include "native_drm_err.h"
-#include "native_mediakeysystem.h"
+#include "native_drm_common.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-typedef struct OH_MediaKeySession OH_MediaKeySession;
 /**
- * @brief Generate license request.
- * @syscap SystemCapability.Multimedia.Drm.Core
- * @param mediaKeySession Media key session instance.
- * if the function returns DRM_ERR_OK.
- * @param info License request info.
- * @param request Out parameter. License request.
- * @returns OH_DrmErrCode refers to OH_DrmErrCode.
- * @since 9
+ * @brief Call back will be invoked when event triggers.
+ * @param eventType Event type.
+ * @param eventInfo Event info gotten from media key system.
+ * @return OH_DrmErrCode.
+ * @since 11
  * @version 1.0
  */
-OH_DrmErrCode OH_MediaKeySession_GenerateLicenseRequest(OH_MediaKeySession *keySession,
-    OH_DRM_MediaKeyRequestInfo *info, OH_DRM_LicenseRequest *request);
+typedef  OH_DrmErrCode (*OH_MediaKeySessionEventCallback)(OH_DRM_ListenerType eventType, OH_DRM_Uint8CharBufferPair *eventInfo);
 
 /**
- * @brief Process license request.
- * @syscap SystemCapability.Multimedia.Drm.Core
+ * @brief Call back will be invoked when key changes.
+ * @param keysInfo Key info gotten from media key system.
+ * @return OH_DrmErrCode.
+ * @since 11
+ * @version 1.0
+ */
+typedef  OH_DrmErrCode (*OH_MediaKeySessionKeyChangeCallback)(OH_DRM_KeysInfo *keysInfo, int32_t hasNewGoodKeys);
+
+/**
+ * @brief OH_MediaKeySessionCallback struct, used to listen event like key expired and key change etc..
+ * @since 11
+ * @version 1.0
+ */
+typedef struct OH_MediaKeySessionCallback {
+    /**
+     * Normal event callback like key expired etc..
+     */
+    OH_MediaKeySessionEventCallback eventCallback;
+    /**
+     * Key change callback for keys change event.
+     */
+    OH_MediaKeySessionKeyChangeCallback keyChangeCallback;
+} OH_MediaKeySessionCallback;
+
+/**
+ * @brief Generate media key request.
  * @param mediaKeySession Media key session instance.
- * @param response License resposne.
- * @param responseLen The length of license resposne.
- * @param licenseId Specifies which license corresponded.
- * @param licenseIdLen The length of license id.
- * @returns OH_DrmErrCode refers to OH_DrmErrCode.
- * @since 9
+ * if the function return DRM_ERR_OK.
+ * @param info Media key request info.
+ * @param mediaKeyRequest Media key request.
+ * @return OH_DrmErrCode.
+ * @since 11
+ * @version 1.0
+ */
+OH_DrmErrCode OH_MediaKeySession_GenerateLicenseRequest(OH_MediaKeySession *mediaKeySession,
+    OH_DRM_MediaKeyRequestInfo *info, unsigned char **mediaKeyRequest, int32_t *mediaKeyRequestLen);
+
+/**
+ * @brief Process media key response.
+ * @param mediaKeySession Media key session instance.
+ * @param response Media Key resposne.
+ * @param mediaKeyId Media key identifier.
+ * @return OH_DrmErrCode.
+ * @since 11
  * @version 1.0
  */
 OH_DrmErrCode OH_MediaKeySession_ProcessLicenseResponse(OH_MediaKeySession *keySession, unsigned char *response,
-    uint32_t &responseLen, unsigned char *licenseId, uint32_t licenseIdLen);
+    uint32_t responseLen, unsigned char *keyId, uint32_t *keyIdLen);
 
 /**
- * @brief Check license status.
- * @syscap SystemCapability.Multimedia.Drm.Core
+ * @brief Check media key status.
  * @param mediaKeySession Media key session instance.
- *
- * @returns OH_DrmErrCode refers to OH_DrmErrCode.
- * @since 9
+ * @param mediaKeyDescription Media key status description.
+ * @return OH_DrmErrCode.
+ * @since 11
  * @version 1.0
  */
-OH_DrmErrCode OH_MediaKeySession_CheckLicenseStatus(OH_MediaKeySession *keySession, OH_DRM_MediaKeyStatus *status,
-    uint32_t *licenseStatusCount);
+OH_DrmErrCode OH_MediaKeySession_CheckMediaKeyStatus(OH_MediaKeySession *mediaKeySessoin,
+    OH_DRM_MediaKeyDescription **mediaKeyDescription);
 
 /**
- * @brief Remove license.
- * @syscap SystemCapability.Multimedia.Drm.Core
+ * @brief Clear media keys of the current session .
  * @param mediaKeySession Media key session instance.
- * @returns OH_DrmErrCode refers to OH_DrmErrCode.
- * @since 9
+ * @return OH_DrmErrCode.
+ * @since 11
  * @version 1.0
  */
 OH_DrmErrCode OH_MediaKeySession_RemoveLicense(OH_MediaKeySession *keySession);
+/**
+ * @brief Generate offline media key release request.
+ * @param mediaKeySession Media key session instance.
+ * @param mediaKeyId Media key identifier.
+ * @param releaseRequest Media Key release request.
+ * @return OH_DrmErrCode.
+ * @since 11
+ * @version 1.0
+ */
+OH_DrmErrCode OH_MediaKeySession_GenerateOfflineReleaseRequest(OH_MediaKeySession *mediaKeySessoin,
+    OH_DRM_Uint8Buffer *mediaKeyId, unsigned char **releaseRequest, int32_t *releaseRequestLen);
 
 /**
- * @brief Process offline license response.
- * @syscap SystemCapability.Multimedia.Drm.Core
+ * @brief Process offline media key release response.
  * @param mediaKeySession Media key session instance.
- * @param licenseId Specifies which license corresponded.
- * @param licenseIdLen The length of license id.
- * @param response License resposne.
- * @param responseLen The length of license resposne.
- * @returns OH_DrmErrCode refers to OH_DrmErrCode.
- * @since 9
+ * @param mediaKeyId Media key identifier.
+ * @param releaseReponse Media Key resposne.
+ * @return OH_DrmErrCode.
+ * @since 11
  * @version 1.0
  */
 OH_DrmErrCode OH_MediaKeySession_ProcessOfflineReleaseResponse(OH_MediaKeySession *keySession, uint8_t *licenseId,
     size_t licenseIdLen, uint8_t *response, size_t responseLen);
 
 /**
- * @brief Restore offline license response.
- * @syscap SystemCapability.Multimedia.Drm.Core
+ * @brief Restore offline media keys by ID.
  * @param mediaKeySession Media key session instance.
- * @param licenseId The licenseId specifies which license should be restore.
- * @param licenseIdLen The length of license id.
- * @returns OH_DrmErrCode refers to OH_DrmErrCode.
- * @since 9
+ * @param mediaKeyId Media key identifier.
+ * @return OH_DrmErrCode.
+ * @since 11
  * @version 1.0
  */
 OH_DrmErrCode OH_MediaKeySession_RestoreOfflineLicense(OH_MediaKeySession *keySession, uint8_t *licenseId,
     size_t licenseIdLen);
 
 /**
- * @brief Get security level.
- * @syscap SystemCapability.Multimedia.Drm.Core
+ * @brief Get content protection level of the session.
  * @param mediaKeySession Media key session instance.
- * @returns return SecurityLevel.
- * @since 9
+ * @param contentProtectionLevel Content protection level.
+ * @return OH_DrmErrCode.
+ * @since 11
  * @version 1.0
  */
-OH_SecurityLevel OH_MediaKeySession_GetSecurityLevel(OH_MediaKeySession *keySession);
+OH_SecurityLevel OH_MediaKeySession_GetContentProtectionLevel(OH_MediaKeySession *mediaKeySessoin);
 
 /**
- * @brief When the decrypt content need a secure decoder, return true, otherwise return false.
- * @syscap SystemCapability.Multimedia.Drm.Core
+ * @brief Whether the encrypted content require a secure decoder or not.
  * @param mediaKeySession Media key session instance.
- * @param mimeType The media content type.
- * @returns OH_DrmErrCode refers to OH_DrmErrCode.
- * @since 9
+ * @param mimeType The media type.
+ * @param status Whether secure decoder is required.
+ * @return OH_DrmErrCode.
+ * @since 11
  * @version 1.0
  */
 OH_DrmBool OH_MediaKeySession_RequireSecureDecoderModule(OH_MediaKeySession *keySession, const char *mimeType);
 
 /**
- * @brief Release the resource before the session gonna be unused.
- * @syscap SystemCapability.Multimedia.Drm.Core
+ * @brief Set media key session event callback.
  * @param mediaKeySession Media key session instance.
- * @returns OH_DrmErrCode refers to OH_DrmErrCode.
- * @since 9
+ * @param callback Callback to be set to the media key session.
+ * @return OH_DrmErrCode.
+ * @since 11
  * @version 1.0
  */
-OH_DrmErrCode OH_MediaKeySession_Destroy(OH_MediaKeySession *keySession);
+OH_DrmErrCode OH_MediaKeySession_SetMediaKeySessionCallback(OH_MediaKeySession *mediaKeySessoin,
+    OH_MediaKeySessionCallback *callback);
 
+/**
+ * @brief Release the resource before the session gonna be unused.
+ * @param mediaKeySession Media key session instance.
+ * @return OH_DrmErrCode.
+ * @since 11
+ * @version 1.0
+ */
+OH_DrmErrCode OH_MediaKeySession_Destroy(OH_MediaKeySession *mediaKeySessoin);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // OHOS_DRM_NATIVE_MEDIA_KEY_SESSION_H
+#endif // OHOS_DRM_NATIVE_MEDIA_KEY_SYSTEM_H

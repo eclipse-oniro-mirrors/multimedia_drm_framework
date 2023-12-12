@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,189 +17,126 @@
 #include <shared_mutex>
 #include <string>
 #include <refbase.h>
-
+#include <securec.h>
 #include "drm_log.h"
 #include "drm_error_code.h"
-
 #include "native_drm_common.h"
+#include "native_drm_base.h"
 #include "native_drm_object.h"
 #include "native_mediakeysystem.h"
 
 using namespace OHOS::DrmStandard;
 
-struct OH_MediaKeySystem *OH_MediaKeySystem_Create(const char *uuid)
-{
-    DRM_INFO_LOG("OH_MediaKeySystem_Create called");
-    DRM_CHECK_AND_RETURN_RET_LOG(uuid != nullptr, nullptr, "OH_MediaKeySystem uuid is nullptr!");
-
-    OHOS::sptr<MediaKeySystemFactoryImpl> fatory = MediaKeySystemFactoryImpl::GetInstance();
-    DRM_CHECK_AND_RETURN_RET_LOG(fatory != nullptr, nullptr, "OH_MediaKeySystem fatory is nullptr!");
-
-    std::string uuidStr(uuid);
-    OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> system = nullptr;
-    fatory->CreateMediaKeySystem(uuidStr, &system);
-    DRM_CHECK_AND_RETURN_RET_LOG(system != nullptr, nullptr, "OH_MediaKeySystem system create by uuid failed!");
-
-    struct MediaKeySystemObject *object = new (std::nothrow) MediaKeySystemObject(system);
-    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, nullptr, "OH_MediaKeySystem MediaKeySystemObject create failed!");
-
-    return object;
-}
-
-OH_DrmErrCode OH_MediaKeySystem_Destroy(OH_MediaKeySystem *mediaKeySystem)
-{
-    DRM_INFO_LOG("OH_MediaKeySystem_Destroy called");
-    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_MediaKeySystem mediaKeySystem is nullptr!");
-
-    struct MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_MediaKeySystem systemObject is nullptr!");
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_MediaKeySystem systemImpl_ is nullptr!");
-
-    int32_t ret = systemObject->systemImpl_->Release();
-    OH_DrmErrCode retCode = DRM_ERR_OK;
-    if (ret != DRM_OK) {
-        DRM_ERR_LOG("call media key system release failed!");
-        retCode = DRM_ERR_UNKNOWN;
-    }
-    delete mediaKeySystem;
-    mediaKeySystem = nullptr;
-    return retCode;
-}
-
-OH_MediaKeySession *OH_MediaKeySystem_CreateMediaKeySession(OH_MediaKeySystem *mediaKeySystem, OH_SecurityLevel *level)
-{
-    DRM_INFO_LOG("OH_MediaKeySystem_CreateMediaKeySession called");
-    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, nullptr, "OH_MediaKeySystem mediaKeySystem is nullptr!");
-    DRM_CHECK_AND_RETURN_RET_LOG(level != nullptr, nullptr, "OH_MediaKeySystem level is nullptr!");
-
-    struct MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, nullptr, "OH_MediaKeySystem systemObject is nullptr!");
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, nullptr, "systemImpl_ is nullptr!");
-
-    int32_t secure = static_cast<int32_t>(*level);
-    DRM_CHECK_AND_RETURN_RET_LOG(secure <= SECURITY_LEVEL_MAX && secure >= SECURITY_LEVEL_UNKNOWN, nullptr,
-        "OH_MediaKeySystem secure input is invalid");
-    IMediaKeySessionService::SecurityLevel secureLevel = static_cast<IMediaKeySessionService::SecurityLevel>(secure);
-    OHOS::sptr<MediaKeySessionImpl> keySessionImpl = nullptr;
-    int32_t ret = systemObject->systemImpl_->CreateMediaKeySession(secureLevel, &keySessionImpl);
-    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, nullptr, "OH_MediaKeySystem create session impl return failed!");
-    DRM_CHECK_AND_RETURN_RET_LOG(keySessionImpl != nullptr, nullptr, "OH_MediaKeySystem session impl create failed!");
-
-    struct MediaKeySessionObject *object = new (std::nothrow) MediaKeySessionObject(keySessionImpl);
-    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, nullptr, "OH_MediaKeySystem MediaKeySessionObject create failed!");
-    return object;
-}
-
-OH_DrmBool OH_MediaKeySystemIsSupportedByUuid(const char *uuid)
+OH_DrmBool OH_MediaKeySystem_IsSupported(const char *uuid)
 {
     DRM_INFO_LOG("OH_MediaKeySystemIsSupportedByUuid enter.");
-    DRM_CHECK_AND_RETURN_RET_LOG(uuid != nullptr, false, "OH_MediaKeySystem uuid is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(uuid != nullptr, DRM_BOOL_FALSE, "OH_MediaKeySystem uuid is nullptr!");
     std::string Uuid(uuid);
-    DRM_CHECK_AND_RETURN_RET_LOG(Uuid.size() != 0, false, "OH_MediaKeySystem Uuid.size is nullptr!");
+    OH_DrmBool IsSurooprtted = DRM_BOOL_FALSE;
+    DRM_CHECK_AND_RETURN_RET_LOG(Uuid.size() != 0, DRM_BOOL_FALSE, "OH_MediaKeySystem Uuid.size is nullptr!");
     OHOS::sptr<MediaKeySystemFactoryImpl> fatory = MediaKeySystemFactoryImpl::GetInstance();
-    DRM_CHECK_AND_RETURN_RET_LOG(fatory != nullptr, false, "OH_MediaKeySystem fatory is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(fatory != nullptr, DRM_BOOL_FALSE, "OH_MediaKeySystem fatory is nullptr!");
     bool isSurpportted = fatory->IsMediaKeySystemSupported(Uuid);
+    if (isSurpportted)
+    {
+        IsSurooprtted = DRM_BOOL_TRUE;
+    }
     DRM_INFO_LOG("OH_MediaKeySystemIsSupportedByUuid exit.");
-    return isSurpportted;
+    return IsSurooprtted;
 }
 
-OH_DrmBool OH_MediaKeySystemIsSupportedV2(const char *uuid, const char *mimeTypePtr)
+OH_DrmBool OH_MediaKeySystem_IsSupported2(const char *uuid, const char *mimeType)
 {
-    DRM_INFO_LOG("OH_MediaKeySystemIsSupportedByUuid enter.");
-    DRM_CHECK_AND_RETURN_RET_LOG(uuid != nullptr, false, "OH_MediaKeySystem uuid is nullptr!");
-    DRM_CHECK_AND_RETURN_RET_LOG(mimeTypePtr != nullptr, false, "OH_MediaKeySystem uuid is nullptr!");
-
+    DRM_INFO_LOG("OH_MediaKeySystem_IsSupported2 enter.");
+    DRM_CHECK_AND_RETURN_RET_LOG(uuid != nullptr, DRM_BOOL_FALSE, "OH_MediaKeySystem uuid is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(mimeType != nullptr, DRM_BOOL_FALSE, "OH_MediaKeySystem uuid is nullptr!");
+    OH_DrmBool IsSurpportted = DRM_BOOL_FALSE;
     std::string Uuid(uuid);
-    DRM_CHECK_AND_RETURN_RET_LOG(Uuid.size() != 0, false, "OH_MediaKeySystem Uuid.size is nullptr!");
-    std::string mimeType = std::string(mimeTypePtr);
-    DRM_CHECK_AND_RETURN_RET_LOG(mimeType.size() != 0, false, "OH_MediaKeySystem level is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(Uuid.size() != 0, DRM_BOOL_FALSE, "OH_MediaKeySystem Uuid.size is nullptr!");
+    std::string mimeTypePtr = std::string(mimeType);
+    DRM_CHECK_AND_RETURN_RET_LOG(mimeTypePtr.size() != 0, DRM_BOOL_FALSE, "OH_MediaKeySystem level is nullptr!");
 
     OHOS::sptr<MediaKeySystemFactoryImpl> fatory = MediaKeySystemFactoryImpl::GetInstance();
-    DRM_CHECK_AND_RETURN_RET_LOG(fatory != nullptr, false, "OH_MediaKeySystem fatory is nullptr!");
-    bool isSurpportted = fatory->IsMediaKeySystemSupported(Uuid, mimeType);
-    DRM_INFO_LOG("OH_MediaKeySystemIsSupportedByUuid exit.");
-    return isSurpportted;
+    DRM_CHECK_AND_RETURN_RET_LOG(fatory != nullptr, DRM_BOOL_FALSE, "OH_MediaKeySystem fatory is nullptr!");
+    bool isSurpportted = fatory->IsMediaKeySystemSupported(Uuid, mimeTypePtr);
+    if (isSurpportted) {
+        IsSurpportted = DRM_BOOL_TRUE;
+    }
+    DRM_INFO_LOG("OH_MediaKeySystem_IsSupported2 exit.");
+    return IsSurpportted;
 }
 
-OH_DrmBool OH_MediaKeySystemIsSupportedV3(const char *uuidPtr, const char *mimeTypePtr, int32_t cSecurityLevel)
+OH_DrmBool OH_MediaKeySystem_IsSupported3(const char *uuid, const char *mimeType, OH_DRM_ContentProtectionLevel cSecurityLevel)
 {
-    DRM_INFO_LOG("OH_MediaKeySystemIsSupportedByUuid enter.");
-    DRM_CHECK_AND_RETURN_RET_LOG(uuidPtr != nullptr, false, "OH_MediaKeySystem uuid is nullptr!");
-    DRM_CHECK_AND_RETURN_RET_LOG(mimeTypePtr != nullptr, false, "OH_MediaKeySystem uuid is nullptr!");
-
-    std::string uuid(uuidPtr);
-    DRM_CHECK_AND_RETURN_RET_LOG(uuid.size() != 0, false, "OH_MediaKeySystem Uuid.size is nullptr!");
-    std::string mimeType = std::string(mimeTypePtr);
-    DRM_CHECK_AND_RETURN_RET_LOG(mimeType.size() != 0, false, "OH_MediaKeySystem level is nullptr!");
+    DRM_INFO_LOG("OH_MediaKeySystem_IsSupported3 enter.");
+    DRM_CHECK_AND_RETURN_RET_LOG(uuid != nullptr, DRM_BOOL_FALSE, "OH_MediaKeySystem uuid is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(mimeType != nullptr, DRM_BOOL_FALSE, "OH_MediaKeySystem uuid is nullptr!");
+    OH_DrmBool IsSurpportted = DRM_BOOL_FALSE;
+    std::string uuidPtr(uuid);
+    DRM_CHECK_AND_RETURN_RET_LOG(uuidPtr.size() != 0, DRM_BOOL_FALSE, "OH_MediaKeySystem Uuid.size is nullptr!");
+    std::string mimeTypePtr = std::string(mimeType);
+    DRM_CHECK_AND_RETURN_RET_LOG(mimeTypePtr.size() != 0, DRM_BOOL_FALSE, "OH_MediaKeySystem level is nullptr!");
 
     OHOS::sptr<MediaKeySystemFactoryImpl> fatory = MediaKeySystemFactoryImpl::GetInstance();
-    DRM_CHECK_AND_RETURN_RET_LOG(fatory != nullptr, false, "OH_MediaKeySystem fatory is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(fatory != nullptr, DRM_BOOL_FALSE, "OH_MediaKeySystem fatory is nullptr!");
 
-    IMediaKeySessionService::SecurityLevel securityLevel;
-    securityLevel = (IMediaKeySessionService::SecurityLevel)cSecurityLevel;
+    IMediaKeySessionService::SecurityLevel securityLevel = (IMediaKeySessionService::SecurityLevel)cSecurityLevel;
     if ((securityLevel < IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN) ||
         (securityLevel >= IMediaKeySessionService::SECURITY_LEVEL_MAX)) {
         DRM_ERR_LOG("cSecurityLevel is invalid");
-        return false;
+        return DRM_BOOL_FALSE;
     }
-    bool isSurpportted = fatory->IsMediaKeySystemSupported(uuid, mimeType, securityLevel);
-    DRM_INFO_LOG("MediaKeySystemNapi::IsMediaKeySystemSupported exit.");
-    return isSurpportted;
+    bool isSurpportted = fatory->IsMediaKeySystemSupported(uuidPtr, mimeTypePtr, securityLevel);
+    if (isSurpportted) {
+        IsSurpportted = DRM_BOOL_TRUE;
+    }
+    DRM_INFO_LOG("OH_MediaKeySystem_IsSupported3 exit.");
+    return IsSurpportted;
 }
 
-
-OH_DrmErrCode OH_GetConfigurationString(OH_MediaKeySystem *mediaKeySystem, const char *configName, char *valuePtr)
+OH_DrmErrCode OH_MediaKeySystem_Create(const char *name, OH_MediaKeySystem **mediaKeySystem)
 {
-    DRM_INFO_LOG("OH_GetConfigurationString enter");
-    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_GetConfigurationString mediaKeySystem is nullptr!");
-    DRM_CHECK_AND_RETURN_RET_LOG(configName != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_GetConfigurationString configName is nullptr!");
-    DRM_CHECK_AND_RETURN_RET_LOG(valuePtr != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_GetConfigurationString valuePtr is nullptr!");
-    memset(valuePtr, 0, strlen(valuePtr));
-    std::string value;
-    int32_t result = DRM_ERR_ERROR;
-    std::string name = std::string(configName);
-    DRM_CHECK_AND_RETURN_RET_LOG(name.size() != 0, DRM_ERR_INVALID_VAL,
-        "OH_SetConfigurationString configName.size is not zero!");
+    DRM_CHECK_AND_RETURN_RET_LOG(name != nullptr, DRM_ERR_INVALID_VAL, "name is nullptr!");
 
-    struct MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_GetConfigurationString systemObject is nullptr!");
-    result = systemObject->systemImpl_->GetConfigurationString(name, value);
-    DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
-        "OH_SetConfigurationString mediaKeySystemImpl::GetConfigurationString faild!");
-    memcpy(valuePtr, value.c_str(), value.size());
-    DRM_INFO_LOG("OH_GetConfigurationString exit");
+    OHOS::sptr<MediaKeySystemFactoryImpl> factory = MediaKeySystemFactoryImpl::GetInstance();
+    DRM_CHECK_AND_RETURN_RET_LOG(factory != nullptr, DRM_ERR_INVALID_VAL, "factory is nullptr!");
+
+    std::string nameStr;
+    nameStr = name;
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> system = nullptr;
+    factory->CreateMediaKeySystem(nameStr, &system);
+    DRM_CHECK_AND_RETURN_RET_LOG(system != nullptr, DRM_ERR_INVALID_VAL, "system create by name failed!");
+
+    struct MediaKeySystemObject *object = new (std::nothrow) MediaKeySystemObject(system);
+    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_ERR_INVALID_VAL, "MediaKeySystemObject create failed!");
+    *mediaKeySystem = object;
+
     return DRM_ERR_OK;
 }
 
-OH_DrmErrCode OH_SetConfigurationString(OH_MediaKeySystem *mediaKeySystem, const char *configName, const char *valuePtr)
+OH_DrmErrCode OH_MediaKeySystem_SetConfigurationString(OH_MediaKeySystem *mediaKeySystem,
+    const char *configName, const char *value)
 {
     DRM_INFO_LOG("OH_SetConfigurationString enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationString mediaKeySystem is nullptr!");
     DRM_CHECK_AND_RETURN_RET_LOG(configName != nullptr, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationString configName is nullptr!");
-    DRM_CHECK_AND_RETURN_RET_LOG(valuePtr != nullptr, DRM_ERR_INVALID_VAL,
+    DRM_CHECK_AND_RETURN_RET_LOG(value != nullptr, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationString value is nullptr!");
 
     int32_t result = DRM_ERR_ERROR;
     std::string name(configName);
     DRM_CHECK_AND_RETURN_RET_LOG(name.size() != 0, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationString configName.size is not zero!");
-    std::string value(valuePtr);
-    DRM_CHECK_AND_RETURN_RET_LOG(value.size() != 0, DRM_ERR_INVALID_VAL,
+    std::string valuePtr(value);
+    DRM_CHECK_AND_RETURN_RET_LOG(valuePtr.size() != 0, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationString value.size is not zero!");
 
-    struct MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+    MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationString systemObject is nullptr!");
-    result = systemObject->systemImpl_->SetConfigurationString(name, value);
+    result = systemObject->systemImpl_->SetConfigurationString(name, valuePtr);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationString mediaKeySystemImpl::SetConfigurationString faild!");
 
@@ -207,81 +144,158 @@ OH_DrmErrCode OH_SetConfigurationString(OH_MediaKeySystem *mediaKeySystem, const
     return DRM_ERR_OK;
 }
 
-OH_DrmErrCode OH_GetConfigurationByteArray(OH_MediaKeySystem *mediaKeySystem, const char *configName,
-    unsigned char *valuePtr, uint32_t *valueLen)
+OH_DrmErrCode OH_MediaKeySystem_GetConfigurationString(OH_MediaKeySystem *mediaKeySystem,
+    const char *configName, char *value)
 {
-    DRM_INFO_LOG("OH_GetConfigurationByteArray enter");
+    DRM_INFO_LOG("OH_GetConfigurationString enter");
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_GetConfigurationByteArray mediaKeySystem is nullptr!");
+        "OH_GetConfigurationString mediaKeySystem is nullptr!");
     DRM_CHECK_AND_RETURN_RET_LOG(configName != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_GetConfigurationByteArray configName is nullptr!");
-    DRM_CHECK_AND_RETURN_RET_LOG(valuePtr != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_GetConfigurationByteArray valuePtr is nullptr!");
-
-    std::vector<uint8_t> value;
+        "OH_GetConfigurationString configName is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(value != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_GetConfigurationString valuePtr is nullptr!");
+    memset_s(value, strlen(value), 0, strlen(value));
+    std::string valuePtr;
     int32_t result = DRM_ERR_ERROR;
     std::string name = std::string(configName);
     DRM_CHECK_AND_RETURN_RET_LOG(name.size() != 0, DRM_ERR_INVALID_VAL,
-        "OH_GetConfigurationByteArray configName.size is not zero!");
+        "OH_SetConfigurationString configName.size is not zero!");
 
-    struct MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+    MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, DRM_ERR_INVALID_VAL,
         "OH_GetConfigurationString systemObject is nullptr!");
-    result = systemObject->systemImpl_->GetConfigurationByteArray(name, value);
+    result = systemObject->systemImpl_->GetConfigurationString(name, valuePtr);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
-        "OH_GetConfigurationByteArray mediaKeySystemImpl::GetConfigurationByteArray faild!");
-    memcpy(valuePtr, value.data(), value.size());
-    *valueLen = value.size();
-    DRM_INFO_LOG("OH_GetConfigurationByteArray exit");
+        "OH_SetConfigurationString mediaKeySystemImpl::GetConfigurationString faild!");
+    int32_t ret =  memcpy_s(value, valuePtr.size(), valuePtr.c_str(), valuePtr.size());
+    if (ret != 0) {
+        DRM_ERR_LOG("OH_GetConfigurationString memcpy_s faild!");
+        return DRM_ERR_ERROR;
+    }
+    DRM_INFO_LOG("OH_GetConfigurationString exit");
     return DRM_ERR_OK;
 }
 
-OH_DrmErrCode OH_SetConfigurationByteArray(OH_MediaKeySystem *mediaKeySystem, const char *configName,
-    unsigned char *valuePtr, uint32_t valueLen)
+OH_DrmErrCode OH_MediaKeySystem_SetConfigurationByteArray(OH_MediaKeySystem *mediaKeySystem, const char *configName,
+    unsigned char *value, uint32_t valueLen)
 {
     DRM_INFO_LOG("OH_SetConfigurationByteArray enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationByteArray mediaKeySystem is nullptr!");
     DRM_CHECK_AND_RETURN_RET_LOG(configName != nullptr, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationByteArray configName is nullptr!");
-    DRM_CHECK_AND_RETURN_RET_LOG(valuePtr != nullptr, DRM_ERR_INVALID_VAL,
+    DRM_CHECK_AND_RETURN_RET_LOG(value != nullptr, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationByteArray value is nullptr!");
 
     int32_t result = DRM_ERR_ERROR;
     std::string name(configName);
     DRM_CHECK_AND_RETURN_RET_LOG(name.size() != 0, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationByteArray configName.size is not zero!");
-    uint8_t *valueDataPtr = reinterpret_cast<uint8_t *>(valuePtr);
+    uint8_t *valueDataPtr = reinterpret_cast<uint8_t *>(value);
     DRM_CHECK_AND_RETURN_RET_LOG(valueDataPtr != nullptr, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationByteArray value is nullptr!");
-    std::vector<uint8_t> value(valueDataPtr, valueDataPtr + valueLen);
-    DRM_CHECK_AND_RETURN_RET_LOG(value.size() != 0, DRM_ERR_INVALID_VAL,
+    std::vector<uint8_t> valueptr(valueDataPtr, valueDataPtr + valueLen);
+    DRM_CHECK_AND_RETURN_RET_LOG(valueptr.size() != 0, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationByteArray value.size is not zero!");
 
-
-    struct MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+    MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationByteArray systemObject is nullptr!");
-    result = systemObject->systemImpl_->SetConfigurationByteArray(name, value);
+    result = systemObject->systemImpl_->SetConfigurationByteArray(name, valueptr);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationByteArray mediaKeySystemImpl::SetConfigurationByteArray faild!");
     DRM_INFO_LOG("OH_SetConfigurationByteArray exit.");
     return DRM_ERR_OK;
 }
 
+OH_DrmErrCode OH_MediaKeySystem_GetConfigurationByteArray(OH_MediaKeySystem *mediaKeySystem, const char *configName,
+    unsigned char *value, uint32_t *valueLen)
+{
+    DRM_INFO_LOG("OH_GetConfigurationByteArray enter");
+    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_GetConfigurationByteArray mediaKeySystem is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(configName != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_GetConfigurationByteArray configName is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(value != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_GetConfigurationByteArray valuePtr is nullptr!");
 
-OH_SecurityLevel OH_GetMaxSecurityLevel(OH_MediaKeySystem *mediaKeySystem)
+    std::vector<uint8_t> valuePtr;
+    int32_t result = DRM_ERR_ERROR;
+    std::string name = std::string(configName);
+    DRM_CHECK_AND_RETURN_RET_LOG(name.size() != 0, DRM_ERR_INVALID_VAL,
+        "OH_GetConfigurationByteArray configName.size is not zero!");
+
+    MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+    DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_GetConfigurationString systemObject is nullptr!");
+    result = systemObject->systemImpl_->GetConfigurationByteArray(name, valuePtr);
+    DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
+        "OH_GetConfigurationByteArray mediaKeySystemImpl::GetConfigurationByteArray faild!");
+    int32_t ret = memcpy_s(value, valuePtr.size(), valuePtr.data(), valuePtr.size());
+    if (ret != 0) {
+        DRM_ERR_LOG("OH_GetConfigurationByteArray memcpy_s faild!");
+        return DRM_ERR_ERROR;
+    }
+    *valueLen = valuePtr.size();
+    DRM_INFO_LOG("OH_GetConfigurationByteArray exit");
+    return DRM_ERR_OK;
+}
+
+static OH_DRM_Statistics* vectorToClist(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics)
+{
+    DRM_INFO_LOG("vectorToCArray start.");
+    int32_t max = sizeof(uint32_t);
+    int offset = metrics.size()*sizeof(OH_DRM_CharBufferPair);
+    for (size_t i = 0; i < metrics.size(); i++) {
+        max += (sizeof(OH_DRM_CharBufferPair) + metrics[i].value.size() + metrics[i].name.size());
+    }
+    OH_DRM_Statistics *cArray =  (OH_DRM_Statistics *)malloc(max);
+    cArray->statisticsCount = metrics.size();
+    OH_DRM_CharBufferPair *dest = &((cArray->info)[0]);
+    for (size_t i = 0; i < metrics.size(); i++) {
+        dest[i].name.bufferLen = metrics[i].name.size();
+        dest[i].name.buffer = (char *)((uint8_t *)dest + offset);
+        memcpy(dest[i].name.buffer,metrics[i].name.c_str(),metrics[i].name.size());
+        offset += metrics[i].name.size();
+        dest[i].value.bufferLen = metrics[i].value.size();
+        dest[i].value.buffer = (char *)((uint8_t *)dest + offset);
+        memcpy(dest[i].value.buffer,metrics[i].value.c_str(),metrics[i].value.size());
+        offset += metrics[i].value.size();
+    }
+    DRM_INFO_LOG("vectorToCArray exit.");
+    return cArray;
+}
+
+OH_DrmErrCode OH_MediaKeySystem_GetStatistics(OH_MediaKeySystem *mediaKeySystem, OH_DRM_Statistics **statistics) {
+    DRM_INFO_LOG("OH_MediaKeySystem_GetStatistics enter.");
+    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySystem_GetStatistics mediaKeySystem is nullptr!");
+    MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+    DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySystem_GetStatistics systemObject is nullptr!");
+    std::vector<IMediaKeySystemService::MetircKeyValue> metrics;
+    int32_t result = systemObject->systemImpl_->GetMetrics(metrics);
+    DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySystem_GetStatistics systemObject is nullptr!");
+    *(statistics) = vectorToClist(metrics);
+    DRM_CHECK_AND_RETURN_RET_LOG(*statistics != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySystem_GetStatistics *OH_DRM_Statistics is nullptr!");
+    DRM_INFO_LOG("OH_MediaKeySystem_GetStatistics exit.");
+    return DRM_ERR_OK;
+}
+
+OH_SecurityLevel OH_MediaKeySystem_GetMaxContentProtectionLevel(OH_MediaKeySystem *mediaKeySystem)
 {
     DRM_INFO_LOG("GetMaxSecurityLevel enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, SECURITY_LEVEL_UNKNOWN,
         "OH_GetMaxSecurityLevel mediaKeySystem is nullptr!");
-    struct MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+    MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
 
     IMediaKeySessionService::SecurityLevel level = IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN;
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, SECURITY_LEVEL_UNKNOWN,
         "OH_GetMaxSecurityLevel systemObject is nullptr!");
     systemObject->systemImpl_->GetMaxSecurityLevel(&level);
-    if (level > IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN ||
+    if (level < IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN ||
         level > IMediaKeySessionService::SECURITY_LEVEL_MAX) {
         DRM_ERR_LOG("mediaKeySystemImpl::GetMaxSecurityLevel faild!");
         return SECURITY_LEVEL_UNKNOWN;
@@ -291,8 +305,35 @@ OH_SecurityLevel OH_GetMaxSecurityLevel(OH_MediaKeySystem *mediaKeySystem)
     return SecurityLevel;
 }
 
+OH_DrmErrCode OH_MediaKeySystem_GenerateKeySystemRequest(OH_MediaKeySystem *mediaKeySystem,
+    unsigned char **request, int32_t *requestLen, char **defaultUrl, int32_t *defaultUrlLen)
+{
+    DRM_INFO_LOG("OH_MediaKeySystem_GenerateKeySystemRequest enter");
+    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySystem_GenerateKeySystemRequest mediaKeySystem is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(requestLen != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySystem_GenerateKeySystemRequest mediaKeySystem is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(defaultUrlLen != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySystem_GenerateKeySystemRequest mediaKeySystem is nullptr!");
+    std::vector<uint8_t> requestData;
+    std::string defaultUrlData;
 
-OH_DrmErrCode OH_ProcessKeySystemResponse(OH_MediaKeySystem *mediaKeySystem, uint8_t *reponseData,
+    MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+    DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySystem_GenerateKeySystemRequest systemObject is nullptr!");
+    int32_t result = systemObject->systemImpl_->GenerateKeySystemRequest(requestData, defaultUrlData);
+    DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySystem_GenerateKeySystemRequest mediaKeySystem is nullptr!");
+    *request = (unsigned char *)malloc(requestData.size());
+    memcpy(*request,requestData.data(),requestData.size());
+    *requestLen = requestData.size();
+    *defaultUrl = (char *)malloc(defaultUrlData.size());
+    memcpy(*defaultUrl,defaultUrlData.data(),defaultUrlData.size());
+    *defaultUrlLen = defaultUrlData.size();
+    return DRM_ERR_OK;
+}
+
+OH_DrmErrCode OH_MediaKeySystem_ProcessKeySystemResponse(OH_MediaKeySystem *mediaKeySystem, uint8_t *reponseData,
     size_t reponseDataLen)
 {
     DRM_INFO_LOG("OH_ProcessKeySystemResponse enter.");
@@ -308,7 +349,7 @@ OH_DrmErrCode OH_ProcessKeySystemResponse(OH_MediaKeySystem *mediaKeySystem, uin
     DRM_CHECK_AND_RETURN_RET_LOG(keySystemResponse.size() != 0, DRM_ERR_INVALID_VAL,
         "OH_ProcessKeySystemResponse keySystemResponse.size is zero!");
 
-    struct MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+    MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, DRM_ERR_INVALID_VAL,
         "OH_ProcessKeySystemResponse systemObject is nullptr!");
     result = systemObject->systemImpl_->ProcessKeySystemResponse(keySystemResponse);
@@ -318,29 +359,105 @@ OH_DrmErrCode OH_ProcessKeySystemResponse(OH_MediaKeySystem *mediaKeySystem, uin
     return DRM_ERR_OK;
 }
 
-OH_CertificateStatus OH_GetCertificateStatus(OH_MediaKeySystem *mediaKeySystem)
+OH_DRM_CertificateStatus OH_MediaKeySystem_GetCertificateStatus(OH_MediaKeySystem *mediaKeySystem)
 {
     DRM_INFO_LOG("OH_GetCertificateStatus enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, CERT_STATUS_GET_FAILED,
         "OH_ProcessKeySystemResponse mediaKeySystem is nullptr!");
     IMediaKeySystemService::CertificateStatus certStatus;
-    struct MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+    MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, CERT_STATUS_GET_FAILED,
         "OH_GetCertificateStatus systemObject is nullptr!");
     int32_t result = systemObject->systemImpl_->GetCertificateStatus(&certStatus);
     if (result != DRM_ERR_OK) {
-        DRM_ERR_LOG("OH_GetOfflineLicenseStatus faild!");
+        DRM_ERR_LOG("OH_MediaKeySystem_GetCertificateStatus faild!");
         return CERT_STATUS_GET_FAILED;
     }
-    OH_CertificateStatus CertStatus = (OH_CertificateStatus)((int32_t)(certStatus));
+    OH_DRM_CertificateStatus CertStatus = (OH_DRM_CertificateStatus)((int32_t)(certStatus));
     if (CertStatus < CERT_STATUS_PROVISIONED || CertStatus > CERT_STATUS_GET_FAILED) {
-        DRM_ERR_LOG("OH_GetCertificateStatus faild!");
+        DRM_ERR_LOG("OH_MediaKeySystem_GetCertificateStatus faild!");
         return CERT_STATUS_GET_FAILED;
     }
-    DRM_INFO_LOG("OH_GetCertificateStatus exit.");
+    DRM_INFO_LOG("OH_MediaKeySystem_GetCertificateStatus exit.");
     return CertStatus;
 }
 
+OH_DrmErrCode OH_MediaKeySystem_SetMediaKeySystemCallback(OH_MediaKeySystem *mediaKeySystem,
+    OH_MediaKeySystemCallback *callback)
+{
+    return DRM_ERR_OK;
+}
+
+OH_DrmErrCode OH_MediaKeySystem_CreateMediaKeySession(OH_MediaKeySystem *mediaKeySystem, OH_DRM_ContentProtectionLevel *level,
+    OH_MediaKeySession **mediaKeySession)
+{
+    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr,  DRM_ERR_INVALID_VAL, "mediaKeySystem is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(level != nullptr,  DRM_ERR_INVALID_VAL, "level is nullptr!");
+
+    struct MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+    DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr,  DRM_ERR_INVALID_VAL, "systemObject is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr,
+         DRM_ERR_INVALID_VAL, "systemImpl_ is nullptr!");
+
+    OH_DrmErrCode retCode = DRM_ERR_OK;
+    int32_t secure = static_cast<int32_t>(*level);
+    IMediaKeySessionService::SecurityLevel secureLevel = static_cast<IMediaKeySessionService::SecurityLevel>(secure);
+    OHOS::sptr<MediaKeySessionImpl> keySessionImpl = nullptr;
+    int32_t ret = systemObject->systemImpl_->CreateMediaKeySession(secureLevel, &keySessionImpl);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_UNKNOWN, "session create return failed!");
+    DRM_CHECK_AND_RETURN_RET_LOG(keySessionImpl != nullptr, DRM_ERR_UNKNOWN, "session create failed!");
+
+    struct MediaKeySessionObject *object = new (std::nothrow) MediaKeySessionObject(keySessionImpl);
+    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_ERR_NO_MEMORY, "MediaKeySessionObject create failed!");
+    *mediaKeySession = static_cast<OH_MediaKeySession *>(object);
+    return retCode;
+}
+
+static OH_DRM_MediakeyIdArray* vectorToC2DArray(std::vector<std::vector<uint8_t>> licenseIds)
+{
+    DRM_INFO_LOG("vectorToC2DArray enter.");
+    int32_t max = sizeof(uint32_t);
+    int offset = licenseIds.size()*sizeof(OH_DRM_Uint8Buffer);
+    for (size_t i = 0; i < licenseIds.size(); i++) {
+        max += (sizeof(OH_DRM_MediakeyIdArray) + licenseIds[i].size() + licenseIds[i].size());
+    }
+    OH_DRM_MediakeyIdArray *cArray =  (OH_DRM_MediakeyIdArray *)malloc(max);
+    cArray->mediaKeyIdCount = licenseIds.size();
+    OH_DRM_Uint8Buffer *dest = &((cArray->mediaKeyIds)[0]);
+    for (size_t i = 0; i < licenseIds.size(); i++) {
+        dest[i].bufferLen = licenseIds[i].size();
+        dest[i].buffer = ((uint8_t *)dest + offset);
+        memcpy(dest[i].buffer, licenseIds[i].data(), licenseIds[i].size());
+        offset += licenseIds[i].size();
+    }
+    DRM_INFO_LOG("vectorToC2DArray exit.");
+    return cArray;
+}
+
+OH_DrmErrCode OH_MediaKeySystem_GetOfflineMediaKeyIds(OH_MediaKeySystem *mediaKeySystem,
+    OH_DRM_MediakeyIdArray **mediaKeyIds)
+{
+    DRM_INFO_LOG("OH_MediaKeySystem_GetOfflineMediaKeyIds enter.");
+     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySystem_GetOfflineMediaKeyIds mediaKeySystem is nullptr!");
+    std::vector<std::vector<uint8_t>> licenseIds;
+
+    MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+    DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_GetCertificateStatus systemObject is nullptr!");
+    int32_t result = systemObject->systemImpl_->GetOfflineLicenseIds(licenseIds);
+    DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySystem_GetOfflineMediaKeyIds faild!");
+    *mediaKeyIds = vectorToC2DArray(licenseIds);
+    DRM_INFO_LOG("OH_MediaKeySystem_GetOfflineMediaKeyIds exit.");
+    return DRM_ERR_OK;
+}
+
+OH_DrmErrCode OH_MediaKeySystem_GetOfflineMediaKeyStatus(OH_MediaKeySystem *mediaKeySystem,
+    OH_DRM_Uint8Buffer *mediaKeyId, OH_DRM_OfflineMediaKeyStatus *status)
+{
+    return DRM_ERR_OK;
+}
 
 OH_OfflineLicenseStatus OH_GetOfflineLicenseStatus(OH_MediaKeySystem *mediaKeySystem, uint8_t *licenseId,
     size_t licenseIdLen)
@@ -354,7 +471,7 @@ OH_OfflineLicenseStatus OH_GetOfflineLicenseStatus(OH_MediaKeySystem *mediaKeySy
     IMediaKeySessionService::OfflineLicenseStatus offlineLicenseStatus =
         IMediaKeySessionService::OFFLINELICENSESTATUS_UNKNOWN;
 
-    struct MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+    MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, OFFLINELICENSE_STATUS_UNKNOWN,
         "OH_GetCertificateStatus systemObject is nullptr!");
     result = systemObject->systemImpl_->GetOfflineLicenseStatus(licenseIdVec, offlineLicenseStatus);
@@ -372,6 +489,7 @@ OH_OfflineLicenseStatus OH_GetOfflineLicenseStatus(OH_MediaKeySystem *mediaKeySy
     return CofflineLicenseStatus;
 }
 
+
 OH_DrmErrCode OH_RemoveOfflineLicense(OH_MediaKeySystem *mediaKeySystem, uint8_t *licenseId, size_t licenseIdLen)
 {
     DRM_INFO_LOG("OH_RemoveOfflineLicense enter.");
@@ -387,7 +505,7 @@ OH_DrmErrCode OH_RemoveOfflineLicense(OH_MediaKeySystem *mediaKeySystem, uint8_t
     DRM_CHECK_AND_RETURN_RET_LOG(licenseIdVec.size() != 0, DRM_ERR_INVALID_VAL,
         "OH_RemoveOfflineLicense configName.size is not zero!");
 
-    struct MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+    MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, DRM_ERR_INVALID_VAL,
         "OH_GetCertificateStatus systemObject is nullptr!");
     result = systemObject->systemImpl_->RemoveOfflineLicense(licenseIdVec);
@@ -396,3 +514,26 @@ OH_DrmErrCode OH_RemoveOfflineLicense(OH_MediaKeySystem *mediaKeySystem, uint8_t
     DRM_INFO_LOG("OH_RemoveOfflineLicense exit.");
     return DRM_ERR_OK;
 }
+
+OH_DrmErrCode OH_MediaKeySystem_Destroy(OH_MediaKeySystem *mediaKeySystem)
+{
+    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr,  DRM_ERR_INVALID_VAL, "mediaKeySystem is nullptr!");
+
+    struct MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+    DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr,  DRM_ERR_INVALID_VAL, "systemObject is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr,  DRM_ERR_INVALID_VAL, "systemImpl_ is nullptr!");
+
+    int32_t ret = systemObject->systemImpl_->Release();
+    OH_DrmErrCode retCode = DRM_ERR_OK;
+    if (ret != DRM_ERR_OK) {
+        DRM_ERR_LOG("call media key system release failed!");
+        retCode = DRM_ERR_UNKNOWN;
+    }
+    delete mediaKeySystem;
+    mediaKeySystem = nullptr;
+    return retCode;
+}
+
+
+
+
