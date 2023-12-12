@@ -248,6 +248,7 @@ static OH_DRM_Statistics *vectorToClist(std::vector<IMediaKeySystemService::Meti
         max += (sizeof(OH_DRM_CharBufferPair) + metrics[i].value.size() + metrics[i].name.size());
     }
     OH_DRM_Statistics *cArray = (OH_DRM_Statistics *)malloc(max);
+    DRM_CHECK_AND_RETURN_RET_LOG(cArray != nullptr, DRM_ERR_INVALID_VAL, "malloc faild!");
     cArray->statisticsCount = metrics.size();
     OH_DRM_CharBufferPair *dest = &((cArray->info)[0]);
     for (size_t i = 0; i < metrics.size(); i++) {

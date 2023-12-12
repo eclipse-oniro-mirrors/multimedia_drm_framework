@@ -72,6 +72,7 @@ static OH_DRM_MediaKeyDescription *MapToClist(
         max += (sizeof(OH_DRM_EnumBufferPair) + it->first.size());
     }
     OH_DRM_MediaKeyDescription *cArray = (OH_DRM_MediaKeyDescription *)malloc(max);
+    DRM_CHECK_AND_RETURN_RET_LOG(cArray != nullptr, DRM_ERR_INVALID_VAL, "malloc faild!");
     cArray->mediaKeyCount = licenseStatus.size();
     OH_DRM_EnumBufferPair *dest = &((cArray->description)[0]);
     auto it = licenseStatus.begin();
