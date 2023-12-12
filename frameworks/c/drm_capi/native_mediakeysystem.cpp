@@ -441,7 +441,7 @@ static OH_DRM_MediakeyIdArray *vectorToC2DArray(std::vector<std::vector<uint8_t>
         max += (sizeof(OH_DRM_MediakeyIdArray) + licenseIds[i].size() + licenseIds[i].size());
     }
     OH_DRM_MediakeyIdArray *cArray = (OH_DRM_MediakeyIdArray *)malloc(max);
-     DRM_CHECK_AND_RETURN_RET_LOG(cArray != nullptr, nullptr, "malloc failed!");
+    DRM_CHECK_AND_RETURN_RET_LOG(cArray != nullptr, nullptr, "malloc failed!");
     cArray->mediaKeyIdCount = licenseIds.size();
     OH_DRM_Uint8Buffer *dest = &((cArray->mediaKeyIds)[0]);
     for (size_t i = 0; i < licenseIds.size(); i++) {
