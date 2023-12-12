@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -55,7 +55,8 @@ extern "C" {
  * @since 11
  * @version 1.0
  */
-typedef  OH_DrmErrCode (*OH_MediaKeySystemCallback)(OH_DRM_ListenerType eventType, OH_DRM_Uint8CharBufferPair *eventInfo);
+typedef OH_DrmErrCode (*OH_MediaKeySystemCallback)(OH_DRM_ListenerType eventType,
+    OH_DRM_Uint8CharBufferPair *eventInfo);
 
 /**
  * @brief Query if media key system is supported.
@@ -83,7 +84,8 @@ OH_DrmBool OH_MediaKeySystem_IsSupported2(const char *uuid, const char *mimeType
  * @since 11
  * @version 1.0
  */
-OH_DrmBool OH_MediaKeySystem_IsSupported3(const char *uuid, const char *mimeType, OH_DRM_ContentProtectionLevel cSecurityLevel);
+OH_DrmBool OH_MediaKeySystem_IsSupported3(const char *uuid, const char *mimeType,
+    OH_DRM_ContentProtectionLevel cSecurityLevel);
 /**
  * @brief Creates a media key system instance from the name.
  * @param name Secifies which drm system will be created by name.
@@ -102,8 +104,8 @@ OH_DrmErrCode OH_MediaKeySystem_Create(const char *name, OH_MediaKeySystem **med
  * @since 11
  * @version 1.0
  */
-OH_DrmErrCode OH_MediaKeySystem_SetConfigurationString(OH_MediaKeySystem *mediaKeySystem,
-    const char *configName, const char *value);
+OH_DrmErrCode OH_MediaKeySystem_SetConfigurationString(OH_MediaKeySystem *mediaKeySystem, const char *configName,
+    const char *value);
 /**
  * @brief Get media key system configuration value by name.
  * @param mediaKeySystem Media key system instance.
@@ -113,8 +115,8 @@ OH_DrmErrCode OH_MediaKeySystem_SetConfigurationString(OH_MediaKeySystem *mediaK
  * @since 11
  * @version 1.0
  */
-OH_DrmErrCode OH_MediaKeySystem_GetConfigurationString(OH_MediaKeySystem *mediaKeySystem,
-    const char *configName, char *value);
+OH_DrmErrCode OH_MediaKeySystem_GetConfigurationString(OH_MediaKeySystem *mediaKeySystem, const char *configName,
+    char *value);
 /**
  * @brief Set media key system configuration value by name.
  * @param mediaKeySystem Media key system instance.
@@ -175,8 +177,8 @@ OH_DrmErrCode OH_MediaKeySystem_SetMediaKeySystemCallback(OH_MediaKeySystem *med
  * @since 11
  * @version 1.0
  */
-OH_DrmErrCode OH_MediaKeySystem_CreateMediaKeySession(OH_MediaKeySystem *mediaKeySystem, OH_DRM_ContentProtectionLevel *level,
-    OH_MediaKeySession **mediaKeySession);
+OH_DrmErrCode OH_MediaKeySystem_CreateMediaKeySession(OH_MediaKeySystem *mediaKeySystem,
+    OH_DRM_ContentProtectionLevel *level, OH_MediaKeySession **mediaKeySession);
 
 /**
  * @brief Generate a media key system provision request.

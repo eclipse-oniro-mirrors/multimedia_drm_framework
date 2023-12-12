@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -58,22 +58,23 @@ OH_DrmErrCode OH_MediaKeySession_ProcessLicenseResponse(OH_MediaKeySession *keyS
     return DRM_ERR_OK;
 }
 
-static OH_DRM_MediaKeyDescription* MapToClist(std::map<std::string, IMediaKeySessionService::MediaKeySessionKeyStatus> licenseStatus)
+static OH_DRM_MediaKeyDescription *MapToClist(
+    std::map<std::string, IMediaKeySessionService::MediaKeySessionKeyStatus> licenseStatus)
 {
     DRM_INFO_LOG("MapToClist start.");
     int32_t max = sizeof(uint32_t);
-    int offset = licenseStatus.size()*sizeof(OH_DRM_EnumBufferPair);
+    int offset = licenseStatus.size() * sizeof(OH_DRM_EnumBufferPair);
     for (auto it = licenseStatus.begin(); it != licenseStatus.end(); it++) {
-        max += (sizeof(OH_DRM_EnumBufferPair) + it->first.size() );
+        max += (sizeof(OH_DRM_EnumBufferPair) + it->first.size());
     }
-    OH_DRM_MediaKeyDescription *cArray =  (OH_DRM_MediaKeyDescription *)malloc(max);
+    OH_DRM_MediaKeyDescription *cArray = (OH_DRM_MediaKeyDescription *)malloc(max);
     cArray->mediaKeyCount = licenseStatus.size();
     OH_DRM_EnumBufferPair *dest = &((cArray->description)[0]);
     auto it = licenseStatus.begin();
     for (size_t i = 0; i < licenseStatus.size(); i++) {
         dest[i].name.bufferLen = it->first.size();
         dest[i].name.buffer = (char *)((uint8_t *)dest + offset);
-        memcpy(dest[i].name.buffer,it->first.c_str(),it->first.size());
+        memcpy(dest[i].name.buffer, it->first.c_str(), it->first.size());
         dest[i].value = (int32_t)(it->second);
         offset += it->first.size();
         it++;
@@ -89,7 +90,8 @@ OH_DrmErrCode OH_MediaKeySession_CheckMediaKeyStatus(OH_MediaKeySession *mediaKe
     std::map<std::string, IMediaKeySessionService::MediaKeySessionKeyStatus> licenseStatus;
 
     MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySessoin);
-    DRM_CHECK_AND_RETURN_RET_LOG(sessionObject != nullptr, DRM_ERR_INVALID_VAL, "OH_MediaKeySession_CheckMediaKeyStatus sessionObject is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(sessionObject != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySession_CheckMediaKeyStatus sessionObject is nullptr!");
 
     int32_t result = sessionObject->sessionImpl_->CheckLicenseStatus(licenseStatus);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,

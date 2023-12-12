@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,8 +42,7 @@
 #include "native_drm_common.h"
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /**
@@ -54,7 +53,8 @@ extern "C"
  * @since 11
  * @version 1.0
  */
-typedef  OH_DrmErrCode (*OH_MediaKeySessionEventCallback)(OH_DRM_ListenerType eventType, OH_DRM_Uint8CharBufferPair *eventInfo);
+typedef OH_DrmErrCode (*OH_MediaKeySessionEventCallback)(OH_DRM_ListenerType eventType,
+    OH_DRM_Uint8CharBufferPair *eventInfo);
 
 /**
  * @brief Call back will be invoked when key changes.
@@ -63,7 +63,7 @@ typedef  OH_DrmErrCode (*OH_MediaKeySessionEventCallback)(OH_DRM_ListenerType ev
  * @since 11
  * @version 1.0
  */
-typedef  OH_DrmErrCode (*OH_MediaKeySessionKeyChangeCallback)(OH_DRM_KeysInfo *keysInfo, int32_t hasNewGoodKeys);
+typedef OH_DrmErrCode (*OH_MediaKeySessionKeyChangeCallback)(OH_DRM_KeysInfo *keysInfo, int32_t hasNewGoodKeys);
 
 /**
  * @brief OH_MediaKeySessionCallback struct, used to listen event like key expired and key change etc..
@@ -71,11 +71,11 @@ typedef  OH_DrmErrCode (*OH_MediaKeySessionKeyChangeCallback)(OH_DRM_KeysInfo *k
  * @version 1.0
  */
 typedef struct OH_MediaKeySessionCallback {
-    /**
+    /* *
      * Normal event callback like key expired etc..
      */
     OH_MediaKeySessionEventCallback eventCallback;
-    /**
+    /* *
      * Key change callback for keys change event.
      */
     OH_MediaKeySessionKeyChangeCallback keyChangeCallback;

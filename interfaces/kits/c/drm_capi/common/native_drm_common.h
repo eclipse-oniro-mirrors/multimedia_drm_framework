@@ -189,34 +189,6 @@ typedef enum {
 } OH_OfflineLicenseStatus;
 
 /**
- * @brief Certificate status.
- * @since 11
- * @version 1.0
- */
-// typedef enum OH_DRM_CertificateStatus {
-//     /**
-//      * Device already provisioned.
-//      */
-//     CERT_STATUS_PROVISIONED = 0,
-//     /**
-//      * Device not provisioned.
-//      */
-//     CERT_STATUS_NOT_PROVISIONED,
-//     /**
-//      * Cert already expired.
-//      */
-//     CERT_STATUS_EXPIRED,
-//     /**
-//      * Certs are invalid.
-//      */
-//     CERT_STATUS_INVALID,
-//     /**
-//      * Get certs status failed.
-//      */
-//     CERT_STATUS_UNAVAILABLE,
-// } OH_DRM_CertificateStatus;
-
-/**
  * @brief Media key status.
  * @since 11
  * @version 1.0
