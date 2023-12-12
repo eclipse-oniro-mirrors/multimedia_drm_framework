@@ -101,8 +101,7 @@ OH_DrmErrCode OH_MediaKeySystem_Create(const char *name, OH_MediaKeySystem **med
     OHOS::sptr<MediaKeySystemFactoryImpl> factory = MediaKeySystemFactoryImpl::GetInstance();
     DRM_CHECK_AND_RETURN_RET_LOG(factory != nullptr, DRM_ERR_INVALID_VAL, "factory is nullptr!");
 
-    std::string nameStr;
-    nameStr = name;
+    std::string nameStr = name;
     OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> system = nullptr;
     factory->CreateMediaKeySystem(nameStr, &system);
     DRM_CHECK_AND_RETURN_RET_LOG(system != nullptr, DRM_ERR_INVALID_VAL, "system create by name failed!");
