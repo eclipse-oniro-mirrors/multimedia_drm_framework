@@ -248,7 +248,7 @@ static OH_DRM_Statistics *vectorToClist(std::vector<IMediaKeySystemService::Meti
         max += (sizeof(OH_DRM_CharBufferPair) + metrics[i].value.size() + metrics[i].name.size());
     }
     OH_DRM_Statistics *cArray = (OH_DRM_Statistics *)malloc(max);
-    DRM_CHECK_AND_RETURN_RET_LOG(cArray != nullptr, DRM_ERR_INVALID_VAL, "malloc faild!");
+    DRM_CHECK_AND_RETURN_RET_LOG(cArray != nullptr, cArray, "malloc faild!");
     cArray->statisticsCount = metrics.size();
     OH_DRM_CharBufferPair *dest = &((cArray->info)[0]);
     for (size_t i = 0; i < metrics.size(); i++) {
@@ -441,6 +441,7 @@ static OH_DRM_MediakeyIdArray *vectorToC2DArray(std::vector<std::vector<uint8_t>
         max += (sizeof(OH_DRM_MediakeyIdArray) + licenseIds[i].size() + licenseIds[i].size());
     }
     OH_DRM_MediakeyIdArray *cArray = (OH_DRM_MediakeyIdArray *)malloc(max);
+     DRM_CHECK_AND_RETURN_RET_LOG(cArray != nullptr, nullptr, "malloc failed!");
     cArray->mediaKeyIdCount = licenseIds.size();
     OH_DRM_Uint8Buffer *dest = &((cArray->mediaKeyIds)[0]);
     for (size_t i = 0; i < licenseIds.size(); i++) {
