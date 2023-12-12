@@ -45,7 +45,8 @@ using namespace OHOS::HDI;
 class IMediaKeySystemServiceOperatorsCallback;
 class MediaKeySystemService : public MediaKeySystemServiceStub,
     public DrmHostManager::StatusCallback,
-    public IMediaKeySessionServiceOperatorsCallback {
+    public IMediaKeySessionServiceOperatorsCallback,
+    public IMediaKeySystemCallback {
 public:
     explicit MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem);
     ~MediaKeySystemService() override;
@@ -70,10 +71,16 @@ public:
 
     int32_t CloseMediaKeySessionService(sptr<MediaKeySessionService> sessionService) override;
     int32_t GetMetrics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics) override;
+    int32_t SetCallback(sptr<IMeidaKeySystemServiceCallback> &callback) override;
+
+    // for hdi callback
+    int32_t SendEvent(OHOS::HDI::Drm::V1_0::EventType eventType, int32_t extra,
+        const std::vector<uint8_t> &data) override;
 
 private:
     std::mutex mutex_;
     sptr<DrmHostManager> drmHostManager_;
+    sptr<IMeidaKeySystemServiceCallback> callback_;
     wptr<IMediaKeySystemServiceOperatorsCallback> keySystemOperatoersCallback_;
     SafeMap<int32_t, std::set<sptr<MediaKeySessionService>>> sessionsForPid_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem_;

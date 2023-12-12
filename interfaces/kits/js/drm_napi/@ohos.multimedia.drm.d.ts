@@ -169,8 +169,18 @@ declare namespace drm {
          * @param type Type of the drm event to listen for.
          * @param callback Callback used to listen for the key system required event.
          */
-        on(type: 'keySystemRequired', callback: Callback<EventInfo>): void;
-        off(type: 'keySystemRequired'): void;
+        on(type: 'provisionRequired', callback: Callback<EventInfo>): void;
+        off(type: 'provisionRequired'): void;
+
+        /**
+         * Register or unregister listens for drm events.
+         * @since 8
+         * @syscap SystemCapability.Multimedia.Drm.Core
+         * @param type Type of the drm event to listen for.
+         * @param callback Callback used to listen for Session lost event.
+         */
+        on(type: 'sessionLost', callback: Callback<EventInfo>): void;
+        off(type: 'sessionLost'): void;
 
         /**
          * Create a key session instance with level.
@@ -314,8 +324,8 @@ declare namespace drm {
          * @param type Type of the drm event to listen for.
          * @param callback Callback used to listen for the key required event.
          */
-        on(type: 'keyRequired', callback: Callback<EventInfo>): void;
-        off(type: 'keyRequired'): void;
+        on(type: 'keyNeeded', callback: Callback<EventInfo>): void;
+        off(type: 'keyNeeded'): void;
 
         /**
          * Register or unregister listens for drm events.
@@ -342,20 +352,10 @@ declare namespace drm {
          * @since 8
          * @syscap SystemCapability.Multimedia.Drm.Core
          * @param type Type of the drm event to listen for.
-         * @param callback Callback used to listen for keySession reclaimed event.
-         */
-        on(type: 'sessionReclaimed', callback: Callback<EventInfo>): void;
-        off(type: 'sessionReclaimed'): void;
-
-        /**
-         * Register or unregister listens for drm events.
-         * @since 8
-         * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param type Type of the drm event to listen for.
          * @param callback Callback used to listen for expiration update event.
          */
-        on(type: 'expirationUpdate', callback: Callback<EventInfo>): void;
-        off(type: 'expirationUpdate'): void;
+        on(type: 'expirationUpdated', callback: Callback<EventInfo>): void;
+        off(type: 'expirationUpdated'): void;
 
         /**
          * Register or unregister listens for drm events.
@@ -364,18 +364,8 @@ declare namespace drm {
          * @param type Type of the drm event to listen for.
          * @param callback Callback used to listen for keys change event.
          */
-        on(type: 'keysChange', callback: Callback<KeysInfo[]>): void;
-        off(type: 'keysChange'): void;
-
-        /**
-         * Register or unregister listens for drm events.
-         * @since 8
-         * @syscap SystemCapability.Multimedia.Drm.Core
-         * @param type Type of the drm event to listen for.
-         * @param callback Callback used to listen for Session lost event.
-         */
-        on(type: 'sessionLost', callback: Callback<EventInfo>): void;
-        off(type: 'sessionLost'): void;
+        on(type: 'keyChanged', callback: Callback<KeysInfo[]>): void;
+        off(type: 'keyChanged'): void;
 
         /**
          * Release the resource before the session gonna be unused.

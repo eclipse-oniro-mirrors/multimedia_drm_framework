@@ -28,6 +28,8 @@ ohos_shared_library("drm_service") {
   ]
 
   sources = [
+    "./client/src/key_session_service_callback_proxy.cpp",
+    "./client/src/mediakeysystem_service_callback_proxy.cpp",
     "./server/src/drm_host_manager.cpp",
     "./server/src/key_session_service.cpp",
     "./server/src/key_session_service_stub.cpp",

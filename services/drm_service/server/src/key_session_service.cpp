@@ -153,8 +153,7 @@ int32_t MediaKeySessionService::ProcessOfflineReleaseResponse(std::vector<uint8_
     return ret;
 }
 
-int32_t MediaKeySessionService::CheckLicenseStatus(std::map<std::string,
-    IMediaKeySessionService::MediaKeySessionKeyStatus>& licenseStatus)
+int32_t MediaKeySessionService::CheckLicenseStatus(std::map<std::string, MediaKeySessionKeyStatus> &licenseStatus)
 {
     DRM_INFO_LOG("MediaKeySessionService::CheckLicenseStatus enter.");
     int32_t ret = DRM_OK;
@@ -166,8 +165,7 @@ int32_t MediaKeySessionService::CheckLicenseStatus(std::map<std::string,
     }
     for (auto m : mp) {
         std::string name = m.first;
-        IMediaKeySessionService::MediaKeySessionKeyStatus status =
-            (IMediaKeySessionService::MediaKeySessionKeyStatus)m.second;
+        MediaKeySessionKeyStatus status = (MediaKeySessionKeyStatus)m.second;
         licenseStatus.insert(std::make_pair(name, status));
     }
     if (licenseStatus.size() == 0) {
@@ -268,32 +266,48 @@ int32_t MediaKeySessionService::RequireSecureDecoderModule(std::string &mimeType
     return ret;
 }
 
-int32_t MediaKeySessionService::SetMediaKeySessionServiceCallback(sptr<IMediaKeySessionServiceCallback> &callback)
+int32_t MediaKeySessionService::SetCallback(sptr<IMediaKeySessionServiceCallback> &callback)
 {
-    DRM_INFO_LOG("MediaKeySessionService::SetMediaKeySessionServiceCallback enter.");
+    DRM_INFO_LOG("MediaKeySessionService::SetCallback enter.");
     std::lock_guard<std::mutex> lock(sessionMutex_);
     if (callback == nullptr) {
-        DRM_ERR_LOG("MediaKeySessionService::SetMediaKeySessionServiceCallback nullptr , failed.");
+        DRM_ERR_LOG("MediaKeySessionService::SetCallback nullptr , failed.");
         return DRM_ERROR;
     }
     callback_ = callback;
-    return DRM_OK;
+    if (hdiMediaKeySession_ != nullptr) {
+        return hdiMediaKeySession_->SetCallback(this);
+    }
+    DRM_ERR_LOG("MediaKeySessionService::SetCallback hdiMediaKeySession_ is nullptr , failed.");
+    return DRM_OPERATION_NOT_ALLOWED;
 }
 
-void MediaKeySessionService::OnMediaKeySessionKeyExpiredStatus(const KeyStatus status)
+int32_t MediaKeySessionService::SendEvent(OHOS::HDI::Drm::V1_0::EventType eventType, int32_t extra,
+    const std::vector<uint8_t> &data)
 {
-    DRM_INFO_LOG("MediaKeySessionService::OnMediaKeySessionKeyExpiredStatus status %{public}d.", status);
-    std::lock_guard<std::mutex> lock(sessionMutex_);
-    DRM_CHECK_AND_RETURN_LOG(callback_ != nullptr, "OnMediaKeySessionKeyExpired, callback is nullptr");
-    callback_->OnMediaKeySessionKeyExpired(status);
+    DRM_INFO_LOG("MediaKeySessionService:: SendEvent.");
+    DrmEventType event = static_cast<DrmEventType>(eventType);
+    if (callback_ != nullptr) {
+        return callback_->SendEvent(event, extra, data);
+    }
+    DRM_INFO_LOG("MediaKeySystemService:: SendEvent failed because callback is nullptr");
+    return DRM_OPERATION_NOT_ALLOWED;
 }
 
-void MediaKeySessionService::OnMediaKeySessionReclaimed(const SessionStatus status)
+int32_t MediaKeySessionService::SendEventKeyChange(
+    const std::map<std::vector<uint8_t>, OHOS::HDI::Drm::V1_0::MediaKeySessionKeyStatus> &keyStatus,
+    bool hasNewGoodLicense)
 {
-    DRM_INFO_LOG("MediaKeySessionService::OnMediaKeySessionReclaimed status %{public}d.", status);
-    std::lock_guard<std::mutex> lock(sessionMutex_);
-    DRM_CHECK_AND_RETURN_LOG(callback_ != nullptr, "OnMediaKeySessionReclaimed, callback is nullptr");
-    callback_->OnMediaKeySessionReclaimed(status);
+    DRM_INFO_LOG("MediaKeySessionService:: SendEventKeyChange.");
+    std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> keyStatusMap;
+    for (auto item : keyStatus) {
+        keyStatusMap.insert({ item.first, static_cast<MediaKeySessionKeyStatus>(item.second) });
+    }
+    if (callback_ != nullptr) {
+        return callback_->SendEventKeyChanged(keyStatusMap, hasNewGoodLicense);
+    }
+    DRM_INFO_LOG("MediaKeySessionService:: SendEvent failed because callback is nullptr");
+    return DRM_OPERATION_NOT_ALLOWED;
 }
 } // DrmStandard
 } // OHOS

@@ -227,7 +227,7 @@ static int ProcessCheckLicenseStatus(MediaKeySessionServiceStub *stub, MessagePa
     MessageOption &option)
 {
     DRM_INFO_LOG("MediaKeySessionServiceStub MEDIA_KEY_SESSION_GENERATE_CHECK_LICENSE_STATUS enter.");
-    std::map<std::string, IMediaKeySessionService::MediaKeySessionKeyStatus> licenseStatus;
+    std::map<std::string, MediaKeySessionKeyStatus> licenseStatus;
     int32_t ret = stub->CheckLicenseStatus(licenseStatus);
     if (ret != 0) {
         DRM_ERR_LOG("CheckLicenseStatus faild.");
@@ -279,7 +279,7 @@ static int ProcessSetCallback(MediaKeySessionServiceStub *stub, MessageParcel &d
         DRM_ERR_LOG("MediaKeySessionServiceStub SetCallback cast nullptr");
         return IPC_STUB_INVALID_DATA_ERR;
     }
-    int errCode = stub->SetMediaKeySessionServiceCallback(callback);
+    int errCode = stub->SetCallback(callback);
     DRM_INFO_LOG("MediaKeySessionServiceStub MEDIA_KEY_SESSION_SET_CALLBACK exit.");
     return errCode;
 }

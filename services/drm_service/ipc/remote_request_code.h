@@ -38,6 +38,7 @@ enum MediaKeySystemServiceRequestCode {
     MEDIA_KEY_SYSTEM_GET_OFFLINELICENSEIDS,
     MEDIA_KEY_SYSTEM_GET_OFFLINEKEY_STATUS,
     MEDIA_KEY_SYSTEM_REMOVE_OFFLINELICENSE,
+    MEDIA_KEY_SYSTEM_SETCALLBACK,
 };
 
 enum MediaKeySessionServiceRequestCode {
@@ -61,9 +62,14 @@ enum MediaDecryptModuleServiceRequestCode {
 };
 
 enum MediaKeySessionServiceCallbackRequestCode {
-    KEY_SESSION_SERVICE_CALLBACK_ON_KEY_EXPIRED = 0,
-    KEY_SESSION_SERVICE_CALLBACK_ON_KEY_SESSION_RECLAIMED,
+    MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT = 0,
+    MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT_KEY_CHANGED,
 };
+
+enum MediaKeySystemServiceCallbackRequestCode {
+    MEDIA_KEY_SYSTEM_SERVICE_CALLBACK_SEND_EVENT = 0,
+};
+
 } // namespace DrmStandard
 } // namespace OHOS
 

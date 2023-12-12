@@ -15,14 +15,13 @@
 #ifndef OHOS_DRM_KEY_SESSION_H_
 #define OHOS_DRM_KEY_SESSION_H_
 
-#include "key_session_impl.h"
+#include <map>
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
-#include "key_session_callback_napi.h"
 #include "drm_log.h"
 #include "drm_error_code.h"
-
-#include <map>
+#include "key_session_callback_napi.h"
+#include "key_session_impl.h"
 
 namespace OHOS {
 namespace DrmStandard {

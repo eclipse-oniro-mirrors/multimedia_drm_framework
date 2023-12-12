@@ -19,6 +19,7 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <refbase.h>
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 

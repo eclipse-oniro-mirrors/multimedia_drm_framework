@@ -16,6 +16,8 @@
 #define OHOS_DRM_KEY_SESSION_IMPL_H_
 
 #include <cstring>
+#include <map>
+#include <unordered_map>
 #include "nocopyable.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
@@ -30,8 +32,9 @@ class MediaKeySessionImplCallback : public RefBase {
 public:
     MediaKeySessionImplCallback() = default;
     virtual ~MediaKeySessionImplCallback() = default;
-    virtual void OnMediaKeySessionKeyExpired(const std::string eventType, const KeyStatus status) = 0;
-    virtual void OnMediaKeySessionReclaimed(const std::string eventType, const SessionStatus status) = 0;
+    virtual void SendEvent(const std::string event, uint32_t extra, const std::vector<uint8_t> data) = 0;
+    virtual void SendEventKeyChanged(std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> statusTable,
+        bool hasNewGoodLicense) = 0;
 };
 
 class MediaKeySessionImpl : public RefBase {
@@ -47,7 +50,7 @@ public:
     int32_t GenerateOfflineReleaseRequest(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &releaseRequest);
     int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &releaseReponse);
     int32_t CheckLicenseStatus(std::map<std::string,
-        IMediaKeySessionService::MediaKeySessionKeyStatus>& licenseStatus);
+        MediaKeySessionKeyStatus>& licenseStatus);
     int32_t RestoreOfflineLicense(std::vector<uint8_t> &licenseId);
 
     int32_t RemoveLicense();
@@ -56,9 +59,8 @@ public:
     int32_t GetSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel);
 
     sptr<IMediaKeySessionService> GetMediaKeySessionServiceProxy();
-    sptr<MediaKeySessionImplCallback> GetMediaKeySessionApplicationCallback();
-    int32_t SetMediaKeySessionCallback(const sptr<MediaKeySessionImplCallback> &callback);
-    int32_t SetMediaKeySessionServiceCallback(sptr<IMediaKeySessionServiceCallback> &callback);
+    sptr<MediaKeySessionImplCallback> GetApplicationCallback();
+    int32_t SetCallback(const sptr<MediaKeySessionImplCallback> &callback);
 
     int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status);
 
@@ -70,23 +72,32 @@ private:
     std::mutex mutex_;
 };
 
-class MediaKeySessionStatusCallback : public MediaKeySessionServiceCallbackStub {
+class MediaKeySessionServiceCallback : public MediaKeySessionServiceCallbackStub {
 public:
-    MediaKeySessionStatusCallback() : keySessionImpl_(nullptr) {};
-    explicit MediaKeySessionStatusCallback(const sptr<MediaKeySessionImpl> &MediaKeySessionImpl)
-        : keySessionImpl_(MediaKeySessionImpl)
-    {}
+    MediaKeySessionServiceCallback() : keySessionImpl_(nullptr)
+    {
+        InitEventMap();
+    };
+    explicit MediaKeySessionServiceCallback(const sptr<MediaKeySessionImpl> &keySessionImpl)
+        : keySessionImpl_(keySessionImpl)
+    {
+        InitEventMap();
+    }
 
-    ~MediaKeySessionStatusCallback()
+    ~MediaKeySessionServiceCallback()
     {
         keySessionImpl_ = nullptr;
     }
 
-    int32_t OnMediaKeySessionKeyExpired(const KeyStatus status) override;
-    int32_t OnMediaKeySessionReclaimed(const SessionStatus status) override;
+    void InitEventMap();
+    std::string GetEventName(DrmEventType event);
+    int32_t SendEvent(DrmEventType event, uint32_t extra, const std::vector<uint8_t> data) override;
+    int32_t SendEventKeyChanged(std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> statusTable,
+        bool hasNewGoodLicense) override;
 
 private:
     sptr<MediaKeySessionImpl> keySessionImpl_;
+    std::unordered_map<int32_t, std::string> eventMap_;
 };
 } // DrmStandard
 } // OHOS

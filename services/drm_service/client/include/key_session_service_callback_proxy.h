@@ -25,8 +25,9 @@ class MediaKeySessionServiceCallbackProxy : public IRemoteProxy<IMediaKeySession
 public:
     explicit MediaKeySessionServiceCallbackProxy(const sptr<IRemoteObject> &impl);
     virtual ~MediaKeySessionServiceCallbackProxy() = default;
-    int32_t OnMediaKeySessionKeyExpired(const KeyStatus status) override;
-    int32_t OnMediaKeySessionReclaimed(const SessionStatus status) override;
+    int32_t SendEvent(DrmEventType event, uint32_t extra, const std::vector<uint8_t> data) override;
+    int32_t SendEventKeyChanged(std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> statusTable,
+        bool hasNewGoodLicense) override;
 
 private:
     static inline BrokerDelegator<MediaKeySessionServiceCallbackProxy> delegator_;
