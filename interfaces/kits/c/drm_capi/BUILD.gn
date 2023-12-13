@@ -61,6 +61,7 @@ ohos_shared_library("native_drm") {
     "c_utils:utils",
     "hilog:libhilog",
     "hitrace:hitrace_meter",
+    "ipc:ipc_core",
   ]
   output_extension = "so"
   subsystem_name = "multimedia"

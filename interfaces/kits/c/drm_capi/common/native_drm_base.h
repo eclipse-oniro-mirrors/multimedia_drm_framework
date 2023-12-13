@@ -4,13 +4,31 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ */
+
+/**
+ * @addtogroup Drm
+ * @{
+ *
+ * @brief Provides APIs of Drm.
+ * @since 11
+ * @version 1.0
+ */
+
+/**
+ * @file native_drm_base.h
+ * @brief Defines the Drm MediaKeySystem and MediaKeySession struct.
+ * @library libnative_drm.z.so
+ * @Syscap SystemCapability.Multimedia.Drm.Core
+ * @since 11
+ * @version 1.0
  */
 
 #ifndef NATIVE_DRM_BASE_H
@@ -24,9 +42,9 @@
 extern "C" {
 #endif
 /**
- * @brief OH_MediaKeySystem
- * @syscap SystemCapability.Multimedia.Drm.Core
- * @since 9
+ * @brief MediaKeySystem struct.
+ *
+ * @since 11
  * @version 1.0
  */
 struct OH_MediaKeySystem : public OHOS::RefBase {
@@ -35,25 +53,14 @@ struct OH_MediaKeySystem : public OHOS::RefBase {
 };
 
 /**
- * @brief OH_MediaKeySession
- * @syscap SystemCapability.Multimedia.Drm.Core
- * @since 9
+ * @brief MediaKeySession struct.
+ *
+ * @since 11
  * @version 1.0
  */
 struct OH_MediaKeySession : public OHOS::RefBase {
     OH_MediaKeySession() = default;
     virtual ~OH_MediaKeySession() = default;
-};
-
-/**
- * @brief OH_MediaDecryptModule
- * @syscap SystemCapability.Multimedia.Drm.Core
- * @since 9
- * @version 1.0
- */
-struct OH_MediaDecryptModule : public OHOS::RefBase {
-    OH_MediaDecryptModule() = default;
-    virtual ~OH_MediaDecryptModule() = default;
 };
 
 #ifdef __cplusplus
