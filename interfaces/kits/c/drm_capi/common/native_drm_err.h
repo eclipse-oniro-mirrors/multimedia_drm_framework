@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -47,65 +47,61 @@ extern "C" {
  * @version 1.0
  */
 typedef enum OH_DrmErrCode {
-    /**
+    /* *
      * the operation completed successfully.
      */
     DRM_ERR_ERROR = -1,
     DRM_ERR_OK = 0,
-    /**
+    /* *
      * no memory.
      */
     DRM_ERR_NO_MEMORY,
-    /**
+    /* *
      * opertation not be permitted.
      */
     DRM_ERR_OPERATION_NOT_PERMITTED,
-    /**
+    /* *
      * invalid argument.
      */
     DRM_ERR_INVALID_VAL,
-    /**
+    /* *
      * IO error.
      */
     DRM_ERR_IO,
-    /**
+    /* *
      * network timeout.
      */
     DRM_ERR_TIMEOUT,
-    /**
+    /* *
      * unknown error.
      */
     DRM_ERR_UNKNOWN,
-    /**
+    /* *
      * drm service died.
      */
     DRM_ERR_SERVICE_DIED,
-    /**
+    /* *
      * not support this operation in this state.
      */
     DRM_ERR_INVALID_STATE,
-    /**
+    /* *
      * unsupport interface.
      */
     DRM_ERR_UNSUPPORTED,
-    /**
+    /* *
      * Meet max MediaKeySystem num limit.
      */
     DRM_ERR_MAX_SYSTEM_NUM_REACHED,
-    /**
+    /* *
      * Meet max MediaKeySession num limit.
      */
     DRM_ERR_MAX_SESSION_NUM_REACHED,
-    /**
+    /* *
      * extend err start.
      */
     DRM_ERR_EXTEND_START = 100,
 } OH_DrmErrCode;
 
-typedef enum {
-    DRM_BOOL_FALSE = 0,
-    DRM_BOOL_TRUE = 1
-} OH_DrmBool;
 
 #ifdef __cplusplus
 }

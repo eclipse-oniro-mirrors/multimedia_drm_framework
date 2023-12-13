@@ -40,6 +40,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include "native_drm_err.h"
 #include "native_drm_common.h"
 
@@ -65,7 +66,7 @@ typedef OH_DrmErrCode (*OH_MediaKeySystemCallback)(OH_DRM_ListenerType eventType
  * @since 11
  * @version 1.0
  */
-OH_DrmBool OH_MediaKeySystem_IsSupported(const char *uuid);
+bool OH_MediaKeySystem_IsSupported(const char *uuid);
 /**
  * @brief Query if media key system is supported.
  * @param name Used to point a Digital Right Management solution.
@@ -74,7 +75,7 @@ OH_DrmBool OH_MediaKeySystem_IsSupported(const char *uuid);
  * @since 11
  * @version 1.0
  */
-OH_DrmBool OH_MediaKeySystem_IsSupported2(const char *uuid, const char *mimeType);
+bool OH_MediaKeySystem_IsSupported2(const char *uuid, const char *mimeType);
 /**
  * @brief Query if media key system is supported.
  * @param name Used to point a Digital Right Management solution.
@@ -84,8 +85,8 @@ OH_DrmBool OH_MediaKeySystem_IsSupported2(const char *uuid, const char *mimeType
  * @since 11
  * @version 1.0
  */
-OH_DrmBool OH_MediaKeySystem_IsSupported3(const char *uuid, const char *mimeType,
-    OH_DRM_ContentProtectionLevel cSecurityLevel);
+bool OH_MediaKeySystem_IsSupported3(const char *uuid, const char *mimeType,
+    OH_DRM_ContentProtectionLevel SecurityLevel);
 /**
  * @brief Creates a media key system instance from the name.
  * @param name Secifies which drm system will be created by name.
@@ -116,7 +117,7 @@ OH_DrmErrCode OH_MediaKeySystem_SetConfigurationString(OH_MediaKeySystem *mediaK
  * @version 1.0
  */
 OH_DrmErrCode OH_MediaKeySystem_GetConfigurationString(OH_MediaKeySystem *mediaKeySystem, const char *configName,
-    char *value);
+    char **value, int32_t *valueLen);
 /**
  * @brief Set media key system configuration value by name.
  * @param mediaKeySystem Media key system instance.
@@ -138,7 +139,7 @@ OH_DrmErrCode OH_MediaKeySystem_SetConfigurationByteArray(OH_MediaKeySystem *med
  * @version 1.0
  */
 OH_DrmErrCode OH_MediaKeySystem_GetConfigurationByteArray(OH_MediaKeySystem *mediaKeySystem, const char *configName,
-    unsigned char *value, uint32_t *valueLen);
+    unsigned char **value, uint32_t *valueLen);
 /**
  * @brief Get media key system statistics info.
  * @param mediaKeySystem Media key system instance.
@@ -156,7 +157,8 @@ OH_DrmErrCode OH_MediaKeySystem_GetStatistics(OH_MediaKeySystem *mediaKeySystem,
  * @since 11
  * @version 1.0
  */
-OH_SecurityLevel OH_MediaKeySystem_GetMaxContentProtectionLevel(OH_MediaKeySystem *mediaKeySystem);
+OH_DrmErrCode OH_MediaKeySystem_GetMaxContentProtectionLevel(OH_MediaKeySystem *mediaKeySystem,
+    OH_DRM_ContentProtectionLevel *contentProtectionLevel);
 /**
  * @brief Set media key system event callback.
  * @param mediaKeySystem Media key system instance.
@@ -223,8 +225,8 @@ OH_DrmErrCode OH_MediaKeySystem_GetOfflineMediaKeyIds(OH_MediaKeySystem *mediaKe
  * @since 11
  * @version 1.0
  */
-OH_OfflineLicenseStatus OH_GetOfflineLicenseStatus(OH_MediaKeySystem *mediaKeySystem, uint8_t *licenseId,
-    size_t licenseIdLen);
+OH_DrmErrCode OH_MediaKeySystem_GetOfflineMediaKeyStatus(OH_MediaKeySystem *mediaKeySystem,
+    OH_DRM_Uint8Buffer *mediaKeyId, OH_DRM_OfflineMediaKeyStatus *status);
 
 /**
  * @brief Clear an offline media key by id.
@@ -236,7 +238,6 @@ OH_OfflineLicenseStatus OH_GetOfflineLicenseStatus(OH_MediaKeySystem *mediaKeySy
  */
 OH_DrmErrCode OH_MediaKeySystem_ClearOfflineMediaKeys(OH_MediaKeySystem *mediaKeySystem,
     OH_DRM_Uint8Buffer *mediaKeyId);
-OH_DrmErrCode OH_RemoveOfflineLicense(OH_MediaKeySystem *mediaKeySystem, uint8_t *licenseId, size_t licenseIdLen);
 /**
  * @brief Get certificate status of media key system.
  * @param mediaKeySystem Media key system instance.
@@ -246,8 +247,8 @@ OH_DrmErrCode OH_RemoveOfflineLicense(OH_MediaKeySystem *mediaKeySystem, uint8_t
  * @version 1.0
  */
 
-OH_DRM_CertificateStatus OH_MediaKeySystem_GetCertificateStatus(OH_MediaKeySystem *mediaKeySystem);
-
+OH_DrmErrCode OH_MediaKeySystem_GetCertificateStatus(OH_MediaKeySystem *mediaKeySystem,
+    OH_DRM_CertificateStatus *certStatus);
 /**
  * @brief Destroy a media key system instance.
  * @param mediaKeySystem Secifies which media key system instance will be destroyed.

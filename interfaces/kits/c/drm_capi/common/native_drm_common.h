@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,37 +43,37 @@ extern "C" {
 #endif
 
 /**
-  * Enumerates event types of listener.
-  * @brief Content potection level.
-  * @since 11
-  * @version 1.0
-*/
+ * Enumerates event types of listener.
+ * @brief Content potection level.
+ * @since 11
+ * @version 1.0
+ */
 typedef enum OH_DRM_ListenerType {
-    /**
+    /* *
      * DRM event base.
      */
     LISTENER_DRM_EVENT = 200,
-    /**
+    /* *
      * Provision required event.
      */
     LISTENER_PROVISION_REQUIRED = 201,
-    /**
+    /* *
      * Media key required event.
      */
     LISTENER_KEY_REQUIRED = 202,
-    /**
+    /* *
      * Media key expired event.
      */
     LISTENER_KEY_EXPIRED = 203,
-    /**
+    /* *
      * Vendor defined event.
      */
     LISTENER_VENDOR_DEFINED = 204,
-    /**
+    /* *
      * Expiration update event.
      */
     LISTENER_EXPIRATION_UPDATE = 206,
-  } OH_DRM_ListenerType;
+} OH_DRM_ListenerType;
 
 /**
  * @brief Content potection level.
@@ -81,37 +81,27 @@ typedef enum OH_DRM_ListenerType {
  * @version 1.0
  */
 typedef enum OH_DRM_ContentProtectionLevel {
-    /**
+    /* *
      * Content potection level unknown.
      */
     CONTENT_PROTECTION_LEVEL_UNKNOWN = 0,
-    /**
+    /* *
      * Content potection level software crypto.
      */
     CONTENT_PROTECTION_LEVEL_SW_CRYPTO,
-    /**
+    /* *
      * Content potection level hardware crypto.
      */
     CONTENT_PROTECTION_LEVEL_HW_CRYPTO,
-    /**
+    /* *
      * Content potection level enhanced hardware crypto.
      */
     CONTENT_PROTECTION_LEVEL_ENHANCED_HW_CRYPTO,
-    /**
+    /* *
      * Content potection level max stub.
      */
     CONTENT_PROTECTION_LEVEL_MAX,
 } OH_DRM_ContentProtectionLevel;
-
-typedef enum {
-    SECURITY_LEVEL_UNKNOWN = 0,
-    SECURITY_LEVEL_SW_CRYPTO = 1,
-    SECURITY_LEVEL_SW_DECODE = 2,
-    SECURITY_LEVEL_HW_CRYPTO = 3,
-    SECURITY_LEVEL_HW_DECODE = 4,
-    SECURITY_LEVEL_HW_ALL = 5,
-    SECURITY_LEVEL_MAX = 6,
-} OH_SecurityLevel;
 
 /**
  * @brief Media key type.
@@ -119,11 +109,11 @@ typedef enum {
  * @version 1.0
  */
 typedef enum OH_DRM_MediaKeyType {
-    /**
+    /* *
      * Media key type offline.
      */
     MEDIA_KEY_TYPE_OFFLINE = 0,
-    /**
+    /* *
      * Media key type online
      */
     MEDIA_KEY_TYPE_ONLINE,
@@ -135,27 +125,27 @@ typedef enum OH_DRM_MediaKeyType {
  * @version 1.0
  */
 typedef enum OH_DRM_MediaKeyRequestType {
-    /**
+    /* *
      * Media key request type unknown.
      */
     MEDIA_KEY_REQUEST_TYPE_UNKNOWN = 0,
-    /**
+    /* *
      * Media key request type initial.
      */
     MEDIA_KEY_REQUEST_TYPE_INITIAL,
-    /**
+    /* *
      * Media key request type renewal.
      */
     MEDIA_KEY_REQUEST_TYPE_RENEWAL,
-    /**
+    /* *
      * Media key request type release.
      */
     MEDIA_KEY_REQUEST_TYPE_RELEASE,
-    /**
+    /* *
      * Media key request type none.
      */
     MEDIA_KEY_REQUEST_TYPE_NONE,
-    /**
+    /* *
      * Media key request type update.
      */
     MEDIA_KEY_REQUEST_TYPE_UPDATE,
@@ -167,15 +157,15 @@ typedef enum OH_DRM_MediaKeyRequestType {
  * @version 1.0
  */
 typedef enum OH_DRM_OfflineMediaKeyStatus {
-    /**
+    /* *
      * Offline media key status unknown.
      */
     OFFLINE_MEDIA_KEY_STATUS_UNKNOWN = 0,
-    /**
+    /* *
      * Offline media key status usable.
      */
     OFFLINE_MEDIA_KEY_STATUS_USABLE,
-    /**
+    /* *
      * Offline media key status inactive.
      */
     OFFLINE_MEDIA_KEY_STATUS_INACTIVE,
@@ -194,27 +184,27 @@ typedef enum {
  * @version 1.0
  */
 typedef enum OH_DRM_MediaKeyStatus {
-    /**
+    /* *
      * Media key is usable.
      */
     MEDIA_KEY_STATUS_USABLE = 0,
-    /**
+    /* *
      * Media key expires.
      */
     MEDIA_KEY_STATUS_EXPIRED,
-    /**
+    /* *
      * Output not allowed with the media key.
      */
     MEDIA_KEY_STATUS_OUTPUT_NOT_ALLOWED,
-    /**
+    /* *
      * Media key is pending.
      */
     MEDIA_KEY_STATUS_PENDING,
-    /**
+    /* *
      * Media key is in internal error.
      */
     MEDIA_KEY_STATUS_INTERNAL_ERROR,
-    /**
+    /* *
      * Media key will be usable in future.
      */
     MEDIA_KEY_STATUS_USABLE_IN_FUTURE,
@@ -226,11 +216,11 @@ typedef enum OH_DRM_MediaKeyStatus {
  * @version 1.0
  */
 typedef struct OH_DRM_Uint8Buffer {
-    /**
+    /* *
      * Unsigned char buffer addr.
      */
     unsigned char *buffer;
-    /**
+    /* *
      * Unsigned char buffer len.
      */
     uint32_t bufferLen;
@@ -242,11 +232,11 @@ typedef struct OH_DRM_Uint8Buffer {
  * @version 1.0
  */
 typedef struct OH_DRM_CharBuffer {
-    /**
+    /* *
      * Char buffer addr.
      */
     char *buffer;
-    /**
+    /* *
      * Char buffer len.
      */
     uint32_t bufferLen;
@@ -289,23 +279,23 @@ typedef struct OH_DRM_Uint8CharBufferPair {
  * @version 1.0
  */
 typedef struct OH_DRM_MediaKeyRequestInfo {
-    /**
+    /* *
      * Offline or online media key type.
      */
     OH_DRM_MediaKeyType type;
-    /**
+    /* *
      * Initial data format as PSSH after base64 encoding.
      */
     OH_DRM_Uint8Buffer data;
-    /**
+    /* *
      * Media content mime type.
      */
     OH_DRM_CharBuffer mimeType;
-    /**
+    /* *
      * OptionsData count.
      */
     uint32_t optionsCount;
-    /**
+    /* *
      * Options data the application set to drm framework.
      */
     OH_DRM_CharBufferPair *optionsData;
@@ -381,15 +371,15 @@ typedef struct OH_DRM_MediaKeyDescription {
  * @version 1.0
  */
 typedef struct OH_DRM_PsshInfo {
-    /**
+    /* *
      * Uuid.
      */
     char uuid[OH_DRM_UUID_LEN];
-    /**
+    /* *
      * Unsigned char PSSH len.
      */
     uint32_t dataLen;
-    /**
+    /* *
      * Unsigned char PSSH data.
      */
     unsigned char *data;
@@ -414,7 +404,7 @@ typedef struct OH_DRM_DrmInfo {
  * @since 11
  * @version 1.0
  */
-typedef void (*OH_DRM_DrmInfoCallback)(OH_DRM_DrmInfo* drmInfo);
+typedef void (*OH_DRM_DrmInfoCallback)(OH_DRM_DrmInfo *drmInfo);
 
 /**
  * @brief Media key system struct.
