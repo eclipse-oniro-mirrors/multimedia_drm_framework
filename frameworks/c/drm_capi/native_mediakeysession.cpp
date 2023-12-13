@@ -63,7 +63,7 @@ OH_DrmErrCode OH_MediaKeySession_ProcessLicenseResponse(OH_MediaKeySession *keyS
 }
 
 static OH_DRM_MediaKeyDescription *MapToClist(
-    std::map<std::string, IMediaKeySessionService::MediaKeySessionKeyStatus> licenseStatus)
+    std::map<std::string, MediaKeySessionKeyStatus> licenseStatus)
 {
     DRM_INFO_LOG("MapToClist start.");
     int32_t max = sizeof(uint32_t);
@@ -96,7 +96,7 @@ OH_DrmErrCode OH_MediaKeySession_CheckMediaKeyStatus(OH_MediaKeySession *mediaKe
     OH_DRM_MediaKeyDescription **mediaKeyDescription)
 {
     DRM_INFO_LOG("OH_MediaKeySession_CheckMediaKeyStatus enter");
-    std::map<std::string, IMediaKeySessionService::MediaKeySessionKeyStatus> licenseStatus;
+    std::map<std::string, MediaKeySessionKeyStatus> licenseStatus;
 
     MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySessoin);
     DRM_CHECK_AND_RETURN_RET_LOG(sessionObject != nullptr, DRM_ERR_INVALID_VAL,
