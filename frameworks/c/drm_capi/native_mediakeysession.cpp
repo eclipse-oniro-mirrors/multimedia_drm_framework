@@ -53,7 +53,7 @@ OH_DrmErrCode OH_MediaKeySession_ProcessLicenseResponse(OH_MediaKeySession *keyS
     int32_t ret = sessionObject->sessionImpl_->ProcessLicenseResponse(keyIdVec, licenseResponseVec);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_INVALID_VAL, "got licenseResponse null!");
     DRM_CHECK_AND_RETURN_RET_LOG(!licenseResponseVec.empty(), DRM_ERR_INVALID_VAL, "got licenseResponse null!");
-    int32_t ret = memcpy_s(keyId, keyIdVec.size(), keyIdVec.data(), keyIdVec.size());
+    ret = memcpy_s(keyId, keyIdVec.size(), keyIdVec.data(), keyIdVec.size());
     if (ret != 0) {
         DRM_ERR_LOG("OH_MediaKeySession_ProcessLicenseResponse memcpy_s faild!");
         return DRM_ERR_ERROR;
@@ -72,7 +72,7 @@ static OH_DRM_MediaKeyDescription *MapToClist(
         max += (sizeof(OH_DRM_EnumBufferPair) + it->first.size());
     }
     OH_DRM_MediaKeyDescription *cArray = (OH_DRM_MediaKeyDescription *)malloc(max);
-    DRM_CHECK_AND_RETURN_RET_LOG(cArray != nullptr, DRM_ERR_INVALID_VAL, "malloc faild!");
+    DRM_CHECK_AND_RETURN_RET_LOG(cArray != nullptr, nullptr, "malloc faild!");
     cArray->mediaKeyCount = licenseStatus.size();
     OH_DRM_EnumBufferPair *dest = &((cArray->description)[0]);
     auto it = licenseStatus.begin();
@@ -82,6 +82,7 @@ static OH_DRM_MediaKeyDescription *MapToClist(
         int32_t ret = memcpy_s(dest[i].name.buffer, it->first.size(), it->first.c_str(), it->first.size());
         if (ret != 0) {
             DRM_ERR_LOG("MapToClist memcpy_s faild!");
+            return nullptr;
         }
         dest[i].value = (int32_t)(it->second);
         offset += it->first.size();
@@ -158,6 +159,10 @@ OH_DrmErrCode OH_MediaKeySession_GenerateOfflineReleaseRequest(OH_MediaKeySessio
         "OH_MediaKeySession_GenerateOfflineReleaseRequest GenerateOfflineReleaseRequest faild!");
     *releaseRequest = (unsigned char *)malloc(ReleaseRequest.size());
     int32_t ret = memcpy_s(*releaseRequest, ReleaseRequest.size(), ReleaseRequest.data(), ReleaseRequest.size());
+    if (ret != 0) {
+        DRM_ERR_LOG("OH_MediaKeySession_GenerateOfflineReleaseRequest memcpy_s faild!");
+        return DRM_ERR_INVALID_VAL;
+    }
     *releaseRequestLen = ReleaseRequest.size();
     DRM_INFO_LOG("OH_MediaKeySession_GenerateOfflineReleaseRequest exit");
     return DRM_ERR_OK;

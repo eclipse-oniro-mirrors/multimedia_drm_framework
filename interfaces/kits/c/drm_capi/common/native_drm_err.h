@@ -104,7 +104,7 @@ typedef enum OH_DrmErrCode {
 
 typedef enum {
     DRM_BOOL_FALSE = 0,
-    DRM_BOOL_TRUE = 1 
+    DRM_BOOL_TRUE = 1
 } OH_DrmBool;
 
 #ifdef __cplusplus

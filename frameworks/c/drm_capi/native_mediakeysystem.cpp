@@ -248,7 +248,7 @@ static OH_DRM_Statistics *vectorToClist(std::vector<IMediaKeySystemService::Meti
         max += (sizeof(OH_DRM_CharBufferPair) + metrics[i].value.size() + metrics[i].name.size());
     }
     OH_DRM_Statistics *cArray = (OH_DRM_Statistics *)malloc(max);
-    DRM_CHECK_AND_RETURN_RET_LOG(cArray != nullptr, cArray, "malloc faild!");
+    DRM_CHECK_AND_RETURN_RET_LOG(cArray != nullptr, nullptr, "malloc faild!");
     cArray->statisticsCount = metrics.size();
     OH_DRM_CharBufferPair *dest = &((cArray->info)[0]);
     for (size_t i = 0; i < metrics.size(); i++) {
@@ -258,7 +258,7 @@ static OH_DRM_Statistics *vectorToClist(std::vector<IMediaKeySystemService::Meti
             metrics[i].name.c_str(), metrics[i].name.size());
         if (ret != 0) {
             DRM_ERR_LOG(" memcpy_s faild!");
-            return DRM_ERR_ERROR;
+            return nullptr;
         }
         offset += metrics[i].name.size();
         dest[i].value.bufferLen = metrics[i].value.size();
@@ -267,7 +267,7 @@ static OH_DRM_Statistics *vectorToClist(std::vector<IMediaKeySystemService::Meti
             metrics[i].value.c_str(), metrics[i].value.size());
         if (ret != 0) {
             DRM_ERR_LOG(" memcpy_s faild!");
-            return DRM_ERR_ERROR;
+            return nullptr;
         }
         offset += metrics[i].value.size();
     }
@@ -335,7 +335,7 @@ OH_DrmErrCode OH_MediaKeySystem_GenerateKeySystemRequest(OH_MediaKeySystem *medi
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_GenerateKeySystemRequest mediaKeySystem is nullptr!");
     *request = (unsigned char *)malloc(requestData.size());
-    int32_t ret = memcpy_s(*request, requestData.size(), requestData.size(),
+    int32_t ret = memcpy_s(*request, requestData.size(),
         requestData.data(), requestData.size());
     if (ret != 0) {
         DRM_ERR_LOG(" memcpy_s faild!");
@@ -343,7 +343,7 @@ OH_DrmErrCode OH_MediaKeySystem_GenerateKeySystemRequest(OH_MediaKeySystem *medi
     }
     *requestLen = requestData.size();
     *defaultUrl = (char *)malloc(defaultUrlData.size());
-    ret = memcpy_s(*defaultUrl, defaultUrlData.size(), defaultUrlData.size(),
+    ret = memcpy_s(*defaultUrl, defaultUrlData.size(),
         defaultUrlData.data(), defaultUrlData.size());
     if (ret != 0) {
         DRM_ERR_LOG(" memcpy_s faild!");
@@ -450,7 +450,7 @@ static OH_DRM_MediakeyIdArray *vectorToC2DArray(std::vector<std::vector<uint8_t>
         int32_t ret = memcpy_s(dest[i].buffer, licenseIds[i].size(), licenseIds[i].data(), licenseIds[i].size());
         if (ret != 0) {
             DRM_ERR_LOG(" memcpy_s faild!");
-            return DRM_ERR_ERROR;
+            return nullptr;
         }
         offset += licenseIds[i].size();
     }
