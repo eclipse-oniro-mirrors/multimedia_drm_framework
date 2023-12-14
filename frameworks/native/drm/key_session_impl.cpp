@@ -74,7 +74,8 @@ int32_t MediaKeySessionImpl::GenerateLicenseRequest(IMediaKeySessionService::Lic
     return DRM_OK;
 }
 
-int32_t MediaKeySessionImpl::ProcessLicenseResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &licenseResponse)
+int32_t MediaKeySessionImpl::ProcessLicenseResponse(std::vector<uint8_t> &licenseId,
+    std::vector<uint8_t> &licenseResponse)
 {
     DRM_INFO_LOG("MediaKeySessionImpl::ProcessLicenseResponse enter.");
     std::lock_guard<std::mutex> lock(mutex_);
