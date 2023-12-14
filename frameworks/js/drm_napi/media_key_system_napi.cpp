@@ -748,7 +748,8 @@ napi_value MediaKeySystemNapi::GetOfflineLicenseStatus(napi_env env, napi_callba
         IMediaKeySessionService::OFFLINELICENSESTATUS_UNKNOWN;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
     if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->GetOfflineLicenseStatus(licenseIdVec, offlineLicenseStatus);
+        int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->GetOfflineLicenseStatus(licenseIdVec,
+            offlineLicenseStatus);
         if (ret != napi_ok) {
             DRM_ERR_LOG("napi GetOfflineLicenseStatus faild!");
             return nullptr;
