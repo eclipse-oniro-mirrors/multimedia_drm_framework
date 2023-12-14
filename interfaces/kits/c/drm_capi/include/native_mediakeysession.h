@@ -38,6 +38,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include "native_drm_err.h"
 #include "native_drm_common.h"
 
@@ -63,7 +64,7 @@ typedef OH_DrmErrCode (*OH_MediaKeySessionEventCallback)(OH_DRM_ListenerType eve
  * @since 11
  * @version 1.0
  */
-typedef OH_DrmErrCode (*OH_MediaKeySessionKeyChangeCallback)(OH_DRM_KeysInfo *keysInfo, int32_t hasNewGoodKeys);
+typedef OH_DrmErrCode (*OH_MediaKeySessionKeyChangeCallback)(OH_DRM_KeysInfo *keysInfo, bool hasNewGoodKeys);
 
 /**
  * @brief OH_MediaKeySessionCallback struct, used to listen event like key expired and key change etc..
@@ -103,8 +104,8 @@ OH_DrmErrCode OH_MediaKeySession_GenerateLicenseRequest(OH_MediaKeySession *medi
  * @since 11
  * @version 1.0
  */
-OH_DrmErrCode OH_MediaKeySession_ProcessLicenseResponse(OH_MediaKeySession *keySession, unsigned char *response,
-    uint32_t responseLen, unsigned char *keyId, uint32_t *keyIdLen);
+OH_DrmErrCode OH_MediaKeySession_ProcessMediaKeyResponse(OH_MediaKeySession *keySession, OH_DRM_Uint8Buffer *response,
+    unsigned char **mediaKeyId, int32_t *mediaKeyIdLen);
 
 /**
  * @brief Check media key status.
@@ -124,7 +125,7 @@ OH_DrmErrCode OH_MediaKeySession_CheckMediaKeyStatus(OH_MediaKeySession *mediaKe
  * @since 11
  * @version 1.0
  */
-OH_DrmErrCode OH_MediaKeySession_RemoveLicense(OH_MediaKeySession *keySession);
+OH_DrmErrCode OH_MediaKeySession_ClearMediaKeys(OH_MediaKeySession *mediaKeySessoin);
 /**
  * @brief Generate offline media key release request.
  * @param mediaKeySession Media key session instance.
@@ -146,8 +147,8 @@ OH_DrmErrCode OH_MediaKeySession_GenerateOfflineReleaseRequest(OH_MediaKeySessio
  * @since 11
  * @version 1.0
  */
-OH_DrmErrCode OH_MediaKeySession_ProcessOfflineReleaseResponse(OH_MediaKeySession *keySession, uint8_t *licenseId,
-    size_t licenseIdLen, uint8_t *response, size_t responseLen);
+OH_DrmErrCode OH_MediaKeySession_ProcessOfflineReleaseResponse(OH_MediaKeySession *mediaKeySessoin,
+    OH_DRM_Uint8Buffer *mediaKeyId, OH_DRM_Uint8Buffer *releaseReponse);
 
 /**
  * @brief Restore offline media keys by ID.
@@ -157,8 +158,8 @@ OH_DrmErrCode OH_MediaKeySession_ProcessOfflineReleaseResponse(OH_MediaKeySessio
  * @since 11
  * @version 1.0
  */
-OH_DrmErrCode OH_MediaKeySession_RestoreOfflineLicense(OH_MediaKeySession *keySession, uint8_t *licenseId,
-    size_t licenseIdLen);
+OH_DrmErrCode OH_MediaKeySession_RestoreOfflineMediaKeys(OH_MediaKeySession *mediaKeySessoin,
+    OH_DRM_Uint8Buffer *mediaKeyId);
 
 /**
  * @brief Get content protection level of the session.
@@ -168,7 +169,8 @@ OH_DrmErrCode OH_MediaKeySession_RestoreOfflineLicense(OH_MediaKeySession *keySe
  * @since 11
  * @version 1.0
  */
-OH_SecurityLevel OH_MediaKeySession_GetContentProtectionLevel(OH_MediaKeySession *mediaKeySessoin);
+OH_DrmErrCode OH_MediaKeySession_GetContentProtectionLevel(OH_MediaKeySession *mediaKeySessoin,
+    OH_DRM_ContentProtectionLevel *contentProtectionLevel);
 
 /**
  * @brief Whether the encrypted content require a secure decoder or not.
@@ -179,7 +181,8 @@ OH_SecurityLevel OH_MediaKeySession_GetContentProtectionLevel(OH_MediaKeySession
  * @since 11
  * @version 1.0
  */
-OH_DrmBool OH_MediaKeySession_RequireSecureDecoderModule(OH_MediaKeySession *keySession, const char *mimeType);
+OH_DrmErrCode OH_MediaKeySession_RequireSecureDecoderModule(OH_MediaKeySession *mediaKeySessoin, const char *mimeType,
+    bool *status);
 
 /**
  * @brief Set media key session event callback.

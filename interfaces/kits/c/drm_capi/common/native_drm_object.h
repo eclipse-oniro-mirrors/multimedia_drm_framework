@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,20 +26,15 @@
 #include "media_key_system_factory_impl.h"
 
 struct MediaKeySystemObject : public OH_MediaKeySystem {
-    explicit MediaKeySystemObject(const OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> &impl)
-        : systemImpl_(impl)
-    {
-    }
+    explicit MediaKeySystemObject(const OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> &impl) : systemImpl_(impl) {}
     ~MediaKeySystemObject() = default;
 
     const OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> systemImpl_ = nullptr;
 };
 
 struct MediaKeySessionObject : public OH_MediaKeySession {
-    explicit MediaKeySessionObject(const OHOS::sptr<OHOS::DrmStandard::MediaKeySessionImpl> &impl)
-        : sessionImpl_(impl)
-    {
-    }
+    explicit MediaKeySessionObject(const OHOS::sptr<OHOS::DrmStandard::MediaKeySessionImpl> &impl) : sessionImpl_(impl)
+    {}
     ~MediaKeySessionObject() = default;
 
     const OHOS::sptr<OHOS::DrmStandard::MediaKeySessionImpl> sessionImpl_ = nullptr;
