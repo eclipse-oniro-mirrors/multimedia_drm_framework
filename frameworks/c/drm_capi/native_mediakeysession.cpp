@@ -29,10 +29,68 @@
 using namespace OHOS::DrmStandard;
 
 
-OH_DrmErrCode OH_MediaKeySession_GenerateLicenseRequest(OH_MediaKeySession *mediaKeySession,
-    OH_DRM_MediaKeyRequestInfo *info, unsigned char **mediaKeyRequest, int32_t *mediaKeyRequestLen)
+static OH_DRM_MediaKeyRequest *DealMediaKeyRequest(IMediaKeySessionService::LicenseRequest &licenseRequest)
+{
+    int max = 0;
+    int offset = sizeof(OH_DRM_MediaKeyRequest);
+    max = max + sizeof(OH_DRM_MediaKeyRequest) + licenseRequest.mDefaultURL.size() + licenseRequest.mData.size();
+    OH_DRM_MediaKeyRequest *mediaKeyRequest = (OH_DRM_MediaKeyRequest *)malloc(max);
+    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeyRequest != nullptr, nullptr, "mediaKeyRequest is nullptr!");
+    mediaKeyRequest->type = (OH_DRM_MediaKeyRequestType)(licenseRequest.requestType);
+
+    mediaKeyRequest->data.buffer = (unsigned char *)((uint8_t *)mediaKeyRequest + offset);
+    int ret = memcpy_s(mediaKeyRequest->data.buffer, licenseRequest.mData.size(), licenseRequest.mData.data(),
+        licenseRequest.mData.size());
+    if (ret != 0) {
+        DRM_ERR_LOG("memcpy_s faild!");
+        free(mediaKeyRequest);
+        mediaKeyRequest = NULL;
+        return nullptr;
+    }
+    mediaKeyRequest->data.bufferLen = licenseRequest.mData.size();
+    offset += licenseRequest.mData.size();
+    mediaKeyRequest->defaultURL.buffer = (char *)((uint8_t *)mediaKeyRequest + offset);
+    ret = memcpy_s(mediaKeyRequest->defaultURL.buffer, licenseRequest.mDefaultURL.size(),
+        licenseRequest.mDefaultURL.data(), licenseRequest.mDefaultURL.size());
+    if (ret != 0) {
+        DRM_ERR_LOG("memcpy_s faild!");
+        free(mediaKeyRequest);
+        mediaKeyRequest = NULL;
+        return nullptr;
+    }
+    mediaKeyRequest->defaultURL.bufferLen = licenseRequest.mDefaultURL.size();
+    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeyRequest != nullptr, nullptr, "mediaKeyRequest is nullptr!");
+    return mediaKeyRequest;
+}
+
+OH_DrmErrCode OH_MediaKeySession_GenerateMediaKeyRequest(OH_MediaKeySession *mediaKeySession,
+    OH_DRM_MediaKeyRequestInfo *info, OH_DRM_MediaKeyRequest **mediaKeyRequest)
 {
     DRM_INFO_LOG("OH_MediaKeySession_GenerateLicenseRequest enter");
+    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySession != nullptr, DRM_ERR_INVALID_VAL, "mediaKeySession is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(info != nullptr, DRM_ERR_INVALID_VAL, "info is nullptr!");
+    IMediaKeySessionService::LicenseRequestInfo licenseRequestInfo;
+    IMediaKeySessionService::LicenseRequest licenseRequest;
+    licenseRequest.requestType = OHOS::DrmStandard::IMediaKeySessionService::REQUEST_TYPE_RELEASE;
+    licenseRequestInfo.licenseType = (IMediaKeySessionService::LicenseType)info->type;
+    licenseRequestInfo.mimeType = std::string(info->mimeType.buffer, info->mimeType.buffer + info->mimeType.bufferLen);
+    std::vector<uint8_t> initDataStr(info->data.buffer, info->data.buffer + info->data.bufferLen);
+    licenseRequestInfo.initData = initDataStr;
+    for (int i = 0; i < info->optionsCount; i++) {
+        std::string optionsname(info->optionsData->name.buffer,
+            info->optionsData->name.buffer + info->optionsData->name.bufferLen);
+        std::string optionsvalue(info->optionsData->value.buffer,
+            info->optionsData->value.buffer + info->optionsData->value.bufferLen);
+        licenseRequestInfo.optionalData.insert(std::make_pair(optionsname, optionsvalue));
+    }
+
+    MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySession);
+    DRM_CHECK_AND_RETURN_RET_LOG(sessionObject != nullptr, DRM_ERR_INVALID_VAL, "sessionObject is nullptr!");
+    int ret = sessionObject->sessionImpl_->GenerateLicenseRequest(licenseRequestInfo, licenseRequest);
+    DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySession_GenerateMediaKeyRequest call Failed!");
+    *mediaKeyRequest = DealMediaKeyRequest(licenseRequest);
+    DRM_CHECK_AND_RETURN_RET_LOG(*mediaKeyRequest != nullptr, DRM_ERR_INVALID_VAL, "*mediaKeyRequest is nullptr!");
     DRM_INFO_LOG("OH_MediaKeySession_GenerateLicenseRequest exit");
     return DRM_ERR_OK;
 }
