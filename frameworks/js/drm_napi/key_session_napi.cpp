@@ -446,7 +446,8 @@ napi_value MediaKeySessionNapi::GenerateOfflineReleaseRequest(napi_env env, napi
 
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
     if (status == napi_ok && keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr) {
-        int32_t ret = keySessionNapi->keySessionImpl_->GenerateOfflineReleaseRequest(licenseIdVec, releaseRequest);
+        int32_t ret = keySessionNapi->keySessionImpl_->GenerateOfflineReleaseRequest(licenseIdVec,
+            releaseRequest);
         DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr, "MediaKeySessionNapi GenerateOfflineReleaseRequest call Failed!");
     } else {
         DRM_ERR_LOG("MediaKeySessionNapi ProcessLicenseResponse call Failed!");
