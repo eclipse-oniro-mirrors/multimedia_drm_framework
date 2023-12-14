@@ -394,7 +394,8 @@ napi_value MediaKeySessionNapi::ProcessLicenseResponse(napi_env env, napi_callba
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
     if (status == napi_ok && keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr) {
         int32_t ret = keySessionNapi->keySessionImpl_->ProcessLicenseResponse(licenseId, licenseResponse);
-        DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr, "MediaKeySessionNapi ProcessLicenseResponse call Failed!");
+        DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr,
+            "MediaKeySessionNapi ProcessLicenseResponse call Failed!");
         size_t licenseIdLen = licenseId.size();
         NAPI_CALL(env, napi_create_array(env, &result));
         for (size_t i = 0; i < licenseIdLen; i++) {
@@ -597,7 +598,8 @@ napi_value MediaKeySessionNapi::RestoreOfflineLicense(napi_env env, napi_callbac
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
     if (status == napi_ok && keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr) {
         int32_t ret = keySessionNapi->keySessionImpl_->RestoreOfflineLicense(licenseIdVec);
-        DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr, "MediaKeySessionNapi RestoreOfflineLicense call Failed!");
+        DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr,
+            "MediaKeySessionNapi RestoreOfflineLicense call Failed!");
     } else {
         DRM_ERR_LOG("MediaKeySessionNapi RestoreOfflineLicense call Failed!");
     }
