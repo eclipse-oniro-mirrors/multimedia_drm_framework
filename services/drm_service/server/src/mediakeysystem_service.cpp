@@ -188,9 +188,7 @@ int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::Se
 
     int32_t pid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemService CreateMediaKeySession GetCallingPID: %{public}d", pid);
-    auto fn = [&](std::set<sptr<MediaKeySessionService>> &value) -> void {
-        value.insert(keySessionService);
-    };
+    auto fn = [&](std::set<sptr<MediaKeySessionService>> &value) -> void { value.insert(keySessionService); };
     sessionsForPid_.ChangeValueByLambda(pid, fn);
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " is Current keySessionService", FAKE_POINTER(keySessionService.GetRefPtr()));
     keySessionProxy = keySessionService;
@@ -358,6 +356,5 @@ int32_t MediaKeySystemService::SendEvent(OHOS::HDI::Drm::V1_0::EventType eventTy
     DRM_INFO_LOG("MediaKeySystemService:: SendEvent failed because callback is nullptr");
     return DRM_OPERATION_NOT_ALLOWED;
 }
-
 } // DrmStandard
 } // OHOS

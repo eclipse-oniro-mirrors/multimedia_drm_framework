@@ -22,7 +22,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 class MediaKeySystemCallbackNapi : public MediaKeySystemImplCallback {
 public:
     explicit MediaKeySystemCallbackNapi();
@@ -35,7 +34,6 @@ private:
     std::mutex mutex_;
     std::map<std::string, sptr<CallBackPair>> callbackMap_;
 };
-
 } // namespace DrmStandard
 } // namespace OHOS
 

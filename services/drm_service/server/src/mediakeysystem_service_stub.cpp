@@ -45,11 +45,11 @@ static int32_t ProcessSetConfigurationString(MediaKeySystemServiceStub *stub, Me
 static int32_t ProcessGetConfigurationString(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
-static int32_t ProcessSetConfigurationByteArray(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
-    MessageOption &option);
+static int32_t ProcessSetConfigurationByteArray(MediaKeySystemServiceStub *stub, MessageParcel &data,
+    MessageParcel &reply, MessageOption &option);
 
-static int32_t ProcessGetConfigurationByteArray(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
-    MessageOption &option);
+static int32_t ProcessGetConfigurationByteArray(MediaKeySystemServiceStub *stub, MessageParcel &data,
+    MessageParcel &reply, MessageOption &option);
 
 static int32_t ProcessGetMetircs(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
@@ -66,8 +66,8 @@ static int32_t ProcessGetCertificateStatus(MediaKeySystemServiceStub *stub, Mess
 static int32_t ProcessGetOfflineLicenseIds(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
-static int32_t ProcessGetOfflineLicenseStatus(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
-    MessageOption &option);
+static int32_t ProcessGetOfflineLicenseStatus(MediaKeySystemServiceStub *stub, MessageParcel &data,
+    MessageParcel &reply, MessageOption &option);
 
 static int32_t ProcessRemoveOfflineLicense(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
@@ -189,8 +189,8 @@ static int32_t ProcessGetConfigurationString(MediaKeySystemServiceStub *stub, Me
     return ret;
 }
 
-static int32_t ProcessSetConfigurationByteArray(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
-    MessageOption &option)
+static int32_t ProcessSetConfigurationByteArray(MediaKeySystemServiceStub *stub, MessageParcel &data,
+    MessageParcel &reply, MessageOption &option)
 {
     DRM_INFO_LOG("bMediaKeySystemServiceStub MEDIA_KEY_SYSTEM_SETCONFIGURATION enter.");
     std::string configName = data.ReadString();
@@ -204,8 +204,8 @@ static int32_t ProcessSetConfigurationByteArray(MediaKeySystemServiceStub *stub,
     return ret;
 }
 
-static int32_t ProcessGetConfigurationByteArray(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
-    MessageOption &option)
+static int32_t ProcessGetConfigurationByteArray(MediaKeySystemServiceStub *stub, MessageParcel &data,
+    MessageParcel &reply, MessageOption &option)
 {
     DRM_INFO_LOG("bMediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GETCONFIGURATION enter.");
     std::string configName = data.ReadString();
@@ -297,8 +297,8 @@ static int32_t ProcessGetOfflineLicenseIds(MediaKeySystemServiceStub *stub, Mess
     return ret;
 }
 
-static int32_t ProcessGetOfflineLicenseStatus(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
-    MessageOption &option)
+static int32_t ProcessGetOfflineLicenseStatus(MediaKeySystemServiceStub *stub, MessageParcel &data,
+    MessageParcel &reply, MessageOption &option)
 {
     DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GET_OFFLINEKEY_STATUS enter.");
     std::vector<uint8_t> licenseId;

@@ -49,8 +49,7 @@ public:
     int32_t ProcessLicenseResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &licenseResponse);
     int32_t GenerateOfflineReleaseRequest(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &releaseRequest);
     int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &releaseReponse);
-    int32_t CheckLicenseStatus(std::map<std::string,
-        MediaKeySessionKeyStatus>& licenseStatus);
+    int32_t CheckLicenseStatus(std::map<std::string, MediaKeySessionKeyStatus> &licenseStatus);
     int32_t RestoreOfflineLicense(std::vector<uint8_t> &licenseId);
 
     int32_t RemoveLicense();

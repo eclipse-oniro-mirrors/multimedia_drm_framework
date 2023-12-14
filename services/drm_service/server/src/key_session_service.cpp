@@ -93,8 +93,8 @@ int32_t MediaKeySessionService::GenerateLicenseRequest(IMediaKeySessionService::
     hdiLicenseRequestInfo.licenseType = (OHOS::HDI::Drm::V1_0::LicenseType)licenseRequestInfo.licenseType;
     hdiLicenseRequestInfo.mimeType = licenseRequestInfo.mimeType;
     hdiLicenseRequestInfo.initData.assign(licenseRequestInfo.initData.begin(), licenseRequestInfo.initData.end());
-    for (std::map<std::string, std::string>::iterator it = licenseRequestInfo.optionalData.begin(); it !=
-	    licenseRequestInfo.optionalData.end(); ++it) {
+    for (std::map<std::string, std::string>::iterator it = licenseRequestInfo.optionalData.begin();
+        it != licenseRequestInfo.optionalData.end(); ++it) {
         hdiLicenseRequestInfo.optionalData.insert(std::make_pair(it->first, it->second));
     }
     OHOS::HDI::Drm::V1_0::LicenseRequest hdiLicenseRequest;

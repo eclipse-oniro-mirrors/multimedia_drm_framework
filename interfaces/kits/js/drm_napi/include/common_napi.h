@@ -50,7 +50,6 @@ private:
     napi_env env_;
     napi_ref callback_;
 };
-
 } // namespace DrmStandard
 } // namespace OHOS
 

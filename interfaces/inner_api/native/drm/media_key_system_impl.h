@@ -31,12 +31,11 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 class MediaKeySystemImplCallback : public RefBase {
 public:
     MediaKeySystemImplCallback() = default;
     virtual ~MediaKeySystemImplCallback() = default;
-    virtual void SendEvent(const std::string event, uint32_t extra, const std::vector<uint8_t> data)  = 0;
+    virtual void SendEvent(const std::string event, uint32_t extra, const std::vector<uint8_t> data) = 0;
 };
 
 class MediaKeySystemImpl : public RefBase {
@@ -92,7 +91,6 @@ private:
     sptr<MediaKeySystemImpl> systemImpl_;
     std::unordered_map<int32_t, std::string> eventMap_;
 };
-
 } // DrmStandard
 } // OHOS
 #endif // OHOS_DRM_MEDIA_KEY_SYSTEMP_IMPL_H

@@ -37,7 +37,8 @@ int32_t MediaKeySessionServiceProxy::CreateMediaDecryptModule(sptr<IMediaDecrypt
         return IPC_PROXY_ERR;
     }
 
-    int32_t error = MediaKeySessionServiceProxy::Remote()->SendRequest(CREATE_MEDIA_DECRYPT_MODULE, data, reply, option);
+    int32_t error =
+        MediaKeySessionServiceProxy::Remote()->SendRequest(CREATE_MEDIA_DECRYPT_MODULE, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySessionServiceProxy::CreateMediaDecryptModule failed, error: %{public}d", error);
         return error;
@@ -66,7 +67,7 @@ int32_t MediaKeySessionServiceProxy::GetSecurityLevel(IMediaKeySessionService::S
         return IPC_PROXY_ERR;
     }
 
-    int error = Remote()->SendRequest(MEDIA_KEY_SESSION_GETSECURITYLEVEL, data, reply, option);
+    int32_t error = Remote()->SendRequest(MEDIA_KEY_SESSION_GETSECURITYLEVEL, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySessionServiceProxy GetSecurityLevel failed, error: %{public}d", error);
         return error;
@@ -212,8 +213,8 @@ int32_t MediaKeySessionServiceProxy::GenerateOfflineReleaseRequest(std::vector<u
         }
     }
 
-    int32_t error = MediaKeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_GENERATE_OFFLINE_RELEASE_REQUEST,
-        data, reply, option);
+    int32_t error = MediaKeySessionServiceProxy::Remote()->SendRequest(
+        MEDIA_KEY_SESSION_GENERATE_OFFLINE_RELEASE_REQUEST, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySessionServiceProxy::GenerateOfflineReleaseRequest failed, error: %{public}d", error);
         return error;
@@ -259,8 +260,8 @@ int32_t MediaKeySessionServiceProxy::ProcessOfflineReleaseResponse(std::vector<u
             return IPC_PROXY_ERR;
         }
     }
-    int32_t error = MediaKeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_PROCESS_OFFLINE_RELEASE_RESPONSE,
-        data, reply, option);
+    int32_t error = MediaKeySessionServiceProxy::Remote()->SendRequest(
+        MEDIA_KEY_SESSION_PROCESS_OFFLINE_RELEASE_RESPONSE, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySessionServiceProxy::ProcessOfflineReleaseResponse failed, error: %{public}d", error);
         return error;
@@ -270,8 +271,7 @@ int32_t MediaKeySessionServiceProxy::ProcessOfflineReleaseResponse(std::vector<u
     return reply.ReadInt32();
 }
 
-int32_t MediaKeySessionServiceProxy::CheckLicenseStatus(std::map<std::string,
-    MediaKeySessionKeyStatus>& licenseStatus)
+int32_t MediaKeySessionServiceProxy::CheckLicenseStatus(std::map<std::string, MediaKeySessionKeyStatus> &licenseStatus)
 {
     DRM_INFO_LOG("MediaKeySessionServiceProxy::GenerateOfflineReleaseRequest enter.");
     MessageParcel data;
@@ -292,8 +292,7 @@ int32_t MediaKeySessionServiceProxy::CheckLicenseStatus(std::map<std::string,
     int32_t licenseStatusMapSize = reply.ReadInt32();
     for (int32_t i = 0; i < licenseStatusMapSize; i++) {
         std::string name = reply.ReadString();
-        MediaKeySessionKeyStatus status =
-            (MediaKeySessionKeyStatus)reply.ReadInt32();
+        MediaKeySessionKeyStatus status = (MediaKeySessionKeyStatus)reply.ReadInt32();
         licenseStatus.insert(std::make_pair(name, status));
     }
     DRM_INFO_LOG("MediaKeySessionServiceProxy::GenerateOfflineReleaseRequest exit.");

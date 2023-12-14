@@ -466,6 +466,5 @@ int32_t MediaKeySystemServiceProxy::SetCallback(sptr<IMeidaKeySystemServiceCallb
     }
     return error;
 }
-
 } // DrmStandard
 } // OHOS

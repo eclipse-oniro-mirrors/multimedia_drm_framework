@@ -90,9 +90,7 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &uuid,
     mediaKeySystemService->SetMediaKeySystemServiceOperatorsCallback(this);
     int32_t pid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemFactoryService CreateMediaKeySystem GetCallingPID: %{public}d", pid);
-    auto fn = [&](std::set<sptr<MediaKeySystemService>> &value) -> void {
-        value.insert(mediaKeySystemService);
-    };
+    auto fn = [&](std::set<sptr<MediaKeySystemService>> &value) -> void { value.insert(mediaKeySystemService); };
     mediaKeySystemForPid_.ChangeValueByLambda(pid, fn);
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " is Current mediaKeySystemService",
         FAKE_POINTER(mediaKeySystemService.GetRefPtr()));
