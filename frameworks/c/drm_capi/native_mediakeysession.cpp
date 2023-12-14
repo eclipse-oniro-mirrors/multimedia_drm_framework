@@ -69,6 +69,7 @@ OH_DrmErrCode OH_MediaKeySession_GenerateMediaKeyRequest(OH_MediaKeySession *med
     DRM_INFO_LOG("OH_MediaKeySession_GenerateLicenseRequest enter");
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySession != nullptr, DRM_ERR_INVALID_VAL, "mediaKeySession is nullptr!");
     DRM_CHECK_AND_RETURN_RET_LOG(info != nullptr, DRM_ERR_INVALID_VAL, "info is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeyRequest != nullptr, DRM_ERR_INVALID_VAL, "mediaKeyRequest is nullptr!");
     IMediaKeySessionService::LicenseRequestInfo licenseRequestInfo;
     IMediaKeySessionService::LicenseRequest licenseRequest;
     licenseRequest.requestType = OHOS::DrmStandard::IMediaKeySessionService::REQUEST_TYPE_RELEASE;
