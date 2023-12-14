@@ -728,8 +728,6 @@ napi_value MediaKeySessionNapi::GetDecryptModule(napi_env env, napi_callback_inf
     return result;
 }
 
-
-
 void MediaKeySessionNapi::SetEventCallbackReference(const std::string eventType, sptr<CallBackPair> callbackPair)
 {
     DRM_INFO_LOG("MediaKeySessionNapi::SetEventCallbackReference");
