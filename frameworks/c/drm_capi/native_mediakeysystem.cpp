@@ -499,9 +499,9 @@ OH_DrmErrCode OH_MediaKeySystem_GetOfflineMediaKeyStatus(OH_MediaKeySystem *medi
     DRM_INFO_LOG("OH_MediaKeySystem_GetOfflineMediaKeyStatus enter");
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_GetOfflineMediaKeyStatus mediaKeySystem is nullptr!");
-    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeyId.buffer != nullptr, DRM_ERR_INVALID_VAL,
+    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeyId->buffer != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_GetOfflineMediaKeyStatus mediaKeyId.buffer is nullptr!");
-    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeyId.bufferLen != 0, DRM_ERR_INVALID_VAL,
+    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeyId->bufferLen != 0, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_GetOfflineMediaKeyStatus mediaKeyId.bufferLen is zero!");
     DRM_CHECK_AND_RETURN_RET_LOG(status != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_GetOfflineMediaKeyStatus status is nullptr!");
