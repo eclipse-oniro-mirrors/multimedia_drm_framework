@@ -31,7 +31,7 @@ class MediaKeySystemFactoryServiceStub : public IRemoteStub<IMediaKeySystemFacto
 public:
     MediaKeySystemFactoryServiceStub();
     ~MediaKeySystemFactoryServiceStub();
-    virtual int OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
+    virtual int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
         MessageOption &option) override;
 
 private:

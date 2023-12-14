@@ -56,7 +56,7 @@ public:
     struct DrmBuffer {
         uint32_t bufferType;
         uint32_t bufferLen;
-        int fd;
+        uint32_t fd;
     };
 
     virtual ~IMediaDecryptModuleService() = default;

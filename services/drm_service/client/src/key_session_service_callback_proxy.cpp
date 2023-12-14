@@ -51,7 +51,7 @@ int32_t MediaKeySessionServiceCallbackProxy::SendEvent(DrmEventType event, uint3
             return IPC_PROXY_ERR;
         }
     }
-    int error = Remote()->SendRequest(MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT,
+    int32_t error = Remote()->SendRequest(MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT,
         parcelData, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent failed, error: %{public}d", error);
@@ -90,7 +90,7 @@ int32_t MediaKeySessionServiceCallbackProxy::SendEventKeyChanged(std::map<std::v
         return IPC_PROXY_ERR;
     }
 
-    int error = Remote()->SendRequest(MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT_KEY_CHANGED,
+    int32_t error = Remote()->SendRequest(MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT_KEY_CHANGED,
         parcelData, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("SendEventKeyChanged failed, error: %{public}d", error);

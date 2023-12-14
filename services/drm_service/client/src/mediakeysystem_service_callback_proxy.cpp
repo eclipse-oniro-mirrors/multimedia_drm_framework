@@ -51,7 +51,7 @@ int32_t MediaKeySystemServiceCallbackProxy::SendEvent(DrmEventType event, uint32
             return IPC_PROXY_ERR;
         }
     }
-    int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_SERVICE_CALLBACK_SEND_EVENT, parcelData, reply, option);
+    int32_t error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_SERVICE_CALLBACK_SEND_EVENT, parcelData, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySystemServiceCallbackProxy SendEvent failed, error: %{public}d", error);
     }

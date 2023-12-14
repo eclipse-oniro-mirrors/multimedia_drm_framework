@@ -26,7 +26,7 @@ class MeidaKeySystemServiceCallbackStub : public IRemoteStub<IMeidaKeySystemServ
 public:
     MeidaKeySystemServiceCallbackStub() = default;
     ~MeidaKeySystemServiceCallbackStub() = default;
-    virtual int OnRemoteRequest(uint32_t code, MessageParcel &data,
+    virtual int32_t OnRemoteRequest(uint32_t code, MessageParcel &data,
         MessageParcel &reply, MessageOption &option) override;
 
 private:

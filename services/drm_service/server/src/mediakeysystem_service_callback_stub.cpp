@@ -21,7 +21,7 @@
 namespace OHOS {
 namespace DrmStandard {
 
-int MeidaKeySystemServiceCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
+int32_t MeidaKeySystemServiceCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
     MessageParcel &reply, MessageOption &option)
 {
     int32_t errCode = -1;

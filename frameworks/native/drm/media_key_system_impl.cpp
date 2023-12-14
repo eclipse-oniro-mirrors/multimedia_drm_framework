@@ -32,7 +32,7 @@ MediaKeySystemImpl::~MediaKeySystemImpl()
 int32_t MediaKeySystemImpl::Release()
 {
     DRM_INFO_LOG("MediaKeySystemImpl::Release enter.");
-    int errCode = DRM_UNKNOWN_ERROR;
+    int32_t errCode = DRM_UNKNOWN_ERROR;
     if (serviceProxy_ != nullptr) {
         errCode = serviceProxy_->Release();
         if (errCode != DRM_OK) {
@@ -48,7 +48,7 @@ int32_t MediaKeySystemImpl::Release()
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::GenerateKeySystemRequest(std::vector<uint8_t> &request, std::string &defaultUrl)
+int32_t MediaKeySystemImpl::GenerateKeySystemRequest(std::vector<uint8_t> &request, std::string &defaultUrl)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t retCode = DRM_OK;
@@ -66,7 +66,7 @@ int MediaKeySystemImpl::GenerateKeySystemRequest(std::vector<uint8_t> &request, 
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::ProcessKeySystemResponse(const std::vector<uint8_t> &response)
+int32_t MediaKeySystemImpl::ProcessKeySystemResponse(const std::vector<uint8_t> &response)
 {
     DRM_INFO_LOG("MediaKeySystemImpl::ProcessKeySystemResponse enter.");
     std::lock_guard<std::mutex> lock(mutex_);
@@ -85,7 +85,7 @@ int MediaKeySystemImpl::ProcessKeySystemResponse(const std::vector<uint8_t> &res
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::SetConfigurationString(std::string &configName, std::string &value)
+int32_t MediaKeySystemImpl::SetConfigurationString(std::string &configName, std::string &value)
 {
     DRM_INFO_LOG("MediaKeySystemImpl::SetConfiguration enter, configName:%{public}s, value:%{public}s.",
         configName.c_str(), value.c_str());
@@ -105,7 +105,7 @@ int MediaKeySystemImpl::SetConfigurationString(std::string &configName, std::str
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::GetConfigurationString(std::string &configName, std::string &value)
+int32_t MediaKeySystemImpl::GetConfigurationString(std::string &configName, std::string &value)
 {
     DRM_INFO_LOG("MediaKeySystemImpl::GetConfiguration enter, configName:%{public}s.", configName.c_str());
     std::lock_guard<std::mutex> lock(mutex_);
@@ -125,7 +125,7 @@ int MediaKeySystemImpl::GetConfigurationString(std::string &configName, std::str
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::SetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value)
+int32_t MediaKeySystemImpl::SetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value)
 {
     DRM_INFO_LOG("MediaKeySystemImpl::SetConfiguration enter, configName:%{public}s.", configName.c_str());
     std::lock_guard<std::mutex> lock(mutex_);
@@ -144,7 +144,7 @@ int MediaKeySystemImpl::SetConfigurationByteArray(std::string &configName, std::
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::GetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value)
+int32_t MediaKeySystemImpl::GetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value)
 {
     DRM_INFO_LOG("MediaKeySystemImpl::GetConfiguration enter, configName:%{public}s.", configName.c_str());
     std::lock_guard<std::mutex> lock(mutex_);
@@ -163,13 +163,13 @@ int MediaKeySystemImpl::GetConfigurationByteArray(std::string &configName, std::
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::CreateMediaKeySession(IMediaKeySessionService::SecurityLevel securityLevel,
+int32_t MediaKeySystemImpl::CreateMediaKeySession(IMediaKeySessionService::SecurityLevel securityLevel,
     sptr<MediaKeySessionImpl> *keySessionImpl)
 {
     DRM_INFO_LOG("MediaKeySystemImpl::CreateMediaKeySession enter.");
     sptr<IMediaKeySessionService> keySessionProxy = nullptr;
     sptr<MediaKeySessionImpl> localMediaKeySessionImpl = nullptr;
-    int retCode = DRM_OK;
+    int32_t retCode = DRM_OK;
 
     if (serviceProxy_ == nullptr) {
         DRM_ERR_LOG("MediaKeySystemImpl:: serviceProxy_ == nullptr");
@@ -216,7 +216,7 @@ int32_t MediaKeySystemImpl::GetMetrics(std::vector<IMediaKeySystemService::Metir
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::GetMaxSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel)
+int32_t MediaKeySystemImpl::GetMaxSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel)
 {
     DRM_INFO_LOG("MediaKeySystemImpl::GetMaxSecurityLevel enter.");
     std::lock_guard<std::mutex> lock(mutex_);
@@ -255,7 +255,7 @@ int32_t MediaKeySystemImpl::GetOfflineLicenseIds(std::vector<std::vector<uint8_t
     return DRM_OK;
 }
 
-int MediaKeySystemImpl::GetOfflineLicenseStatus(std::vector<uint8_t> &licenseId,
+int32_t MediaKeySystemImpl::GetOfflineLicenseStatus(std::vector<uint8_t> &licenseId,
     IMediaKeySessionService::OfflineLicenseStatus &status)
 {
     DRM_INFO_LOG("MediaKeySystemImpl::GetOfflineLicenseStatus enter.");

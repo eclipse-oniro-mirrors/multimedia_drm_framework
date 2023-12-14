@@ -36,7 +36,7 @@ int32_t MediaDecryptModuleServiceProxy::Release()
         return IPC_PROXY_ERR;
     }
 
-    int error = Remote()->SendRequest(DECRYPT_MODULE_RELEASE, data, reply, option);
+    int32_t error = Remote()->SendRequest(DECRYPT_MODULE_RELEASE, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaDecryptModuleServiceProxy::Release failed, error: %{public}d", error);
         return error;
@@ -96,7 +96,7 @@ int32_t MediaDecryptModuleServiceProxy::DecryptMediaData(bool secureDecodrtState
     (void)data.WriteFileDescriptor(srcBuffer);
     (void)data.WriteFileDescriptor(dstBuffer);
 
-    int error = Remote()->SendRequest(DECRYPT_MODULE_DECRYPT_DATA, data, reply, option);
+    int32_t error = Remote()->SendRequest(DECRYPT_MODULE_DECRYPT_DATA, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptMediaData failed, error: %{public}d", error);
         return error;

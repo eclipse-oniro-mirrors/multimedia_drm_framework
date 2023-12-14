@@ -34,10 +34,10 @@ MediaKeySystemFactoryServiceStub::~MediaKeySystemFactoryServiceStub()
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " Instances destroy", (POINTER_MASK & reinterpret_cast<uintptr_t>(this)));
 }
 
-static int ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServiceStub *stub, MessageParcel &data,
+static int32_t ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServiceStub *stub, MessageParcel &data,
     MessageParcel &reply, MessageOption &option)
 {
-    int paramNum = data.ReadInt32();
+    int32_t paramNum = data.ReadInt32();
     bool isSurpported = false;
 
     DRM_CHECK_AND_RETURN_RET_LOG((paramNum <= ARGS_NUM_THREE) && (paramNum >= ARGS_NUM_ONE), IPC_STUB_WRITE_PARCEL_ERR,
@@ -67,7 +67,7 @@ static int ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServiceStu
     return DRM_OK;
 }
 
-int MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
+int32_t MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
     if (data.ReadInterfaceToken() != GetDescriptor()) {
@@ -78,7 +78,7 @@ int MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, MessageParc
     switch (code) {
         case MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED: {
             DRM_INFO_LOG("MediaKeySystemFactoryServiceStub IS_MEDIA_KEY_SYSTEM_SURPPORTED enter.");
-            int ret = ProcessMediaKeySystemSupportedRequest(this, data, reply, option);
+            int32_t ret = ProcessMediaKeySystemSupportedRequest(this, data, reply, option);
             DRM_INFO_LOG("MediaKeySystemFactoryServiceStub IS_MEDIA_KEY_SYSTEM_SURPPORTED exit.");
             return ret;
         }
@@ -86,7 +86,7 @@ int MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, MessageParc
             DRM_INFO_LOG("MediaKeySystemFactoryServiceStub CREATE_MEDIA_KEYSYSTEM enter.");
             sptr<IMediaKeySystemService> mediaKeysystemProxy = nullptr;
             std::string uuid = data.ReadString();
-            int errCode = CreateMediaKeySystem(uuid, mediaKeysystemProxy);
+            int32_t errCode = CreateMediaKeySystem(uuid, mediaKeysystemProxy);
             if (errCode != ERR_NONE) {
                 DRM_ERR_LOG("MediaKeySystemFactoryServiceStub CreateMediaKeySystem failed : %{public}d", errCode);
                 return errCode;

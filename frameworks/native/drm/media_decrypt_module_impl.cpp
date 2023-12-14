@@ -36,7 +36,7 @@ MediaDecryptModuleImpl::~MediaDecryptModuleImpl()
 int32_t MediaDecryptModuleImpl::Release()
 {
     DRM_INFO_LOG("MediaDecryptModuleImpl::Release enter.");
-    int errCode = DRM_OK;
+    int32_t errCode = DRM_OK;
     if (serviceProxy_ != nullptr) {
         errCode = serviceProxy_->Release();
         serviceProxy_ = nullptr;

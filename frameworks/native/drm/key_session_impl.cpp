@@ -39,7 +39,7 @@ MediaKeySessionImpl::~MediaKeySessionImpl()
 int32_t MediaKeySessionImpl::Release()
 {
     DRM_INFO_LOG("MediaKeySessionImpl Release enter.");
-    int errCode = DRM_UNKNOWN_ERROR;
+    int32_t errCode = DRM_UNKNOWN_ERROR;
     if (keySessionServiceProxy_) {
         errCode = keySessionServiceProxy_->Release();
         if (errCode != DRM_OK) {
@@ -55,7 +55,7 @@ int32_t MediaKeySessionImpl::Release()
     return errCode;
 }
 
-int MediaKeySessionImpl::GenerateLicenseRequest(IMediaKeySessionService::LicenseRequestInfo &licenseRequestInfo,
+int32_t MediaKeySessionImpl::GenerateLicenseRequest(IMediaKeySessionService::LicenseRequestInfo &licenseRequestInfo,
     IMediaKeySessionService::LicenseRequest &licenseRequest)
 {
     DRM_INFO_LOG("MediaKeySessionImpl::GenerateLicenseRequest enter.");
@@ -74,7 +74,7 @@ int MediaKeySessionImpl::GenerateLicenseRequest(IMediaKeySessionService::License
     return DRM_OK;
 }
 
-int MediaKeySessionImpl::ProcessLicenseResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &licenseResponse)
+int32_t MediaKeySessionImpl::ProcessLicenseResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &licenseResponse)
 {
     DRM_INFO_LOG("MediaKeySessionImpl::ProcessLicenseResponse enter.");
     std::lock_guard<std::mutex> lock(mutex_);
@@ -93,7 +93,7 @@ int MediaKeySessionImpl::ProcessLicenseResponse(std::vector<uint8_t> &licenseId,
     return DRM_OK;
 }
 
-int MediaKeySessionImpl::GenerateOfflineReleaseRequest(std::vector<uint8_t> &licenseId,
+int32_t MediaKeySessionImpl::GenerateOfflineReleaseRequest(std::vector<uint8_t> &licenseId,
     std::vector<uint8_t> &releaseRequest)
 {
     DRM_INFO_LOG("MediaKeySessionImpl::GenerateOfflineReleaseRequest enter.");
@@ -115,7 +115,7 @@ int MediaKeySessionImpl::GenerateOfflineReleaseRequest(std::vector<uint8_t> &lic
     return DRM_OK;
 }
 
-int MediaKeySessionImpl::ProcessOfflineReleaseResponse(std::vector<uint8_t> &licenseId,
+int32_t MediaKeySessionImpl::ProcessOfflineReleaseResponse(std::vector<uint8_t> &licenseId,
     std::vector<uint8_t> &releaseResponse)
 {
     DRM_INFO_LOG("MediaKeySessionImpl::ProcessOfflineReleaseResponse enter.");
@@ -135,7 +135,7 @@ int MediaKeySessionImpl::ProcessOfflineReleaseResponse(std::vector<uint8_t> &lic
     return DRM_OK;
 }
 
-int MediaKeySessionImpl::GetSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel)
+int32_t MediaKeySessionImpl::GetSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel)
 {
     DRM_INFO_LOG("MediaKeySessionImpl::GetSecurityLevel enter.");
     std::lock_guard<std::mutex> lock(mutex_);
@@ -165,7 +165,7 @@ sptr<MediaDecryptModuleImpl> MediaKeySessionImpl::GetDecryptModule()
     sptr<IMediaDecryptModuleService> decryptModuleProxy = nullptr;
     sptr<MediaDecryptModuleImpl> localDecryptModuleImpl = nullptr;
 
-    int retCode = DRM_OK;
+    int32_t retCode = DRM_OK;
 
     DRM_CHECK_AND_RETURN_RET_LOG((keySessionServiceProxy_ != nullptr), nullptr,
         "MediaDecryptModuleImpl::keySessionServiceProxy_ == nullptr");
