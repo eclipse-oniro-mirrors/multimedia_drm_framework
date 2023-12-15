@@ -28,6 +28,15 @@
 
 namespace OHOS {
 namespace DrmStandard {
+
+namespace MediaKeySessionEvent {
+const std::string EVENT_STR_KEY_NEEDED = "keyNeeded";
+const std::string EVENT_STR_KEY_EXPIRED = "keyExpired";
+const std::string EVENT_STR_EXPIRATION_UPDATED = "expirationUpdated";
+const std::string EVENT_STR_KEY_CHANGED = "keyChanged";
+const std::string EVENT_STR_VENDOR_DEFINED = "vendorDefined";
+}
+
 class MediaKeySessionImplCallback : public RefBase {
 public:
     MediaKeySessionImplCallback() = default;
@@ -64,7 +73,7 @@ public:
     int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status);
 
 private:
-    sptr<MediaKeySessionImplCallback> keySessionNapiCallback_;
+    sptr<MediaKeySessionImplCallback> keySessionApplicationCallback_;
     sptr<IMediaKeySessionServiceCallback> keySessionServiceCallback_;
     sptr<OHOS::DrmStandard::IMediaKeySessionService> keySessionServiceProxy_;
     sptr<MediaDecryptModuleImpl> mediaDecryptModuleImpl_;

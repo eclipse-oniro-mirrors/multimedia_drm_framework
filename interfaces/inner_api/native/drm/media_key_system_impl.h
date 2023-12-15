@@ -20,10 +20,8 @@
 #include "iservice_registry.h"
 #include "nocopyable.h"
 #include "system_ability_definition.h"
-
 #include "drm_log.h"
 #include "drm_error_code.h"
-
 #include "drm_death_recipient.h"
 #include "key_session_impl.h"
 #include "i_mediakeysystem_service.h"
@@ -31,6 +29,11 @@
 
 namespace OHOS {
 namespace DrmStandard {
+
+namespace MediaKeySystemEvent {
+const std::string EVENT_STR_PROVISION_REQUIRED = "provisionRequired";
+const std::string EVENT_STR_SESSION_LOST = "sessionLost";
+}
 class MediaKeySystemImplCallback : public RefBase {
 public:
     MediaKeySystemImplCallback() = default;
@@ -68,7 +71,7 @@ public:
 private:
     std::mutex mutex_;
     sptr<IMediaKeySystemService> serviceProxy_;
-    sptr<MediaKeySystemImplCallback> mediaKeySystemNapiCallback_;
+    sptr<MediaKeySystemImplCallback> mediaKeySystemApplicationCallback_;
     sptr<IMeidaKeySystemServiceCallback> serviceCallback_;
 };
 

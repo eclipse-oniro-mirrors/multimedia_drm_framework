@@ -25,7 +25,6 @@
 #include "key_session_impl.h"
 #include "native_mediakeysession.h"
 
-
 using namespace OHOS::DrmStandard;
 
 
@@ -330,6 +329,13 @@ OH_DrmErrCode OH_MediaKeySession_RequireSecureDecoderModule(OH_MediaKeySession *
 OH_DrmErrCode OH_MediaKeySession_SetMediaKeySessionCallback(OH_MediaKeySession *mediaKeySessoin,
     OH_MediaKeySessionCallback *callback)
 {
+    DRM_INFO_LOG("OH_MediaKeySession_SetMediaKeySessionCallback enter.");
+    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySessoin != nullptr, DRM_ERR_INVALID_VAL, "mediaKeySessoin is nullptr!");
+    MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySessoin);
+    DRM_CHECK_AND_RETURN_RET_LOG(sessionObject != nullptr, DRM_ERR_INVALID_VAL, "sessionObject is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(sessionObject->sessionCallback_ != nullptr, DRM_ERR_INVALID_VAL,
+        "sessionCallback is nullptr!");
+    sessionObject->sessionCallback_->SetCallbackReference(*callback);
     return DRM_ERR_OK;
 }
 
