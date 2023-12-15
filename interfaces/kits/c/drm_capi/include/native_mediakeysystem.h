@@ -49,17 +49,6 @@ extern "C" {
 #endif
 
 /**
- * @brief Call back will be invoked when event triggers.
- * @param eventType Event type.
- * @param eventInfo Event info gotten from media key system.
- * @return OH_DrmErrCode.
- * @since 11
- * @version 1.0
- */
-typedef OH_DrmErrCode (*OH_MediaKeySystemCallback)(OH_DRM_ListenerType eventType,
-    OH_DRM_Uint8CharBufferPair *eventInfo);
-
-/**
  * @brief Query if media key system is supported.
  * @param name Used to point a Digital Right Management solution.
  * @return Supported or not in boolean.

@@ -47,42 +47,6 @@ extern "C" {
 #endif
 
 /**
- * @brief Call back will be invoked when event triggers.
- * @param eventType Event type.
- * @param eventInfo Event info gotten from media key system.
- * @return OH_DrmErrCode.
- * @since 11
- * @version 1.0
- */
-typedef OH_DrmErrCode (*OH_MediaKeySessionEventCallback)(OH_DRM_ListenerType eventType,
-    OH_DRM_Uint8CharBufferPair *eventInfo);
-
-/**
- * @brief Call back will be invoked when key changes.
- * @param keysInfo Key info gotten from media key system.
- * @return OH_DrmErrCode.
- * @since 11
- * @version 1.0
- */
-typedef OH_DrmErrCode (*OH_MediaKeySessionKeyChangeCallback)(OH_DRM_KeysInfo *keysInfo, bool hasNewGoodKeys);
-
-/**
- * @brief OH_MediaKeySessionCallback struct, used to listen event like key expired and key change etc..
- * @since 11
- * @version 1.0
- */
-typedef struct OH_MediaKeySessionCallback {
-    /* *
-     * Normal event callback like key expired etc..
-     */
-    OH_MediaKeySessionEventCallback eventCallback;
-    /* *
-     * Key change callback for keys change event.
-     */
-    OH_MediaKeySessionKeyChangeCallback keyChangeCallback;
-} OH_MediaKeySessionCallback;
-
-/**
  * @brief Generate media key request.
  * @param mediaKeySession Media key session instance.
  * if the function return DRM_ERR_OK.

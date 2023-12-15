@@ -317,7 +317,7 @@ int32_t MediaKeySystemImpl::SetCallback(const sptr<MediaKeySystemImplCallback> &
 {
     DRM_DEBUG_LOG("MediaKeySystemImpl:0x%{public}06" PRIXPTR " SetCallback in", FAKE_POINTER(this));
     DRM_CHECK_AND_RETURN_RET_LOG(callback != nullptr, DRM_INVALID_ARG, "callback is nullptr");
-    mediaKeySystemNapiCallback_ = callback;
+    mediaKeySystemApplicationCallback_ = callback;
 
     int32_t retCode = DRM_ERROR;
     serviceCallback_ = new(std::nothrow) MediaKeySystemCallback(this);
@@ -343,7 +343,7 @@ int32_t MediaKeySystemImpl::SetCallback(const sptr<MediaKeySystemImplCallback> &
 sptr<MediaKeySystemImplCallback> MediaKeySystemImpl::GetApplicationCallback()
 {
     DRM_INFO_LOG("MediaKeySystemImpl GetApplicationCallback");
-    return mediaKeySystemNapiCallback_;
+    return mediaKeySystemApplicationCallback_;
 }
 
 MediaKeySystemCallback::~MediaKeySystemCallback()
@@ -355,8 +355,8 @@ MediaKeySystemCallback::~MediaKeySystemCallback()
 void MediaKeySystemCallback::InitEventMap()
 {
     DRM_INFO_LOG("MediaKeySystemCallback InitEventMap");
-    eventMap_[static_cast<int32_t>(DRM_EVENT_PROVISION_REQUIRED)] = "provisionRequired";
-    eventMap_[static_cast<int32_t>(DRM_EVENT_KEYSESSION_LOST)] = "sessionLost";
+    eventMap_[static_cast<int32_t>(DRM_EVENT_PROVISION_REQUIRED)] = MediaKeySystemEvent::EVENT_STR_PROVISION_REQUIRED;
+    eventMap_[static_cast<int32_t>(DRM_EVENT_KEYSESSION_LOST)] = MediaKeySystemEvent::EVENT_STR_SESSION_LOST;
 }
 
 std::string MediaKeySystemCallback::GetEventName(DrmEventType event)
@@ -376,9 +376,9 @@ int32_t MediaKeySystemCallback::SendEvent(DrmEventType event, uint32_t extra,
     DRM_INFO_LOG("MediaKeySystemCallback SendEvent");
     std::string eventName = GetEventName(event);
     if (systemImpl_ != nullptr) {
-        sptr<MediaKeySystemImplCallback> napiCallback = systemImpl_->GetApplicationCallback();
-        if (napiCallback != nullptr) {
-            napiCallback->SendEvent(eventName, extra, data);
+        sptr<MediaKeySystemImplCallback> applicationCallback = systemImpl_->GetApplicationCallback();
+        if (applicationCallback != nullptr) {
+            applicationCallback->SendEvent(eventName, extra, data);
             return DRM_OK;
         }
     }

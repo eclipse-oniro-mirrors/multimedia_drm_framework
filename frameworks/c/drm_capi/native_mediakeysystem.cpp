@@ -98,8 +98,16 @@ OH_DrmErrCode OH_MediaKeySystem_Create(const char *name, OH_MediaKeySystem **med
 
     struct MediaKeySystemObject *object = new (std::nothrow) MediaKeySystemObject(system);
     DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_ERR_INVALID_VAL, "MediaKeySystemObject create failed!");
-    *mediaKeySystem = object;
 
+    object->systemCallback_ = new (std::nothrow) MediaKeySystemCallbackCapi();
+    DRM_CHECK_AND_RETURN_RET_LOG(object->systemCallback_ != nullptr, DRM_ERR_NO_MEMORY,
+        "MediaKeySystemObject create systemCallback failed!");
+    DRM_CHECK_AND_RETURN_RET_LOG(object->systemImpl_ != nullptr, DRM_ERR_OPERATION_NOT_PERMITTED,
+        "MediaKeySystemObject's systemImpl is nullptr!");
+    int32_t ret = object->systemImpl_->SetCallback(object->systemCallback_);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_UNKNOWN, "system set callback failed!");
+
+    *mediaKeySystem = object;
     return DRM_ERR_OK;
 }
 
@@ -416,8 +424,15 @@ OH_DrmErrCode OH_MediaKeySystem_GetCertificateStatus(OH_MediaKeySystem *mediaKey
 }
 
 OH_DrmErrCode OH_MediaKeySystem_SetMediaKeySystemCallback(OH_MediaKeySystem *mediaKeySystem,
-    OH_MediaKeySystemCallback *callback)
+    OH_MediaKeySystemCallback callback)
 {
+    DRM_INFO_LOG("OH_MediaKeySystem_SetMediaKeySystemCallback enter.");
+    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, DRM_ERR_INVALID_VAL, "mediaKeySystem is nullptr!");
+    MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+    DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, DRM_ERR_INVALID_VAL, "systemObject is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemCallback_ != nullptr, DRM_ERR_INVALID_VAL,
+        "systemCallback is nullptr!");
+    systemObject->systemCallback_->SetCallbackReference(callback);
     return DRM_ERR_OK;
 }
 
@@ -440,9 +455,18 @@ OH_DrmErrCode OH_MediaKeySystem_CreateMediaKeySession(OH_MediaKeySystem *mediaKe
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_UNKNOWN, "session create return failed!");
     DRM_CHECK_AND_RETURN_RET_LOG(keySessionImpl != nullptr, DRM_ERR_UNKNOWN, "session create failed!");
 
-    struct MediaKeySessionObject *object = new (std::nothrow) MediaKeySessionObject(keySessionImpl);
-    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_ERR_NO_MEMORY, "MediaKeySessionObject create failed!");
-    *mediaKeySession = static_cast<OH_MediaKeySession *>(object);
+    struct MediaKeySessionObject *sessionObject = new (std::nothrow) MediaKeySessionObject(keySessionImpl);
+    DRM_CHECK_AND_RETURN_RET_LOG(sessionObject != nullptr, DRM_ERR_NO_MEMORY, "MediaKeySessionObject create failed!");
+
+    sessionObject->sessionCallback_ = new (std::nothrow) MediaKeySessionCallbackCapi();
+    DRM_CHECK_AND_RETURN_RET_LOG(sessionObject->sessionCallback_ != nullptr, DRM_ERR_NO_MEMORY,
+        "MediaKeySessionObject create sessionCallback failed!");
+    DRM_CHECK_AND_RETURN_RET_LOG(sessionObject->sessionImpl_ != nullptr, DRM_ERR_OPERATION_NOT_PERMITTED,
+        "MediaKeySessionObject's sessionImpl is nullptr!");
+    ret = sessionObject->sessionImpl_->SetCallback(sessionObject->sessionCallback_);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_UNKNOWN, "session set callback failed!");
+
+    *mediaKeySession = static_cast<OH_MediaKeySession *>(sessionObject);
     return retCode;
 }
 
