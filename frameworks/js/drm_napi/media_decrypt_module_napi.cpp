@@ -255,7 +255,7 @@ napi_value MediaDecryptModuleNapi::DecryptMediaData(napi_env env, napi_callback_
         (algType > IMediaDecryptModuleService::ALGTYPE_SM4_CTR),
         nullptr, "argv[PARAM1] type is wrong!");
     cryptInfo.type = IMediaDecryptModuleService::ALGTYPE_UNENCRYPTED;
-    DRM_DEBUG_LOG("cryptInfo.type:%{public}d.", (int)cryptInfo.type);
+    DRM_DEBUG_LOG("cryptInfo.type:%{public}d.", (int32_t)cryptInfo.type);
     (void)DealDecryptParam1(env, argv, cryptInfo);
     status = napi_get_value_int32(env, argv[PARAM2], &srcBuffer);
     DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "Could not able to read srcBuffer argument!");
@@ -268,7 +268,7 @@ napi_value MediaDecryptModuleNapi::DecryptMediaData(napi_env env, napi_callback_
     DRM_CHECK_AND_RETURN_RET_LOG(decryptModuleNapi->mediaDecryptModuleImpl_ != nullptr, nullptr,
         "MediaDecryptModuleNapi mediaDecryptModuleImpl_ == nullptr!");
 
-    int ret = decryptModuleNapi->mediaDecryptModuleImpl_->DecryptMediaData(secureDecodrtState, cryptInfo, srcBuffer,
+    int32_t ret = decryptModuleNapi->mediaDecryptModuleImpl_->DecryptMediaData(secureDecodrtState, cryptInfo, srcBuffer,
         dstBuffer);
     DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr, "MediaDecryptModuleNapi::DecryptMediaData call Failed!");
     DRM_INFO_LOG("MediaDecryptModuleNapi::DecryptMediaData exit.");

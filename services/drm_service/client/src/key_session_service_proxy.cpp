@@ -37,7 +37,8 @@ int32_t MediaKeySessionServiceProxy::CreateMediaDecryptModule(sptr<IMediaDecrypt
         return IPC_PROXY_ERR;
     }
 
-    int error = MediaKeySessionServiceProxy::Remote()->SendRequest(CREATE_MEDIA_DECRYPT_MODULE, data, reply, option);
+    int32_t error =
+        MediaKeySessionServiceProxy::Remote()->SendRequest(CREATE_MEDIA_DECRYPT_MODULE, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySessionServiceProxy::CreateMediaDecryptModule failed, error: %{public}d", error);
         return error;
@@ -66,7 +67,7 @@ int32_t MediaKeySessionServiceProxy::GetSecurityLevel(IMediaKeySessionService::S
         return IPC_PROXY_ERR;
     }
 
-    int error = Remote()->SendRequest(MEDIA_KEY_SESSION_GETSECURITYLEVEL, data, reply, option);
+    int32_t error = Remote()->SendRequest(MEDIA_KEY_SESSION_GETSECURITYLEVEL, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySessionServiceProxy GetSecurityLevel failed, error: %{public}d", error);
         return error;
@@ -89,7 +90,7 @@ int32_t MediaKeySessionServiceProxy::Release()
         DRM_ERR_LOG("MediaKeySessionServiceProxy Release Write interface token failed");
         return IPC_PROXY_ERR;
     }
-    int error = MediaKeySessionServiceProxy::Remote()->SendRequest(KEY_SESSION_RELEASE, data, reply, option);
+    int32_t error = MediaKeySessionServiceProxy::Remote()->SendRequest(KEY_SESSION_RELEASE, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySessionServiceProxy Release failed, error: %{public}d", error);
     }
@@ -127,11 +128,15 @@ int32_t MediaKeySessionServiceProxy::GenerateLicenseRequest(
         DRM_ERR_LOG("MediaKeySessionServiceProxy GenerateLicenseRequest Write initData.size failed");
         return IPC_PROXY_ERR;
     }
+    if (!data.WriteInt32(licenseRequestInfo.optionalData.size())) {
+        DRM_ERR_LOG("MediaKeySessionServiceProxy GenerateLicenseRequest Write optionalData.size failed");
+        return IPC_PROXY_ERR;
+    }
     for (auto optionalData : licenseRequestInfo.optionalData) {
         data.WriteString(optionalData.first);
         data.WriteString(optionalData.second);
     }
-    int error = MediaKeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_GENERATE_LICENSE_REQUEST, data,
+    int32_t error = MediaKeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_GENERATE_LICENSE_REQUEST, data,
         reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySessionServiceProxy::GenerateLicenseRequest failed, error: %{public}d", error);
@@ -140,7 +145,7 @@ int32_t MediaKeySessionServiceProxy::GenerateLicenseRequest(
 
     licenseRequest.requestType = (IMediaKeySessionService::RequestType)reply.ReadInt32();
     uint32_t dataSize = reply.ReadInt32();
-    for (int i = 0; i < dataSize; i++) {
+    for (int32_t i = 0; i < dataSize; i++) {
         licenseRequest.mData.push_back(reply.ReadUint8());
     }
 
@@ -171,14 +176,14 @@ int32_t MediaKeySessionServiceProxy::ProcessLicenseResponse(std::vector<uint8_t>
             return IPC_PROXY_ERR;
         }
     }
-    int error = MediaKeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_PROCESS_LICENSE_RESPONSE, data,
+    int32_t error = MediaKeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_PROCESS_LICENSE_RESPONSE, data,
         reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySessionServiceProxy::ProcessLicenseResponse failed, error: %{public}d", error);
         return error;
     }
     uint32_t licenseIdSize = reply.ReadInt32();
-    for (int i = 0; i < licenseIdSize; i++) {
+    for (int32_t i = 0; i < licenseIdSize; i++) {
         licenseId.push_back(reply.ReadUint8());
     }
     DRM_INFO_LOG("MediaKeySessionServiceProxy::ProcessLicenseResponse exit.");
@@ -208,14 +213,14 @@ int32_t MediaKeySessionServiceProxy::GenerateOfflineReleaseRequest(std::vector<u
         }
     }
 
-    int error = MediaKeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_GENERATE_OFFLINE_RELEASE_REQUEST,
-        data, reply, option);
+    int32_t error = MediaKeySessionServiceProxy::Remote()->SendRequest(
+        MEDIA_KEY_SESSION_GENERATE_OFFLINE_RELEASE_REQUEST, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySessionServiceProxy::GenerateOfflineReleaseRequest failed, error: %{public}d", error);
         return error;
     }
     uint32_t requestSize = reply.ReadInt32();
-    for (int i = 0; i < requestSize; i++) {
+    for (int32_t i = 0; i < requestSize; i++) {
         releaseRequest.push_back(reply.ReadUint8());
     }
     DRM_INFO_LOG("MediaKeySessionServiceProxy::GenerateOfflineReleaseRequest exit.");
@@ -255,8 +260,8 @@ int32_t MediaKeySessionServiceProxy::ProcessOfflineReleaseResponse(std::vector<u
             return IPC_PROXY_ERR;
         }
     }
-    int error = MediaKeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_PROCESS_OFFLINE_RELEASE_RESPONSE,
-        data, reply, option);
+    int32_t error = MediaKeySessionServiceProxy::Remote()->SendRequest(
+        MEDIA_KEY_SESSION_PROCESS_OFFLINE_RELEASE_RESPONSE, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySessionServiceProxy::ProcessOfflineReleaseResponse failed, error: %{public}d", error);
         return error;
@@ -266,8 +271,7 @@ int32_t MediaKeySessionServiceProxy::ProcessOfflineReleaseResponse(std::vector<u
     return reply.ReadInt32();
 }
 
-int32_t MediaKeySessionServiceProxy::CheckLicenseStatus(std::map<std::string,
-    MediaKeySessionKeyStatus>& licenseStatus)
+int32_t MediaKeySessionServiceProxy::CheckLicenseStatus(std::map<std::string, MediaKeySessionKeyStatus> &licenseStatus)
 {
     DRM_INFO_LOG("MediaKeySessionServiceProxy::GenerateOfflineReleaseRequest enter.");
     MessageParcel data;
@@ -279,17 +283,16 @@ int32_t MediaKeySessionServiceProxy::CheckLicenseStatus(std::map<std::string,
         return IPC_PROXY_ERR;
     }
 
-    int error = MediaKeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_GENERATE_CHECK_LICENSE_STATUS,
+    int32_t error = MediaKeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_GENERATE_CHECK_LICENSE_STATUS,
         data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySessionServiceProxy::GenerateOfflineReleaseRequest failed, error: %{public}d", error);
         return error;
     }
-    int licenseStatusMapSize = reply.ReadInt32();
-    for (int i = 0; i < licenseStatusMapSize; i++) {
+    int32_t licenseStatusMapSize = reply.ReadInt32();
+    for (int32_t i = 0; i < licenseStatusMapSize; i++) {
         std::string name = reply.ReadString();
-        MediaKeySessionKeyStatus status =
-            (MediaKeySessionKeyStatus)reply.ReadInt32();
+        MediaKeySessionKeyStatus status = (MediaKeySessionKeyStatus)reply.ReadInt32();
         licenseStatus.insert(std::make_pair(name, status));
     }
     DRM_INFO_LOG("MediaKeySessionServiceProxy::GenerateOfflineReleaseRequest exit.");
@@ -319,7 +322,7 @@ int32_t MediaKeySessionServiceProxy::RestoreOfflineLicense(std::vector<uint8_t> 
         }
     }
 
-    int error =
+    int32_t error =
         MediaKeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_RESTORE_OFFLINEKEYS, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySessionServiceProxy::RestoreOfflineLicense failed, error: %{public}d", error);
@@ -342,7 +345,7 @@ int32_t MediaKeySessionServiceProxy::RemoveLicense()
         return IPC_PROXY_ERR;
     }
 
-    int error =
+    int32_t error =
         MediaKeySessionServiceProxy::Remote()->SendRequest(MEDIA_KEY_SESSION_REMOVE_LICENSE, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySessionServiceProxy::RemoveLicense failed, error: %{public}d", error);
@@ -370,7 +373,7 @@ int32_t MediaKeySessionServiceProxy::RequireSecureDecoderModule(std::string &mim
         return IPC_PROXY_ERR;
     }
 
-    int error = Remote()->SendRequest(MEDIA_KEY_SESSION_REQUIRE_SECURE_DECODER, data, reply, option);
+    int32_t error = Remote()->SendRequest(MEDIA_KEY_SESSION_REQUIRE_SECURE_DECODER, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySessionServiceProxy RequireSecureDecoderModule failed, error: %{public}d", error);
         return error;
@@ -402,7 +405,7 @@ int32_t MediaKeySessionServiceProxy::SetCallback(sptr<IMediaKeySessionServiceCal
         return IPC_PROXY_ERR;
     }
 
-    int error = Remote()->SendRequest(MEDIA_KEY_SESSION_SET_CALLBACK, data, reply, option);
+    int32_t error = Remote()->SendRequest(MEDIA_KEY_SESSION_SET_CALLBACK, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySessionServiceProxy SetCallback failed, error: %{public}d", error);
     }

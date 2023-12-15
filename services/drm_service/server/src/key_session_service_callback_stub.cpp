@@ -41,7 +41,7 @@ int32_t MediaKeySessionServiceCallbackStub::OnRemoteRequest(uint32_t code, Messa
     return errCode;
 }
 
-int32_t MediaKeySessionServiceCallbackStub::HandleSendEvent(MessageParcel& data)
+int32_t MediaKeySessionServiceCallbackStub::HandleSendEvent(MessageParcel &data)
 {
     DRM_INFO_LOG("MediaKeySessionServiceCallbackStub HandleSendEvent enter.");
     int32_t event = data.ReadInt32();
@@ -55,7 +55,7 @@ int32_t MediaKeySessionServiceCallbackStub::HandleSendEvent(MessageParcel& data)
     return SendEvent(eventType, extra, customizedData);
 }
 
-int32_t MediaKeySessionServiceCallbackStub::HandleSendEventKeyChanged(MessageParcel& data)
+int32_t MediaKeySessionServiceCallbackStub::HandleSendEventKeyChanged(MessageParcel &data)
 {
     DRM_INFO_LOG("MediaKeySessionServiceCallbackStub HandleSendEventKeyChanged enter.");
     std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> statusTable;
@@ -73,6 +73,5 @@ int32_t MediaKeySessionServiceCallbackStub::HandleSendEventKeyChanged(MessagePar
     bool hasNewGoodLicense = data.ReadBool();
     return SendEventKeyChanged(statusTable, hasNewGoodLicense);
 }
-
 } // namespace DrmStandard
 } // namespace OHOS

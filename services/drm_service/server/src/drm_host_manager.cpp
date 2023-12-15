@@ -33,9 +33,9 @@ std::mutex DrmHostManager::queueMutex;
 std::mutex DrmHostManager::libMutex;
 std::condition_variable DrmHostManager::cv;
 std::mutex DrmHostManager::libMapMutex;
-std::map<std::string, void*> DrmHostManager::libMap;
+std::map<std::string, void *> DrmHostManager::libMap;
 std::mutex DrmHostManager::handleAndKeySystemMapMutex;
-std::map<void*, sptr<IMediaKeySystem>> DrmHostManager::handleAndKeySystemMap;
+std::map<void *, sptr<IMediaKeySystem>> DrmHostManager::handleAndKeySystemMap;
 
 void DrmHostManager::DrmHostDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
@@ -48,6 +48,7 @@ DrmHostManager::DrmHostManager(StatusCallback *statusCallback)
 
 DrmHostManager::~DrmHostManager()
 {
+    DRM_INFO_LOG("DrmHostManager::~DrmHostManager enter.");
     if (drmHostServieProxy_ != nullptr) {
         drmHostServieProxy_ = nullptr;
     }
@@ -57,6 +58,7 @@ DrmHostManager::~DrmHostManager()
     if (serviceThreadRunning) {
         StopServiceThread();
     }
+    DRM_INFO_LOG("DrmHostManager::~DrmHostManager exit.");
 }
 
 void DrmHostManager::StopServiceThread()
@@ -84,9 +86,7 @@ void DrmHostManager::ProcessMessage()
     std::thread([this] {
         while (serviceThreadRunning) {
             std::unique_lock<std::mutex> lock(queueMutex);
-            cv.wait(lock, [this] {
-                return !this->messageQueue.empty();
-            });
+            cv.wait(lock, [this] { return !this->messageQueue.empty(); });
             while (!messageQueue.empty()) {
                 auto message = messageQueue.front();
                 messageQueue.pop();
@@ -100,7 +100,7 @@ void DrmHostManager::ProcessMessage()
                     if (libHandle) {
                         std::lock_guard<std::mutex> lockLib(libMutex);
                         dlclose(libHandle);
-	     		        ReleaseHandleAndKeySystemMap(libHandle);
+                        ReleaseHandleAndKeySystemMap(libHandle);
                         loadedLibs.erase(std::remove(loadedLibs.begin(), loadedLibs.end(), libHandle),
                             loadedLibs.end());
                         libHandle = nullptr;
@@ -127,8 +127,8 @@ void DrmHostManager::ReleaseHandleAndKeySystemMap(void *handle)
 void DrmHostManager::ServiceThreadMain()
 {
     DRM_INFO_LOG("DrmHostManager::ServiceThreadMain enter.");
-    DIR* dir = nullptr;
-    struct dirent* entry = nullptr;
+    DIR *dir = nullptr;
+    struct dirent *entry = nullptr;
     if ((dir = opendir("/system/lib64/oem_certificate_service")) != nullptr) {
         while ((entry = readdir(dir)) != nullptr) {
             std::string fileName = entry->d_name;
@@ -141,7 +141,7 @@ void DrmHostManager::ServiceThreadMain()
             libsToLoad.push_back(fullPath);
         }
     }
-    for (const auto& libpath : libsToLoad) {
+    for (const auto &libpath : libsToLoad) {
         std::lock_guard<std::mutex> lockLib(libMutex);
         void *handle = dlopen(libpath.c_str(), RTLD_LAZY);
         if (handle) {

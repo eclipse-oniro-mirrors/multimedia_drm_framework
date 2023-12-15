@@ -153,7 +153,7 @@ struct CryptoInfo {
 
 struct DrmBuffer {
     uint32_t bufferType;
-    int fd;
+    uint32_t fd;
     uint32_t bufferLen;
 };
 

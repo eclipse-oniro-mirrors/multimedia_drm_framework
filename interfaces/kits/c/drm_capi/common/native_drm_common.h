@@ -279,15 +279,15 @@ typedef struct OH_DRM_Uint8CharBufferPair {
  * @version 1.0
  */
 typedef struct OH_DRM_MediaKeyRequest {
-    /**
+    /* *
      * Media key request type.
      */
     OH_DRM_MediaKeyRequestType type;
-    /**
+    /* *
      * Media key request data sent to media key server.
      */
     OH_DRM_Uint8Buffer data;
-    /**
+    /* *
      * Media key server URL.
      */
     OH_DRM_CharBuffer defaultURL;

@@ -59,8 +59,6 @@ napi_value MediaKeySessionNapi::Init(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("removeLicense", RemoveLicense),
         DECLARE_NAPI_FUNCTION("getSecurityLevel", GetSecurityLevel),
         DECLARE_NAPI_FUNCTION("getDecryptModule", GetDecryptModule),
-        DECLARE_NAPI_FUNCTION("addEventListener", AddEventListener),
-        DECLARE_NAPI_FUNCTION("deleteEventListener", DeleteEventListener),
         DECLARE_NAPI_FUNCTION("requireSecureDecoderModule", RequireSecureDecoderModule),
         DECLARE_NAPI_FUNCTION("destroy", Destroy),
         DECLARE_NAPI_FUNCTION("on", SetEventCallback),
@@ -127,6 +125,7 @@ void MediaKeySessionNapi::MediaKeySessionNapiDestructor(napi_env env, void *nati
     MediaKeySessionNapi *keySessionNapiObj = reinterpret_cast<MediaKeySessionNapi *>(nativeObject);
     if (keySessionNapiObj != nullptr) {
         keySessionNapiObj->~MediaKeySessionNapi();
+        keySessionNapiObj = nullptr;
     }
     DRM_INFO_LOG("MediaKeySessionNapi::MediaKeySessionNapiDestructor exit.");
 }
@@ -200,8 +199,10 @@ napi_value MediaKeySessionNapi::Destroy(napi_env env, napi_callback_info info)
 
     napi_get_undefined(env, &result);
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
-    if (status == napi_ok && keySessionNapi != nullptr) {
+    if (status == napi_ok && keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr) {
         keySessionNapi->keySessionImpl_->Release();
+        keySessionNapi->~MediaKeySessionNapi();
+        keySessionNapi = nullptr;
     } else {
         DRM_ERR_LOG("MediaKeySessionNapi Release call Failed!");
     }
@@ -225,7 +226,7 @@ static napi_value DealOptionalData(napi_env env, napi_value param3,
             napi_value tmpData;
             napi_value tmpName;
             napi_value tmpValue;
-            const int MAX_OPTIONAL_DATA_LEN = 500;
+            const int32_t MAX_OPTIONAL_DATA_LEN = 500;
             char tmpBuffer[MAX_OPTIONAL_DATA_LEN];
             size_t tmpLength = 0;
 
@@ -347,8 +348,9 @@ napi_value MediaKeySessionNapi::GenerateLicenseRequest(napi_env env, napi_callba
     licenseRequestInfo.initData = initDataStr;
     licenseRequestInfo.optionalData = tmpOptionalData;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
-    DRM_CHECK_AND_RETURN_RET_LOG((keySessionNapi != nullptr), nullptr, "MediaKeySessionNapi get keySessionNapi fail!");
-    int ret = keySessionNapi->keySessionImpl_->GenerateLicenseRequest(licenseRequestInfo, licenseRequest);
+    DRM_CHECK_AND_RETURN_RET_LOG((keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr), nullptr,
+        "MediaKeySessionNapi get keySessionNapi fail!");
+    int32_t ret = keySessionNapi->keySessionImpl_->GenerateLicenseRequest(licenseRequestInfo, licenseRequest);
     DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr, "MediaKeySessionNapi GenerateLicenseRequest call Failed!");
     napi_value result = DealLicenseRequest(env, licenseRequest);
     DRM_INFO_LOG("MediaKeySessionNapi::GenerateLicenseRequest exit");
@@ -390,12 +392,10 @@ napi_value MediaKeySessionNapi::ProcessLicenseResponse(napi_env env, napi_callba
     std::vector<uint8_t> licenseResponse(reponseDataPtr, reponseDataPtr + reponseDataLen);
 
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
-    if (status == napi_ok && keySessionNapi != nullptr) {
-        int ret = keySessionNapi->keySessionImpl_->ProcessLicenseResponse(licenseId, licenseResponse);
-        if (ret != napi_ok) {
-            DRM_ERR_LOG("napi ProcessLicenseResponse faild!");
-            return nullptr;
-        }
+    if (status == napi_ok && keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr) {
+        int32_t ret = keySessionNapi->keySessionImpl_->ProcessLicenseResponse(licenseId, licenseResponse);
+        DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr,
+            "MediaKeySessionNapi ProcessLicenseResponse call Failed!");
         size_t licenseIdLen = licenseId.size();
         NAPI_CALL(env, napi_create_array(env, &result));
         for (size_t i = 0; i < licenseIdLen; i++) {
@@ -445,14 +445,14 @@ napi_value MediaKeySessionNapi::GenerateOfflineReleaseRequest(napi_env env, napi
     std::vector<uint8_t> licenseIdVec(licenseIdPtr, licenseIdPtr + licenseIdLen);
 
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
-    if (status == napi_ok && keySessionNapi != nullptr) {
-        int ret = keySessionNapi->keySessionImpl_->GenerateOfflineReleaseRequest(licenseIdVec, releaseRequest);
-        if (ret != napi_ok) {
-            DRM_ERR_LOG("napi GenerateOfflineReleaseRequest faild!");
-            return nullptr;
-        }
+    if (status == napi_ok && keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr) {
+        int32_t ret = keySessionNapi->keySessionImpl_->GenerateOfflineReleaseRequest(licenseIdVec,
+            releaseRequest);
+        DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr,
+            "MediaKeySessionNapi GenerateOfflineReleaseRequest call Failed!");
     } else {
         DRM_ERR_LOG("MediaKeySessionNapi ProcessLicenseResponse call Failed!");
+        return nullptr;
     }
 
     size_t releaseRequestLen = releaseRequest.size();
@@ -502,8 +502,9 @@ napi_value MediaKeySessionNapi::ProcessOfflineReleaseResponse(napi_env env, napi
 
     MediaKeySessionNapi *keySessionNapi = nullptr;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
-    DRM_CHECK_AND_RETURN_RET_LOG((keySessionNapi != nullptr), nullptr, "MediaKeySessionNapi get keySessionNapi fail!");
-    int ret = keySessionNapi->keySessionImpl_->ProcessOfflineReleaseResponse(licenseIdVec, responseVec);
+    DRM_CHECK_AND_RETURN_RET_LOG((keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr),
+        nullptr, "MediaKeySessionNapi get keySessionNapi fail!");
+    int32_t ret = keySessionNapi->keySessionImpl_->ProcessOfflineReleaseResponse(licenseIdVec, responseVec);
     DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr,
         "MediaKeySessionNapi ProcessOfflineReleaseResponse call Failed!");
 
@@ -549,12 +550,9 @@ napi_value MediaKeySessionNapi::CheckLicenseStatus(napi_env env, napi_callback_i
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
 
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
-    if (status == napi_ok && keySessionNapi != nullptr) {
-        int ret = keySessionNapi->keySessionImpl_->CheckLicenseStatus(licenseStatus);
-        if (ret != napi_ok) {
-            DRM_ERR_LOG("napi CheckLicenseStatus faild!");
-            return nullptr;
-        }
+    if (status == napi_ok && keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr) {
+        int32_t ret = keySessionNapi->keySessionImpl_->CheckLicenseStatus(licenseStatus);
+        DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr, "MediaKeySessionNapi CheckLicenseStatus call Failed!");
     } else {
         DRM_ERR_LOG("MediaKeySessionNapi CheckLicenseStatus call Failed!");
     }
@@ -600,12 +598,10 @@ napi_value MediaKeySessionNapi::RestoreOfflineLicense(napi_env env, napi_callbac
     uint8_t *licenseIdPtr = reinterpret_cast<uint8_t *>(licenseId);
     std::vector<uint8_t> licenseIdVec(licenseIdPtr, licenseIdPtr + licenseIdLen);
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
-    if (status == napi_ok && keySessionNapi != nullptr) {
-        int ret = keySessionNapi->keySessionImpl_->RestoreOfflineLicense(licenseIdVec);
-        if (ret != napi_ok) {
-            DRM_ERR_LOG("napi RestoreOfflineLicense faild!");
-            return nullptr;
-        }
+    if (status == napi_ok && keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr) {
+        int32_t ret = keySessionNapi->keySessionImpl_->RestoreOfflineLicense(licenseIdVec);
+        DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr,
+            "MediaKeySessionNapi RestoreOfflineLicense call Failed!");
     } else {
         DRM_ERR_LOG("MediaKeySessionNapi RestoreOfflineLicense call Failed!");
     }
@@ -629,12 +625,9 @@ napi_value MediaKeySessionNapi::RemoveLicense(napi_env env, napi_callback_info i
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
     MediaKeySessionNapi *keySessionNapi = nullptr;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
-    if (status == napi_ok && keySessionNapi != nullptr) {
-        int ret = keySessionNapi->keySessionImpl_->RemoveLicense();
-        if (ret != napi_ok) {
-            DRM_ERR_LOG("napi RemoveLicense faild!");
-            return nullptr;
-        }
+    if (status == napi_ok && keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr) {
+        int32_t ret = keySessionNapi->keySessionImpl_->RemoveLicense();
+        DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr, "MediaKeySessionNapi RemoveLicense call Failed!");
     } else {
         DRM_ERR_LOG("MediaKeySessionNapi RemoveLicense call Failed!");
     }
@@ -669,7 +662,7 @@ napi_value MediaKeySessionNapi::RequireSecureDecoderModule(napi_env env, napi_ca
     DRM_CHECK_AND_RETURN_RET_LOG((keySessionNapi != nullptr), nullptr, "MediaKeySessionNapi get keySessionNapi fail!");
     DRM_CHECK_AND_RETURN_RET_LOG((keySessionNapi->keySessionImpl_ != nullptr), nullptr, "keySessionImpl_ == nullptr.");
 
-    int ret = keySessionNapi->keySessionImpl_->RequireSecureDecoderModule(mimeType, &statusValue);
+    int32_t ret = keySessionNapi->keySessionImpl_->RequireSecureDecoderModule(mimeType, &statusValue);
     DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr,
         "MediaKeySessionNapi RequireSecureDecoderModule call Failed!");
     status = napi_get_boolean(env, statusValue, &result);
@@ -694,14 +687,15 @@ napi_value MediaKeySessionNapi::GetSecurityLevel(napi_env env, napi_callback_inf
     NAPI_ASSERT(env, argc <= ARGS_ONE, "requires 1 parameters maximum");
     IMediaKeySessionService::SecurityLevel level = (IMediaKeySessionService::SecurityLevel)0;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
-    if (status == napi_ok && keySessionNapi != nullptr) {
-        keySessionNapi->keySessionImpl_->GetSecurityLevel(&level);
+    if (status == napi_ok && keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr) {
+        int32_t ret = keySessionNapi->keySessionImpl_->GetSecurityLevel(&level);
+        DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr, "MediaKeySessionNapi GetSecurityLevel call Failed!");
     } else {
         DRM_ERR_LOG("MediaKeySessionNapi GetSecurityLevel call Failed!");
         return nullptr;
     }
 
-    NAPI_CALL(env, napi_create_int32(env, (int)level, &result));
+    NAPI_CALL(env, napi_create_int32(env, (int32_t)level, &result));
     DRM_INFO_LOG("MediaKeySessionNapi::GetSecurityLevel exit");
     return result;
 }
@@ -721,7 +715,7 @@ napi_value MediaKeySessionNapi::GetDecryptModule(napi_env env, napi_callback_inf
     MediaKeySessionNapi *keySessionNapi = nullptr;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
     sptr<MediaDecryptModuleImpl> mediaDecryptModuleImpl = nullptr;
-    if (status == napi_ok && keySessionNapi != nullptr) {
+    if (status == napi_ok && keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr) {
         mediaDecryptModuleImpl = keySessionNapi->keySessionImpl_->GetDecryptModule();
         if (mediaDecryptModuleImpl == nullptr) {
             DRM_ERR_LOG("MediaKeySessionNapi mediaDecryptModuleImpl get failed!!!");
@@ -733,18 +727,6 @@ napi_value MediaKeySessionNapi::GetDecryptModule(napi_env env, napi_callback_inf
 
     result = MediaDecryptModuleNapi::GetDecryptModule(env, mediaDecryptModuleImpl);
     DRM_INFO_LOG("MediaKeySessionNapi::GetDecryptModule exit.");
-    return result;
-}
-
-napi_value MediaKeySessionNapi::AddEventListener(napi_env env, napi_callback_info info)
-{
-    napi_value result = nullptr;
-    return result;
-}
-
-napi_value MediaKeySessionNapi::DeleteEventListener(napi_env env, napi_callback_info info)
-{
-    napi_value result = nullptr;
     return result;
 }
 

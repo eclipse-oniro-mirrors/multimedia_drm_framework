@@ -22,7 +22,7 @@
 
 namespace OHOS {
 namespace DrmStandard {
-using ProcessRemoteRequestFunc = int (*)(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+using ProcessRemoteRequestFunc = int32_t (*)(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
 struct ProcessRemoteRequestFuncArray {
@@ -30,46 +30,46 @@ struct ProcessRemoteRequestFuncArray {
     ProcessRemoteRequestFunc processFunc;
 };
 
-static int ProcessCreatekeySession(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessCreatekeySession(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
-static int ProcessKeySystemRequest(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessKeySystemRequest(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
-static int ProcessKeySystemResponse(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessKeySystemResponse(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
-static int ProcessSetConfigurationString(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessSetConfigurationString(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
-static int ProcessGetConfigurationString(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessGetConfigurationString(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
-static int ProcessSetConfigurationByteArray(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessSetConfigurationByteArray(MediaKeySystemServiceStub *stub, MessageParcel &data,
+    MessageParcel &reply, MessageOption &option);
+
+static int32_t ProcessGetConfigurationByteArray(MediaKeySystemServiceStub *stub, MessageParcel &data,
+    MessageParcel &reply, MessageOption &option);
+
+static int32_t ProcessGetMetircs(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
-static int ProcessGetConfigurationByteArray(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessReleaseKeySystem(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
-static int ProcessGetMetircs(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessGetMaxSecurityLevel(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
-static int ProcessReleaseKeySystem(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessGetCertificateStatus(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
-static int ProcessGetMaxSecurityLevel(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessGetOfflineLicenseIds(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
-static int ProcessGetCertificateStatus(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
-    MessageOption &option);
+static int32_t ProcessGetOfflineLicenseStatus(MediaKeySystemServiceStub *stub, MessageParcel &data,
+    MessageParcel &reply, MessageOption &option);
 
-static int ProcessGetOfflineLicenseIds(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
-    MessageOption &option);
-
-static int ProcessGetOfflineLicenseStatus(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
-    MessageOption &option);
-
-static int ProcessRemoveOfflineLicense(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessRemoveOfflineLicense(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
 static int32_t ProcessSetCallabck(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
@@ -104,13 +104,13 @@ MediaKeySystemServiceStub::~MediaKeySystemServiceStub()
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " Instances destroy", (POINTER_MASK & reinterpret_cast<uintptr_t>(this)));
 }
 
-static int ProcessCreatekeySession(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessCreatekeySession(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
     DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_CREATE_KEY_SESSION enter.");
     sptr<IMediaKeySessionService> keySessionServiceProxy = nullptr;
     const int32_t securityLevel = data.ReadInt32();
-    int errCode =
+    int32_t errCode =
         stub->CreateMediaKeySession((IMediaKeySessionService::SecurityLevel)securityLevel, keySessionServiceProxy);
     if (errCode != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySystemServiceStub CreateMediaKeySession failed : %{public}d", errCode);
@@ -124,7 +124,7 @@ static int ProcessCreatekeySession(MediaKeySystemServiceStub *stub, MessageParce
     return errCode;
 }
 
-static int ProcessKeySystemRequest(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessKeySystemRequest(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
     DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GENERATE_KEYSYSTEM_REQUEST enter.");
@@ -149,13 +149,13 @@ static int ProcessKeySystemRequest(MediaKeySystemServiceStub *stub, MessageParce
     return ret;
 }
 
-static int ProcessKeySystemResponse(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessKeySystemResponse(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
     DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_PROCESS_KEYSYSTEM_RESPONSE enter.");
     std::vector<uint8_t> response;
     uint32_t responseSize = data.ReadInt32();
-    for (int i = 0; i < responseSize; i++) {
+    for (int32_t i = 0; i < responseSize; i++) {
         response.push_back(data.ReadUint8());
     }
     int32_t ret = stub->ProcessKeySystemResponse(response);
@@ -163,7 +163,7 @@ static int ProcessKeySystemResponse(MediaKeySystemServiceStub *stub, MessageParc
     return ret;
 }
 
-static int ProcessSetConfigurationString(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessSetConfigurationString(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
     DRM_INFO_LOG("bMediaKeySystemServiceStub MEDIA_KEY_SYSTEM_SETCONFIGURATION enter.");
@@ -174,7 +174,7 @@ static int ProcessSetConfigurationString(MediaKeySystemServiceStub *stub, Messag
     return ret;
 }
 
-static int ProcessGetConfigurationString(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessGetConfigurationString(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
     DRM_INFO_LOG("bMediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GETCONFIGURATION enter.");
@@ -189,14 +189,14 @@ static int ProcessGetConfigurationString(MediaKeySystemServiceStub *stub, Messag
     return ret;
 }
 
-static int ProcessSetConfigurationByteArray(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
-    MessageOption &option)
+static int32_t ProcessSetConfigurationByteArray(MediaKeySystemServiceStub *stub, MessageParcel &data,
+    MessageParcel &reply, MessageOption &option)
 {
     DRM_INFO_LOG("bMediaKeySystemServiceStub MEDIA_KEY_SYSTEM_SETCONFIGURATION enter.");
     std::string configName = data.ReadString();
     std::vector<uint8_t> value;
     uint32_t valueSize = data.ReadInt32();
-    for (int i = 0; i < valueSize; i++) {
+    for (int32_t i = 0; i < valueSize; i++) {
         value.push_back(data.ReadUint8());
     }
     int32_t ret = stub->SetConfigurationByteArray(configName, value);
@@ -204,8 +204,8 @@ static int ProcessSetConfigurationByteArray(MediaKeySystemServiceStub *stub, Mes
     return ret;
 }
 
-static int ProcessGetConfigurationByteArray(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
-    MessageOption &option)
+static int32_t ProcessGetConfigurationByteArray(MediaKeySystemServiceStub *stub, MessageParcel &data,
+    MessageParcel &reply, MessageOption &option)
 {
     DRM_INFO_LOG("bMediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GETCONFIGURATION enter.");
     std::string configName = data.ReadString();
@@ -225,7 +225,7 @@ static int ProcessGetConfigurationByteArray(MediaKeySystemServiceStub *stub, Mes
     return ret;
 }
 
-static int ProcessGetMetircs(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessGetMetircs(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
     DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GETMETRIC enter.");
@@ -240,7 +240,7 @@ static int ProcessGetMetircs(MediaKeySystemServiceStub *stub, MessageParcel &dat
     return ret;
 }
 
-static int ProcessReleaseKeySystem(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessReleaseKeySystem(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
     DRM_INFO_LOG("MediaKeySystemServiceStub KEY_SESSION_RELEASE enter.");
@@ -249,7 +249,7 @@ static int ProcessReleaseKeySystem(MediaKeySystemServiceStub *stub, MessageParce
     return ret;
 }
 
-static int ProcessGetMaxSecurityLevel(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessGetMaxSecurityLevel(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
     DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GETMAXSECURITYLEVEL enter.");
@@ -263,7 +263,7 @@ static int ProcessGetMaxSecurityLevel(MediaKeySystemServiceStub *stub, MessagePa
     return ret;
 }
 
-static int ProcessGetCertificateStatus(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessGetCertificateStatus(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
     DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GETCERTIFICATESTATUS enter.");
@@ -277,7 +277,7 @@ static int ProcessGetCertificateStatus(MediaKeySystemServiceStub *stub, MessageP
     return ret;
 }
 
-static int ProcessGetOfflineLicenseIds(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessGetOfflineLicenseIds(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
     DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GET_OFFLINELICENSEIDS enter.");
@@ -297,13 +297,13 @@ static int ProcessGetOfflineLicenseIds(MediaKeySystemServiceStub *stub, MessageP
     return ret;
 }
 
-static int ProcessGetOfflineLicenseStatus(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
-    MessageOption &option)
+static int32_t ProcessGetOfflineLicenseStatus(MediaKeySystemServiceStub *stub, MessageParcel &data,
+    MessageParcel &reply, MessageOption &option)
 {
     DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GET_OFFLINEKEY_STATUS enter.");
     std::vector<uint8_t> licenseId;
     uint32_t licenseIdSize = data.ReadInt32();
-    for (int i = 0; i < licenseIdSize; i++) {
+    for (int32_t i = 0; i < licenseIdSize; i++) {
         licenseId.push_back(data.ReadUint8());
     }
     IMediaKeySessionService::OfflineLicenseStatus status;
@@ -320,13 +320,13 @@ static int ProcessGetOfflineLicenseStatus(MediaKeySystemServiceStub *stub, Messa
     return ret;
 }
 
-static int ProcessRemoveOfflineLicense(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessRemoveOfflineLicense(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
     DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_REMOVE_OFFLINELICENSE enter.");
     std::vector<uint8_t> licenseId;
     uint32_t licenseIdSize = data.ReadInt32();
-    for (int i = 0; i < licenseIdSize; i++) {
+    for (int32_t i = 0; i < licenseIdSize; i++) {
         licenseId.push_back(data.ReadUint8());
     }
     int32_t ret = stub->RemoveOfflineLicense(licenseId);
@@ -353,7 +353,7 @@ static int32_t ProcessSetCallabck(MediaKeySystemServiceStub *stub, MessageParcel
     return errCode;
 }
 
-int MediaKeySystemServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
+int32_t MediaKeySystemServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
     DRM_CHECK_AND_RETURN_RET_LOG(data.ReadInterfaceToken() == GetDescriptor(), -1,
