@@ -38,6 +38,10 @@ napi_value DrmNapi::Init(napi_env env, napi_value exports)
 {
     DRM_INFO_LOG("DrmNapi Init enter.");
     napi_property_descriptor drmproperty[] = {
+        DECLARE_NAPI_FUNCTION("getMediaKeySystemTest", CreateMediaKeySystemInstance),
+    };
+    DRM_DEBUG_LOG("DrmNapi enter properties");
+    napi_property_descriptor drm_static_properties[] = {
         DECLARE_NAPI_STATIC_FUNCTION("createMediaKeySystem", CreateMediaKeySystemInstance),
         DECLARE_NAPI_STATIC_FUNCTION("isMediaKeySystemSupported", IsMediaKeySystemSupported),
     };
@@ -50,9 +54,13 @@ napi_value DrmNapi::Init(napi_env env, napi_value exports)
 	
     status = napi_create_reference(env, constructor, 1, &sConstructor_);
     DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "Failed to create reference of DrmNapi constructor");
-
     status = napi_set_named_property(env, exports, DRM_NAPI_CLASS_NAME, constructor);
     DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "Failed to set DrmNapi constructor");
+
+    status = napi_define_properties(env, exports, sizeof(drm_static_properties) / sizeof(drm_static_properties[0]),
+        drm_static_properties);
+    DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "Failed to define static DrmNapi function");
+
     DRM_INFO_LOG("DrmNapi Init success");
     return exports;
 }
