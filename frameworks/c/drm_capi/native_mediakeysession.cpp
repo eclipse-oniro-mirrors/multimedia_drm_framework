@@ -83,7 +83,6 @@ OH_DrmErrCode OH_MediaKeySession_GenerateMediaKeyRequest(OH_MediaKeySession *med
             info->optionsData->value.buffer + info->optionsData->value.bufferLen);
         licenseRequestInfo.optionalData.insert(std::make_pair(optionsname, optionsvalue));
     }
-
     MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySession);
     DRM_CHECK_AND_RETURN_RET_LOG(sessionObject != nullptr, DRM_ERR_INVALID_VAL, "sessionObject is nullptr!");
     int ret = sessionObject->sessionImpl_->GenerateLicenseRequest(licenseRequestInfo, licenseRequest);
@@ -160,7 +159,6 @@ OH_DrmErrCode OH_MediaKeySession_CheckMediaKeyStatus(OH_MediaKeySession *mediaKe
     MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySessoin);
     DRM_CHECK_AND_RETURN_RET_LOG(sessionObject != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_CheckMediaKeyStatus sessionObject is nullptr!");
-
     int32_t result = sessionObject->sessionImpl_->CheckLicenseStatus(licenseStatus);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationByteArray mediaKeySystemImpl::SetConfigurationByteArray faild!");
@@ -287,6 +285,8 @@ OH_DrmErrCode OH_MediaKeySession_GetContentProtectionLevel(OH_MediaKeySession *m
     DRM_INFO_LOG("OH_MediaKeySession_GetSecurityLevel enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySessoin != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_GetSecurityLevel keySession is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(contentProtectionLevel != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySession_GetSecurityLevel contentProtectionLevel is nullptr!");
     IMediaKeySessionService::SecurityLevel level = IMediaKeySessionService::SecurityLevel::SECURITY_LEVEL_UNKNOWN;
     MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySessoin);
     DRM_CHECK_AND_RETURN_RET_LOG((sessionObject != nullptr), DRM_ERR_INVALID_VAL,
@@ -310,6 +310,8 @@ OH_DrmErrCode OH_MediaKeySession_RequireSecureDecoderModule(OH_MediaKeySession *
         "OH_MediaKeySession_RequireSecureDecoderModule keySession is nullptr!");
     DRM_CHECK_AND_RETURN_RET_LOG(mimeType != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_RequireSecureDecoderModule mimeType is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(status != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySession_RequireSecureDecoderModule status is nullptr!");
     std::string mimeTypeBuf = std::string(mimeType);
     bool statusValue = false;
     int32_t result = DRM_ERR_ERROR;
