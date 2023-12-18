@@ -167,6 +167,9 @@ OH_DrmErrCode OH_MediaKeySystem_GetConfigurationString(OH_MediaKeySystem *mediaK
     DRM_CHECK_AND_RETURN_RET_LOG(*value != nullptr, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationString malloc faild!");
     *valueLen = valuePtr.size();
+    if (valuePtr.size() == 0) {
+        DRM_DEBUG_LOG("valuePtr.data() is nullptr!");
+    }
     int32_t ret = memcpy_s(*value, valuePtr.size(), valuePtr.c_str(), valuePtr.size());
     if (ret != 0) {
         DRM_ERR_LOG("OH_GetConfigurationString memcpy_s faild!");
@@ -233,6 +236,11 @@ OH_DrmErrCode OH_MediaKeySystem_GetConfigurationByteArray(OH_MediaKeySystem *med
     result = systemObject->systemImpl_->GetConfigurationByteArray(name, valuePtr);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_GetConfigurationByteArray mediaKeySystemImpl::GetConfigurationByteArray faild!");
+    *valueLen = valuePtr.size();
+    if (valuePtr.size() == 0) {
+        DRM_DEBUG_LOG("valuePtr.data() is nullptr!");
+        return DRM_ERR_OK;
+    }
     *value = (unsigned char *)malloc(valuePtr.size());
     DRM_CHECK_AND_RETURN_RET_LOG(*value != nullptr, DRM_ERR_INVALID_VAL,
         "OH_GetConfigurationByteArray malloc faild!");
@@ -241,7 +249,6 @@ OH_DrmErrCode OH_MediaKeySystem_GetConfigurationByteArray(OH_MediaKeySystem *med
         DRM_ERR_LOG("OH_GetConfigurationByteArray memcpy_s faild!");
         return DRM_ERR_ERROR;
     }
-    *valueLen = valuePtr.size();
     DRM_INFO_LOG("OH_GetConfigurationByteArray exit");
     return DRM_ERR_OK;
 }
@@ -354,16 +361,14 @@ OH_DrmErrCode OH_MediaKeySystem_GenerateKeySystemRequest(OH_MediaKeySystem *medi
     DRM_CHECK_AND_RETURN_RET_LOG(*request != nullptr, DRM_ERR_INVALID_VAL, "malloc faild!");
     int32_t ret = memcpy_s(*request, requestData.size(), requestData.data(), requestData.size());
     if (ret != 0) {
-        DRM_ERR_LOG(" memcpy_s faild!");
-        return DRM_ERR_ERROR;
+        DRM_DEBUG_LOG(" requestData.data() is nullptr!");
     }
     *requestLen = requestData.size();
     *defaultUrl = (char *)malloc(defaultUrlData.size());
     DRM_CHECK_AND_RETURN_RET_LOG(*defaultUrl != nullptr, DRM_ERR_INVALID_VAL, "malloc faild!");
     ret = memcpy_s(*defaultUrl, defaultUrlData.size(), defaultUrlData.data(), defaultUrlData.size());
     if (ret != 0) {
-        DRM_ERR_LOG(" memcpy_s faild!");
-        return DRM_ERR_ERROR;
+        DRM_DEBUG_LOG(" defaultUrlData.data() is nullptr!");
     }
     *defaultUrlLen = defaultUrlData.size();
     return DRM_ERR_OK;
@@ -514,6 +519,11 @@ OH_DrmErrCode OH_MediaKeySystem_GetOfflineMediaKeyIds(OH_MediaKeySystem *mediaKe
     int32_t result = systemObject->systemImpl_->GetOfflineLicenseIds(licenseIds);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_GetOfflineMediaKeyIds faild!");
+    if (licenseIds.size() == 0) {
+        DRM_DEBUG_LOG("licenseIds.data() is nullptr!");
+        DRM_INFO_LOG("OH_MediaKeySystem_GetOfflineMediaKeyIds exit.");
+        return DRM_ERR_OK;
+    }
     *mediaKeyIds = vectorToC2DArray(licenseIds);
     DRM_INFO_LOG("OH_MediaKeySystem_GetOfflineMediaKeyIds exit.");
     return DRM_ERR_OK;
