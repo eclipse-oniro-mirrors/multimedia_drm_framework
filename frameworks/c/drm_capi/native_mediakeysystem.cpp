@@ -87,11 +87,12 @@ bool OH_MediaKeySystem_IsSupported3(const char *uuid, const char *mimeType, OH_D
 OH_DrmErrCode OH_MediaKeySystem_Create(const char *name, OH_MediaKeySystem **mediaKeySystem)
 {
     DRM_CHECK_AND_RETURN_RET_LOG(name != nullptr, DRM_ERR_INVALID_VAL, "name is nullptr!");
-
+    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, DRM_ERR_INVALID_VAL, "mediaKeySystem is nullptr!");
     OHOS::sptr<MediaKeySystemFactoryImpl> factory = MediaKeySystemFactoryImpl::GetInstance();
     DRM_CHECK_AND_RETURN_RET_LOG(factory != nullptr, DRM_ERR_INVALID_VAL, "factory is nullptr!");
 
     std::string nameStr = name;
+    DRM_CHECK_AND_RETURN_RET_LOG(nameStr.size() != 0, DRM_ERR_INVALID_VAL, "nameStr.size() is zero");
     OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> system = nullptr;
     factory->CreateMediaKeySystem(nameStr, &system);
     DRM_CHECK_AND_RETURN_RET_LOG(system != nullptr, DRM_ERR_INVALID_VAL, "system create by name failed!");
@@ -442,7 +443,8 @@ OH_DrmErrCode OH_MediaKeySystem_CreateMediaKeySession(OH_MediaKeySystem *mediaKe
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, DRM_ERR_INVALID_VAL, "mediaKeySystem is nullptr!");
     DRM_CHECK_AND_RETURN_RET_LOG(level != nullptr, DRM_ERR_INVALID_VAL, "level is nullptr!");
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySession != nullptr, DRM_ERR_INVALID_VAL, "level is nullptr!");
-
+    DRM_CHECK_AND_RETURN_RET_LOG(*level > CONTENT_PROTECTION_LEVEL_UNKNOWN, DRM_ERR_INVALID_VAL, "level is 1 - 5!");
+    DRM_CHECK_AND_RETURN_RET_LOG(*level <= CONTENT_PROTECTION_LEVEL_MAX, DRM_ERR_INVALID_VAL, "level is 1 - 5!");
     struct MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, DRM_ERR_INVALID_VAL, "systemObject is nullptr!");
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL, "systemImpl_ is nullptr!");
