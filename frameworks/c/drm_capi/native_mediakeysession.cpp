@@ -41,10 +41,7 @@ static OH_DRM_MediaKeyRequest *DealMediaKeyRequest(IMediaKeySessionService::Lice
     int ret = memcpy_s(mediaKeyRequest->data.buffer, licenseRequest.mData.size(), licenseRequest.mData.data(),
         licenseRequest.mData.size());
     if (ret != 0) {
-        DRM_ERR_LOG("memcpy_s faild!");
-        free(mediaKeyRequest);
-        mediaKeyRequest = NULL;
-        return nullptr;
+        DRM_DEBUG_LOG("licenseRequest.mData.data() is nullptr!");
     }
     mediaKeyRequest->data.bufferLen = licenseRequest.mData.size();
     offset += licenseRequest.mData.size();
@@ -52,10 +49,7 @@ static OH_DRM_MediaKeyRequest *DealMediaKeyRequest(IMediaKeySessionService::Lice
     ret = memcpy_s(mediaKeyRequest->defaultURL.buffer, licenseRequest.mDefaultURL.size(),
         licenseRequest.mDefaultURL.data(), licenseRequest.mDefaultURL.size());
     if (ret != 0) {
-        DRM_ERR_LOG("memcpy_s faild!");
-        free(mediaKeyRequest);
-        mediaKeyRequest = NULL;
-        return nullptr;
+        DRM_DEBUG_LOG("licenseRequest.mDefaultURL.data() is nullptr!");
     }
     mediaKeyRequest->defaultURL.bufferLen = licenseRequest.mDefaultURL.size();
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeyRequest != nullptr, nullptr, "mediaKeyRequest is nullptr!");
@@ -110,9 +104,13 @@ OH_DrmErrCode OH_MediaKeySession_ProcessMediaKeyResponse(OH_MediaKeySession *key
     int32_t ret = sessionObject->sessionImpl_->ProcessLicenseResponse(keyIdVec, licenseResponseVec);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_INVALID_VAL, "got licenseResponse null!");
     DRM_CHECK_AND_RETURN_RET_LOG(!licenseResponseVec.empty(), DRM_ERR_INVALID_VAL, "got licenseResponse null!");
+    *mediaKeyIdLen = keyIdVec.size();
+    if (keyIdVec.size() == 0) {
+        DRM_DEBUG_LOG("keyIdVec.data() is nullptr!");
+        return DRM_ERR_OK;
+    }
     *mediaKeyId = (unsigned char *)malloc(keyIdVec.size());
     DRM_CHECK_AND_RETURN_RET_LOG(*mediaKeyId != nullptr, DRM_ERR_INVALID_VAL, "malloc faild!");
-    *mediaKeyIdLen = keyIdVec.size();
     ret = memcpy_s(*mediaKeyId, keyIdVec.size(), keyIdVec.data(), keyIdVec.size());
     if (ret != 0) {
         DRM_ERR_LOG("OH_MediaKeySession_ProcessMediaKeyResponse memcpy_s faild!");
@@ -214,6 +212,11 @@ OH_DrmErrCode OH_MediaKeySession_GenerateOfflineReleaseRequest(OH_MediaKeySessio
     uint32_t result = sessionObject->sessionImpl_->GenerateOfflineReleaseRequest(licenseIdVec, ReleaseRequest);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_GenerateOfflineReleaseRequest GenerateOfflineReleaseRequest faild!");
+    *releaseRequestLen = ReleaseRequest.size();
+    if (*releaseRequestLen == 0) {
+        DRM_DEBUG_LOG("ReleaseRequest.data() is nullptr!");
+        return DRM_ERR_OK;
+    }
     *releaseRequest = (unsigned char *)malloc(ReleaseRequest.size());
     DRM_CHECK_AND_RETURN_RET_LOG(*releaseRequest != nullptr, DRM_ERR_INVALID_VAL, "malloc faild!");
     int32_t ret = memcpy_s(*releaseRequest, ReleaseRequest.size(), ReleaseRequest.data(), ReleaseRequest.size());
@@ -221,7 +224,6 @@ OH_DrmErrCode OH_MediaKeySession_GenerateOfflineReleaseRequest(OH_MediaKeySessio
         DRM_ERR_LOG("OH_MediaKeySession_GenerateOfflineReleaseRequest memcpy_s faild!");
         return DRM_ERR_INVALID_VAL;
     }
-    *releaseRequestLen = ReleaseRequest.size();
     DRM_INFO_LOG("OH_MediaKeySession_GenerateOfflineReleaseRequest exit");
     return DRM_ERR_OK;
 }
