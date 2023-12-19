@@ -319,11 +319,13 @@ OH_DrmErrCode OH_MediaKeySystem_GetMaxContentProtectionLevel(OH_MediaKeySystem *
     DRM_CHECK_AND_RETURN_RET_LOG(contentProtectionLevel != nullptr, DRM_ERR_INVALID_VAL,
         "OH_GetMaxSecurityLevel contentProtectionLevel is nullptr!");
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-
+    int32_t result = DRM_ERR_ERROR;
     IMediaKeySessionService::SecurityLevel level = IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN;
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, DRM_ERR_INVALID_VAL,
         "OH_GetMaxSecurityLevel systemObject is nullptr!");
-    systemObject->systemImpl_->GetMaxSecurityLevel(&level);
+    result = systemObject->systemImpl_->GetMaxSecurityLevel(&level);
+    DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
+        "OH_GetMaxSecurityLevel  fail!");
     if (level < IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN ||
         level > IMediaKeySessionService::SECURITY_LEVEL_MAX) {
         DRM_ERR_LOG("mediaKeySystemImpl::GetMaxSecurityLevel faild!");
@@ -606,6 +608,5 @@ OH_DrmErrCode OH_MediaKeySystem_Destroy(OH_MediaKeySystem *mediaKeySystem)
         retCode = DRM_ERR_UNKNOWN;
     }
     delete mediaKeySystem;
-    mediaKeySystem = nullptr;
     return retCode;
 }
