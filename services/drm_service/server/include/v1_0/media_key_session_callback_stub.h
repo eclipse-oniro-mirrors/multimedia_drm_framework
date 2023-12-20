@@ -57,7 +57,6 @@ private:
     int32_t MediaKeySessionCallbackStubGetVersion(MessageParcel &mediaKeySessionCallbackData,
         MessageParcel &mediaKeySessionCallbackReply, MessageOption &mediaKeySessionCallbackOption);
 
-
     static inline ObjectDelegator<OHOS::HDI::Drm::V1_0::MediaKeySessionCallbackStub,
         OHOS::HDI::Drm::V1_0::IMediaKeySessionCallback>
         objDelegator_;

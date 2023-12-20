@@ -69,7 +69,6 @@ enum MediaKeySessionServiceCallbackRequestCode {
 enum MediaKeySystemServiceCallbackRequestCode {
     MEDIA_KEY_SYSTEM_SERVICE_CALLBACK_SEND_EVENT = 0,
 };
-
 } // namespace DrmStandard
 } // namespace OHOS
 

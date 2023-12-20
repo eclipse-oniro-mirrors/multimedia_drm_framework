@@ -210,8 +210,7 @@ napi_value MediaKeySessionNapi::Destroy(napi_env env, napi_callback_info info)
     return result;
 }
 
-static napi_value DealOptionalData(napi_env env, napi_value param3,
-    std::map<std::string, std::string> &tmpOptionalData)
+static napi_value DealOptionalData(napi_env env, napi_value param3, std::map<std::string, std::string> &tmpOptionalData)
 {
     napi_status status;
     bool isArray;
@@ -446,8 +445,7 @@ napi_value MediaKeySessionNapi::GenerateOfflineReleaseRequest(napi_env env, napi
 
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
     if (status == napi_ok && keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr) {
-        int32_t ret = keySessionNapi->keySessionImpl_->GenerateOfflineReleaseRequest(licenseIdVec,
-            releaseRequest);
+        int32_t ret = keySessionNapi->keySessionImpl_->GenerateOfflineReleaseRequest(licenseIdVec, releaseRequest);
         DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr,
             "MediaKeySessionNapi GenerateOfflineReleaseRequest call Failed!");
     } else {
@@ -502,8 +500,8 @@ napi_value MediaKeySessionNapi::ProcessOfflineReleaseResponse(napi_env env, napi
 
     MediaKeySessionNapi *keySessionNapi = nullptr;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
-    DRM_CHECK_AND_RETURN_RET_LOG((keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr),
-        nullptr, "MediaKeySessionNapi get keySessionNapi fail!");
+    DRM_CHECK_AND_RETURN_RET_LOG((keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr), nullptr,
+        "MediaKeySessionNapi get keySessionNapi fail!");
     int32_t ret = keySessionNapi->keySessionImpl_->ProcessOfflineReleaseResponse(licenseIdVec, responseVec);
     DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr,
         "MediaKeySessionNapi ProcessOfflineReleaseResponse call Failed!");
@@ -512,8 +510,7 @@ napi_value MediaKeySessionNapi::ProcessOfflineReleaseResponse(napi_env env, napi
     return result;
 }
 
-static napi_value vectorToJsArray(napi_env env,
-    std::map<std::string, MediaKeySessionKeyStatus> &licenseStatus)
+static napi_value vectorToJsArray(napi_env env, std::map<std::string, MediaKeySessionKeyStatus> &licenseStatus)
 {
     DRM_INFO_LOG("vectorToJsArray enter.");
     napi_value jsArray;

@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef DRM_NAPI_UTILS_H_
-#define DRM_NAPI_UTILS_H_
+#ifndef DRM_NAPI_UTILS_H
+#define DRM_NAPI_UTILS_H
 
 #include <vector>
 #include "drm_error_code.h"
@@ -58,7 +58,7 @@
         if ((callbackRef) == nullptr) {                             \
             napi_create_promise(env, &(deferred), &(result));       \
         }                                                           \
-    } while (0);
+    } while (0)
 
 #define DRM_NAPI_CREATE_RESOURCE_NAME(env, resource, resourceName)                 \
     do {                                                                           \

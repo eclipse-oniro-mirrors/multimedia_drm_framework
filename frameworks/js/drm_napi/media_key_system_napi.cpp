@@ -98,7 +98,7 @@ napi_value MediaKeySystemNapi::MediaKeySystemNapiConstructor(napi_env env, napi_
             return result;
         }
         obj->mediaKeySystemImpl_ = MediaKeySystemNapi::sMediaKeySystemImpl_;
-        obj->mediaKeySystemCallbackNapi_ = new(std::nothrow) MediaKeySystemCallbackNapi();
+        obj->mediaKeySystemCallbackNapi_ = new (std::nothrow) MediaKeySystemCallbackNapi();
         obj->mediaKeySystemImpl_->SetCallback(obj->mediaKeySystemCallbackNapi_);
 
         status = napi_wrap(env, jsThis, reinterpret_cast<void *>(obj.get()),
@@ -215,8 +215,7 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
         DRM_ERR_LOG("Could not able to read securityLevel argument!");
         return nullptr;
     }
-    IMediaKeySessionService::SecurityLevel securityLevel;
-    securityLevel = (IMediaKeySessionService::SecurityLevel)jsSecurityLevel;
+    IMediaKeySessionService::SecurityLevel securityLevel = (IMediaKeySessionService::SecurityLevel)jsSecurityLevel;
     if ((securityLevel < IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN) ||
         (securityLevel >= IMediaKeySessionService::SECURITY_LEVEL_MAX)) {
         DRM_ERR_LOG("jsSecurityLevel is invalid");
@@ -250,10 +249,9 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
     if (argc == ARGS_ZERO) {
         jsSecurityLevel = IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN;
     } else {
-        DRM_CHECK_AND_RETURN_RET_LOG(napi_get_value_int32(env, argv[PARAM0], &jsSecurityLevel) ==
-            napi_ok, nullptr, "MediaKeySystemNapi napi get jsSecurityLevel failure!");
-        IMediaKeySessionService::SecurityLevel securityLevel;
-        securityLevel = (IMediaKeySessionService::SecurityLevel)jsSecurityLevel;
+        DRM_CHECK_AND_RETURN_RET_LOG(napi_get_value_int32(env, argv[PARAM0], &jsSecurityLevel) == napi_ok, nullptr,
+            "MediaKeySystemNapi napi get jsSecurityLevel failure!");
+        IMediaKeySessionService::SecurityLevel securityLevel = (IMediaKeySessionService::SecurityLevel)jsSecurityLevel;
         if ((securityLevel < IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN) ||
             (securityLevel > IMediaKeySessionService::SECURITY_LEVEL_MAX)) {
             DRM_ERR_LOG("SecurityLevel is invalid");
@@ -748,8 +746,8 @@ napi_value MediaKeySystemNapi::GetOfflineLicenseStatus(napi_env env, napi_callba
         IMediaKeySessionService::OFFLINELICENSESTATUS_UNKNOWN;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
     if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->GetOfflineLicenseStatus(licenseIdVec,
-            offlineLicenseStatus);
+        int32_t ret =
+            mediaKeySystemNapi->mediaKeySystemImpl_->GetOfflineLicenseStatus(licenseIdVec, offlineLicenseStatus);
         if (ret != napi_ok) {
             DRM_ERR_LOG("napi GetOfflineLicenseStatus faild!");
             return nullptr;
@@ -883,8 +881,8 @@ napi_value MediaKeySystemNapi::SetEventCallback(napi_env env, napi_callback_info
         return result;
     }
 
-    MediaKeySystemNapi* mediaKeySystemNapi = nullptr;
-    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&mediaKeySystemNapi));
+    MediaKeySystemNapi *mediaKeySystemNapi = nullptr;
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
     if (status == napi_ok && mediaKeySystemNapi != nullptr) {
         napi_get_value_string_utf8(env, argv[PARAM0], buffer, PATH_MAX, &length);
         std::string eventType = std::string(buffer);
@@ -921,10 +919,10 @@ napi_value MediaKeySystemNapi::UnsetEventCallback(napi_env env, napi_callback_in
         return result;
     }
 
-    MediaKeySystemNapi* mediaKeySystemNapi = nullptr;
+    MediaKeySystemNapi *mediaKeySystemNapi = nullptr;
     char buffer[PATH_MAX];
     size_t length = 0;
-    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void**>(&mediaKeySystemNapi));
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
     if (status == napi_ok && mediaKeySystemNapi != nullptr) {
         napi_get_value_string_utf8(env, argv[PARAM0], buffer, PATH_MAX, &length);
         std::string eventType = std::string(buffer);
@@ -935,6 +933,5 @@ napi_value MediaKeySystemNapi::UnsetEventCallback(napi_env env, napi_callback_in
     }
     return result;
 }
-
 } // namespace DrmStandard
 } // namespace OHOS

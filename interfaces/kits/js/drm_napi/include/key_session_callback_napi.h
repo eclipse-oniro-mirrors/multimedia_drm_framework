@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_DRM_MediaKeySessionCallbackNapi_H_
-#define OHOS_DRM_MediaKeySessionCallbackNapi_H_
+#ifndef OHOS_DRM_MEDIAKEYSESSIONCALLBACKNAPI_H
+#define OHOS_DRM_MEDIAKEYSESSIONCALLBACKNAPI_H
 
 #include <map>
 #include "key_session_impl.h"

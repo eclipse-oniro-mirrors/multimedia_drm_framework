@@ -29,7 +29,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 namespace MediaKeySystemEvent {
 const std::string EVENT_STR_PROVISION_REQUIRED = "provisionRequired";
 const std::string EVENT_STR_SESSION_LOST = "sessionLost";

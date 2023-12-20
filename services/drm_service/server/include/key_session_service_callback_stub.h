@@ -30,8 +30,8 @@ public:
         MessageOption &option) override;
 
 private:
-    int32_t HandleSendEvent(MessageParcel& data);
-    int32_t HandleSendEventKeyChanged(MessageParcel& data);
+    int32_t HandleSendEvent(MessageParcel &data);
+    int32_t HandleSendEventKeyChanged(MessageParcel &data);
 };
 } // namespace DrmStandard
 } // namespace OHOS

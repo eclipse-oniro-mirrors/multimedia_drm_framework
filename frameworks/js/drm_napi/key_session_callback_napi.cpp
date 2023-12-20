@@ -73,8 +73,7 @@ void MediaKeySessionCallbackNapi::SendEvent(const std::string event, uint32_t ex
     napi_value args[ARGS_TWO] = {extraValue, array};
     napi_get_reference_value(env, callbackRef, &jsCallback);
     state = napi_call_function(env, nullptr, jsCallback, ARGS_TWO, args, &retVal);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok,
-        "%{public}s failed to napi_call_function", event.c_str());
+    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok, "%{public}s failed to napi_call_function", event.c_str());
 }
 
 void MediaKeySessionCallbackNapi::SendEventKeyChanged(
@@ -123,8 +122,7 @@ void MediaKeySessionCallbackNapi::SendEventKeyChanged(
     napi_value args[ARGS_TWO] = {map, hasNewGoodLicenseValue};
     napi_get_reference_value(env, callbackRef, &jsCallback);
     state = napi_call_function(env, nullptr, jsCallback, ARGS_TWO, args, &retVal);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok,
-        "failed to napi_call_function keyChanged");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok, "failed to napi_call_function keyChanged");
 }
 }
 }

@@ -126,7 +126,6 @@ private:
     int32_t MediaKeySessionStubGetVersion(MessageParcel &mediaKeySessionData, MessageParcel &mediaKeySessionReply,
         MessageOption &mediaKeySessionOption);
 
-
     static inline ObjectDelegator<OHOS::HDI::Drm::V1_0::MediaKeySessionStub, OHOS::HDI::Drm::V1_0::IMediaKeySession>
         objDelegator_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySession> impl_;

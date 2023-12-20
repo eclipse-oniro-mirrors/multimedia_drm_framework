@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_DRM_IKEY_SESSION_H_
-#define OHOS_DRM_IKEY_SESSION_H_
+#ifndef OHOS_DRM_IKEY_SESSION_H
+#define OHOS_DRM_IKEY_SESSION_H
 
 #include "iremote_broker.h"
 #include "drm_types.h"
@@ -94,7 +94,7 @@ public:
         std::vector<uint8_t> &releaseRequest) = 0;
     virtual int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &licenseId,
         std::vector<uint8_t> &releaseReponse) = 0;
-    virtual int32_t CheckLicenseStatus(std::map<std::string, MediaKeySessionKeyStatus>& licenseStatus) = 0;
+    virtual int32_t CheckLicenseStatus(std::map<std::string, MediaKeySessionKeyStatus> &licenseStatus) = 0;
     virtual int32_t RestoreOfflineLicense(std::vector<uint8_t> &licenseId) = 0;
     virtual int32_t RemoveLicense() = 0;
     virtual int32_t GetSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel) = 0;

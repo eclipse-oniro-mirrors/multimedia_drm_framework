@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_DRM_IKEY_SESSION_SERVICE_CALLBACK_H_
-#define OHOS_DRM_IKEY_SESSION_SERVICE_CALLBACK_H_
+#ifndef OHOS_DRM_IKEY_SESSION_SERVICE_CALLBACK_H
+#define OHOS_DRM_IKEY_SESSION_SERVICE_CALLBACK_H
 
 #include <map>
 #include "iremote_broker.h"
@@ -22,7 +22,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 class IMediaKeySessionServiceCallback : public IRemoteBroker {
 public:
     virtual int32_t SendEvent(DrmEventType event, uint32_t extra, const std::vector<uint8_t> data) = 0;

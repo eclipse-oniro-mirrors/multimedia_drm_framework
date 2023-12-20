@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef OHOS_DRM_DRM_NAPI_H_
-#define OHOS_DRM_DRM_NAPI_H_
+#ifndef OHOS_DRM_DRM_NAPI_H
+#define OHOS_DRM_DRM_NAPI_H
 
 #include "media_key_system_napi.h"
 #include "key_session_napi.h"

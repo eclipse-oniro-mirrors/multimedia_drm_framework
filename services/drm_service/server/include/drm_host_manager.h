@@ -101,7 +101,7 @@ private:
     sptr<IMediaKeySystemFactory> drmHostServieProxy_;
     sptr<IMediaKeySystem> hdiMediaKeySystem;
     static std::mutex handleAndKeySystemMapMutex;
-    static std::map<void*, sptr<IMediaKeySystem>> handleAndKeySystemMap;
+    static std::map<void *, sptr<IMediaKeySystem>> handleAndKeySystemMap;
     std::thread serviceThread;
     bool serviceThreadRunning = false;
     std::vector<void *> loadedLibs;
@@ -111,7 +111,7 @@ private:
     static std::mutex libMutex;
     static std::condition_variable cv;
     static std::mutex libMapMutex;
-    static std::map<std::string, void*> libMap;
+    static std::map<std::string, void *> libMap;
 };
 } // DrmStandard
 } // OHOS

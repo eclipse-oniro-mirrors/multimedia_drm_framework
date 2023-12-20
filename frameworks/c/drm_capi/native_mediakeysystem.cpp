@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -164,8 +164,7 @@ OH_DrmErrCode OH_MediaKeySystem_GetConfigurationString(OH_MediaKeySystem *mediaK
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationString mediaKeySystemImpl::GetConfigurationString faild!");
     *value = (char *)malloc(valuePtr.size());
-    DRM_CHECK_AND_RETURN_RET_LOG(*value != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_SetConfigurationString malloc faild!");
+    DRM_CHECK_AND_RETURN_RET_LOG(*value != nullptr, DRM_ERR_INVALID_VAL, "OH_SetConfigurationString malloc faild!");
     *valueLen = valuePtr.size();
     if (valuePtr.size() == 0) {
         DRM_DEBUG_LOG("valuePtr.data() is nullptr!");
@@ -174,7 +173,7 @@ OH_DrmErrCode OH_MediaKeySystem_GetConfigurationString(OH_MediaKeySystem *mediaK
     if (ret != 0) {
         DRM_ERR_LOG("OH_GetConfigurationString memcpy_s faild!");
         free(*value);
-        *value = NULL;
+        *value = nullptr;
         return DRM_ERR_ERROR;
     }
     DRM_INFO_LOG("OH_GetConfigurationString exit");
@@ -242,8 +241,7 @@ OH_DrmErrCode OH_MediaKeySystem_GetConfigurationByteArray(OH_MediaKeySystem *med
         return DRM_ERR_OK;
     }
     *value = (unsigned char *)malloc(valuePtr.size());
-    DRM_CHECK_AND_RETURN_RET_LOG(*value != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_GetConfigurationByteArray malloc faild!");
+    DRM_CHECK_AND_RETURN_RET_LOG(*value != nullptr, DRM_ERR_INVALID_VAL, "OH_GetConfigurationByteArray malloc faild!");
     int32_t ret = memcpy_s(*value, valuePtr.size(), valuePtr.data(), valuePtr.size());
     if (ret != 0) {
         DRM_ERR_LOG("OH_GetConfigurationByteArray memcpy_s faild!");
@@ -324,8 +322,7 @@ OH_DrmErrCode OH_MediaKeySystem_GetMaxContentProtectionLevel(OH_MediaKeySystem *
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject != nullptr, DRM_ERR_INVALID_VAL,
         "OH_GetMaxSecurityLevel systemObject is nullptr!");
     result = systemObject->systemImpl_->GetMaxSecurityLevel(&level);
-    DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
-        "OH_GetMaxSecurityLevel  fail!");
+    DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL, "OH_GetMaxSecurityLevel  fail!");
     if (level < IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN ||
         level > IMediaKeySessionService::SECURITY_LEVEL_MAX) {
         DRM_ERR_LOG("mediaKeySystemImpl::GetMaxSecurityLevel faild!");

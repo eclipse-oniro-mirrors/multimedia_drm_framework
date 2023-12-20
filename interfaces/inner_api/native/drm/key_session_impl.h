@@ -28,7 +28,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 namespace MediaKeySessionEvent {
 const std::string EVENT_STR_KEY_NEEDED = "keyNeeded";
 const std::string EVENT_STR_KEY_EXPIRED = "keyExpired";

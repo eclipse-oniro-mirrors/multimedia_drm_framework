@@ -320,7 +320,7 @@ int32_t MediaKeySystemImpl::SetCallback(const sptr<MediaKeySystemImplCallback> &
     mediaKeySystemApplicationCallback_ = callback;
 
     int32_t retCode = DRM_ERROR;
-    serviceCallback_ = new(std::nothrow) MediaKeySystemCallback(this);
+    serviceCallback_ = new (std::nothrow) MediaKeySystemCallback(this);
     if (serviceCallback_ == nullptr) {
         DRM_ERR_LOG("MediaKeySystemImpl:: MediaKeySystemCallback alloc failed");
         return retCode;
@@ -370,8 +370,7 @@ std::string MediaKeySystemCallback::GetEventName(DrmEventType event)
     return eventMap_[eventType];
 }
 
-int32_t MediaKeySystemCallback::SendEvent(DrmEventType event, uint32_t extra,
-    const std::vector<uint8_t> data)
+int32_t MediaKeySystemCallback::SendEvent(DrmEventType event, uint32_t extra, const std::vector<uint8_t> data)
 {
     DRM_INFO_LOG("MediaKeySystemCallback SendEvent");
     std::string eventName = GetEventName(event);
