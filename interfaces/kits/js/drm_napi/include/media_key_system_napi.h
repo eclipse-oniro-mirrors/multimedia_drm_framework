@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_DRM_MEDIA_KEY_SYSTEM_NAPI_H_
-#define OHOS_DRM_MEDIA_KEY_SYSTEM_NAPI_H_
+#ifndef OHOS_DRM_MEDIA_KEY_SYSTEM_NAPI_H
+#define OHOS_DRM_MEDIA_KEY_SYSTEM_NAPI_H
 
 #include <cinttypes>
 #include <fstream>

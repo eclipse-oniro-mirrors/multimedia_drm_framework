@@ -51,7 +51,7 @@ napi_value DrmNapi::Init(napi_env env, napi_value exports)
         sizeof(drmproperty) / sizeof(drmproperty[0]), drmproperty, &constructor);
 
     DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "Failed to define DrmNapi class");
-	
+
     status = napi_create_reference(env, constructor, 1, &sConstructor_);
     DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "Failed to create reference of DrmNapi constructor");
     status = napi_set_named_property(env, exports, DRM_NAPI_CLASS_NAME, constructor);

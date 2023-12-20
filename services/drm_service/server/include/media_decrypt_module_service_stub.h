@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_DRM_MEDIA_DECRYPT_MODULE_SERVICE_STUB_H_
-#define OHOS_DRM_MEDIA_DECRYPT_MODULE_SERVICE_STUB_H_
+#ifndef OHOS_DRM_MEDIA_DECRYPT_MODULE_SERVICE_STUB_H
+#define OHOS_DRM_MEDIA_DECRYPT_MODULE_SERVICE_STUB_H
 
 #include "i_mediadecryptmodule_service.h"
 #include "remote_request_code.h"

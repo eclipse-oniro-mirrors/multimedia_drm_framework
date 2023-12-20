@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef NATIVE_MODULE_OHOS_DRM_H_
-#define NATIVE_MODULE_OHOS_DRM_H_
+#ifndef NATIVE_MODULE_OHOS_DRM_H
+#define NATIVE_MODULE_OHOS_DRM_H
 
 #include "media_key_system_napi.h"
 #include "media_key_system_callback_napi.h"

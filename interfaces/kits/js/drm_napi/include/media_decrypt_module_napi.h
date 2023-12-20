@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef OHOS_DRM_DECYPT_MODULE_H_
-#define OHOS_DRM_DECYPT_MODULE_H_
+#ifndef OHOS_DRM_DECYPT_MODULE_H
+#define OHOS_DRM_DECYPT_MODULE_H
 
 #include "media_decrypt_module_impl.h"
 #include "napi/native_api.h"

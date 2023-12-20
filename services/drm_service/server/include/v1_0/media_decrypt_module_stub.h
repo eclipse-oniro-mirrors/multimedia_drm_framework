@@ -57,7 +57,6 @@ private:
     int32_t MediaDecryptModuleStubGetVersion(MessageParcel &mediaDecryptModuleData,
         MessageParcel &mediaDecryptModuleReply, MessageOption &mediaDecryptModuleOption);
 
-
     static inline ObjectDelegator<OHOS::HDI::Drm::V1_0::MediaDecryptModuleStub,
         OHOS::HDI::Drm::V1_0::IMediaDecryptModule>
         objDelegator_;

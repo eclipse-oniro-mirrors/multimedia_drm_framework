@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -289,11 +289,14 @@ OH_DrmErrCode OH_MediaKeySession_GetContentProtectionLevel(OH_MediaKeySession *m
         "OH_MediaKeySession_GetSecurityLevel keySession is nullptr!");
     DRM_CHECK_AND_RETURN_RET_LOG(contentProtectionLevel != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_GetSecurityLevel contentProtectionLevel is nullptr!");
+    int32_t result = DRM_ERR_ERROR;
     IMediaKeySessionService::SecurityLevel level = IMediaKeySessionService::SecurityLevel::SECURITY_LEVEL_UNKNOWN;
     MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySessoin);
     DRM_CHECK_AND_RETURN_RET_LOG((sessionObject != nullptr), DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_RestoreOfflineLicense get sessionObject fail!");
-    sessionObject->sessionImpl_->GetSecurityLevel(&level);
+    result = sessionObject->sessionImpl_->GetSecurityLevel(&level);
+    DRM_CHECK_AND_RETURN_RET_LOG((result == DRM_ERR_OK), DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySession_GetContentProtectionLevel get level fail!");
     *contentProtectionLevel = static_cast<OH_DRM_ContentProtectionLevel>(level);
     if (*contentProtectionLevel < CONTENT_PROTECTION_LEVEL_UNKNOWN ||
         *contentProtectionLevel > CONTENT_PROTECTION_LEVEL_MAX) {
@@ -357,6 +360,7 @@ OH_DrmErrCode OH_MediaKeySession_Destroy(OH_MediaKeySession *keySession)
         DRM_ERR_LOG("OH_MediaKeySession_Destroy keySessionImpl_->Release faild!");
         return DRM_ERR_ERROR;
     }
+    delete sessionObject;
     DRM_INFO_LOG("OH_MediaKeySession_Destroy exit.");
     return DRM_ERR_OK;
 }

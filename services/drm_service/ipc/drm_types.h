@@ -20,7 +20,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
 enum MediaKeySessionKeyStatus {
     MEDIA_KEY_SESSION_KEY_STATUS_USABLE = 0,
     MEDIA_KEY_SESSION_KEY_STATUS_EXPIRED = 1,
@@ -39,7 +38,6 @@ typedef enum DrmEventType : int32_t {
     DRM_EVENT_KEY_CHANGED,
     DRM_EVENT_KEYSESSION_LOST,
 } DrmEventType;
-
 } // DrmStandard
 } // OHOS
 

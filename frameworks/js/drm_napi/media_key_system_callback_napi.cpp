@@ -42,8 +42,7 @@ void MediaKeySystemCallbackNapi::ClearCallbackReference(const std::string eventT
     }
 }
 
-void MediaKeySystemCallbackNapi::SendEvent(const std::string event, uint32_t extra,
-    const std::vector<uint8_t> data)
+void MediaKeySystemCallbackNapi::SendEvent(const std::string event, uint32_t extra, const std::vector<uint8_t> data)
 {
     DRM_INFO_LOG("MediaKeySystemCallbackNapi SendEvent %{public}s", event.c_str());
     DRM_NAPI_CHECK_AND_RETURN_LOG(!event.empty(), "Service event code error");
@@ -75,9 +74,7 @@ void MediaKeySystemCallbackNapi::SendEvent(const std::string event, uint32_t ext
     napi_value args[ARGS_TWO] = {extraValue, array};
     napi_get_reference_value(env, callbackRef, &jsCallback);
     state = napi_call_function(env, nullptr, jsCallback, ARGS_TWO, args, &retVal);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok,
-        "%{public}s failed to napi_call_function", event.c_str());
+    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok, "%{public}s failed to napi_call_function", event.c_str());
 }
-
 } // namespace DrmStandard
 } // namespace OHOS

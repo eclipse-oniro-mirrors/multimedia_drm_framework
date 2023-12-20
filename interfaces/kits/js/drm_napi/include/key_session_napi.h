@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef OHOS_DRM_KEY_SESSION_H_
-#define OHOS_DRM_KEY_SESSION_H_
+#ifndef OHOS_DRM_KEY_SESSION_H
+#define OHOS_DRM_KEY_SESSION_H
 
 #include <map>
 #include "napi/native_api.h"

@@ -57,7 +57,6 @@ private:
     int32_t MediaKeySystemFactoryStubGetVersion(MessageParcel &mediaKeySystemFactoryData,
         MessageParcel &mediaKeySystemFactoryReply, MessageOption &mediaKeySystemFactoryOption);
 
-
     static inline ObjectDelegator<OHOS::HDI::Drm::V1_0::MediaKeySystemFactoryStub,
         OHOS::HDI::Drm::V1_0::IMediaKeySystemFactory>
         objDelegator_;

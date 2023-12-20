@@ -40,8 +40,8 @@
 #define HDI_CHECK_VALUE_RET_GOTO(lv, compare, rv, ret, value, table) \
     do {                                                             \
         if ((lv)compare(rv)) {                                       \
-            ret = value;                                             \
-            goto table;                                              \
+            (ret) = (value);                                         \
+            goto (table);                                             \
         }                                                            \
     } while (false)
 #endif
