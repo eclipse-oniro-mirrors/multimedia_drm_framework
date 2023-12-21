@@ -210,9 +210,6 @@ napi_value MediaKeySessionNapi::Destroy(napi_env env, napi_callback_info info)
     return result;
 }
 
-
-
-
 static napi_value DealLicenseRequest(napi_env env, IMediaKeySessionService::LicenseRequest &licenseRequest)
 {
     const char *requestTypeEnum;
