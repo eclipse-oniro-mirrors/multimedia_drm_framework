@@ -41,8 +41,7 @@ static int32_t ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServic
     bool isSurpported = false;
 
     DRM_CHECK_AND_RETURN_RET_LOG((paramNum <= (int32_t)ARGS_NUM_THREE) && (paramNum >= (int32_t)ARGS_NUM_ONE),
-    IPC_STUB_WRITE_PARCEL_ERR,
-        "MediaKeySystemFactoryServiceStub paramNum is invalid");
+        IPC_STUB_WRITE_PARCEL_ERR, "MediaKeySystemFactoryServiceStub paramNum is invalid");
     std::string uuid = data.ReadString();
     if (paramNum == ARGS_NUM_ONE) {
         int32_t ret = stub->IsMediaKeySystemSupported(uuid, &isSurpported);
