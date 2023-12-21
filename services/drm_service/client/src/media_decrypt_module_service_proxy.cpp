@@ -14,8 +14,8 @@
  */
 
 #include "ashmem.h"
-#include "media_decrypt_module_service_proxy.h"
 #include "drm_error_code.h"
+#include "media_decrypt_module_service_proxy.h"
 
 namespace OHOS {
 namespace DrmStandard {
