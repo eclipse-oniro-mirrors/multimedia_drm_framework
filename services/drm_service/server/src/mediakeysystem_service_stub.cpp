@@ -112,7 +112,8 @@ static int32_t ProcessCreatekeySession(MediaKeySystemServiceStub *stub, MessageP
     const int32_t securityLevel = data.ReadInt32();
     int32_t errCode =
         stub->CreateMediaKeySession((IMediaKeySessionService::SecurityLevel)securityLevel, keySessionServiceProxy);
-    DRM_CHECK_AND_RETURN_RET_LOG(errCode == DRM_OK, errCode, "CreateMediaKeySession faild, errCode:%{public}d", errCode);
+    DRM_CHECK_AND_RETURN_RET_LOG(errCode == DRM_OK, errCode, "CreateMediaKeySession faild, errCode:%{public}d",
+        errCode);
 
     if (!reply.WriteRemoteObject(keySessionServiceProxy->AsObject())) {
         DRM_ERR_LOG("MediaKeySystemServiceStub CreateMediaKeySession Write MediaKeySession obj failed");
