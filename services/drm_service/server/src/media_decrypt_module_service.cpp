@@ -14,7 +14,6 @@
  */
 
 #include <memory>
-#include <sys/mman.h>
 #include <unistd.h>
 #include <securec.h>
 #include "ashmem.h"
