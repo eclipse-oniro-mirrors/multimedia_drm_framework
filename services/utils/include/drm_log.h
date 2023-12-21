@@ -64,5 +64,12 @@
 #endif
 
 #define POINTER_MASK 0x00FFFFFF
+#define DATA_MAX_LEN (1 * 1024 * 1024)
+#define RESPONSE_MAX_LEN (8 * 1024 * 1024)
+#define REQUEST_MAX_LEN (8 * 1024 * 1024)
+#define IV_MAX_LEN 128
+#define KEYID_MAX_LEN 128
+#define LICENSEID_MAX_LEN 128
+#define SUBSAMPLE_MAX_NUM 256
 
 #endif // OHOS_DRM_LOG_H

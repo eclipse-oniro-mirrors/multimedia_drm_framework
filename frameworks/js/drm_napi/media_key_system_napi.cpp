@@ -215,7 +215,8 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
         DRM_ERR_LOG("Could not able to read securityLevel argument!");
         return nullptr;
     }
-    IMediaKeySessionService::SecurityLevel securityLevel = (IMediaKeySessionService::SecurityLevel)jsSecurityLevel;
+    IMediaKeySessionService::SecurityLevel securityLevel;
+    securityLevel = (IMediaKeySessionService::SecurityLevel)jsSecurityLevel;
     if ((securityLevel < IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN) ||
         (securityLevel >= IMediaKeySessionService::SECURITY_LEVEL_MAX)) {
         DRM_ERR_LOG("jsSecurityLevel is invalid");
@@ -249,9 +250,10 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
     if (argc == ARGS_ZERO) {
         jsSecurityLevel = IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN;
     } else {
-        DRM_CHECK_AND_RETURN_RET_LOG(napi_get_value_int32(env, argv[PARAM0], &jsSecurityLevel) == napi_ok, nullptr,
-            "MediaKeySystemNapi napi get jsSecurityLevel failure!");
-        IMediaKeySessionService::SecurityLevel securityLevel = (IMediaKeySessionService::SecurityLevel)jsSecurityLevel;
+        DRM_CHECK_AND_RETURN_RET_LOG(napi_get_value_int32(env, argv[PARAM0], &jsSecurityLevel) ==
+            napi_ok, nullptr, "MediaKeySystemNapi napi get jsSecurityLevel failure!");
+        IMediaKeySessionService::SecurityLevel securityLevel;
+        securityLevel = (IMediaKeySessionService::SecurityLevel)jsSecurityLevel;
         if ((securityLevel < IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN) ||
             (securityLevel > IMediaKeySessionService::SECURITY_LEVEL_MAX)) {
             DRM_ERR_LOG("SecurityLevel is invalid");
@@ -746,8 +748,8 @@ napi_value MediaKeySystemNapi::GetOfflineLicenseStatus(napi_env env, napi_callba
         IMediaKeySessionService::OFFLINELICENSESTATUS_UNKNOWN;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
     if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
-        int32_t ret =
-            mediaKeySystemNapi->mediaKeySystemImpl_->GetOfflineLicenseStatus(licenseIdVec, offlineLicenseStatus);
+        int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->GetOfflineLicenseStatus(licenseIdVec,
+            offlineLicenseStatus);
         if (ret != napi_ok) {
             DRM_ERR_LOG("napi GetOfflineLicenseStatus faild!");
             return nullptr;

@@ -184,7 +184,8 @@ sptr<MediaDecryptModuleImpl> MediaKeySessionImpl::GetDecryptModule()
     return mediaDecryptModuleImpl_;
 }
 
-int32_t MediaKeySessionImpl::CheckLicenseStatus(std::map<std::string, MediaKeySessionKeyStatus> &licenseStatus)
+int32_t MediaKeySessionImpl::CheckLicenseStatus(std::map<std::string,
+    MediaKeySessionKeyStatus>& licenseStatus)
 {
     DRM_INFO_LOG("MediaKeySessionImpl::CheckLicenseStatus enter.");
     std::lock_guard<std::mutex> lock(mutex_);
@@ -324,7 +325,8 @@ std::string MediaKeySessionServiceCallback::GetEventName(DrmEventType event)
     return eventMap_[eventType];
 }
 
-int32_t MediaKeySessionServiceCallback::SendEvent(DrmEventType event, uint32_t extra, const std::vector<uint8_t> data)
+int32_t MediaKeySessionServiceCallback::SendEvent(DrmEventType event, uint32_t extra,
+    const std::vector<uint8_t> data)
 {
     DRM_INFO_LOG("MediaKeySessionServiceCallback SendEvent");
     std::string eventName = GetEventName(event);
@@ -339,8 +341,8 @@ int32_t MediaKeySessionServiceCallback::SendEvent(DrmEventType event, uint32_t e
     return DRM_ERROR;
 }
 
-int32_t MediaKeySessionServiceCallback::SendEventKeyChanged(
-    std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> statusTable, bool hasNewGoodLicense)
+int32_t MediaKeySessionServiceCallback::SendEventKeyChanged(std::map<std::vector<uint8_t>,
+    MediaKeySessionKeyStatus> statusTable, bool hasNewGoodLicense)
 {
     DRM_INFO_LOG("MediaKeySessionServiceCallback::SendEventKeyChanged enter.");
     if (keySessionImpl_ != nullptr) {

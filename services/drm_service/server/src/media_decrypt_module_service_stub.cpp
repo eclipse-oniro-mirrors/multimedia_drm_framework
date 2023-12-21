@@ -48,18 +48,33 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
             bool secureDecodrtState = data.ReadBool();
             cryptInfo.type = (OHOS::DrmStandard::IMediaDecryptModuleService::CryptAlgorithmType)data.ReadUint32();
             uint32_t keyIdSize = data.ReadUint32();
-            for (uint32_t i = 0; i < keyIdSize; i++) {
-                cryptInfo.keyId.push_back(data.ReadUint8());
+            DRM_CHECK_AND_RETURN_RET_LOG(keyIdSize < KEYID_MAX_LEN, DRM_MEMORY_ERROR,
+                "The size of keyId is too large.");
+            if (keyIdSize != 0) {
+                const uint8_t *keyIdBuf = static_cast<const uint8_t *>(data.ReadBuffer(keyIdSize));
+                if (keyIdBuf == nullptr) {
+                    DRM_ERR_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_DECRYPT_DATA read keyId failed");
+                    return IPC_STUB_WRITE_PARCEL_ERR;
+                }
+                cryptInfo.keyId.assign(keyIdBuf, keyIdBuf + keyIdSize);
             }
             uint32_t ivSize = data.ReadUint32();
-            for (uint32_t i = 0; i < ivSize; i++) {
-                cryptInfo.iv.push_back(data.ReadUint8());
+            DRM_CHECK_AND_RETURN_RET_LOG(ivSize < IV_MAX_LEN, DRM_MEMORY_ERROR, "The size of iv is too large.");
+            if (ivSize != 0) {
+                const uint8_t *ivBuf = static_cast<const uint8_t *>(data.ReadBuffer(ivSize));
+                if (ivBuf == nullptr) {
+                    DRM_ERR_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_DECRYPT_DATA read ivSize failed");
+                    return IPC_STUB_WRITE_PARCEL_ERR;
+                }
+                cryptInfo.keyId.assign(ivBuf, ivBuf + ivSize);
             }
             cryptInfo.pattern.encryptBlocks = data.ReadUint32();
             cryptInfo.pattern.skipBlocks = data.ReadUint32();
             uint32_t subSampleNumber = data.ReadUint32();
+            DRM_CHECK_AND_RETURN_RET_LOG(subSampleNumber < SUBSAMPLE_MAX_NUM, DRM_MEMORY_ERROR,
+                "The number of subSample is too large.");
             cryptInfo.subSample.resize(subSampleNumber);
-            for (int32_t i = 0; i < subSampleNumber; i++) {
+            for (uint32_t i = 0; i < subSampleNumber; i++) {
                 cryptInfo.subSample[i].clearHeaderLen = data.ReadUint32();
                 cryptInfo.subSample[i].payLoadLen = data.ReadUint32();
             }

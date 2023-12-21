@@ -78,7 +78,7 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &uuid,
     sptr<MediaKeySystemService> mediaKeySystemService = nullptr;
     sptr<IMediaKeySystem> hdiMediaKeySystem = nullptr;
     int32_t ret = drmHostManager_->CreateMediaKeySystem(uuid, hdiMediaKeySystem);
-    if (hdiMediaKeySystem == nullptr) {
+    if (hdiMediaKeySystem == nullptr || ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemFactoryService:: drmHostManager_ return hdiMediaKeySystem nullptr");
         return DRM_SERVICE_ERROR;
     }

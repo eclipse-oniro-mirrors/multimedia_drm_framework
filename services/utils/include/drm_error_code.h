@@ -36,6 +36,7 @@ enum DrmErrorCode {
     DRM_OPERATION_NOT_ALLOWED,
     DRM_HOST_ERROR,
     DRM_SERVICE_ERROR,
+    DRM_MEMORY_ERROR,
 };
 } // namespace DrmStandard
 } // namespace OHOS
