@@ -15,6 +15,7 @@
 
 #include "ashmem.h"
 #include "media_decrypt_module_service_proxy.h"
+#include "drm_error_code.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -36,14 +37,14 @@ int32_t MediaDecryptModuleServiceProxy::Release()
         return IPC_PROXY_ERR;
     }
 
-    int32_t error = Remote()->SendRequest(DECRYPT_MODULE_RELEASE, data, reply, option);
-    if (error != ERR_NONE) {
-        DRM_ERR_LOG("MediaDecryptModuleServiceProxy::Release failed, error: %{public}d", error);
-        return error;
+    int32_t ret = Remote()->SendRequest(DECRYPT_MODULE_RELEASE, data, reply, option);
+    if (ret != ERR_NONE) {
+        DRM_ERR_LOG("MediaDecryptModuleServiceProxy::Release failed, ret: %{public}d", ret);
+        return ret;
     }
 
     DRM_INFO_LOG("MediaDecryptModuleServiceProxy::Release exit.");
-    return reply.ReadInt32();
+    return ret;
 }
 
 int32_t MediaDecryptModuleServiceProxy::DecryptMediaData(bool secureDecodrtState,
@@ -65,16 +66,19 @@ int32_t MediaDecryptModuleServiceProxy::DecryptMediaData(bool secureDecodrtState
 
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.keyId.size()), IPC_PROXY_ERR,
         "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.keyId size failed");
-    for (auto keyId : cryptInfo.keyId) {
-        DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint8(keyId), IPC_PROXY_ERR,
+    DRM_CHECK_AND_RETURN_RET_LOG(cryptInfo.keyId.size() < KEYID_MAX_LEN, DRM_MEMORY_ERROR,
+        "The size of keyId is too large.");
+    if (cryptInfo.keyId.size() != 0) {
+        DRM_CHECK_AND_RETURN_RET_LOG(data.WriteBuffer(cryptInfo.keyId.data(), cryptInfo.keyId.size()), IPC_PROXY_ERR,
             "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.keyId failed");
     }
 
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.iv.size()), IPC_PROXY_ERR,
         "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.iv size failed");
+    DRM_CHECK_AND_RETURN_RET_LOG(cryptInfo.iv.size() < IV_MAX_LEN, DRM_MEMORY_ERROR, "The size of iv is too large.");
 
-    for (auto iv : cryptInfo.iv) {
-        DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint8(iv), IPC_PROXY_ERR,
+    if (cryptInfo.iv.size() != 0) {
+        DRM_CHECK_AND_RETURN_RET_LOG(data.WriteBuffer(cryptInfo.iv.data(), cryptInfo.iv.size()), IPC_PROXY_ERR,
             "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.iv failed");
     }
 
@@ -96,16 +100,12 @@ int32_t MediaDecryptModuleServiceProxy::DecryptMediaData(bool secureDecodrtState
     (void)data.WriteFileDescriptor(srcBuffer);
     (void)data.WriteFileDescriptor(dstBuffer);
 
-    int32_t error = Remote()->SendRequest(DECRYPT_MODULE_DECRYPT_DATA, data, reply, option);
-    if (error != ERR_NONE) {
-        DRM_ERR_LOG("MediaDecryptModuleServiceProxy DecryptMediaData failed, error: %{public}d", error);
-        return error;
-    }
-    DRM_CHECK_AND_RETURN_RET_LOG(error == ERR_NONE, IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData failed, error: %{public}d", error);
+    int32_t ret = Remote()->SendRequest(DECRYPT_MODULE_DECRYPT_DATA, data, reply, option);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == ERR_NONE, IPC_PROXY_ERR,
+        "MediaDecryptModuleServiceProxy DecryptMediaData failed, ret: %{public}d", ret);
 
     DRM_INFO_LOG("MediaDecryptModuleServiceProxy::DecryptMediaData exit.");
-    return reply.ReadInt32();
+    return ret;
 }
 } // DrmStandard
 } // OHOS

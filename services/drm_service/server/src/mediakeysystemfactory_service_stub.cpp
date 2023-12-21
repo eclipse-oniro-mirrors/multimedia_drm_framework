@@ -40,11 +40,13 @@ static int32_t ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServic
     int32_t paramNum = data.ReadInt32();
     bool isSurpported = false;
 
-    DRM_CHECK_AND_RETURN_RET_LOG((paramNum <= ARGS_NUM_THREE) && (paramNum >= ARGS_NUM_ONE), IPC_STUB_WRITE_PARCEL_ERR,
+    DRM_CHECK_AND_RETURN_RET_LOG((paramNum <= (int32_t)ARGS_NUM_THREE) && (paramNum >= (int32_t)ARGS_NUM_ONE),
+    IPC_STUB_WRITE_PARCEL_ERR,
         "MediaKeySystemFactoryServiceStub paramNum is invalid");
     std::string uuid = data.ReadString();
     if (paramNum == ARGS_NUM_ONE) {
         int32_t ret = stub->IsMediaKeySystemSupported(uuid, &isSurpported);
+        DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "IsMediaKeySystemSupported faild, errCode:%{public}d", ret);
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteBool(isSurpported), IPC_STUB_WRITE_PARCEL_ERR,
             "MediaKeySystemFactoryServiceStub Write isSurpported failed");
         return ret;
@@ -52,6 +54,7 @@ static int32_t ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServic
     std::string mimeType = data.ReadString();
     if (paramNum == ARGS_NUM_TWO) {
         int32_t ret = stub->IsMediaKeySystemSupported(uuid, mimeType, &isSurpported);
+        DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "IsMediaKeySystemSupported faild, errCode:%{public}d", ret);
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteBool(isSurpported), IPC_STUB_WRITE_PARCEL_ERR,
             "MediaKeySystemFactoryServiceStub Write isSurpported failed");
         return ret;
@@ -60,6 +63,7 @@ static int32_t ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServic
     int32_t securityLevel = data.ReadInt32();
     if (paramNum == ARGS_NUM_THREE) {
         int32_t ret = stub->IsMediaKeySystemSupported(uuid, mimeType, securityLevel, &isSurpported);
+        DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "IsMediaKeySystemSupported faild, errCode:%{public}d", ret);
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteBool(isSurpported), IPC_STUB_WRITE_PARCEL_ERR,
             "MediaKeySystemFactoryServiceStub Write isSurpported failed");
         return ret;

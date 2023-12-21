@@ -14,6 +14,7 @@
  */
 
 #include <memory>
+#include <sys/mman.h>
 #include <unistd.h>
 #include <securec.h>
 #include "ashmem.h"
@@ -64,7 +65,7 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
     cryptInfoTmp.pattern.encryptBlocks = cryptInfo.pattern.encryptBlocks;
     cryptInfoTmp.pattern.skipBlocks = cryptInfo.pattern.skipBlocks;
     cryptInfoTmp.subSamples.resize(cryptInfo.subSample.size());
-    for (int32_t i = 0; i < cryptInfo.subSample.size(); i++) {
+    for (size_t i = 0; i < cryptInfo.subSample.size(); i++) {
         cryptInfoTmp.subSamples[i].clearHeaderLen = cryptInfo.subSample[i].clearHeaderLen;
         bufLen += cryptInfoTmp.subSamples[i].clearHeaderLen;
         cryptInfoTmp.subSamples[i].payLoadLen = cryptInfo.subSample[i].payLoadLen;

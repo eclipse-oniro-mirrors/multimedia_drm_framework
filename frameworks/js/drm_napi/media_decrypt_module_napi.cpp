@@ -214,7 +214,7 @@ static napi_value DealDecryptParam1(napi_env env, napi_value *argv, IMediaDecryp
         return nullptr;
     }
     napi_get_named_property(env, argv[PARAM1], "subSample", &subSample_property);
-    for (uint32_t i = 0; i < subSampleLen; i++) {
+    for (int32_t i = 0; i < subSampleLen; i++) {
         napi_value jsSubSample;
         IMediaDecryptModuleService::SubSample subSampleTmp = { 0 };
         napi_get_element(env, subSample_property, i, &jsSubSample);

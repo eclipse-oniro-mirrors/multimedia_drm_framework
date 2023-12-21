@@ -210,44 +210,8 @@ napi_value MediaKeySessionNapi::Destroy(napi_env env, napi_callback_info info)
     return result;
 }
 
-static napi_value DealOptionalData(napi_env env, napi_value param3, std::map<std::string, std::string> &tmpOptionalData)
-{
-    napi_status status;
-    bool isArray;
-    uint32_t optionalDataCount = 0;
 
-    napi_is_array(env, param3, &isArray);
-    DRM_CHECK_AND_RETURN_RET_LOG(isArray, nullptr, "param3 is not array!");
-    status = napi_get_array_length(env, param3, &optionalDataCount);
-    DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "-Could not able to read optionalData argument!");
-    if (optionalDataCount > 0) {
-        for (size_t i = 0; i < optionalDataCount; i++) {
-            napi_value tmpData;
-            napi_value tmpName;
-            napi_value tmpValue;
-            const int32_t MAX_OPTIONAL_DATA_LEN = 500;
-            char tmpBuffer[MAX_OPTIONAL_DATA_LEN];
-            size_t tmpLength = 0;
 
-            status = napi_get_element(env, param3, i, &tmpData);
-            DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "-Could not able to read optionalData element!");
-            status = napi_get_named_property(env, tmpData, "name", &tmpName);
-            DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "-Could not able to read optionalData property!");
-            tmpBuffer[0] = 0;
-            status = napi_get_value_string_utf8(env, tmpName, tmpBuffer, MAX_OPTIONAL_DATA_LEN, &tmpLength);
-            DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr,
-                "-Could not able to transfer optionalData buffer info!");
-            status = napi_get_named_property(env, tmpData, "value", &tmpValue);
-            DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "-Could not able to read optionalData property!");
-            tmpBuffer[0] = 0;
-            status = napi_get_value_string_utf8(env, tmpValue, tmpBuffer, MAX_OPTIONAL_DATA_LEN, &tmpLength);
-            DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr,
-                "Could not able to transfer optionalData buffer info!");
-            tmpOptionalData.insert(std::make_pair(std::string(tmpBuffer), std::string(tmpBuffer)));
-        }
-    }
-    return nullptr;
-}
 
 static napi_value DealLicenseRequest(napi_env env, IMediaKeySessionService::LicenseRequest &licenseRequest)
 {
@@ -335,11 +299,45 @@ napi_value MediaKeySessionNapi::GenerateLicenseRequest(napi_env env, napi_callba
     std::vector<uint8_t> initDataStr(initDataPtr, initDataPtr + initDataLen);
     int32_t licenseType = 0;
     status = napi_get_value_int32(env, argv[PARAM2], &licenseType);
-    DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "-Could not able to read licenseType argument!");
+    DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "Could not able to read licenseType argument!");
     // optional data
     std::map<std::string, std::string> tmpOptionalData;
-    if (argc >= ARGS_FOUR) {
-        (void)DealOptionalData(env, argv[PARAM3], tmpOptionalData);
+
+    uint32_t optionalDataCount = 0;
+    status = napi_get_array_length(env, argv[PARAM3], &optionalDataCount);
+    DRM_INFO_LOG("bbbb----%{public}s: optionalDataCount: %{public}d", __func__, optionalDataCount);
+    DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "bbbbb--Could not able to read optionalData argument!");
+    if (optionalDataCount > 0) {
+        for (size_t i = 0; i < optionalDataCount; i++) {
+            napi_value tmpData;
+            napi_value tmpName;
+            napi_value tmpValue;
+            size_t nameLength = 0;
+            size_t valueLength = 0;
+            status = napi_get_element(env, argv[PARAM3], i, &tmpData);
+            DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "Could not able to read optionalData element!");
+            status = napi_get_named_property(env, tmpData, "name", &tmpName);
+            DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "Could not able to read optionalData property!");
+            status = napi_get_named_property(env, tmpData, "value", &tmpValue);
+            DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "Could not able to read optionalData property!");
+            status = napi_get_value_string_utf8(env, tmpName, nullptr, 0, &nameLength);
+            DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr,
+                "Could not able to transfer optionalData buffer info!");
+            status = napi_get_value_string_utf8(env, tmpValue, nullptr, 0, &valueLength);
+            DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr,
+                "Could not able to transfer optionalData buffer info!");
+            std::string name(nameLength, 0);
+            status = napi_get_value_string_utf8(env, tmpName, &name[0], nameLength + 1, &nameLength);
+            DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr,
+                "Could not able to transfer optionalData buffer info!");
+            std::string value(valueLength, 0);
+            status = napi_get_value_string_utf8(env, tmpValue, &value[0], valueLength + 1, &valueLength);
+            DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr,
+                "Could not able to transfer optionalData buffer info!");
+            DRM_INFO_LOG("%{public}s: name : %{public}s", __func__, name.c_str());
+            DRM_INFO_LOG("%{public}s: value : %{public}s", __func__, value.c_str());
+            tmpOptionalData.insert(std::make_pair(name, value));
+        }
     }
 
     licenseRequestInfo.licenseType = (IMediaKeySessionService::LicenseType)licenseType;
@@ -445,7 +443,8 @@ napi_value MediaKeySessionNapi::GenerateOfflineReleaseRequest(napi_env env, napi
 
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
     if (status == napi_ok && keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr) {
-        int32_t ret = keySessionNapi->keySessionImpl_->GenerateOfflineReleaseRequest(licenseIdVec, releaseRequest);
+        int32_t ret = keySessionNapi->keySessionImpl_->GenerateOfflineReleaseRequest(licenseIdVec,
+            releaseRequest);
         DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr,
             "MediaKeySessionNapi GenerateOfflineReleaseRequest call Failed!");
     } else {
@@ -500,8 +499,8 @@ napi_value MediaKeySessionNapi::ProcessOfflineReleaseResponse(napi_env env, napi
 
     MediaKeySessionNapi *keySessionNapi = nullptr;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
-    DRM_CHECK_AND_RETURN_RET_LOG((keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr), nullptr,
-        "MediaKeySessionNapi get keySessionNapi fail!");
+    DRM_CHECK_AND_RETURN_RET_LOG((keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr),
+        nullptr, "MediaKeySessionNapi get keySessionNapi fail!");
     int32_t ret = keySessionNapi->keySessionImpl_->ProcessOfflineReleaseResponse(licenseIdVec, responseVec);
     DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr,
         "MediaKeySessionNapi ProcessOfflineReleaseResponse call Failed!");
@@ -510,7 +509,8 @@ napi_value MediaKeySessionNapi::ProcessOfflineReleaseResponse(napi_env env, napi
     return result;
 }
 
-static napi_value vectorToJsArray(napi_env env, std::map<std::string, MediaKeySessionKeyStatus> &licenseStatus)
+static napi_value vectorToJsArray(napi_env env,
+    std::map<std::string, MediaKeySessionKeyStatus> &licenseStatus)
 {
     DRM_INFO_LOG("vectorToJsArray enter.");
     napi_value jsArray;
