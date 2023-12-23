@@ -95,7 +95,6 @@ int32_t MediaKeySessionServiceCallbackProxy::SendEventKeyChanged(
         DRM_ERR_LOG("SendEventKeyChanged failed, error: %{public}d", error);
     }
     return error;
-    return 0;
 }
 } // DrmStandard
 } // namespace OHOS

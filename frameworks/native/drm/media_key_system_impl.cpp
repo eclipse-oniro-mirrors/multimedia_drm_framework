@@ -362,7 +362,7 @@ void MediaKeySystemCallback::InitEventMap()
 std::string MediaKeySystemCallback::GetEventName(DrmEventType event)
 {
     DRM_INFO_LOG("MediaKeySystemCallback GetEventName");
-    std::string eventName;
+    std::string eventName = "";
     int32_t eventType = static_cast<int32_t>(event);
     if (eventMap_.find(eventType) == eventMap_.end()) {
         return eventName;
@@ -375,7 +375,7 @@ int32_t MediaKeySystemCallback::SendEvent(DrmEventType event, uint32_t extra,
 {
     DRM_INFO_LOG("MediaKeySystemCallback SendEvent");
     std::string eventName = GetEventName(event);
-    if (systemImpl_ != nullptr) {
+    if (systemImpl_ != nullptr && eventName.length() != 0) {
         sptr<MediaKeySystemImplCallback> applicationCallback = systemImpl_->GetApplicationCallback();
         if (applicationCallback != nullptr) {
             applicationCallback->SendEvent(eventName, extra, data);

@@ -47,7 +47,6 @@ napi_value MediaKeySessionNapi::Init(napi_env env, napi_value exports)
     DRM_INFO_LOG("MediaKeySessionNapi::MediaKeySessionNapi Init enter.");
     napi_status status;
     napi_value ctorObj;
-    int32_t refCount = 1;
 
     napi_property_descriptor session_props[] = {
         DECLARE_NAPI_FUNCTION("generateLicenseRequest", GenerateLicenseRequest),
@@ -67,7 +66,7 @@ napi_value MediaKeySessionNapi::Init(napi_env env, napi_value exports)
     status = napi_define_class(env, KEY_SESSION_NAPI_CLASS_NAME, NAPI_AUTO_LENGTH, MediaKeySessionNapiConstructor,
         nullptr, sizeof(session_props) / sizeof(session_props[PARAM0]), session_props, &ctorObj);
     if (status == napi_ok) {
-        status = napi_create_reference(env, ctorObj, refCount, &sConstructor_);
+        status = napi_create_reference(env, ctorObj, 1, &sConstructor_);
         if (status == napi_ok) {
             status = napi_set_named_property(env, exports, KEY_SESSION_NAPI_CLASS_NAME, ctorObj);
             if (status == napi_ok) {
@@ -637,7 +636,6 @@ napi_value MediaKeySessionNapi::RequireSecureDecoderModule(napi_env env, napi_ca
     size_t argc = ARGS_ONE;
     napi_value argv[ARGS_ONE] = {0};
     napi_value thisVar = nullptr;
-    napi_status status;
 
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
     napi_get_undefined(env, &result);
@@ -652,7 +650,7 @@ napi_value MediaKeySessionNapi::RequireSecureDecoderModule(napi_env env, napi_ca
     std::string mimeType = std::string(mimeTypeBuf);
     bool statusValue;
     MediaKeySessionNapi *keySessionNapi = nullptr;
-    status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
     DRM_CHECK_AND_RETURN_RET_LOG((keySessionNapi != nullptr), nullptr, "MediaKeySessionNapi get keySessionNapi fail!");
     DRM_CHECK_AND_RETURN_RET_LOG((keySessionNapi->keySessionImpl_ != nullptr), nullptr, "keySessionImpl_ == nullptr.");
 
@@ -673,14 +671,13 @@ napi_value MediaKeySessionNapi::GetSecurityLevel(napi_env env, napi_callback_inf
     size_t argc = ARGS_ONE;
     napi_value argv[ARGS_ONE] = {0};
     napi_value thisVar = nullptr;
-    napi_status status;
     MediaKeySessionNapi *keySessionNapi = nullptr;
 
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
 
     NAPI_ASSERT(env, argc <= ARGS_ONE, "requires 1 parameters maximum");
     IMediaKeySessionService::SecurityLevel level = (IMediaKeySessionService::SecurityLevel)0;
-    status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
     if (status == napi_ok && keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr) {
         int32_t ret = keySessionNapi->keySessionImpl_->GetSecurityLevel(&level);
         DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr, "MediaKeySessionNapi GetSecurityLevel call Failed!");
@@ -697,7 +694,6 @@ napi_value MediaKeySessionNapi::GetSecurityLevel(napi_env env, napi_callback_inf
 napi_value MediaKeySessionNapi::GetDecryptModule(napi_env env, napi_callback_info info)
 {
     DRM_INFO_LOG("MediaKeySessionNapi::GetDecryptModule enter.");
-    napi_status status;
     napi_value result = nullptr;
     size_t argc = ARGS_ZERO;
     napi_value argv[ARGS_ZERO];
@@ -707,7 +703,7 @@ napi_value MediaKeySessionNapi::GetDecryptModule(napi_env env, napi_callback_inf
 
     napi_get_undefined(env, &result);
     MediaKeySessionNapi *keySessionNapi = nullptr;
-    status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
+    napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
     sptr<MediaDecryptModuleImpl> mediaDecryptModuleImpl = nullptr;
     if (status == napi_ok && keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr) {
         mediaDecryptModuleImpl = keySessionNapi->keySessionImpl_->GetDecryptModule();
@@ -750,7 +746,6 @@ napi_value MediaKeySessionNapi::SetEventCallback(napi_env env, napi_callback_inf
     DRM_INFO_LOG("MediaKeySessionNapi::SetEventCallback");
     napi_value result = nullptr;
     napi_get_undefined(env, &result);
-    char buffer[PATH_MAX];
     size_t length = 0;
     size_t argc = ARGS_TWO;
     napi_value thisVar = nullptr;
@@ -770,6 +765,7 @@ napi_value MediaKeySessionNapi::SetEventCallback(napi_env env, napi_callback_inf
     MediaKeySessionNapi *keySessionNapi = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
     if (status == napi_ok && keySessionNapi != nullptr) {
+        char buffer[PATH_MAX];
         napi_get_value_string_utf8(env, argv[PARAM0], buffer, PATH_MAX, &length);
         std::string eventType = std::string(buffer);
         napi_ref callbackRef;
@@ -806,10 +802,10 @@ napi_value MediaKeySessionNapi::UnsetEventCallback(napi_env env, napi_callback_i
     }
 
     MediaKeySessionNapi *keySessionNapi = nullptr;
-    char buffer[PATH_MAX];
     size_t length = 0;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
     if (status == napi_ok && keySessionNapi != nullptr) {
+        char buffer[PATH_MAX];
         napi_get_value_string_utf8(env, argv[PARAM0], buffer, PATH_MAX, &length);
         std::string eventType = std::string(buffer);
         keySessionNapi->ClearEventCallbackReference(eventType);

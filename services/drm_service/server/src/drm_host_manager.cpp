@@ -49,12 +49,8 @@ DrmHostManager::DrmHostManager(StatusCallback *statusCallback)
 DrmHostManager::~DrmHostManager()
 {
     DRM_INFO_LOG("DrmHostManager::~DrmHostManager enter.");
-    if (drmHostServieProxy_ != nullptr) {
-        drmHostServieProxy_ = nullptr;
-    }
-    if (statusCallback_ != nullptr) {
-        statusCallback_ = nullptr;
-    }
+    drmHostServieProxy_ = nullptr;
+    statusCallback_ = nullptr;
     if (serviceThreadRunning) {
         StopServiceThread();
     }

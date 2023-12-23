@@ -43,7 +43,6 @@ napi_value MediaKeySystemNapi::Init(napi_env env, napi_value exports)
     DRM_INFO_LOG("MediaKeySystemNapi::Init enter.");
     napi_status status;
     napi_value ctorObj;
-    int32_t refCount = 1;
 
     napi_property_descriptor properties[] = {
         DECLARE_NAPI_FUNCTION("setConfigurationString", SetConfigurationString),
@@ -67,7 +66,7 @@ napi_value MediaKeySystemNapi::Init(napi_env env, napi_value exports)
     status = napi_define_class(env, MEDIA_KEY_SYSTEM_NAPI_CLASS_NAME, NAPI_AUTO_LENGTH, MediaKeySystemNapiConstructor,
         nullptr, sizeof(properties) / sizeof(properties[PARAM0]), properties, &ctorObj);
     if (status == napi_ok) {
-        if (napi_create_reference(env, ctorObj, refCount, &sConstructor_) == napi_ok) {
+        if (napi_create_reference(env, ctorObj, 1, &sConstructor_) == napi_ok) {
             status = napi_set_named_property(env, exports, MEDIA_KEY_SYSTEM_NAPI_CLASS_NAME, ctorObj);
             if (status == napi_ok) {
                 return exports;
@@ -672,14 +671,36 @@ static napi_value vectorToJs2DArray(napi_env env, std::vector<std::vector<uint8_
     napi_value outArray;
     napi_value inArray;
     napi_status status = napi_create_array(env, &outArray);
+    if (status != napi_ok) {
+        DRM_ERR_LOG("napi_create_array faild!");
+        return nullptr;
+    }
+
     for (size_t i = 0; i < vec.size(); i++) {
         status = napi_create_array(env, &inArray);
+        if (status != napi_ok) {
+            DRM_ERR_LOG("napi_create_array faild!");
+            return nullptr;
+        }
+
         for (size_t j = 0; j < vec[i].size(); j++) {
             napi_value elem;
             status = napi_create_uint32(env, vec[i][j], &elem);
+            if (status != napi_ok) {
+                DRM_ERR_LOG("napi_create_uint32 faild!");
+                return nullptr;
+            }
             status = napi_set_element(env, inArray, j, elem);
+            if (status != napi_ok) {
+                DRM_ERR_LOG("napi_set_element faild!");
+                return nullptr;
+            }
         }
         status = napi_set_element(env, outArray, i, inArray);
+        if (status != napi_ok) {
+            DRM_ERR_LOG("napi_set_element faild!");
+            return nullptr;
+        }
     }
     DRM_INFO_LOG("vectorToJs2DArray exit.");
     return outArray;
@@ -866,7 +887,6 @@ napi_value MediaKeySystemNapi::SetEventCallback(napi_env env, napi_callback_info
     DRM_INFO_LOG("MediaKeySystemNapi::SetEventCallback");
     napi_value result = nullptr;
     napi_get_undefined(env, &result);
-    char buffer[PATH_MAX];
     size_t length = 0;
     size_t argc = ARGS_TWO;
     napi_value thisVar = nullptr;
@@ -886,6 +906,7 @@ napi_value MediaKeySystemNapi::SetEventCallback(napi_env env, napi_callback_info
     MediaKeySystemNapi *mediaKeySystemNapi = nullptr;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
     if (status == napi_ok && mediaKeySystemNapi != nullptr) {
+        char buffer[PATH_MAX];
         napi_get_value_string_utf8(env, argv[PARAM0], buffer, PATH_MAX, &length);
         std::string eventType = std::string(buffer);
         napi_ref callbackRef;

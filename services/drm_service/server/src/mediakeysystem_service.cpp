@@ -36,9 +36,7 @@ MediaKeySystemService::~MediaKeySystemService()
 {
     DRM_DEBUG_LOG("~MediaKeySystemService");
     std::lock_guard<std::mutex> lock(mutex_);
-    if (keySystemOperatoersCallback_ != nullptr) {
-        keySystemOperatoersCallback_ = nullptr;
-    }
+    keySystemOperatoersCallback_ = nullptr;
     if (hdiKeySystem_ != nullptr) {
         DRM_ERR_LOG("hdiKeySystem != nullptr");
     }
@@ -54,9 +52,7 @@ int32_t MediaKeySystemService::CloseMediaKeySystemServiceByCallback()
         hdiKeySystem_->Destroy();
         hdiKeySystem_ = nullptr;
     }
-    if (keySystemOperatoersCallback_ != nullptr) {
-        keySystemOperatoersCallback_ = nullptr;
-    }
+    keySystemOperatoersCallback_ = nullptr;
     DRM_INFO_LOG("MediaKeySystemService::CloseMediaKeySystemServiceByCallback exit.");
     return DRM_OK;
 }

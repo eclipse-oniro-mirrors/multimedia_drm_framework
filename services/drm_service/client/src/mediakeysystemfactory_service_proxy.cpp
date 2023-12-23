@@ -155,7 +155,6 @@ int32_t MediaKeySystemFactoryServiceProxy::CreateMediaKeySystem(std::string &uui
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
-    std::wstring_convert<std::codecvt_utf8<char16_t>, char16_t> converter;
     if (!data.WriteInterfaceToken(GetDescriptor())) {
         DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy CreateMediaKeySystem Write interface token failed");
         return IPC_PROXY_ERR;

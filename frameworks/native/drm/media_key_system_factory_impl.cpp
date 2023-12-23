@@ -29,9 +29,7 @@ MediaKeySystemFactoryImpl::MediaKeySystemFactoryImpl()
 MediaKeySystemFactoryImpl::~MediaKeySystemFactoryImpl()
 {
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::~MediaKeySystemFactoryImpl enter.");
-    if (serviceProxy_ != nullptr) {
-        serviceProxy_ = nullptr;
-    }
+    serviceProxy_ = nullptr;
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::~MediaKeySystemFactoryImpl exit.");
     deathRecipient_ = nullptr;
 }

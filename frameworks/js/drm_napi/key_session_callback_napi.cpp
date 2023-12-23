@@ -34,12 +34,7 @@ void MediaKeySessionCallbackNapi::ClearCallbackReference(const std::string event
 {
     DRM_INFO_LOG("MediaKeySessionCallbackNapi ClearCallbackReference");
     std::lock_guard<std::mutex> lock(mutex_);
-    if (callbackMap_.find(eventType) != callbackMap_.end()) {
-        callbackMap_.erase(eventType);
-        DRM_INFO_LOG("MediaKeySessionCallbackNapi ClearCallbackReference %{public}s", eventType.c_str());
-    } else {
-        DRM_WARNING_LOG("ClearCallbackReference failed, no this event: %{public}s", eventType.c_str());
-    }
+    callbackMap_.erase(eventType);
 }
 
 void MediaKeySessionCallbackNapi::SendEvent(const std::string event, uint32_t extra, const std::vector<uint8_t> data)
@@ -65,6 +60,8 @@ void MediaKeySessionCallbackNapi::SendEvent(const std::string event, uint32_t ex
     napi_create_uint32(env, extra, &extraValue);
     napi_value array = nullptr;
     state = napi_create_array_with_length(env, data.size(), &array);
+    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok,
+        "%{public}s failed to napi_create_array_with_length", event.c_str());
     for (uint32_t i = 0; i < data.size(); i++) {
         napi_value number = nullptr;
         (void)napi_create_uint32(env, data[i], &number);
@@ -99,19 +96,21 @@ void MediaKeySessionCallbackNapi::SendEventKeyChanged(
     uint32_t index = 0;
     napi_value map;
     napi_create_array_with_length(env, statusTable.size(), &map);
-    for (auto item : statusTable) {
+    for (auto itemTmp : statusTable) {
         napi_value jsObject;
         napi_value jsKeyId;
         napi_value jsKeyStatus;
         napi_create_object(env, &jsObject);
-        state = napi_create_array_with_length(env, item.first.size(), &jsKeyId);
-        for (uint32_t i = 0; i < item.first.size(); i++) {
+        state = napi_create_array_with_length(env, itemTmp.first.size(), &jsKeyId);
+        DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok,
+            "failed to call napi_create_array_with_length");
+        for (uint32_t i = 0; i < itemTmp.first.size(); i++) {
             napi_value number = nullptr;
-            (void)napi_create_uint32(env, item.first[i], &number);
+            (void)napi_create_uint32(env, itemTmp.first[i], &number);
             (void)napi_set_element(env, jsKeyId, i, number);
         }
         napi_set_named_property(env, jsObject, "keyId", jsKeyId);
-        napi_create_uint32(env, item.second, &jsKeyStatus);
+        napi_create_uint32(env, itemTmp.second, &jsKeyStatus);
         napi_set_named_property(env, jsObject, "keyStatus", jsKeyStatus);
         napi_set_element(env, map, index, jsObject);
         index++;
