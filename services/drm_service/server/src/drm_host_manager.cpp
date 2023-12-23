@@ -49,12 +49,8 @@ DrmHostManager::DrmHostManager(StatusCallback *statusCallback)
 DrmHostManager::~DrmHostManager()
 {
     DRM_INFO_LOG("DrmHostManager::~DrmHostManager enter.");
-    if (drmHostServieProxy_ != nullptr) {
-        drmHostServieProxy_ = nullptr;
-    }
-    if (statusCallback_ != nullptr) {
-        statusCallback_ = nullptr;
-    }
+    drmHostServieProxy_ = nullptr;
+    statusCallback_ = nullptr;
     if (serviceThreadRunning) {
         StopServiceThread();
     }
@@ -73,7 +69,6 @@ void DrmHostManager::StopServiceThread()
         if (StopThread) {
             StopThread();
         }
-        dlclose(libHandle);
         ReleaseHandleAndKeySystemMap(libHandle);
     }
     loadedLibs.clear();
@@ -99,11 +94,9 @@ void DrmHostManager::ProcessMessage()
                     }
                     if (libHandle) {
                         std::lock_guard<std::mutex> lockLib(libMutex);
-                        dlclose(libHandle);
                         ReleaseHandleAndKeySystemMap(libHandle);
                         loadedLibs.erase(std::remove(loadedLibs.begin(), loadedLibs.end(), libHandle),
                             loadedLibs.end());
-                        libHandle = nullptr;
                     }
                 }
             }
@@ -122,6 +115,10 @@ void DrmHostManager::ReleaseHandleAndKeySystemMap(void *handle)
         it->second = nullptr;
     }
     handleAndKeySystemMap.erase(handle);
+    if (handle != nullptr) {
+        dlclose(handle);
+        handle = nullptr;
+    }
 }
 
 void DrmHostManager::ServiceThreadMain()
@@ -140,6 +137,8 @@ void DrmHostManager::ServiceThreadMain()
             DRM_DEBUG_LOG("DrmHostManager::ServiceThreadMain fullPath:%{public}s.", fullPath.c_str());
             libsToLoad.push_back(fullPath);
         }
+        closedir(dir);
+        dir = nullptr;
     }
     for (const auto &libpath : libsToLoad) {
         std::lock_guard<std::mutex> lockLib(libMutex);
@@ -155,16 +154,24 @@ void DrmHostManager::ServiceThreadMain()
             if (QueryMediaKeySystemName && SetMediaKeySystem && ThreadExitNotify && StartThread && StopThread) {
                 std::string uuid;
                 int32_t ret = QueryMediaKeySystemName(uuid);
-                DRM_CHECK_AND_RETURN_LOG(ret == DRM_OK, "QueryMediaKeySystemName faild.");
+                if (ret != DRM_OK) {
+                    ReleaseHandleAndKeySystemMap(handle);
+                    DRM_ERR_LOG("DrmHostManager::QueryMediaKeySystemName error!");
+                    continue;
+                }
                 ret = CreateMediaKeySystem(uuid, hdiMediaKeySystem);
+                if (ret != DRM_OK) {
+                    ReleaseHandleAndKeySystemMap(handle);
+                    DRM_ERR_LOG("DrmHostManager::CreateMediaKeySystem error!");
+                    continue;
+                }
                 std::lock_guard<std::mutex> lockHandle(handleAndKeySystemMapMutex);
                 handleAndKeySystemMap.insert(std::make_pair(handle, hdiMediaKeySystem));
-                DRM_CHECK_AND_RETURN_LOG(ret == DRM_OK && hdiMediaKeySystem != nullptr, "CreateMediaKeySystem faild.");
                 ret = SetMediaKeySystem(hdiMediaKeySystem);
                 if (ret != DRM_OK) {
                     ReleaseHandleAndKeySystemMap(handle);
                     DRM_ERR_LOG("DrmHostManager::SetMediaKeySystem error!");
-                    return;
+                    continue;
                 }
                 if (IsProvisionRequired()) {
                     std::lock_guard<std::mutex> lockLibMap(libMapMutex);
@@ -173,19 +180,18 @@ void DrmHostManager::ServiceThreadMain()
                     if (ret != DRM_OK) {
                         ReleaseHandleAndKeySystemMap(handle);
                         DRM_ERR_LOG("DrmHostManager::ThreadExitNotify error!");
-                        return;
+                        continue;
                     }
                     ret = StartThread();
                     if (ret != DRM_OK) {
                         ReleaseHandleAndKeySystemMap(handle);
                         DRM_ERR_LOG("DrmHostManager::StartThread error!");
-                        return;
+                        continue;
                     }
                 } else {
-                    dlclose(handle);
                     loadedLibs.pop_back();
                     ReleaseHandleAndKeySystemMap(handle);
-                    DRM_DEBUG_LOG("OEM certificate exist!");
+                    DRM_DEBUG_LOG("Faild to obtain the symbol table in the so!");
                 }
             }
         }

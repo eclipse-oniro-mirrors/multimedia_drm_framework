@@ -45,7 +45,6 @@ napi_value MediaDecryptModuleNapi::Init(napi_env env, napi_value exports)
 
     napi_status status;
     napi_value ctorObj;
-    int32_t refCount = 1;
 
     napi_property_descriptor decryptModule_props[] = {
         DECLARE_NAPI_FUNCTION("release", Release),
@@ -56,7 +55,7 @@ napi_value MediaDecryptModuleNapi::Init(napi_env env, napi_value exports)
     status = napi_define_class(env, DECYPT_MODULE_NAPI_CLASS_NAME, NAPI_AUTO_LENGTH, MediaDecryptModuleNapiConstructor,
         nullptr, sizeof(decryptModule_props) / sizeof(decryptModule_props[PARAM0]), decryptModule_props, &ctorObj);
     if (status == napi_ok) {
-        status = napi_create_reference(env, ctorObj, refCount, &sConstructor_);
+        status = napi_create_reference(env, ctorObj, 1, &sConstructor_);
         if (status == napi_ok) {
             status = napi_set_named_property(env, exports, DECYPT_MODULE_NAPI_CLASS_NAME, ctorObj);
             if (status == napi_ok) {

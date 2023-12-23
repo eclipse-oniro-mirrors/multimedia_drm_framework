@@ -317,7 +317,7 @@ void MediaKeySessionServiceCallback::InitEventMap()
 std::string MediaKeySessionServiceCallback::GetEventName(DrmEventType event)
 {
     DRM_INFO_LOG("MediaKeySessionServiceCallback::GetEventName");
-    std::string eventName;
+    std::string eventName = "";
     int32_t eventType = static_cast<int32_t>(event);
     if (eventMap_.find(eventType) == eventMap_.end()) {
         return eventName;
@@ -330,7 +330,7 @@ int32_t MediaKeySessionServiceCallback::SendEvent(DrmEventType event, uint32_t e
 {
     DRM_INFO_LOG("MediaKeySessionServiceCallback SendEvent");
     std::string eventName = GetEventName(event);
-    if (keySessionImpl_ != nullptr) {
+    if (keySessionImpl_ != nullptr && eventName.length() != 0) {
         sptr<MediaKeySessionImplCallback> applicationCallback = keySessionImpl_->GetApplicationCallback();
         if (applicationCallback != nullptr) {
             applicationCallback->SendEvent(eventName, extra, data);

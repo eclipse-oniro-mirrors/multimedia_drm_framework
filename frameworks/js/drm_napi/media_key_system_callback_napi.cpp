@@ -34,12 +34,7 @@ void MediaKeySystemCallbackNapi::ClearCallbackReference(const std::string eventT
 {
     DRM_INFO_LOG("MediaKeySystemCallbackNapi ClearCallbackReference");
     std::lock_guard<std::mutex> lock(mutex_);
-    if (callbackMap_.find(eventType) != callbackMap_.end()) {
-        callbackMap_.erase(eventType);
-        DRM_INFO_LOG("MediaKeySystemCallbackNapi ClearCallbackReference %{public}s", eventType.c_str());
-    } else {
-        DRM_WARNING_LOG("ClearCallbackReference failed, no this event: %{public}s", eventType.c_str());
-    }
+    callbackMap_.erase(eventType);
 }
 
 void MediaKeySystemCallbackNapi::SendEvent(const std::string event, uint32_t extra,
@@ -67,6 +62,8 @@ void MediaKeySystemCallbackNapi::SendEvent(const std::string event, uint32_t ext
     napi_create_uint32(env, extra, &extraValue);
     napi_value array = nullptr;
     state = napi_create_array_with_length(env, data.size(), &array);
+    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok,
+        "%{public}s failed to napi_create_array_with_length", event.c_str());
     for (uint32_t i = 0; i < data.size(); i++) {
         napi_value number = nullptr;
         (void)napi_create_uint32(env, data[i], &number);
