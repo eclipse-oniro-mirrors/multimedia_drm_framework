@@ -444,8 +444,8 @@ declare namespace drm {
    * @syscap SystemCapability.Multimedia.Drm.Core
    */
   enum LicenseType {
-    LICENSE_TYPE_OFFLINE = 0,
-    LICENSE_TYPE_ONLINE,
+    LICENSE_TYPE_ONLINE = 0,
+    LICENSE_TYPE_OFFLINE,
   }
 
   /**
