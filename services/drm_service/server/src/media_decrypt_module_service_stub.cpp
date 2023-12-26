@@ -66,7 +66,7 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
                     DRM_ERR_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_DECRYPT_DATA read ivSize failed");
                     return IPC_STUB_WRITE_PARCEL_ERR;
                 }
-                cryptInfo.keyId.assign(ivBuf, ivBuf + ivSize);
+                cryptInfo.iv.assign(ivBuf, ivBuf + ivSize);
             }
             cryptInfo.pattern.encryptBlocks = data.ReadUint32();
             cryptInfo.pattern.skipBlocks = data.ReadUint32();
