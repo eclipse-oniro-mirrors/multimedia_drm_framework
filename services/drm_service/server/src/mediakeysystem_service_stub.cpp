@@ -131,6 +131,10 @@ static int32_t ProcessKeySystemRequest(MediaKeySystemServiceStub *stub, MessageP
     std::string defaultUrl;
     int32_t ret = stub->GenerateKeySystemRequest(request, defaultUrl);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessKeySystemRequest faild, errCode:%{public}d", ret);
+    if (!reply.WriteString(defaultUrl)) {
+        DRM_ERR_LOG("MediaKeySystemServiceStub Write GenerateKeySystemRequest failed");
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
     if (!reply.WriteInt32(request.size())) {
         DRM_ERR_LOG("MediaKeySystemServiceStub Write request size failed");
         return IPC_STUB_WRITE_PARCEL_ERR;
@@ -142,10 +146,6 @@ static int32_t ProcessKeySystemRequest(MediaKeySystemServiceStub *stub, MessageP
             DRM_ERR_LOG("MediaKeySystemServiceStub RestoreOfflineLicense write request failed");
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
-    }
-    if (!reply.WriteString(defaultUrl)) {
-        DRM_ERR_LOG("MediaKeySystemServiceStub Write GenerateKeySystemRequest failed");
-        return IPC_STUB_WRITE_PARCEL_ERR;
     }
     DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GENERATE_KEYSYSTEM_REQUEST exit.");
     return ret;
