@@ -62,7 +62,8 @@ int32_t MediaKeySystemServiceProxy::GenerateKeySystemRequest(std::vector<uint8_t
         DRM_ERR_LOG("MediaKeySystemServiceProxy::GenerateKeySystemRequest failed, ret: %{public}d", ret);
         return ret;
     }
-
+    
+    defaultUrl = reply.ReadString();
     uint32_t requestSize = reply.ReadInt32();
     DRM_CHECK_AND_RETURN_RET_LOG(requestSize < REQUEST_MAX_LEN, DRM_MEMORY_ERROR, "The size of request is too large.");
     if (requestSize != 0) {
@@ -73,8 +74,7 @@ int32_t MediaKeySystemServiceProxy::GenerateKeySystemRequest(std::vector<uint8_t
         }
         request.assign(requestBuf, requestBuf + requestSize);
     }
-    defaultUrl = reply.ReadString();
-
+    
     DRM_INFO_LOG("MediaKeySystemServiceProxy::GenerateKeySystemRequest exit.");
     return ret;
 }
