@@ -146,7 +146,7 @@ int32_t MediaKeySessionServiceProxy::GenerateLicenseRequest(
         DRM_ERR_LOG("MediaKeySessionServiceProxy::GenerateLicenseRequest failed, ret: %{public}d", ret);
         return ret;
     }
-
+    licenseRequest.mDefaultURL = reply.ReadString();
     licenseRequest.requestType = (IMediaKeySessionService::RequestType)reply.ReadInt32();
     uint32_t dataSize = reply.ReadInt32();
     DRM_CHECK_AND_RETURN_RET_LOG(dataSize < DATA_MAX_LEN, DRM_MEMORY_ERROR, "The size of initData is too large.");
@@ -158,7 +158,6 @@ int32_t MediaKeySessionServiceProxy::GenerateLicenseRequest(
         }
         licenseRequest.mData.assign(mDataBuf, mDataBuf + dataSize);
     }
-    licenseRequest.mDefaultURL = reply.ReadString();
     DRM_INFO_LOG("MediaKeySessionServiceProxy::GenerateLicenseRequest exit.");
     return ret;
 }

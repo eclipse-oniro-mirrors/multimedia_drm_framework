@@ -75,7 +75,7 @@ bool OH_MediaKeySystem_IsSupported3(const char *uuid, const char *mimeType, OH_D
 
     IMediaKeySessionService::SecurityLevel securityLevel = (IMediaKeySessionService::SecurityLevel)SecurityLevel;
     if ((securityLevel < IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN) ||
-        (securityLevel >= IMediaKeySessionService::SECURITY_LEVEL_MAX)) {
+        (securityLevel >= IMediaKeySessionService::SECURITY_LEVEL_HW_DECODE)) {
         DRM_ERR_LOG("cSecurityLevel is invalid");
         return false;
     }
@@ -150,7 +150,9 @@ OH_DrmErrCode OH_MediaKeySystem_GetConfigurationString(OH_MediaKeySystem *mediaK
     DRM_CHECK_AND_RETURN_RET_LOG(configName != nullptr, DRM_ERR_INVALID_VAL,
         "OH_GetConfigurationString configName is nullptr!");
     DRM_CHECK_AND_RETURN_RET_LOG(value != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_GetConfigurationString configName is nullptr!");
+        "OH_GetConfigurationString value is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(valueLen != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_GetConfigurationString valueLen is nullptr!");
     std::string valuePtr;
     int32_t result = DRM_ERR_ERROR;
     std::string name = std::string(configName);
@@ -222,6 +224,8 @@ OH_DrmErrCode OH_MediaKeySystem_GetConfigurationByteArray(OH_MediaKeySystem *med
         "OH_GetConfigurationByteArray configName is nullptr!");
     DRM_CHECK_AND_RETURN_RET_LOG(value != nullptr, DRM_ERR_INVALID_VAL,
         "OH_GetConfigurationByteArray valuePtr is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(valueLen != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_GetConfigurationByteArray valueLen is nullptr!");
 
     std::vector<uint8_t> valuePtr;
     int32_t result = DRM_ERR_ERROR;
@@ -534,6 +538,8 @@ OH_DrmErrCode OH_MediaKeySystem_GetOfflineMediaKeyStatus(OH_MediaKeySystem *medi
     DRM_INFO_LOG("OH_MediaKeySystem_GetOfflineMediaKeyStatus enter");
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_GetOfflineMediaKeyStatus mediaKeySystem is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeyId != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySystem_GetOfflineMediaKeyStatus mediaKeyId is nullptr!");
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeyId->buffer != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_GetOfflineMediaKeyStatus mediaKeyId.buffer is nullptr!");
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeyId->bufferLen != 0, DRM_ERR_INVALID_VAL,
@@ -572,6 +578,8 @@ OH_DrmErrCode OH_MediaKeySystem_ClearOfflineMediaKeys(OH_MediaKeySystem *mediaKe
     DRM_INFO_LOG("OH_RemoveOfflineLicense enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, DRM_ERR_INVALID_VAL,
         "OH_GetOfflineLicenseStatus mediaKeySystem is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeyId != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_GetOfflineLicenseStatus mediaKeyId is nullptr!");
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeyId->buffer != nullptr, DRM_ERR_INVALID_VAL,
         "OH_GetOfflineLicenseStatus mediaKeyId is nullptr!");
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeyId->bufferLen != 0, DRM_ERR_INVALID_VAL,
