@@ -133,6 +133,11 @@ static int32_t ProcessLicenseRequest(MediaKeySessionServiceStub *stub, MessagePa
     }
     int32_t ret = stub->GenerateLicenseRequest(licenseRequestInfo, licenseRequest);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "GenerateLicenseRequest faild, errCode:%{public}d", ret);
+    if (!reply.WriteString(licenseRequest.mDefaultURL)) {
+        DRM_ERR_LOG("MediaKeySessionServiceStub Write licenseRequest.mDefaultURL GenerateLicenseRequest failed");
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    
     if (!reply.WriteInt32(licenseRequest.requestType)) {
         DRM_ERR_LOG("MediaKeySessionServiceStub Write requestType GenerateLicenseRequest failed");
         return IPC_STUB_WRITE_PARCEL_ERR;
@@ -149,10 +154,7 @@ static int32_t ProcessLicenseRequest(MediaKeySessionServiceStub *stub, MessagePa
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
     }
-    if (!reply.WriteString(licenseRequest.mDefaultURL)) {
-        DRM_ERR_LOG("MediaKeySessionServiceStub Write licenseRequest.mDefaultURL GenerateLicenseRequest failed");
-        return IPC_STUB_WRITE_PARCEL_ERR;
-    }
+    
     DRM_INFO_LOG("MediaKeySessionServiceStub MEDIA_KEY_SESSION_GENERATE_LICENSE_REQUEST exit.");
     return ret;
 }

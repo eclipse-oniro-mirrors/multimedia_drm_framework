@@ -104,6 +104,8 @@
             }
           ],
           "test": [
+            "//foundation/multimedia/drm_framework/frameworks/native/test:drmframeworktest",
+            "//foundation/multimedia/drm_framework/frameworks/native/test/unittest:drm_framework_capi_unittest_v1_0"
           ]
         }
     }
