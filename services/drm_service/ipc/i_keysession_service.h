@@ -37,12 +37,12 @@ public:
         LISTENER_KEYSESSION_LOST = 208,
     };
 
-    enum LicenseType {
+    enum MediaKeyType {
         LICENSETYPE_OFFLINE = 0,
         LICENSETYPE_ONLINE,
     };
 
-    enum OfflineLicenseStatus {
+    enum OfflineMediaKeyStatus {
         OFFLINELICENSESTATUS_UNKNOWN = 0,
         OFFLINELICENSESTATUS_USABLE = 1,
         OFFLINELICENSESTATUS_INACTIVE = 2,
@@ -57,14 +57,12 @@ public:
         REQUEST_TYPE_UPDATE = 5,
     };
 
-    enum SecurityLevel {
+    enum ContentProtectionLevel {
         SECURITY_LEVEL_UNKNOWN = 0,
         SECURITY_LEVEL_SW_CRYPTO = 1,
-        SECURITY_LEVEL_SW_DECODE = 2,
-        SECURITY_LEVEL_HW_CRYPTO = 3,
-        SECURITY_LEVEL_HW_DECODE = 4,
-        SECURITY_LEVEL_HW_ALL = 5,
-        SECURITY_LEVEL_MAX = 6,
+        SECURITY_LEVEL_HW_CRYPTO = 2,
+        SECURITY_LEVEL_HW_ALL = 3,
+        SECURITY_LEVEL_MAX = 4,
     };
 
     struct OptionalData {
@@ -72,14 +70,14 @@ public:
         std::string value;
     };
 
-    struct LicenseRequestInfo {
-        LicenseType licenseType;
+    struct MediaKeyRequestInfo {
+        MediaKeyType mediaKeyType;
         std::string mimeType;
         std::vector<uint8_t> initData;
         std::map<std::string, std::string> optionalData;
     };
 
-    struct LicenseRequest {
+    struct MediaKeyRequest {
         RequestType requestType;
         std::vector<uint8_t> mData;
         std::string mDefaultURL;
@@ -88,16 +86,16 @@ public:
     virtual ~IMediaKeySessionService() = default;
     virtual int32_t Release() = 0;
     virtual int32_t CreateMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule) = 0;
-    virtual int32_t GenerateLicenseRequest(LicenseRequestInfo &licenseRequestInfo, LicenseRequest &licenseInfo) = 0;
-    virtual int32_t ProcessLicenseResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &licenseResponse) = 0;
+    virtual int32_t GenerateMediaKeyRequest(MediaKeyRequestInfo &licenseRequestInfo, MediaKeyRequest &licenseInfo) = 0;
+    virtual int32_t ProcessMediaKeyResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &licenseResponse) = 0;
     virtual int32_t GenerateOfflineReleaseRequest(std::vector<uint8_t> &licenseId,
         std::vector<uint8_t> &releaseRequest) = 0;
     virtual int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &licenseId,
         std::vector<uint8_t> &releaseReponse) = 0;
-    virtual int32_t CheckLicenseStatus(std::map<std::string, MediaKeySessionKeyStatus> &licenseStatus) = 0;
-    virtual int32_t RestoreOfflineLicense(std::vector<uint8_t> &licenseId) = 0;
-    virtual int32_t RemoveLicense() = 0;
-    virtual int32_t GetSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel) = 0;
+    virtual int32_t CheckMediaKeyStatus(std::map<std::string, std::string> &licenseStatus) = 0;
+    virtual int32_t RestoreOfflineMediaKeys(std::vector<uint8_t> &licenseId) = 0;
+    virtual int32_t ClearMediaKeys() = 0;
+    virtual int32_t GetContentProtectionLevel(IMediaKeySessionService::ContentProtectionLevel *securityLevel) = 0;
     virtual int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status) = 0;
     virtual int32_t SetCallback(sptr<IMediaKeySessionServiceCallback> &callback) = 0;
     DECLARE_INTERFACE_DESCRIPTOR(u"IMediaKeySessionService");

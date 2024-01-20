@@ -48,9 +48,15 @@ int32_t MediaKeySessionServiceCallbackStub::HandleSendEvent(MessageParcel &data)
     uint32_t extra = data.ReadUint32();
     uint32_t dataSize = data.ReadUint32();
     std::vector<uint8_t> customizedData;
-    for (uint32_t i = 0; i < dataSize; i++) {
-        customizedData.emplace_back(data.ReadUint8());
+    if (dataSize != 0) {
+        const uint8_t *dataBuf = static_cast<const uint8_t *>(data.ReadBuffer(dataSize));
+        if (dataBuf == nullptr) {
+            DRM_ERR_LOG("MediaKeySessionServiceCallbackStub::HandleSendEvent read data failed");
+            return IPC_STUB_WRITE_PARCEL_ERR;
+        }
+        customizedData.assign(dataBuf, dataBuf + dataSize);
     }
+
     DrmEventType eventType = static_cast<DrmEventType>(event);
     return SendEvent(eventType, extra, customizedData);
 }
@@ -63,8 +69,13 @@ int32_t MediaKeySessionServiceCallbackStub::HandleSendEventKeyChanged(MessagePar
     for (uint32_t index = 0; index < mapSize; index++) {
         std::vector<uint8_t> item;
         uint32_t idSize = data.ReadUint32();
-        for (uint32_t i = 0; i < idSize; i++) {
-            item.emplace_back(data.ReadUint8());
+        if (idSize != 0) {
+            const uint8_t *idBuf = static_cast<const uint8_t *>(data.ReadBuffer(idSize));
+            if (idBuf == nullptr) {
+                DRM_ERR_LOG("MediaKeySessionServiceCallbackStub::HandleSendEventKeyChanged read data failed");
+                return IPC_STUB_WRITE_PARCEL_ERR;
+            }
+            item.assign(idBuf, idBuf + idSize);
         }
         MediaKeySessionKeyStatus licenseStatus = static_cast<MediaKeySessionKeyStatus>(data.ReadInt32());
         statusTable[item] = licenseStatus;

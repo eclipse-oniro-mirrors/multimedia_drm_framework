@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2023-2024 Huawei Device Co., Ltd.
+* Copyright (C) 2023 Huawei Device Co., Ltd.
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
@@ -13,563 +13,956 @@
 * limitations under the License.
 */
 
-import {ErrorCallback, AsyncCallback, Callback} from './basic';
-import { Context } from './app/context';
+/**
+ * @file Defines the DRM capability.
+ * @kit DrmKit
+ */
 
-
+/**
+ * This module provides the DRM capability to multimedia player.
+ * @namespace drm
+ * @syscap SystemCapability.Multimedia.Drm.Core
+ * @since 11
+ */
 declare namespace drm {
+/**
+ * Enumerates drm error code.
+ * @enum { number }
+ * @syscap SystemCapability.Multimedia.Drm.Core
+ * @since 11
+ */
+  enum DrmErrorCode {
+    /**
+     * All unknown errors.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    ERROR_UNKNOWN = 24700101,
+    /**
+     * Meet max MediaKeySystem num limit.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    MAX_SYSTEM_NUM_REACHED = 24700103,
+    /**
+     * Meet max MediaKeySession num limit.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    MAX_SESSION_NUM_REACHED = 24700104,
+    /**
+     * Service fatal error e.g. service died.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    SERVICE_FATAL_ERROR = 24700201
+  }
+
   /**
-   * Find a MediaKeySystem name.
-   * @since 8
+   * Enumerates which config name we can get.
+   * @enum { string }
    * @syscap SystemCapability.Multimedia.Drm.Core
-   * @param uuid Used to point a Digital Right Managements solution.
-   * @returns return the MediaKeySystem name.
+   * @since 11
    */
-  function findMediaKeySystem(uuid: string): string;
+  enum PreDefinedConfigName {
+    /**
+     * Config name vendor
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    CONFIG_DEVICE_VENDOR = 'vendor',
+    /**
+     * Config name version
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    CONFIG_DEVICE_VERSION = 'version',
+    /**
+     * Config name description
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    CONFIG_DEVICE_DESCRIPTION = 'description',
+    /**
+     * Config name algorithms
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    CONFIG_DEVICE_ALGORITHMS = 'algorithms',
+    /**
+     * Config name deviceUniqueId
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    CONFIG_DEVICE_UNIQUE_ID = 'deviceUniqueId',
+    /**
+     * Config name maxSessionNum
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    CONFIG_SESSION_MAX = 'maxSessionNum',
+    /**
+     * Config name currentSessionNum
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    CONFIG_SESSION_CURRENT = 'currentSessionNum',
+  }
   /**
-   * Creates a Mediakeysystem instance.
-   * @since 8
+   * Enumerates event types of listener.
+   * @enum { number }
    * @syscap SystemCapability.Multimedia.Drm.Core
-   * @param uuid Used to point a Digital Right Managements solution.
-   * @param callback Callback used to return the Mediakeysystem instance.
+   * @since 11
    */
-  function createMediaKeySystem(uuid: string, callback: Callback<MediaKeySystem>): void;
+  enum ListenerType {
+    /**
+     * DRM event base.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    LISTENER_DRM_EVENT = 200,
+    /**
+     * Provision required event.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    LISTENER_PROVISION_REQUIRED = 201,
+    /**
+     * Media key required event.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    LISTENER_KEY_REQUIRED = 202,
+    /**
+     * Media key expired event.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    LISTENER_KEY_EXPIRED = 203,
+    /**
+     * Vendor defined event.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    LISTENER_VENDOR_DEFINED = 204,
+    /**
+     * Expiration update event.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    LISTENER_EXPIRATION_UPDATE = 206,
+    /**
+     * Media key change event.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    LISTENER_KEY_CHANGE = 207,
+  }
+
+  /**
+   * Enumerates media key type.
+   * @enum { number }
+   * @syscap SystemCapability.Multimedia.Drm.Core
+   * @since 11
+   */
+  enum MediaKeyType {
+    /**
+     * Offline media key type.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    MEDIA_KEY_TYPE_OFFLINE = 0,
+    /**
+     * Online media key type.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    MEDIA_KEY_TYPE_ONLINE,
+  }
+
+  /**
+   * Enumerates offline media key status.
+   * @enum { number }
+   * @syscap SystemCapability.Multimedia.Drm.Core
+   * @since 11
+   */
+  enum OfflineMediaKeyStatus {
+    /**
+     * Offline media key status unknown.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    OFFLINE_MEDIA_KEY_STATUS_UNKNOWN = 0,
+    /**
+     * Offline media key status usable.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    OFFLINE_MEDIA_KEY_STATUS_USABLE = 1,
+    /**
+     * Offline media key status inactive.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    OFFLINE_MEDIA_KEY_STATUS_INACTIVE = 2,
+  }
+
+  /**
+   * Enumerates certificate status.
+   * @enum { number }
+   * @syscap SystemCapability.Multimedia.Drm.Core
+   * @since 11
+   */
+  enum CertificateStatus {
+    /**
+     * Device already provisioned.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    CERT_STATUS_PROVISIONED = 0,
+    /**
+     * Device not provisioned.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    CERT_STATUS_NOT_PROVISIONED,
+    /**
+     * Cert already expired.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    CERT_STATUS_EXPIRED,
+    /**
+     * Certs are invalid.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    CERT_STATUS_INVALID,
+    /**
+     * Get certs status failed.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    CERT_STATUS_UNAVAILABLE,
+  }
+
+  /**
+   * Enumerates media key request types.
+   * @enum { number }
+   * @syscap SystemCapability.Multimedia.Drm.Core
+   * @since 11
+   */
+  enum MediaKeyRequestType {
+    /**
+     * Media key request type unknown.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    MEDIA_KEY_REQUEST_TYPE_UNKNOWN = 0,
+    /**
+     * Media key request type initial.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    MEDIA_KEY_REQUEST_TYPE_INITIAL = 1,
+    /**
+     * Media key request type renewal.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    MEDIA_KEY_REQUEST_TYPE_RENEWAL = 2,
+    /**
+     * Media key request type release.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    MEDIA_KEY_REQUEST_TYPE_RELEASE = 3,
+    /**
+     * Media key request type none.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    MEDIA_KEY_REQUEST_TYPE_NONE = 4,
+    /**
+     * Media key request type update.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    MEDIA_KEY_REQUEST_TYPE_UPDATE = 5,
+  }
+
+  /**
+   * Enumerates content protection level.
+   * @enum { number }
+   * @syscap SystemCapability.Multimedia.Drm.Core
+   * @since 11
+   */
+  enum ContentProtectionLevel {
+    /**
+     * Device decrypt and decode type unknown.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    CONTENT_PROTECTION_LEVEL_UNKNOWN = 0,
+    /**
+     * Device using software level.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    CONTENT_PROTECTION_LEVEL_SW_CRYPTO,
+    /**
+     * Device using hardware level.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    CONTENT_PROTECTION_LEVEL_HW_CRYPTO,
+    /**
+     * Device using enhanced hardware level.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    CONTENT_PROTECTION_LEVEL_ENHANCED_HW,
+    /**
+     * Max mode.
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    CONTENT_PROTECTION_LEVEL_MAX,
+  }
+
+  /**
+   * Provides the drm provision request definitions.
+   * @interface ProvisionRequest
+   * @syscap SystemCapability.Multimedia.Drm.Core
+   * @since 11
+   */
+  interface ProvisionRequest {
+    /**
+     * Provision request data sent to provision server.
+     * @type { Uint8Array }
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    data: Uint8Array;
+    /**
+     * Provision server URL.
+     * @type { string }
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    defaultURL: string;
+  }
+
+  /**
+   * Provides the drm media key request info optional data.
+   * @interface OptionsData
+   * @syscap SystemCapability.Multimedia.Drm.Core
+   * @since 11
+   */
+  interface OptionsData {
+    /**
+     * App defined optional data name.
+     * @type { string }
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    name: string;
+    /**
+     * App defined optional data value.
+     * @type { string }
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    value: string;
+  }
+
+  /**
+   * Provides the drm media key request definitions.
+   * @interface MediaKeyRequest
+   * @syscap SystemCapability.Multimedia.Drm.Core
+   * @since 11
+   */
+  interface MediaKeyRequest {
+    /**
+     * Media key request type.
+     * @type { MediaKeyRequestType }
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    mediaKeyRequestType: MediaKeyRequestType;
+    /**
+     * Media key request data sent to media key server.
+     * @type { Uint8Array }
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    data: Uint8Array;
+    /**
+     * Media key server URL.
+     * @type { string }
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    defaultURL: string;
+  }
+
+  /**
+   * Used to indicates the event info attached to specific event type.
+   * @interface EventInfo
+   * @syscap SystemCapability.Multimedia.Drm.Core
+   * @since 11
+   */
+  interface EventInfo {
+    /**
+     * Event info.
+     * @type { Uint8Array }
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    info: Uint8Array;
+    /**
+     * Event extra info.
+     * @type { string }
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    extraInfo: string;
+  }
+
+  /**
+   * Used to indicates the statistic info.
+   * @interface StatisticKeyValue
+   * @syscap SystemCapability.Multimedia.Drm.Core
+   * @since 11
+   */
+  interface StatisticKeyValue {
+    /**
+     * Statistic info name.
+     * @type { string }
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    name: string;
+    /**
+     * Statistic info value.
+     * @type { string }
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    value: string;
+  }
+
+  /**
+   * Used to indicates the media key status.
+   * @interface MediaKeyStatus
+   * @syscap SystemCapability.Multimedia.Drm.Core
+   * @since 11
+   */
+  interface MediaKeyStatus {
+    /**
+     * Media key Id in string.
+     * @type { string }
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    name: string;
+    /**
+     * Media key status description.
+     * @type { string }
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    value: string;
+  }
+
+  /**
+   * Used to indicates the media key status with a key and its value.
+   * @interface KeysInfo
+   * @syscap SystemCapability.Multimedia.Drm.Core
+   * @since 11
+   */
+  interface KeysInfo {
+    /**
+     * Keys Id in media key.
+     * @type { Uint8Array }
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    keyId: Uint8Array;
+    /**
+     * Keys status description.
+     * @type { string }
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    value: string;
+  }
+
+  /**
+   * Used to indicates the media key system info of media source.
+   * @interface MediaKeySystemInfo
+   * @syscap SystemCapability.Multimedia.Drm.Core
+   * @since 11
+   */
+  interface MediaKeySystemInfo {
+    /**
+     * Drm system ID.
+     * @type { string }
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    uuid: string;
+    /**
+     * PSSH(protection scheme specific header) contain drm info.
+     * @type { Uint8Array }
+     * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
+     */
+    pssh: Uint8Array;
+  }
+
+  /**
+   * Get a MediaKeySystem name.
+   * @param { string } uuid - The MediaKeySystem's uuid, normally gotten from media source.
+   * @returns { string } The MediaKeySystem name, if not found.
+   * @throws { BusinessError } 401 - The parameter check failed.
+   * @throws { BusinessError } 24700101 - All unknown errors.
+   * @syscap SystemCapability.Multimedia.Drm.Core
+   * @since 11
+   */
+  function getMediaKeySystemName(uuid: string): string;
 
   /**
    * Creates a MediaKeySystem instance.
-   * @since 8
+   * @param { string } name - Used to point a Digital Right Management solution.
+   * @returns { MediaKeySystem } The MediaKeySystem instance.
+   * @throws { BusinessError } 401 - The parameter check failed.
+   * @throws { BusinessError } 24700101 - All unknown errors.
+   * @throws { BusinessError } 24700103 - Meet max MediaKeySystem num limit.
+   * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
    * @syscap SystemCapability.Multimedia.Drm.Core
-   * @param uuid Used to point a Digital Right Managements solution.
-   * @returns return the MediaKeySystem instance.
+   * @since 11
    */
-  function createMediaKeySystem(uuid: string): MediaKeySystem;
+  function createMediaKeySystem(name: string): MediaKeySystem;
 
   /**
-   * Judge whether a system that specifies UUID, mimetype and security level is supported.
-   * @since 8
+   * Judge whether a system that specifies name, mimetype and content protection level is supported.
+   * @param { string } name - Used to point a Digital Right Management solution.
+   * @param { string } mimeType - Used to specifies the media type.
+   * @param { ContentProtectionLevel } level - Used to specifies the ContentProtectionLevel.
+   * @returns { boolean } Whether these conditions will be met.
+   * @throws { BusinessError } 401 - The parameter check failed.
+   * @throws { BusinessError } 24700101 - All unknown errors.
+   * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
    * @syscap SystemCapability.Multimedia.Drm.Core
-   * @param uuid Used to point a Digital Right Managements solution.
-   * @param mimeType Used to specifies the meida type.
-   * @param level Used to specifies the SecurityLevel.
-   * @returns Whether these conditions will be met.
+   * @since 11
    */
-  function isMediaKeySystemSupported(uuid: string, mimeType: string, level: SecurityLevel): boolean;
+  function isMediaKeySystemSupported(name: string, mimeType: string, level: ContentProtectionLevel): boolean;
 
   /**
-   * Judge whether a system that specifies UUID, mimetype and security level is supported.
-   * @param uuid Used to point a Digital Right Managements solution.
-   * @param mimeType Used to specifies the meida type.
-   * @returns Whether these conditions will be met.
-   * @since 8
+   * Judge whether a system that specifies name, mimetype is supported.
+   * @param { string } name - Used to point a Digital Right Management solution.
+   * @param { string } mimeType - Used to specifies the media type.
+   * @returns { boolean } Whether these conditions will be met.
+   * @throws { BusinessError } 401 - The parameter check failed.
+   * @throws { BusinessError } 24700101 - All unknown errors.
+   * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
    * @syscap SystemCapability.Multimedia.Drm.Core
+   * @since 11
    */
-  function isMediaKeySystemSupported(uuid: string, mimeType: string): boolean;
+  function isMediaKeySystemSupported(name: string, mimeType: string): boolean;
 
   /**
-   * Judge whether a system that specifies UUID, mimetype and security level is supported.
-   * @param uuid Used to point a Digital Right Managements solution.
-   * @returns Whether these conditions will be met.
-   * @since 8
+   * Judge whether a system that specifies name is supported.
+   * @param { string } name - Used to point a Digital Right Management solution.
+   * @returns { boolean } Whether these conditions will be met.
+   * @throws { BusinessError } 401 - The parameter check failed.
+   * @throws { BusinessError } 24700101 - All unknown errors.
+   * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
    * @syscap SystemCapability.Multimedia.Drm.Core
+   * @since 11
    */
-  function isMediaKeySystemSupported(uuid: string): boolean;
+  function isMediaKeySystemSupported(name: string): boolean;
 
   /**
-   * Manages and record key sessions. Before calling an MediaKeySystem method,
-   * we must use getMediaKeySystem to get a MediaKeySystem instance, then we can call functions.
-   * @since 8
+   * Manages and record MediaKeySessions. Before calling an MediaKeySystem method, we must use getMediaKeySystem
+   * to get a MediaKeySystem instance, then we can call functions.
+   * @interface MediaKeySystem
    * @syscap SystemCapability.Multimedia.Drm.Core
+   * @since 11
+   *
    */
   interface MediaKeySystem {
-
     /**
      * Get the specified configuration.
-     * @since 8
+     * @param { string } - configName - Used to specify the config name.
+     * @returns { string } The config value string.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param configName Used to specify the config name.
-     * @returns The result.
+     * @since 11
      */
     getConfigurationString(configName: string): string;
 
     /**
      * Set the specified configuration.
-     * @since 8
+     * @param { string } configName - Used to specify the config name.
+     * @param { string } value - The value to be set.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param configName Used to specify the config name.
-     * @param value The value to be set.
+     * @since 11
      */
     setConfigurationString(configName: string, value: string): void;
 
     /**
      * Get the specified configuration.
-     * @since 8
+     * @param { string } configName - Used to specify the config name.
+     * @returns { Uint8Array } The config value.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param configName Used to specify the config name.
-     * @returns The result.
+     * @since 11
      */
     getConfigurationByteArray(configName: string): Uint8Array;
 
     /**
      * Set the specified configuration.
-     * @since 8
+     * @param { string } configName - Used to specify the config name.
+     * @param { Uint8Array } value - The value to be set.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param configName Used to specify the config name.
-     * @param value The value to be set.
+     * @since 11
      */
     setConfigurationByteArray(configName: string, value: Uint8Array): void;
 
     /**
      * Get performance statistics information.That includes currentSessionNum, version, decryptNumber,
      * and errorDecryptNumber.
-     * @since 8
+     * @returns { StatisticKeyValue[] } A list that includes performance index and corresponding statistics.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @returns A map that includes perfaormence index and corresponding statistics.
+     * @since 11
      */
-    getMetrics(): MetricKeyValue[];
+    getStatistics(): StatisticKeyValue[];
 
     /**
-     * Get security level.
-     * @since 8
+     * Get max content protection level the device supports.
+     * @returns { ContentProtectionLevel } The max content protection level of the MediaKeySystem instance.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @returns return SecurityLevel.
+     * @since 11
      */
-    getMaxSecurityLevel(): SecurityLevel;
+    getMaxContentProtectionLevel(): ContentProtectionLevel;
 
     /**
-     * Generate the media key system provision request.
-     * @since 8
+     * Generate a media key system provision request.
+     * @returns { Promise<ProvisionRequest> } Promise with ProvisionRequest used to return the result.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @returns return a ProvisionRequest
+     * @since 11
      */
-    generateKeySystemRequest(): ProvisionRequest;
+
+    generateKeySystemRequest(): Promise<ProvisionRequest>;
 
     /**
      * Process the response corresponding the key system request obtained by the application.
-     * @since 8
+     * @param { Uint8Array } response - Response corresponding to the request.
+     * @returns { Promise<void> } Promise used to return the result.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param response Response corresponding to the request.
+     * @since 11
      */
-    processKeySystemResponse(response: Uint8Array): void;
+    processKeySystemResponse(response: Uint8Array): Promise<void>;
 
     /**
-     * Get certificate status of DRM system.
-     * @since 8
+     * Get certificate status of the MediaKeySystem.
+     * @returns { CertificateStatus } Certificate Status of the MediaKeySystem instance.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @returns Certificate Status.
+     * @since 11
      */
-    getCertificateStatus():CertificateStatus;
-
-    /**
-     * Register or unregister listens for drm events.
-     * @since 8
-     * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param type Type of the drm event to listen for.
-     * @param callback Callback used to listen for the key system required event.
-     */
-    on(type: 'provisionRequired', callback: Callback<EventInfo>): void;
-    off(type: 'provisionRequired'): void;
+    getCertificateStatus(): CertificateStatus;
 
     /**
      * Register or unregister listens for drm events.
-     * @since 8
+     * @param { 'keySystemRequired' } type - Type of the drm event to listen for.
+     * @param { function } callback - Used to listen for the key system required event.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param type Type of the drm event to listen for.
-     * @param callback Callback used to listen for Session lost event.
+     * @since 11
      */
-    on(type: 'sessionLost', callback: Callback<EventInfo>): void;
-    off(type: 'sessionLost'): void;
+    on(type: 'keySystemRequired', callback: (eventInfo: EventInfo) => void): void;
+
+    off(type: 'keySystemRequired', callback?: (eventInfo: EventInfo) => void): void;
 
     /**
-     * Create a key session instance with level.
-     * @since 8
+     * Create a MediaKeySession instance with level.
+     * @param { ContentProtectionLevel } level - Used to specify the content protection level.
+     * @returns { MediaKeySession } A MediaKeySession instance.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700104 - Meet max MediaKeySession num limit.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param level Used to specify the Security level.
-     * @returns return a MediaKeySession instance.
+     * @since 11
      */
-    createMediaKeySession(level: SecurityLevel): MediaKeySession;
+    createMediaKeySession(level: ContentProtectionLevel): MediaKeySession;
 
     /**
-     * Create a key session instance.
-     * @since 8
+     * Create a MediaKeySession instance.
+     * @returns { MediaKeySession } A MediaKeySession instance.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700104 - Meet max MediaKeySession num limit.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @returns return a MediaKeySession instance.
+     * @since 11
      */
     createMediaKeySession(): MediaKeySession;
 
     /**
-     * Get the list of offline LicenseIds.
-     * @since 8
+     * Get the list of offline MediaKeyIds.
+     * @returns { Uint8Array[] } The list of offline MediaKeyIds.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @returns The list of offline LicenseIds.
+     * @since 11
      */
-    getOfflineLicenseIds(): Uint8Array[];
+    getOfflineMediaKeyIds(): Uint8Array[];
 
     /**
-     * Get offline license status corresponding to the licenseId.
-     * @since 8
+     * Get offline media key status corresponding to the mediaKeyId.
+     * @param { Uint8Array } mediaKeyId - The media key identifier.
+     * @returns { OfflineMediaKeyStatus } Offline media key Status.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param licenseId The licenseId specifies license.
-     * @returns OfflineKeyState.
+     * @since 11
      */
-    getOfflineLicenseStatus(licenseId: Uint8Array): OfflineLicenseStatus;
+    getOfflineMediaKeyStatus(mediaKeyId: Uint8Array): OfflineMediaKeyStatus;
 
     /**
-     * Remove license corresponding to the licenseId.
-     * @since 8
+     * Remove media key corresponding to the mediaKeyId.
+     * @param { Uint8Array } mediaKeyId - The mediaKeyId specifies which media key should be clear.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param licenseId The licenseId specifies which license should be remove.
+     * @since 11
      */
-    removeOfflineLicense(licenseId: Uint8Array): void;
+    clearOfflineMediaKeys(mediaKeyId: Uint8Array): void;
     /**
-     * Release the resource before the mediakeysystem gonna be unused.
-     * @since 8
+     * Release the resource before the MediaKeySystem gonna be unused.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
      */
     destroy(): void;
   }
 
-    /**
-     * Provide functions and keep a decrypt module. Before calling an MediaKeySession method,
-     * we must use MediaKeySystem's createMediaKeySession to get a key session instance.
-     * @since 8
-     * @syscap SystemCapability.Multimedia.Drm.Core
-     */
+  /**
+   * Provide functions and keep a decrypt module. Before calling an MediaKeySession method, we must
+   * use MediaKeySystem's createMediaKeySession to get a MediaKeySession instance.
+   * @interface MediaKeySession
+   * @syscap SystemCapability.Multimedia.Drm.Core
+   * @since 11
+   */
   interface MediaKeySession {
 
     /**
-     * Generate the license request.
-     * @since 8
+     * Generate the media key request.
+     * @param { string } mimeType - Media type.
+     * @param { Uint8Array } initData - PSSH after base64 encoding.
+     * @param { number } mediaKeyType - Offline or online.
+     * @param { OptionsData[] } options - Optional data the application set to drm framework.
+     * @returns { Promise<MediaKeyRequest> } Promise with MediaKeyRequest used to return the result.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param mimeType Media type.
-     * @param initData pssh after base64.
-     * @param licenseType Offline or online.
+     * @since 11
      */
-    generateLicenseRequest(mimeType: string, initData: Uint8Array, licenseType: number,
-        optionalData: OptionalData[]): LicenseRequest;
+    generateMediaKeyRequest(mimeType: string, initData: Uint8Array, mediaKeyType: number, options?: OptionsData[]): Promise<MediaKeyRequest>;
 
     /**
-     * Process the response corresponding the license request obtained by the application.
-     * @since 8
+     * Process the response corresponding to the media key request obtained by the application.
+     * @param { Uint8Array } response - The response.
+     * @returns { Promise<Uint8Array> } Promise with media key identifier in Uint8ARRY used to return the result.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param response The response.
-     * @returns Return licenseId.
+     * @since 11
      */
-    processLicenseResponse(response: Uint8Array): Uint8Array;
+    processMediaKeyResponse(response: Uint8Array): Promise<Uint8Array>;
 
     /**
-     * Check the license status
-     * @since 8
+     * Check the media key status
+     * @returns { MediaKeyStatus[] } A list of media key status description pairs.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @returns License status pair.
+     * @since 11
      */
-    checkLicenseStatus(): LicenseStatus[];
+    checkMediaKeyStatus(): MediaKeyStatus[];
 
     /**
-     * Remove license.
-     * @since 8
+     * Remove media key.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
      */
-    removeLicense(): void;
+    clearMediaKeys(): void;
 
     /**
-     * Generate offline license request.
-     * @since 8
+     * Generate offline media key request.
+     * @param { Uint8Array } mediaKeyId - The mediaKeyId specifies which media content's media key request
+     * should be generated.
+     * @returns { Promise<Uint8Array> } Promise with media key request in Uint8Array used to return the result.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param licenseId The licenseId specifies which media content's license request should be generated.
-     * @returns Return the license request.
+     * @since 11
      */
-    generateOfflineReleaseRequest(licenseId: Uint8Array): Uint8Array;
+    generateOfflineReleaseRequest(mediaKeyId: Uint8Array): Promise<Uint8Array>;
 
     /**
-     * Process offline license response.
-     * @since 8
+     * Process offline media key response.
+     * @param { Uint8Array } mediaKeyId - The mediaKeyId specifies which media content's media key it is.
+     * @param { Uint8Array } response - The offline media key.
+     * @returns { Promise<void> } Promise used to return the result.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param licenseId The licenseId specifies which media content's license it is
-     * @param response The offline license.
+     * @since 11
      */
-    processOfflineReleaseResponse(licenseId: Uint8Array, response: Uint8Array): void;
+    processOfflineReleaseResponse(mediaKeyId: Uint8Array, response: Uint8Array): Promise<void>;
 
     /**
-     * Restore offline license response.
-     * @since 8
+     * Restore offline media key.
+     * @param { Uint8Array } mediaKeyId - The mediaKeyId specifies which media key should be restore.
+     * @returns { Promise<void> } Promise used to return the result.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param licenseId The licenseId specifies which license should be restore.
+     * @since 11
      */
-    restoreOfflineLicense(licenseId: Uint8Array): void;
+    restoreOfflineMediaKeys(mediaKeyId: Uint8Array): Promise<void>;
 
     /**
-     * Get security level.
-     * @since 8
+     * Get content protection level.
+     * @returns { ContentProtectionLevel } MediaKeySession content protection level.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @returns return SecurityLevel.
+     * @since 11
      */
-    getSecurityLevel(): SecurityLevel;
+    getContentProtectionLevel(): ContentProtectionLevel;
 
     /**
-     * When the decrypt content need a secure decoder, return true, otherwise return false.
-     * @since 8
+     * Whether the encrypted content require a secure decoder or not.
+     * @param { string } mimeType - The media type.
+     * @returns { boolean } Whether secure decoder is required.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param mimeType The media content type.
-     * @returns Whether secure decoder is needed.
+     * @since 11
      */
     requireSecureDecoderModule(mimeType: string): boolean;
 
     /**
-     * Register or unregister listens for drm events.
-     * @since 8
+     * Register or unregister keyRequired event.
+     * @param { 'keyRequired' } type - Type of the drm event to listen for.
+     * @param { function } callback used to listen for the key required event.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param type Type of the drm event to listen for.
-     * @param callback Callback used to listen for the key required event.
+     * @since 11
      */
-    on(type: 'keyNeeded', callback: Callback<EventInfo>): void;
-    off(type: 'keyNeeded'): void;
+    on(type: 'keyRequired', callback: (eventInfo: EventInfo) => void): void;
+
+    off(type: 'keyRequired', callback?: (eventInfo: EventInfo) => void): void;
 
     /**
-     * Register or unregister listens for drm events.
-     * @since 8
+     * Register or unregister keyExpired event.
+     * @param { 'keyExpired' } type - Type of the drm event to listen for.
+     * @param { function } callback - Used to listen for the key required event.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param type Type of the drm event to listen for.
-     * @param callback Callback used to listen for the key required event.
+     * @since 11
      */
-    on(type: 'keyExpired', callback: Callback<EventInfo>): void;
-    off(type: 'keyExpired'): void;
+    on(type: 'keyExpired', callback: (eventInfo: EventInfo) => void): void;
+
+    off(type: 'keyExpired', callback?: (eventInfo: EventInfo) => void): void;
 
     /**
-     * Register or unregister listens for drm events.
-     * @since 8
+     * Register or unregister vendorDefined event.
+     * @param { 'vendorDefined' } type - Type of the drm event to listen for.
+     * @param { function } callback - Used to listen for the vendor defined event.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param type Type of the drm event to listen for.
-     * @param callback Callback used to listen for the vendor defined event.
+     * @since 11
      */
-    on(type: 'vendorDefined', callback: Callback<EventInfo>): void;
-    off(type: 'vendorDefined'): void;
+    on(type: 'vendorDefined', callback: (eventInfo: EventInfo) => void): void;
+
+    off(type: 'vendorDefined', callback?: (eventInfo: EventInfo) => void): void;
 
     /**
-     * Register or unregister listens for drm events.
-     * @since 8
+     * Register or unregister expirationUpdate event.
+     * @param { 'expirationUpdate' } type - Type of the drm event to listen for.
+     * @param { function } callback - Used to listen for expiration update event.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param type Type of the drm event to listen for.
-     * @param callback Callback used to listen for expiration update event.
+     * @since 11
      */
-    on(type: 'expirationUpdated', callback: Callback<EventInfo>): void;
-    off(type: 'expirationUpdated'): void;
+    on(type: 'expirationUpdate', callback: (eventInfo: EventInfo) => void): void;
+
+    off(type: 'expirationUpdate', callback?: (eventInfo: EventInfo) => void): void;
 
     /**
-     * Register or unregister listens for drm events.
-     * @since 8
+     * Register or unregister keysChange event.
+     * @param { 'keysChange' } type - Type of the drm event to listen for.
+     * @param { function } callback - Used to listen for keys change event.
+     * @throws { BusinessError } 401 - The parameter check failed.
+     * @throws { BusinessError } 24700101 - All unknown errors.
      * @syscap SystemCapability.Multimedia.Drm.Core
-     * @param type Type of the drm event to listen for.
-     * @param callback Callback used to listen for keys change event.
+     * @since 11
      */
-    on(type: 'keyChanged', callback: Callback<KeysInfo[]>): void;
-    off(type: 'keyChanged'): void;
+    on(type: 'keysChange', callback: (keyInfo: KeysInfo[], newKeyAvailable: boolean) => void): void;
+
+    off(type: 'keysChange', callback?: (keyInfo: KeysInfo[], newKeyAvailable: boolean) => void): void;
 
     /**
      * Release the resource before the session gonna be unused.
-     * @since 8
+     * @throws { BusinessError } 24700101 - All unknown errors.
+     * @throws { BusinessError } 24700201 - Service fatal error e.g. service died.
      * @syscap SystemCapability.Multimedia.Drm.Core
+     * @since 11
      */
     destroy(): void;
 
-  }
-
-    /**
-     * Enumerates which properties we can get.
-     * @since 8
-     * @syscap SystemCapability.Multimedia.Drm.Core
-     */
-  enum PreDefinedConfigName {
-    CONFIG_DEVICE_VENDOR = "vendor",
-    CONFIG_DEVICE_VERSION = "version",
-    CONFIG_DEVICE_DESCRIPTION = "description",
-    CONFIG_DEVICE_ALGORITHMS = "algorithms",
-    CONFIG_DEVICE_UNIQUE_ID = "deviceUniqueId",
-    CONFIG_SESSION_MAX = "maxSessionNum",
-    CONFIG_SESSION_CURRENT = "currentSessionNum",
-    CONFIG_OUTPUT_HDCP_MAX = "maxHDCPLevel",
-    CONFIG_OUTPUT_HDCP_CURRENT = "currentHDCPLevel",
-    CONFIG_OUTPUT_ADCP_MAX = "maxADCPLevel",
-    CONFIG_OUTPUT_ADCP_CURRENT = "currentADCPLevel",
-  }
-
-  /**
-   * Enumerates event types of listener.
-   * @since 8
-   * @syscap SystemCapability.Multimedia.Drm.Core
-   */
-  enum ListenerType {
-    LISTENER_DRM_EVENT = 200,
-    LISTENER_PROVISION_REQUIRED = 201,
-    LISTENER_KEY_NEEDED = 202,
-    LISTENER_KEY_EXPIRED = 203,
-    LISTENER_VENDOR_DEFINED = 204,
-    LISTENER_KEYSESSION_RECLAIMED = 205,
-    LISTENER_EXPIRATION_UPDATE = 206,
-    LISTENER_KEY_CHANGE = 207,
-    LISTENER_KEYSESSION_LOST = 208,
-  }
-
-  /**
-   * Enumerates hdcp level.
-   * @since 8
-   * @syscap SystemCapability.Multimedia.Drm.Core
-   */
-  enum HdcpLevel {
-    HDCP_UNKNOWN,
-    HDCP_NONE,
-    HDCP_V1,
-    HDCP_V2,
-    HDCP_V2_1, 
-    HDCP_V2_2,
-    HDCP_V2_3,
-    HDCP_NO_OUTPUT = 0x7fff,
-  }
-
-  /**
-   * Enumerates adcp level.
-   * @since 8
-   * @syscap SystemCapability.Multimedia.Drm.Core
-   */
-  enum AdcpLevel {
-    ADCP_UNKNOWN = 0,
-    ADCP_V1_L1,
-    ADCP_V1_L2,
-    ADCP_V1_L3,
-    ADCP_NO_OUTPUT = 0x7fff,
-  }
-
-  /**
-   * Enumerates license type.
-   * @since 8
-   * @syscap SystemCapability.Multimedia.Drm.Core
-   */
-  enum LicenseType {
-    LICENSE_TYPE_ONLINE = 0,
-    LICENSE_TYPE_OFFLINE,
-  }
-
-  /**
-   * Enumerates offline license status.
-   * @since 8
-   * @syscap SystemCapability.Multimedia.Drm.Core
-   */
-  enum OfflineLicenseStatus {
-    OFFLINELICENSE_STATUS_UNKNOWN = 0,
-    OFFLINELICENSE_STATUS_USABLE = 1,
-    OFFLINELICENSE_STATUS_INACTIVE = 2,
-  }
-
-  /**
-   * Enumerates certificate status.
-   * @since 8
-   * @syscap SystemCapability.Multimedia.Drm.Core
-   */
-  enum CertificateStatus {
-    CERT_STATUS_PROVISIONED = 0,
-    CERT_STATUS_NOT_PROVISIONED,
-    CERT_STATUS_EXPIRED,
-    CERT_STATUS_INVALID,
-    CERT_STATUS_GET_FAILED,
-  }
-
-  /**
-   * Enumerates license request types.
-   * @since 8
-   * @syscap SystemCapability.Multimedia.Drm.Core
-   */
-  enum RequestType {
-    REQUEST_TYPE_UNKNOWN = 0,
-    REQUEST_TYPE_INITIAL = 1,
-    REQUEST_TYPE_RENEWAL = 2,
-    REQUEST_TYPE_RELEASE = 3,
-    REQUEST_TYPE_NONE = 4,
-    REQUEST_TYPE_UPDATE = 5,
-  }
-
-  /**
-   * Enumerates security level.
-   * @since 8
-   * @syscap SystemCapability.Multimedia.Drm.Core
-   */
-  enum SecurityLevel {
-    SECURITY_LEVEL_UNKNOWN = 0,
-    SECURITY_LEVEL_SW_CRYPTO = 1,
-    SECURITY_LEVEL_SW_DECODE = 2,
-    SECURITY_LEVEL_HW_CRYPTO = 3,
-    SECURITY_LEVEL_HW_DECODE = 4,
-    SECURITY_LEVEL_HW_ALL = 5,
-    SECURITY_LEVEL_MAX = 6,
-  }
-
-  /**
-   * Provides the drm provision request definations.
-   * @since 8
-   * @syscap SystemCapability.Multimedia.Drm.Core
-   */
-  interface ProvisionRequest {
-    mData: Uint8Array;
-    mDefaultURL: string;
-  }
-
-  /**
-   * Provides the drm license request info optional data.
-   * @since 8
-   * @syscap SystemCapability.Multimedia.Drm.Core
-   */
-  interface OptionalData {
-    name: string;
-    value: string;
-  }
-
-    /**
-   * Provides the drm license request definations.
-   * @since 8
-   * @syscap SystemCapability.Multimedia.Drm.Core
-   */
-    interface LicenseRequest {
-    licnseRequestType: RequestType;
-    mData: Uint8Array;
-    mDefaultURL: string;
-  }
-
-  /**
-   * Used to indicates the event info.
-   * @since 8
-   * @syscap SystemCapability.Multimedia.Drm.Core
-   */
-  interface EventInfo {
-    name: string;
-    value: string;
-  }
-
-  /**
-   * Used to indicates the metrics info.
-   * @since 8
-   * @syscap SystemCapability.Multimedia.Drm.Core
-   */
-  interface MetricKeyValue {
-    name: string;
-    value: string;
-  }
-
-  /**
-   * Used to indicates the license status.
-   * @since 8
-   * @syscap SystemCapability.Multimedia.Drm.Core
-   */
-  interface LicenseStatus {
-    name: string;
-    value: string;
-  }
-
-  /**
-   * Used to indicates the license status with a key and its value.
-   * @since 8
-   * @syscap SystemCapability.Multimedia.Drm.Core
-   */
-  interface KeysInfo {
-    licenseId: Uint8Array;
-    value: string;
   }
 }
 

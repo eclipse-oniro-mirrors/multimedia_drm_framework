@@ -43,18 +43,17 @@ public:
     int32_t CreateMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule) override;
     int32_t SetMediaKeySessionServiceOperatorsCallback(wptr<IMediaKeySessionServiceOperatorsCallback> callback);
     int32_t CloseMediaKeySessionServiceByCallback();
-    int32_t GenerateLicenseRequest(IMediaKeySessionService::LicenseRequestInfo &licenseRequestInfo,
-        IMediaKeySessionService::LicenseRequest &licenseRequest) override;
-    int32_t ProcessLicenseResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &licenseResponse) override;
+    int32_t GenerateMediaKeyRequest(IMediaKeySessionService::MediaKeyRequestInfo &licenseRequestInfo,
+        IMediaKeySessionService::MediaKeyRequest &licenseRequest) override;
+    int32_t ProcessMediaKeyResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &licenseResponse) override;
     int32_t GenerateOfflineReleaseRequest(std::vector<uint8_t> &licenseId,
         std::vector<uint8_t> &releaseRequest) override;
     int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &licenseId,
         std::vector<uint8_t> &releaseResponse) override;
-    int32_t CheckLicenseStatus(
-        std::map<std::string, MediaKeySessionKeyStatus> &licenseStatus) override;
-    int32_t RestoreOfflineLicense(std::vector<uint8_t> &licenseId) override;
-    int32_t RemoveLicense() override;
-    int32_t GetSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel) override;
+    int32_t CheckMediaKeyStatus(std::map<std::string, std::string> &licenseStatus) override;
+    int32_t RestoreOfflineMediaKeys(std::vector<uint8_t> &licenseId) override;
+    int32_t ClearMediaKeys() override;
+    int32_t GetContentProtectionLevel(IMediaKeySessionService::ContentProtectionLevel *securityLevel) override;
     int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status) override;
     int32_t SetCallback(sptr<IMediaKeySessionServiceCallback> &callback) override;
 

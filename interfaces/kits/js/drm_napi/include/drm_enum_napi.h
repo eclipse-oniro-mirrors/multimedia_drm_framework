@@ -16,7 +16,6 @@
 #define OHOS_DRM_ENUM_NAPI_H
 
 #include "key_session_napi.h"
-#include "media_decrypt_module_napi.h"
 #include "media_key_system_napi.h"
 #include "drm_log.h"
 #include "drm_error_code.h"

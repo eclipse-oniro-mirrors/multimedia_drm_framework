@@ -41,7 +41,7 @@ public:
 
     int32_t SendEventKeyChange(
         const std::map<std::vector<uint8_t>, OHOS::HDI::Drm::V1_0::MediaKeySessionKeyStatus> &keyStatus,
-        bool hasNewGoodLicense) override;
+        bool newKeysAvailable) override;
 
     int32_t GetVersion(uint32_t &majorVer, uint32_t &minorVer) override;
 
@@ -50,7 +50,7 @@ public:
 
     static int32_t SendEventKeyChange_(
         const std::map<std::vector<uint8_t>, OHOS::HDI::Drm::V1_0::MediaKeySessionKeyStatus> &keyStatus,
-        bool hasNewGoodLicense, const sptr<IRemoteObject> remote);
+        bool newKeysAvailable, const sptr<IRemoteObject> remote);
 
     static int32_t GetVersion_(uint32_t &majorVer, uint32_t &minorVer, const sptr<IRemoteObject> remote);
 

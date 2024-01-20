@@ -47,9 +47,9 @@ extern "C" {
  * @since 11
  * @version 1.0
  */
-struct OH_MediaKeySystem : public OHOS::RefBase {
-    OH_MediaKeySystem() = default;
-    virtual ~OH_MediaKeySystem() = default;
+struct MediaKeySystem : public OHOS::RefBase {
+    MediaKeySystem() = default;
+    virtual ~MediaKeySystem() = default;
 };
 
 /**
@@ -58,9 +58,9 @@ struct OH_MediaKeySystem : public OHOS::RefBase {
  * @since 11
  * @version 1.0
  */
-struct OH_MediaKeySession : public OHOS::RefBase {
-    OH_MediaKeySession() = default;
-    virtual ~OH_MediaKeySession() = default;
+struct MediaKeySession : public OHOS::RefBase {
+    MediaKeySession() = default;
+    virtual ~MediaKeySession() = default;
 };
 
 #ifdef __cplusplus

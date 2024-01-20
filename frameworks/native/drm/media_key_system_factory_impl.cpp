@@ -131,7 +131,7 @@ bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &uuid, std
 }
 
 bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType,
-    IMediaKeySessionService::SecurityLevel securityLevel)
+    IMediaKeySessionService::ContentProtectionLevel securityLevel)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::IsMediaKeySystemSupported enter.");
     std::lock_guard<std::mutex> lock(mutex_);

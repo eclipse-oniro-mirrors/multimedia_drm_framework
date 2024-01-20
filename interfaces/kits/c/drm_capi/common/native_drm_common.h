@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (C) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,6 +18,7 @@
  * @{
  *
  * @brief Provides APIs of Drm.
+ * @kit Drm.
  * @since 11
  * @version 1.0
  */
@@ -27,7 +28,7 @@
  *
  * @brief Defines the Drm common struct.
  * @library libnative_drm.z.so
- * @Syscap SystemCapability.Multimedia.Drm.Core
+ * @syscap SystemCapability.Multimedia.Drm.Core
  * @since 11
  * @version 1.0
  */
@@ -37,461 +38,396 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <stdbool.h>
-#include "native_drm_err.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
- * Enumerates event types of listener.
- * @brief Content potection level.
- * @since 11
- * @version 1.0
- */
-typedef enum OH_DRM_ListenerType {
-    /* *
+  * Enumerates event types of listener.
+  * @brief Content potection level.
+  * @since 11
+  * @version 1.0
+*/
+typedef enum DRM_ListenerType {
+    /**
      * DRM event base.
      */
     LISTENER_DRM_EVENT = 200,
-    /* *
+    /**
      * Provision required event.
      */
     LISTENER_PROVISION_REQUIRED = 201,
-    /* *
+    /**
      * Media key required event.
      */
     LISTENER_KEY_REQUIRED = 202,
-    /* *
+    /**
      * Media key expired event.
      */
     LISTENER_KEY_EXPIRED = 203,
-    /* *
+    /**
      * Vendor defined event.
      */
     LISTENER_VENDOR_DEFINED = 204,
-    /* *
+    /**
      * Expiration update event.
      */
     LISTENER_EXPIRATION_UPDATE = 206,
-    /* *
-     * for test event.
-     */
-    LISTENER_SESSION_LOST = 222,
-} OH_DRM_ListenerType;
+  } DRM_ListenerType;
 
 /**
  * @brief Content potection level.
+ * @syscap SystemCapability.Multimedia.Drm.Core
  * @since 11
  * @version 1.0
  */
-typedef enum OH_DRM_ContentProtectionLevel {
-    /* *
+typedef enum DRM_ContentProtectionLevel {
+    /**
      * Content potection level unknown.
      */
     CONTENT_PROTECTION_LEVEL_UNKNOWN = 0,
-    /* *
+    /**
      * Content potection level software crypto.
      */
     CONTENT_PROTECTION_LEVEL_SW_CRYPTO,
-    /* *
+    /**
      * Content potection level hardware crypto.
      */
     CONTENT_PROTECTION_LEVEL_HW_CRYPTO,
-    /* *
+    /**
      * Content potection level enhanced hardware crypto.
      */
     CONTENT_PROTECTION_LEVEL_ENHANCED_HW_CRYPTO,
-    /* *
+    /**
      * Content potection level max stub.
      */
     CONTENT_PROTECTION_LEVEL_MAX,
-} OH_DRM_ContentProtectionLevel;
+} DRM_ContentProtectionLevel;
 
 /**
  * @brief Media key type.
+ * @syscap SystemCapability.Multimedia.Drm.Core
  * @since 11
  * @version 1.0
  */
-typedef enum OH_DRM_MediaKeyType {
-    /* *
+typedef enum DRM_MediaKeyType {
+    /**
      * Media key type offline.
      */
     MEDIA_KEY_TYPE_OFFLINE = 0,
-    /* *
+    /**
      * Media key type online
      */
     MEDIA_KEY_TYPE_ONLINE,
-} OH_DRM_MediaKeyType;
+} DRM_MediaKeyType;
 
 /**
  * @brief Media key request type.
+ * @syscap SystemCapability.Multimedia.Drm.Core
  * @since 11
  * @version 1.0
  */
-typedef enum OH_DRM_MediaKeyRequestType {
-    /* *
+typedef enum DRM_MediaKeyRequestType {
+    /**
      * Media key request type unknown.
      */
     MEDIA_KEY_REQUEST_TYPE_UNKNOWN = 0,
-    /* *
+    /**
      * Media key request type initial.
      */
     MEDIA_KEY_REQUEST_TYPE_INITIAL,
-    /* *
+    /**
      * Media key request type renewal.
      */
     MEDIA_KEY_REQUEST_TYPE_RENEWAL,
-    /* *
+    /**
      * Media key request type release.
      */
     MEDIA_KEY_REQUEST_TYPE_RELEASE,
-    /* *
+    /**
      * Media key request type none.
      */
     MEDIA_KEY_REQUEST_TYPE_NONE,
-    /* *
+    /**
      * Media key request type update.
      */
     MEDIA_KEY_REQUEST_TYPE_UPDATE,
-} OH_DRM_MediaKeyRequestType;
+} DRM_MediaKeyRequestType;
 
 /**
  * @brief Offline media key status.
+ * @syscap SystemCapability.Multimedia.Drm.Core
  * @since 11
  * @version 1.0
  */
-typedef enum OH_DRM_OfflineMediaKeyStatus {
-    /* *
+typedef enum DRM_OfflineMediaKeyStatus {
+    /**
      * Offline media key status unknown.
      */
     OFFLINE_MEDIA_KEY_STATUS_UNKNOWN = 0,
-    /* *
+    /**
      * Offline media key status usable.
      */
     OFFLINE_MEDIA_KEY_STATUS_USABLE,
-    /* *
+    /**
      * Offline media key status inactive.
      */
     OFFLINE_MEDIA_KEY_STATUS_INACTIVE,
-} OH_DRM_OfflineMediaKeyStatus;
-
-
-typedef enum {
-    OFFLINELICENSE_STATUS_UNKNOWN = 0,
-    OFFLINELICENSE_STATUS_USABLE = 1,
-    OFFLINELICENSE_STATUS_INACTIVE = 2,
-} OH_OfflineLicenseStatus;
+} DRM_OfflineMediaKeyStatus;
 
 /**
- * @brief Media key status.
+ * @brief Certificate status.
+ * @syscap SystemCapability.Multimedia.Drm.Core
  * @since 11
  * @version 1.0
  */
-typedef enum OH_DRM_MediaKeyStatus {
-    /* *
-     * Media key is usable.
+typedef enum DRM_CertificateStatus {
+    /**
+     * Device already provisioned.
      */
-    MEDIA_KEY_STATUS_USABLE = 0,
-    /* *
-     * Media key expires.
+    CERT_STATUS_PROVISIONED = 0,
+    /**
+     * Device not provisioned.
      */
-    MEDIA_KEY_STATUS_EXPIRED,
-    /* *
-     * Output not allowed with the media key.
+    CERT_STATUS_NOT_PROVISIONED,
+    /**
+     * Cert already expired.
      */
-    MEDIA_KEY_STATUS_OUTPUT_NOT_ALLOWED,
-    /* *
-     * Media key is pending.
+    CERT_STATUS_EXPIRED,
+    /**
+     * Certs are invalid.
      */
-    MEDIA_KEY_STATUS_PENDING,
-    /* *
-     * Media key is in internal error.
+    CERT_STATUS_INVALID,
+    /**
+     * Get certs status failed.
      */
-    MEDIA_KEY_STATUS_INTERNAL_ERROR,
-    /* *
-     * Media key will be usable in future.
+    CERT_STATUS_UNAVAILABLE,
+} DRM_CertificateStatus;
+
+/**
+ * @brief Offline media key status.
+ * @syscap SystemCapability.Multimedia.Drm.Core
+ * @since 11
+ * @version 1.0
+ */
+typedef enum DRM_MediaKeyStatus {
+    /**
+     * Media key status OK.
      */
-    MEDIA_KEY_STATUS_USABLE_IN_FUTURE,
-} OH_DRM_MediaKeyStatus;
+    MEDIA_KEY_STATUS_OK = 0,
+    /**
+     * Media key is invalid e.g. not exist.
+     */
+    MEDIA_KEY_STATUS_UNAVAILABLE = 1,
+} DRM_MediaKeyStatus;
 
 /**
  * @brief Unsigned char buffer.
  * @since 11
  * @version 1.0
  */
-typedef struct OH_DRM_Uint8Buffer {
-    /* *
+typedef struct DRM_Uint8Buffer {
+    /**
      * Unsigned char buffer addr.
      */
     unsigned char *buffer;
-    /* *
+    /**
      * Unsigned char buffer len.
      */
     uint32_t bufferLen;
-} OH_DRM_Uint8Buffer;
+} DRM_Uint8Buffer;
 
 /**
  * @brief Char buffer.
  * @since 11
  * @version 1.0
  */
-typedef struct OH_DRM_CharBuffer {
-    /* *
+typedef struct DRM_CharBuffer {
+    /**
      * Char buffer addr.
      */
     char *buffer;
-    /* *
+    /**
      * Char buffer len.
      */
     uint32_t bufferLen;
-} OH_DRM_CharBuffer;
+} DRM_CharBuffer;
 
 /**
  * @brief Char-char buffer pair.
  * @since 11
  * @version 1.0
  */
-typedef struct OH_DRM_CharBufferPair {
+typedef struct DRM_CharBufferPair {
     /* Name buffer in chars. */
-    OH_DRM_CharBuffer name;
+    DRM_CharBuffer name;
     /* Value buffer in chars. */
-    OH_DRM_CharBuffer value;
-} OH_DRM_CharBufferPair;
-
-typedef struct OH_DRM_EnumBufferPair {
-    /* Name buffer in chars. */
-    OH_DRM_CharBuffer name;
-    /* Value buffer in chars. */
-    int32_t value;
-} OH_DRM_EnumBufferPair;
+    DRM_CharBuffer value;
+} DRM_CharBufferPair;
 
 /**
  * @brief Unsignedchar-char buffer.
  * @since 11
  * @version 1.0
  */
-typedef struct OH_DRM_Uint8CharBufferPair {
+typedef struct DRM_Uint8CharBufferPair {
     /* Key buffer in Uint8Array. */
-    OH_DRM_Uint8Buffer uintData;
+    DRM_Uint8Buffer key;
     /* Value buffer in chars. */
-    OH_DRM_CharBuffer charData;
-} OH_DRM_Uint8CharBufferPair;
+    DRM_CharBuffer value;
+} DRM_Uint8CharBufferPair;
 
 /**
  * @brief Media key request info.
  * @since 11
  * @version 1.0
  */
-typedef struct OH_DRM_MediaKeyRequest {
-    /* *
-     * Media key request type.
-     */
-    OH_DRM_MediaKeyRequestType type;
-    /* *
-     * Media key request data sent to media key server.
-     */
-    OH_DRM_Uint8Buffer data;
-    /* *
-     * Media key server URL.
-     */
-    OH_DRM_CharBuffer defaultURL;
-} OH_DRM_MediaKeyRequest;
-
-/**
- * @brief Media key request info.
- * @since 11
- * @version 1.0
- */
-typedef struct OH_DRM_MediaKeyRequestInfo {
-    /* *
+typedef struct DRM_MediaKeyRequestInfo {
+    /**
      * Offline or online media key type.
      */
-    OH_DRM_MediaKeyType type;
-    /* *
+    DRM_MediaKeyType type;
+    /**
      * Initial data format as PSSH after base64 encoding.
      */
-    OH_DRM_Uint8Buffer data;
-    /* *
+    DRM_Uint8Buffer data;
+    /**
      * Media content mime type.
      */
-    OH_DRM_CharBuffer mimeType;
-    /* *
+    DRM_CharBuffer mimeType;
+    /**
      * OptionsData count.
      */
     uint32_t optionsCount;
-    /* *
+    /**
      * Options data the application set to drm framework.
      */
-    OH_DRM_CharBufferPair *optionsData;
-} OH_DRM_MediaKeyRequestInfo;
+    DRM_CharBufferPair *optionsData;
+} DRM_MediaKeyRequestInfo;
 
 /**
- * @brief Statistics of OH_MediaKeySystem.
+ * @brief Media key request info.
  * @since 11
  * @version 1.0
  */
-typedef struct OH_DRM_Statistics {
+typedef struct DRM_MediaKeyRequest {
+    /**
+     * Media key request type.
+     */
+    DRM_MediaKeyRequestType type;
+    /**
+     * Media key request data sent to media key server.
+     */
+    DRM_Uint8Buffer data;
+    /**
+     * Media key server URL.
+     */
+    DRM_CharBuffer defaultUrl;
+} DRM_MediaKeyRequest;
+
+/**
+ * @brief Statistics of MediaKeySystem.
+ * @since 11
+ * @version 1.0
+ */
+typedef struct DRM_Statistics {
     /* Statistics count. */
     uint32_t statisticsCount;
     /* Statistics info. */
-    OH_DRM_CharBufferPair info[0];
-} OH_DRM_Statistics;
-
-
-typedef enum CertificateStatus {
-    CERT_STATUS_PROVISIONED = 0,
-    CERT_STATUS_NOT_PROVISIONED = 1,
-    CERT_STATUS_EXPIRED = 3,
-    CERT_STATUS_INVALID = 4,
-    CERT_STATUS_GET_FAILED = 5,
-} OH_DRM_CertificateStatus;
+    DRM_CharBufferPair info[0];
+} DRM_Statistics;
 
 /**
  * @brief MediaKeyIds array.
  * @since 11
  * @version 1.0
  */
-typedef struct OH_DRM_MediakeyIdArray {
+typedef struct DRM_MediakeyIdArray {
     /* MediaKeyId count. */
     uint32_t mediaKeyIdCount;
     /* MediaKeyIds. */
-    OH_DRM_Uint8Buffer mediaKeyIds[0];
-} OH_DRM_MediakeyIdArray;
+    DRM_Uint8Buffer mediaKeyIds[0];
+} DRM_MediakeyIdArray;
 
 /**
  * @brief Media key info.
  * @since 11
  * @version 1.0
  */
-typedef struct OH_DRM_KeysInfo {
+typedef struct DRM_KeysInfo {
     /* Keys count. */
     uint32_t keysCount;
     /* Keys info. */
-    OH_DRM_Uint8CharBufferPair *keysInfo;
-} OH_DRM_KeysInfo;
+    DRM_Uint8CharBufferPair keysInfo[0];
+} DRM_KeysInfo;
 
 /**
  * @brief MediaKeydescription
  * @since 11
  * @version 1.0
  */
-typedef struct OH_DRM_MediaKeyDescription {
+typedef struct DRM_MediaKeyDescription {
     /* MediaKeycount. */
     uint32_t mediaKeyCount;
     /* MediaKeyinfo. */
-    OH_DRM_EnumBufferPair description[0];
-} OH_DRM_MediaKeyDescription;
+    DRM_CharBufferPair description[0];
+} DRM_MediaKeyDescription;
 
 /**
  * @brief Drm system uuid.
  * @since 11
  * @version 1.0
  */
-#define OH_DRM_UUID_LEN 16
+#define DRM_UUID_LEN 16
 
 /**
  * @brief PSSH info by uuid.
  * @since 11
  * @version 1.0
  */
-typedef struct OH_DRM_PsshInfo {
-    /* *
+typedef struct DRM_PsshInfo {
+    /**
      * Uuid.
      */
-    char uuid[OH_DRM_UUID_LEN];
-    /* *
+    char uuid[DRM_UUID_LEN];
+    /**
      * Unsigned char PSSH len.
      */
     uint32_t dataLen;
-    /* *
+    /**
      * Unsigned char PSSH data.
      */
     unsigned char *data;
-} OH_DRM_PsshInfo;
+} DRM_PsshInfo;
 
 /**
- * @brief DrmInfo used for player to get DRM info from media source.
+ * @brief MediaKeySystemInfo used for player to get media key system info from media source.
  * @since 11
  * @version 1.0
  */
-typedef struct OH_DRM_DrmInfo {
+typedef struct DRM_MediaKeySystemInfo {
     /* PSSH count. */
     uint32_t psshCount;
     /* PSSH info. */
-    OH_DRM_PsshInfo *psshInfo;
-} OH_DRM_DrmInfo;
+    DRM_PsshInfo psshInfo[0];
+} DRM_MediaKeySystemInfo;
 
-/**
- * @brief Drm info call back.
- * @param drmInfo Drm info gotten from multimedia source.
- * @return void.
- * @since 11
- * @version 1.0
- */
-typedef void (*OH_DRM_DrmInfoCallback)(OH_DRM_DrmInfo *drmInfo);
-
-/**
- * @brief Call back will be invoked when event triggers.
- * @param eventType Event type.
- * @param eventInfo Event info gotten from media key system.
- * @return OH_DrmErrCode.
- * @since 11
- * @version 1.0
- */
-typedef OH_DrmErrCode (*OH_MediaKeySystemCallback)(OH_DRM_ListenerType eventType,
-    OH_DRM_Uint8CharBufferPair *eventInfo);
-
-/**
- * @brief Call back will be invoked when event triggers.
- * @param eventType Event type.
- * @param eventInfo Event info gotten from media key system.
- * @return OH_DrmErrCode.
- * @since 11
- * @version 1.0
- */
-typedef OH_DrmErrCode (*OH_MediaKeySessionEventCallback)(OH_DRM_ListenerType eventType,
-    OH_DRM_Uint8CharBufferPair *eventInfo);
-
-/**
- * @brief Call back will be invoked when key changes.
- * @param keysInfo Key info gotten from media key system.
- * @return OH_DrmErrCode.
- * @since 11
- * @version 1.0
- */
-typedef OH_DrmErrCode (*OH_MediaKeySessionKeyChangeCallback)(OH_DRM_KeysInfo *keysInfo, bool hasNewGoodKeys);
-
-/**
- * @brief OH_MediaKeySessionCallback struct, used to listen event like key expired and key change etc..
- * @since 11
- * @version 1.0
- */
-typedef struct OH_MediaKeySessionCallback {
-    /* *
-     * Normal event callback like key expired etc..
-     */
-    OH_MediaKeySessionEventCallback eventCallback;
-    /* *
-     * Key change callback for keys change event.
-     */
-    OH_MediaKeySessionKeyChangeCallback keyChangeCallback;
-} OH_MediaKeySessionCallback;
+typedef void (*DRM_MediaKeySystemInfoCallback)(DRM_MediaKeySystemInfo* mediaKeySystemInfo);
 
 /**
  * @brief Media key system struct.
  * @since 11
  * @version 1.0
  */
-typedef struct OH_MediaKeySystem OH_MediaKeySystem;
+typedef struct MediaKeySystem MediaKeySystem;
 
 /**
  * @brief Media key session struct.
  * @since 11
  * @version 1.0
  */
-typedef struct OH_MediaKeySession OH_MediaKeySession;
+typedef struct MediaKeySession MediaKeySession;
 
 #ifdef __cplusplus
 }

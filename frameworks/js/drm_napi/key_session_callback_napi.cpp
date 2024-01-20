@@ -57,21 +57,24 @@ void MediaKeySessionCallbackNapi::SendEvent(const std::string event, uint32_t ex
     napi_get_undefined(env, &result);
     napi_create_object(env, &result);
     napi_value extraValue;
-    napi_create_uint32(env, extra, &extraValue);
     napi_value array = nullptr;
+    std::string extraData = std::to_string(extra);
+    napi_create_string_utf8(env, extraData.c_str(), NAPI_AUTO_LENGTH, &extraValue);
     state = napi_create_array_with_length(env, data.size(), &array);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok,
-        "%{public}s failed to napi_create_array_with_length", event.c_str());
+    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok, "%{public}s failed to napi_create_array_with_length",
+        event.c_str());
     for (uint32_t i = 0; i < data.size(); i++) {
         napi_value number = nullptr;
         (void)napi_create_uint32(env, data[i], &number);
         (void)napi_set_element(env, array, i, number);
     }
-    napi_value args[ARGS_TWO] = {extraValue, array};
+    napi_value args[1] = { nullptr };
+    napi_create_object(env, &args[0]);
+    napi_set_named_property(env, args[0], "info", array);
+    napi_set_named_property(env, args[0], "extraInfo", extraValue);
     napi_get_reference_value(env, callbackRef, &jsCallback);
-    state = napi_call_function(env, nullptr, jsCallback, ARGS_TWO, args, &retVal);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok,
-        "%{public}s failed to napi_call_function", event.c_str());
+    state = napi_call_function(env, nullptr, jsCallback, ARGS_ONE, args, &retVal);
+    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok, "%{public}s failed to napi_call_function", event.c_str());
 }
 
 void MediaKeySessionCallbackNapi::SendEventKeyChanged(
@@ -102,16 +105,39 @@ void MediaKeySessionCallbackNapi::SendEventKeyChanged(
         napi_value jsKeyStatus;
         napi_create_object(env, &jsObject);
         state = napi_create_array_with_length(env, itemTmp.first.size(), &jsKeyId);
-        DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok,
-            "failed to call napi_create_array_with_length");
+        DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok, "failed to call napi_create_array_with_length");
         for (uint32_t i = 0; i < itemTmp.first.size(); i++) {
             napi_value number = nullptr;
             (void)napi_create_uint32(env, itemTmp.first[i], &number);
             (void)napi_set_element(env, jsKeyId, i, number);
         }
         napi_set_named_property(env, jsObject, "keyId", jsKeyId);
-        napi_create_uint32(env, itemTmp.second, &jsKeyStatus);
-        napi_set_named_property(env, jsObject, "keyStatus", jsKeyStatus);
+        std::string value;
+        switch (itemTmp.second) {
+            case MEDIA_KEY_SESSION_KEY_STATUS_USABLE:
+                value = "USABLE";
+                break;
+            case MEDIA_KEY_SESSION_KEY_STATUS_EXPIRED:
+                value = "EXPIRED";
+                break;
+            case MEDIA_KEY_SESSION_KEY_STATUS_OUTPUT_NOT_ALLOWED:
+                value = "OUTPUT_NOT_ALLOWED";
+                break;
+            case MEDIA_KEY_SESSION_KEY_STATUS_PENDING:
+                value = "PENDING";
+                break;
+            case MEDIA_KEY_SESSION_KEY_STATUS_INTERNAL_ERROR:
+                value = "INTERNAL_ERROR";
+                break;
+            case MEDIA_KEY_SESSION_KEY_STATUS_USABLE_IN_FUTURE:
+                value = "USABLE_IN_FUTURE";
+                break;
+            default:
+                value = "Fault Status";
+                break;
+        }
+        napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &jsKeyStatus);
+        napi_set_named_property(env, jsObject, "value", jsKeyStatus);
         napi_set_element(env, map, index, jsObject);
         index++;
     }
@@ -122,8 +148,7 @@ void MediaKeySessionCallbackNapi::SendEventKeyChanged(
     napi_value args[ARGS_TWO] = {map, hasNewGoodLicenseValue};
     napi_get_reference_value(env, callbackRef, &jsCallback);
     state = napi_call_function(env, nullptr, jsCallback, ARGS_TWO, args, &retVal);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok,
-        "failed to napi_call_function keyChanged");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok, "failed to napi_call_function keyChanged");
 }
 }
 }

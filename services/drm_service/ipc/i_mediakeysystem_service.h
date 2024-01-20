@@ -51,7 +51,7 @@ public:
         CERT_STATUS_NOT_PROVISIONED = 1,
         CERT_STATUS_EXPIRED = 3,
         CERT_STATUS_INVALID = 4,
-        CERT_STATUS_GET_FAILED = 5,
+        CERT_STATUS_UNAVAILABLE = 5,
     };
 
     struct MetircKeyValue {
@@ -67,15 +67,15 @@ public:
     virtual int32_t GetConfigurationString(std::string &configName, std::string &value) = 0;
     virtual int32_t SetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value) = 0;
     virtual int32_t GetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value) = 0;
-    virtual int32_t CreateMediaKeySession(IMediaKeySessionService::SecurityLevel securityLevel,
+    virtual int32_t CreateMediaKeySession(IMediaKeySessionService::ContentProtectionLevel securityLevel,
         sptr<IMediaKeySessionService> &keySessionProxy) = 0;
-    virtual int32_t GetMetrics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics) = 0;
-    virtual int32_t GetMaxSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel) = 0;
+    virtual int32_t GetStatistics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics) = 0;
+    virtual int32_t GetMaxContentProtectionLevel(IMediaKeySessionService::ContentProtectionLevel *securityLevel) = 0;
     virtual int32_t GetCertificateStatus(IMediaKeySystemService::CertificateStatus *certStatus) = 0;
-    virtual int32_t GetOfflineLicenseIds(std::vector<std::vector<uint8_t>> &licenseIds) = 0;
-    virtual int32_t GetOfflineLicenseStatus(std::vector<uint8_t> &licenseId,
-        IMediaKeySessionService::OfflineLicenseStatus &status) = 0;
-    virtual int32_t RemoveOfflineLicense(std::vector<uint8_t> &licenseId) = 0;
+    virtual int32_t GetOfflineMediaKeyIds(std::vector<std::vector<uint8_t>> &licenseIds) = 0;
+    virtual int32_t GetOfflineMediaKeyStatus(std::vector<uint8_t> &licenseId,
+        IMediaKeySessionService::OfflineMediaKeyStatus &status) = 0;
+    virtual int32_t ClearOfflineMediaKeys(std::vector<uint8_t> &licenseId) = 0;
     virtual int32_t SetCallback(sptr<IMeidaKeySystemServiceCallback> &callback) = 0;
 
     DECLARE_INTERFACE_DESCRIPTOR(u"IMediaKeySystemSystemService");

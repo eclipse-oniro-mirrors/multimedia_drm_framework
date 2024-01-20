@@ -74,17 +74,17 @@ keySystem.processKeySystemResponse(drm.RequestType.REQUEST_TYPE_INITIAL, respons
 ~~~
 5.创建MediaKeySession示例，传入安全等级。
 ~~~js
-var keySession = keySystem.createKeySession(drm.SecurityLevel.SECURITY_LEVEL_HW_DECODE);
+var keySession = keySystem.createKeySession(drm.ContentProtectionLevel.SECURITY_LEVEL_HW_DECODE);
 ~~~
 6.生成许可证请求。
 ~~~js
 var licenseType:number = 1; // 在线申请
 var initData = ...;
-keySession.generateLicenseRequest('video/avc', initData, licenseType);
+keySession.generateMediaKeyRequest('video/avc', initData, licenseType);
 ~~~
 7.向DRM服务端发送许可证请求，获取许可证响应，并将许可证响应设置到keySession中。
 ~~~js
-keySession.processLicenseResponse(licenseResponse);
+keySession.processMediaKeyResponse(licenseResponse);
 ~~~
 8.获取SVP(Secure Video Path，安全视频通路)属性。
 ~~~js

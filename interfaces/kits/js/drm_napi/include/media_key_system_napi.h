@@ -49,15 +49,15 @@ public:
     static napi_value GetConfigurationString(napi_env env, napi_callback_info info);
     static napi_value SetConfigurationByteArray(napi_env env, napi_callback_info info);
     static napi_value GetConfigurationByteArray(napi_env env, napi_callback_info info);
-    static napi_value GetMaxSecurityLevel(napi_env env, napi_callback_info info);
+    static napi_value GetMaxContentProtectionLevel(napi_env env, napi_callback_info info);
     static napi_value GenerateKeySystemRequest(napi_env env, napi_callback_info info);
     static napi_value ProcessKeySystemResponse(napi_env env, napi_callback_info info);
     static napi_value CreateMediaKeySession(napi_env env, napi_callback_info info);
-    static napi_value GetMetrics(napi_env env, napi_callback_info info);
+    static napi_value GetStatistics(napi_env env, napi_callback_info info);
 
-    static napi_value GetOfflineLicenseIds(napi_env env, napi_callback_info info);
-    static napi_value GetOfflineLicenseStatus(napi_env env, napi_callback_info info);
-    static napi_value RemoveOfflineLicense(napi_env env, napi_callback_info info);
+    static napi_value GetOfflineMediaKeyIds(napi_env env, napi_callback_info info);
+    static napi_value GetOfflineMediaKeyStatus(napi_env env, napi_callback_info info);
+    static napi_value ClearOfflineMediaKeys(napi_env env, napi_callback_info info);
 
     static napi_value GetCertificateStatus(napi_env env, napi_callback_info info);
     static napi_value Destroy(napi_env env, napi_callback_info info);

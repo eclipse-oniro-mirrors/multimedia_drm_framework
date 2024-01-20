@@ -55,14 +55,18 @@ public:
 
     struct DrmBuffer {
         uint32_t bufferType;
+        int fd;
         uint32_t bufferLen;
-        uint32_t fd;
+        uint32_t allocLen;
+        uint32_t filledLen;
+        uint32_t offset;
+        uint32_t sharedMemType;
     };
 
     virtual ~IMediaDecryptModuleService() = default;
     virtual int32_t Release() = 0;
     virtual int32_t DecryptMediaData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo,
-        uint64_t srcBuffer, uint64_t dstBuffer) = 0;
+        DrmBuffer &srcBuffer, DrmBuffer &dstBuffer) = 0;
     DECLARE_INTERFACE_DESCRIPTOR(u"IMediaDecryptModuleService");
 };
 } // DrmStandard

@@ -50,7 +50,6 @@ private:
     int32_t MediaKeySystemCallbackStubGetVersion(MessageParcel &mediaKeySystemCallbackData,
         MessageParcel &mediaKeySystemCallbackReply, MessageOption &mediaKeySystemCallbackOption);
 
-
     static inline ObjectDelegator<OHOS::HDI::Drm::V1_0::MediaKeySystemCallbackStub,
         OHOS::HDI::Drm::V1_0::IMediaKeySystemCallback>
         objDelegator_;

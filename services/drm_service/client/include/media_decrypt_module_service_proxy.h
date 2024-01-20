@@ -29,10 +29,12 @@ public:
     virtual ~MediaDecryptModuleServiceProxy() = default;
     int32_t Release() override;
     int32_t DecryptMediaData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo,
-        uint64_t srcBuffer, uint64_t dstBuffer) override;
+        IMediaDecryptModuleService::DrmBuffer &srcBuffer, IMediaDecryptModuleService::DrmBuffer &dstBuffer) override;
 
 private:
     static inline BrokerDelegator<MediaDecryptModuleServiceProxy> delegator_;
+    int32_t ProcessDrmBuffer(MessageParcel &data, IMediaDecryptModuleService::DrmBuffer &srcBuffer,
+        IMediaDecryptModuleService::DrmBuffer &dstBuffer);
 };
 } // DrmStandard
 } // OHOS

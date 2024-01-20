@@ -57,20 +57,20 @@ public:
     int32_t GetConfigurationString(std::string &configName, std::string &value) override;
     int32_t SetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value) override;
     int32_t GetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value) override;
-    int32_t GetMaxSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel) override;
-    int32_t CreateMediaKeySession(IMediaKeySessionService::SecurityLevel securityLevel,
+    int32_t GetMaxContentProtectionLevel(IMediaKeySessionService::ContentProtectionLevel *securityLevel) override;
+    int32_t CreateMediaKeySession(IMediaKeySessionService::ContentProtectionLevel securityLevel,
         sptr<IMediaKeySessionService> &keySessionProxy) override;
     int32_t GenerateKeySystemRequest(std::vector<uint8_t> &request, std::string &defaultUrl) override;
     int32_t ProcessKeySystemResponse(const std::vector<uint8_t> &response) override;
     int32_t GetCertificateStatus(IMediaKeySystemService::CertificateStatus *certStatus) override;
 
-    int32_t GetOfflineLicenseIds(std::vector<std::vector<uint8_t>> &licenseIds) override;
-    int32_t GetOfflineLicenseStatus(std::vector<uint8_t> &licenseId,
-        IMediaKeySessionService::OfflineLicenseStatus &status) override;
-    int32_t RemoveOfflineLicense(std::vector<uint8_t> &licenseId) override;
+    int32_t GetOfflineMediaKeyIds(std::vector<std::vector<uint8_t>> &licenseIds) override;
+    int32_t GetOfflineMediaKeyStatus(std::vector<uint8_t> &licenseId,
+        IMediaKeySessionService::OfflineMediaKeyStatus &status) override;
+    int32_t ClearOfflineMediaKeys(std::vector<uint8_t> &licenseId) override;
 
     int32_t CloseMediaKeySessionService(sptr<MediaKeySessionService> sessionService) override;
-    int32_t GetMetrics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics) override;
+    int32_t GetStatistics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics) override;
     int32_t SetCallback(sptr<IMeidaKeySystemServiceCallback> &callback) override;
 
     // for hdi callback

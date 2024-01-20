@@ -52,7 +52,8 @@ int32_t MediaDecryptModuleService::Release()
 }
 
 int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
-    IMediaDecryptModuleService::CryptInfo &cryptInfo, uint64_t srcBuffer, uint64_t dstBuffer)
+    IMediaDecryptModuleService::CryptInfo &cryptInfo, IMediaDecryptModuleService::DrmBuffer &srcBuffer,
+    IMediaDecryptModuleService::DrmBuffer &dstBuffer)
 {
     DRM_INFO_LOG("MediaDecryptModuleService::DecryptMediaData enter.");
     int32_t ret = DRM_OK;
@@ -75,19 +76,30 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
     OHOS::HDI::Drm::V1_0::DrmBuffer drmDstBuffer;
     memset_s(&drmSrcBuffer, sizeof(drmSrcBuffer), 0, sizeof(drmSrcBuffer));
     memset_s(&drmDstBuffer, sizeof(drmSrcBuffer), 0, sizeof(drmDstBuffer));
-    drmSrcBuffer.fd = srcBuffer;
-    drmDstBuffer.fd = dstBuffer;
+    drmSrcBuffer.bufferType = srcBuffer.bufferType;
+    drmSrcBuffer.fd = srcBuffer.fd;
     drmSrcBuffer.bufferLen = bufLen;
+    drmSrcBuffer.allocLen = srcBuffer.allocLen;
+    drmSrcBuffer.filledLen = srcBuffer.filledLen;
+    drmSrcBuffer.offset = srcBuffer.offset;
+    drmSrcBuffer.fd = srcBuffer.fd;
+
+    drmDstBuffer.bufferType = dstBuffer.bufferType;
+    drmDstBuffer.fd = dstBuffer.fd;
     drmDstBuffer.bufferLen = bufLen;
+    drmDstBuffer.allocLen = dstBuffer.allocLen;
+    drmDstBuffer.filledLen = dstBuffer.filledLen;
+    drmDstBuffer.offset = dstBuffer.offset;
+    drmDstBuffer.sharedMemType = dstBuffer.sharedMemType;
     ret = hdiMediaDecryptModule_->DecryptMediaData(secureDecodrtState, cryptInfoTmp, drmSrcBuffer, drmDstBuffer);
     if (ret != DRM_OK) {
-        (void)::close(srcBuffer);
-        (void)::close(dstBuffer);
+        (void)::close(srcBuffer.fd);
+        (void)::close(dstBuffer.fd);
         DRM_ERR_LOG("MediaDecryptModuleService::DecryptMediaData failed");
         return ret;
     }
-    (void)::close(srcBuffer);
-    (void)::close(dstBuffer);
+    (void)::close(srcBuffer.fd);
+    (void)::close(dstBuffer.fd);
     DRM_INFO_LOG("MediaDecryptModuleService::DecryptMediaData exit.");
     return ret;
 }
