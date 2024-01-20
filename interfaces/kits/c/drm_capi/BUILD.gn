@@ -32,12 +32,15 @@ config("drm_capi_common_config") {
     "-D_FORTIFY_SOURCE=2",
     "-Wformat=2",
     "-Wdate-time",
+    "--coverage",
   ]
 
   cflags_cc = [
     "-std=c++17",
     "-fno-rtti",
+    "--coverage",
   ]
+  ldflags = [ "--coverage" ]
 }
 
 ohos_shared_library("native_drm") {

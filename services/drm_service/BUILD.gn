@@ -67,8 +67,9 @@ ohos_shared_library("drm_service") {
   cflags = [
     "-Wall",
     "-fPIC",
+    "--coverage",
   ]
-
+  ldflags = [ "--coverage" ]
   if (target_cpu == "arm") {
     cflags += [ "-DBINDER_IPC_32BIT" ]
   }
