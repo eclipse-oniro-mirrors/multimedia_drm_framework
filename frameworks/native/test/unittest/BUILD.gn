@@ -36,9 +36,13 @@ config("drm_framework_capi_unittest_v1_0_config") {
     "-D_FORTIFY_SOURCE=2",
     "-Wformat=2",
     "-Wdate-time",
+    "--coverage",
   ]
-
-  cflags_cc = [ "-fno-rtti" ]
+  cflags_cc = [
+    "-fno-rtti",
+    "--coverage",
+  ]
+  ldflags = [ "--coverage" ]
 }
 
 ohos_unittest("drm_framework_capi_unittest_v1_0") {

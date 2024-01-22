@@ -67,7 +67,11 @@ ohos_shared_library("drm_napi") {
     cfi_cross_dso = true
     debug = false
   }
-  cflags = [ "-fPIC" ]
+  cflags = [
+    "-fPIC",
+    "--coverage",
+  ]
+  ldflags = [ "--coverage" ]
   cflags_cc = cflags
   relative_install_dir = "module/multimedia"
   part_name = "drm_framework"

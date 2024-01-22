@@ -12,15 +12,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#include <mutex>
+#include <shared_mutex>
+#include <string>
+#include <refbase.h>
+#include <securec.h>
+#include "drm_log.h"
+#include "drm_error_code.h"
+#include "native_drm_base.h"
+#include "native_drm_object.h"
+#include "key_session_impl.h"
+#include "native_mediakeysession.h"
 #include "cstdio"
 #include "cstdlib"
+#include <securec.h>
 #include "native_drm_common.h"
 #include "native_drm_err.h"
 #include "gmock/gmock.h"
+#include "drm_error_code.h"
+#include "native_drm_base.h"
+#include "native_drm_object.h"
+#include "key_session_impl.h"
+#include "i_mediadecryptmodule_service.h"
+#include "media_decrypt_module_impl.h"
 #include "native_mediakeysession.h"
 #include "native_mediakeysystem.h"
+#include <cstring>
+#include <map>
+#include <unordered_map>
+#include "nocopyable.h"
+#include "ipc_skeleton.h"
+#include "iservice_registry.h"
+#include "media_decrypt_module_impl.h"
+#include "i_keysession_service.h"
+#include "i_keysession_service_callback.h"
+#include "key_session_service_callback_stub.h"
 #include "cstdbool"
+#include "drm_types.h"
 #include "drm_framework_unittest.h"
 #include "drm_log.h"
 #include "drm_error_code.h"
@@ -49,7 +77,7 @@ void DrmFrameworkUnitTest::TearDown() {}
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySystemIsSupportedNormal_001, TestSize.Level0)
 {
     bool supported;
-    supported = OH_MediaKeySystem_IsSupported("com.drm.clearplay");
+    supported = OH_MediaKeySystem_IsSupported("com.clearplay.drm");
     EXPECT_EQ(supported, true);
 }
 
@@ -64,7 +92,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySystemIsSupportedNormal_001,
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySystemIsSupported2Normal_002, TestSize.Level0)
 {
     bool supported;
-    supported = OH_MediaKeySystem_IsSupported2("com.drm.clearplay", "video/mp4");
+    supported = OH_MediaKeySystem_IsSupported2("com.clearplay.drm", "video/mp4");
     EXPECT_EQ(supported, true);
 }
 
@@ -79,7 +107,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySystemIsSupported2Normal_002
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySystemIsSupported3Normal_003, TestSize.Level0)
 {
     bool supported;
-    supported = OH_MediaKeySystem_IsSupported3("com.drm.clearplay", "video/mp4", CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
+    supported = OH_MediaKeySystem_IsSupported3("com.clearplay.drm", "video/mp4", CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
     EXPECT_EQ(supported, true);
 }
 
@@ -120,11 +148,11 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySystemIsSupported2AbNormal_0
     supported = OH_MediaKeySystem_IsSupported2(nullptr, "video/mp4");
     EXPECT_EQ(supported, false);
 
-    supported = OH_MediaKeySystem_IsSupported2("com.drm.clearplay", "ideo/mp4");
+    supported = OH_MediaKeySystem_IsSupported2("com.clearplay.drm", "ideo/mp4");
     EXPECT_EQ(supported, false);
-    supported = OH_MediaKeySystem_IsSupported2("com.drm.clearplay", "");
+    supported = OH_MediaKeySystem_IsSupported2("com.clearplay.drm", "");
     EXPECT_EQ(supported, false);
-    supported = OH_MediaKeySystem_IsSupported2("com.drm.clearplay", nullptr);
+    supported = OH_MediaKeySystem_IsSupported2("com.clearplay.drm", nullptr);
     EXPECT_EQ(supported, false);
 }
 
@@ -145,18 +173,18 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySystemIsSupported3AbNormal_0
     EXPECT_EQ(supported, false);
     supported = OH_MediaKeySystem_IsSupported3(nullptr, "video/mp4", CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
     EXPECT_EQ(supported, false);
-    supported = OH_MediaKeySystem_IsSupported3("com.drm.clearplay", "ideo/mp4", CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
+    supported = OH_MediaKeySystem_IsSupported3("com.clearplay.drm", "ideo/mp4", CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
     EXPECT_EQ(supported, false);
-    supported = OH_MediaKeySystem_IsSupported3("com.drm.clearplay", "", CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
+    supported = OH_MediaKeySystem_IsSupported3("com.clearplay.drm", "", CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
     EXPECT_EQ(supported, false);
-    supported = OH_MediaKeySystem_IsSupported3("com.drm.clearplay", nullptr, CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
+    supported = OH_MediaKeySystem_IsSupported3("com.clearplay.drm", nullptr, CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
     EXPECT_EQ(supported, false);
 
-    supported = OH_MediaKeySystem_IsSupported3("com.drm.clearplay", "video/mp4",
+    supported = OH_MediaKeySystem_IsSupported3("com.clearplay.drm", "video/mp4",
         (OH_DRM_ContentProtectionLevel)(CONTENT_PROTECTION_LEVEL_UNKNOWN - 1));
     EXPECT_EQ(supported, false);
 
-    supported = OH_MediaKeySystem_IsSupported3("com.drm.clearplay", "video/mp4",
+    supported = OH_MediaKeySystem_IsSupported3("com.clearplay.drm", "video/mp4",
         (OH_DRM_ContentProtectionLevel)CONTENT_PROTECTION_LEVEL_MAX);
     EXPECT_EQ(supported, false);
 }
@@ -174,7 +202,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CreateMediaKeySystemNormal_007, Test
     OH_DrmErrCode errNo = DRM_ERR_ERROR;
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_UNKNOWN;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_GetMaxContentProtectionLevel(mediaKeySystem, &contentProtectionLevel);
@@ -239,7 +267,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CreateMediaKeySystemNormal_010, Test
     OH_DrmErrCode errNo = DRM_ERR_ERROR;
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_UNKNOWN;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
@@ -262,7 +290,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CreateMediaKeySessionNormal_011, Tes
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -289,7 +317,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RequireSecureDecoderModuleNormal_012
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -319,7 +347,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RequireSecureDecoderModuleAbNormal_0
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -349,7 +377,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RequireSecureDecoderModuleAbNormal_0
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -379,7 +407,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RequireSecureDecoderModuleAbNormal_0
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -409,7 +437,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RequireSecureDecoderModuleAbNormal_0
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -439,7 +467,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RequireSecureDecoderModuleAbNormal_0
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -467,7 +495,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateKeySystemRequestNormal_018, 
 {
     OH_DrmErrCode errNo = DRM_ERR_ERROR;
     OH_MediaKeySystem *mediaKeySystem = nullptr;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char *request = nullptr;
@@ -499,7 +527,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateKeySystemRequestAbNormal_019
 {
     OH_DrmErrCode errNo = DRM_ERR_ERROR;
     OH_MediaKeySystem *mediaKeySystem = nullptr;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char *request = nullptr;
@@ -573,7 +601,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseNormal_020, T
 {
     OH_DrmErrCode errNo = DRM_ERR_ERROR;
     OH_MediaKeySystem *mediaKeySystem = nullptr;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char *request = nullptr;
@@ -614,7 +642,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_021,
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -659,7 +687,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_022,
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -702,7 +730,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_023,
 {
     OH_DrmErrCode errNo = DRM_ERR_ERROR;
     OH_MediaKeySystem *mediaKeySystem = nullptr;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char *request = nullptr;
@@ -742,7 +770,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateMediaKeyRequestNormal_024, T
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char *request = nullptr;
@@ -804,7 +832,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateMediaKeyRequestAbNormal_025,
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char *request = nullptr;
@@ -868,7 +896,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateMediaKeyRequestAbNormal_026,
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -934,7 +962,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateMediaKeyRequestAbNormal_027,
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char *request = nullptr;
@@ -998,7 +1026,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseNormal_028, T
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -1077,7 +1105,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_029,
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -1153,7 +1181,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_030,
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -1229,7 +1257,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_031,
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -1305,7 +1333,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_032,
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -1381,7 +1409,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CheckMediaKeyStatusNormal_033, TestS
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -1465,7 +1493,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CheckMediaKeyStatusAbNormal_034, Tes
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -1549,7 +1577,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CheckMediaKeyStatusAbNormal_035, Tes
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -1628,7 +1656,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearMediaKeysNormal_036, TestSize.L
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -1719,7 +1747,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearMediaKeysAbNormal_037, TestSize
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -1808,7 +1836,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyStatusNormal_038, 
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -1899,7 +1927,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyStatusAbNormal_039
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -1990,7 +2018,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyStatusAbNormal_040
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -2079,7 +2107,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyStatusAbNormal_041
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -2170,7 +2198,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyIdsNormal_042, Tes
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -2255,7 +2283,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyIdsAbNormal_043, T
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -2340,7 +2368,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyIdsAbNormal_044, T
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -2404,7 +2432,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyIdsAbNormal_044, T
         free(mediaKeyIdss);
         mediaKeyIdss = nullptr;
     }
-    
+
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
@@ -2425,7 +2453,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateOfflineReleaseRequestNormal_
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -2501,7 +2529,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateOfflineReleaseRequestNormal_
         free(releaseRequest);
         releaseRequest = nullptr;
     }
-    
+
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
@@ -2524,7 +2552,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateOfflineReleaseRequestAbNorma
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -2629,7 +2657,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessOfflineReleaseResponseNormal_
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -2737,7 +2765,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessOfflineReleaseResponseAbNorma
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -2849,7 +2877,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetCertificateStatusNormal_049, Test
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -2902,7 +2930,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetCertificateStatusAbNormal_050, Te
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -2955,7 +2983,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_SetConfigurationStringNormal_051, Te
 {
     OH_DrmErrCode errNo = DRM_ERR_ERROR;
     OH_MediaKeySystem *mediaKeySystem = nullptr;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -3006,7 +3034,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_SetConfigurationStringAbNormal_052, 
 {
     OH_DrmErrCode errNo = DRM_ERR_ERROR;
     OH_MediaKeySystem *mediaKeySystem = nullptr;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -3053,7 +3081,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetConfigurationStringAbNormal_053, 
 {
     OH_DrmErrCode errNo = DRM_ERR_ERROR;
     OH_MediaKeySystem *mediaKeySystem = nullptr;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -3109,7 +3137,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetConfigurationByteArrayNormal_054,
 {
     OH_DrmErrCode errNo = DRM_ERR_ERROR;
     OH_MediaKeySystem *mediaKeySystem = nullptr;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -3134,7 +3162,8 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetConfigurationByteArrayNormal_054,
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
     unsigned char testArray[5] = {1, 2, 3, 4, 5};
-    errNo = OH_MediaKeySystem_SetConfigurationByteArray(mediaKeySystem, "testConfigurationByteArray", testArray, 5);
+    int32_t size = sizeof(testArray);
+    errNo = OH_MediaKeySystem_SetConfigurationByteArray(mediaKeySystem, "testConfigurationByteArray", testArray, size);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char *configByteArray = nullptr;
     uint32_t byteArrayLen = 0;
@@ -3162,7 +3191,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_SetConfigurationByteArrayAbNormal_05
 {
     OH_DrmErrCode errNo = DRM_ERR_ERROR;
     OH_MediaKeySystem *mediaKeySystem = nullptr;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -3218,7 +3247,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetConfigurationByteArrayAbNormal_05
 {
     OH_DrmErrCode errNo = DRM_ERR_ERROR;
     OH_MediaKeySystem *mediaKeySystem = nullptr;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -3281,7 +3310,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetStatisticsNormal_057, TestSize.Le
 {
     OH_DrmErrCode errNo = DRM_ERR_ERROR;
     OH_MediaKeySystem *mediaKeySystem = nullptr;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -3329,7 +3358,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetStatisticsAbNormal_058, TestSize.
 {
     OH_DrmErrCode errNo = DRM_ERR_ERROR;
     OH_MediaKeySystem *mediaKeySystem = nullptr;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -3376,7 +3405,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetMaxContentProtectionLevelAbNormal
     OH_DrmErrCode errNo = DRM_ERR_ERROR;
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_UNKNOWN;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_GetMaxContentProtectionLevel(nullptr, &contentProtectionLevel);
@@ -3403,7 +3432,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearOfflineMediaKeysNormal_060, Tes
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -3479,7 +3508,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearOfflineMediaKeysNormal_060, Tes
         free(releaseRequest);
         releaseRequest = nullptr;
     }
-    
+
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char testKeyReleaseResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
     OH_DRM_Uint8Buffer keyReleaseResponse;
@@ -3523,7 +3552,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearOfflineMediaKeysAbNormal_061, T
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -3644,7 +3673,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RestoreOfflineMediaKeysNormal_062, T
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -3759,7 +3788,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RestoreOfflineMediaKeysAbNormal_063,
     OH_MediaKeySystem *mediaKeySystem = nullptr;
     OH_MediaKeySession *mediaKeySession = nullptr;
     OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    errNo = OH_MediaKeySystem_Create("com.drm.clearplay", &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -3861,6 +3890,1414 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RestoreOfflineMediaKeysAbNormal_063,
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
     EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+#define MAX_BUFF 139
+static void filldata(OH_DRM_MediaKeyRequestInfo *info, OH_DRM_CharBufferPair *sample, unsigned char *testData)
+{
+    info->type = MEDIA_KEY_TYPE_ONLINE;
+    info->mimeType.buffer = (char *)"video/mp4";
+    info->mimeType.bufferLen = sizeof("video/mp4");
+    info->data.buffer = testData;
+    info->data.bufferLen = MAX_BUFF;
+    info->optionsCount = 1;
+    sample[0].name.buffer = (char *)"optionalDataName";
+    sample[0].name.bufferLen = sizeof("optionalDataName");
+    sample[0].value.buffer = (char *)"optionalDataValue";
+    sample[0].value.bufferLen = sizeof("optionalDataValue");
+    info->optionsData = sample;
+}
+
+const unsigned char TESTKEYRELEASERESPONSE[50] = {0x31, 0x64, 0x6E, 0x5A,
+    0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42,
+    0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A,
+    0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57,
+    0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+const unsigned char TESTKEYSESSIONRESPONSE[50] = {0x31, 0x64, 0x6E, 0x5A,
+    0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42,
+    0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A,
+    0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57,
+    0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+
+static void filltest3(OH_MediaKeySystem *mediaKeySystem, OH_MediaKeySession *mediaKeySession)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    unsigned char *mediaKeyId = nullptr;
+    OH_DRM_Uint8Buffer response;
+    int32_t keyIdLen = 0;
+    response.buffer = (unsigned char *)TESTKEYSESSIONRESPONSE;
+    response.bufferLen = sizeof(TESTKEYSESSIONRESPONSE);
+    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, &response, &mediaKeyId, &keyIdLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    OH_DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
+    OH_DRM_Uint8Buffer mediaKeyIds;
+    mediaKeyIds.buffer = mediaKeyId;
+    mediaKeyIds.bufferLen = keyIdLen;
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, &mediaKeyIds, &OfflineMediaKeyStatus);
+    EXPECT_EQ(OfflineMediaKeyStatus, 1);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *releaseRequest = nullptr;
+    int32_t releaseRequestLen;
+    OH_DRM_Uint8Buffer mediaKeyIdToRelease;
+    mediaKeyIdToRelease.buffer = mediaKeyId;
+    mediaKeyIdToRelease.bufferLen = keyIdLen;
+
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, &mediaKeyIdToRelease, &releaseRequest,
+        &releaseRequestLen);
+    free(releaseRequest);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    OH_DRM_Uint8Buffer keyReleaseResponse;
+    keyReleaseResponse.buffer = (unsigned char *)TESTKEYRELEASERESPONSE;
+    keyReleaseResponse.bufferLen = sizeof(TESTKEYRELEASERESPONSE);
+    errNo =
+        OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, &mediaKeyIdToRelease, &keyReleaseResponse);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    OH_DRM_ContentProtectionLevel sessionContentProtectionLevel = CONTENT_PROTECTION_LEVEL_UNKNOWN;
+    errNo = OH_MediaKeySession_GetContentProtectionLevel(mediaKeySession, &sessionContentProtectionLevel);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySession_GetContentProtectionLevel(nullptr, &sessionContentProtectionLevel);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySession_GetContentProtectionLevel(mediaKeySession, nullptr);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+}
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelNormal_064, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char *request = nullptr;
+    int32_t requestLen = 0;
+    char *defaultUrl = nullptr;
+    int32_t defaultUrlLen = 0;
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (request) {
+        free(request);}
+    if (defaultUrl) {
+        free(defaultUrl);}
+    unsigned char KeySystemResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    size_t KeySystemResponseLen = sizeof(KeySystemResponse);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    // mediakeysession
+    OH_DRM_MediaKeyRequest *mediaKeyRequest = nullptr;
+    OH_DRM_MediaKeyRequestInfo info;
+    unsigned char testData[139] = {0x00, 0x00, 0x00, 0x8B, 0x70, 0x73, 0x73, 0x68, 0x00, 0x00, 0x00, 0x00, 0x3D, 0x5E, 0x6D, 0x35, 0x9B, 0x9A, 0x41, 0xE8, 0xB8, 0x43, 0xDD, 0x3C, 0x6E, 0x72, 0xC4, 0x2C, 0x00, 0x00, 0x00, 0x6B, 0x7B, 0x22, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6F, 0x6E, 0x22, 0x3A, 0x22, 0x56, 0x31, 0x2E, 0x30, 0x22, 0x2C, 0x22, 0x63, 0x6F, 0x6E, 0x74, 0x65, 0x6E, 0x74, 0x49, 0x44, 0x22, 0x3A, 0x22, 0x64, 0x48, 0x4D, 0x74, 0x4D, 0x6A, 0x59, 0x30, 0x4C, 0x54, 0x45, 0x77, 0x4F, 0x44, 0x41, 0x74, 0x59, 0x57, 0x56, 0x7A, 0x22, 0x2C, 0x22, 0x6B, 0x69, 0x64, 0x73, 0x22, 0x3A, 0x5B, 0x22, 0x47, 0x2B, 0x45, 0x6B, 0x2F, 0x2B, 0x58, 0x6D, 0x55, 0x6B, 0x70, 0x42, 0x48, 0x51, 0x67, 0x58, 0x59, 0x57, 0x51, 0x51, 0x49, 0x67, 0x3D, 0x3D, 0x22, 0x5D, 0x2C, 0x22, 0x65, 0x6E, 0x73, 0x63, 0x68, 0x65, 0x6D, 0x61, 0x22, 0x3A, 0x22, 0x63, 0x62, 0x63, 0x31, 0x22, 0x7D};
+    OH_DRM_CharBufferPair sample[1];
+    filldata(&info, sample, testData);
+    errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    filltest3(mediaKeySystem, mediaKeySession);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+}
+
+
+#define DRM_SAMPLE_CHECK_AND_RETURN_RET_LOG(cond, ret, fmt, ...) \
+    do {                                                         \
+        if ((cond)) {                                            \
+            printf(fmt, ##__VA_ARGS__);                          \
+            return ret;                                          \
+        }                                                        \
+    } while (0)
+#define DRM_SAMPLE_INFO_LOG(fmt, ...) fprintf(stdout, "[INFO] " fmt "\n", ##__VA_ARGS__)
+#define DRM_SAMPLE_ERROR_LOG(fmt, ...) fprintf(stdout, "[ERROR] " fmt "\n", ##__VA_ARGS__)
+
+OH_DrmErrCode TestSystemEventCallBack(OH_DRM_ListenerType eventType, OH_DRM_Uint8CharBufferPair *eventInfo)
+{
+    (void)eventInfo;
+    DRM_SAMPLE_INFO_LOG("Hello Test TestSystemEventCallBack received %d", (int32_t)eventType);
+    DRM_SAMPLE_INFO_LOG("Hello Test TestSystemEventCallBack received buffer length %d", eventInfo->uintData.bufferLen);
+    for (uint32_t i = 0; i < eventInfo->uintData.bufferLen; i++) {
+        DRM_SAMPLE_INFO_LOG("Hello Test TestSystemEventCallBack received buffer %x", eventInfo->uintData.buffer[i]);
+    }
+    return DRM_ERR_OK;
+}
+
+OH_DrmErrCode TestSessoinEventCallBack(OH_DRM_ListenerType eventType, OH_DRM_Uint8CharBufferPair *eventInfo)
+{
+    (void)eventInfo;
+    DRM_SAMPLE_INFO_LOG("Hello Test TestSessoinEventCallBack received %d", (int32_t)eventType);
+    DRM_SAMPLE_INFO_LOG("Hello Test TestSessoinEventCallBack received buffer length %d", eventInfo->uintData.bufferLen);
+    for (uint32_t i = 0; i < eventInfo->uintData.bufferLen; i++) {
+        DRM_SAMPLE_INFO_LOG("Hello Test TestSessoinEventCallBack received buffer %x", eventInfo->uintData.buffer[i]);
+    }
+    return DRM_ERR_OK;
+}
+
+OH_DrmErrCode TestSessoinKeyChangeCallBack(OH_DRM_KeysInfo *keysInfo, bool hasNewGoodKeys)
+{
+    return DRM_ERR_OK;
+}
+
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelNormal_065, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *request = nullptr;
+    int32_t requestLen = 0;
+    char *defaultUrl = nullptr;
+    int32_t defaultUrlLen = 0;
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (request) {
+        free(request);
+    }
+    if (defaultUrl) {
+        free(defaultUrl);
+    }
+    unsigned char KeySystemResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    size_t KeySystemResponseLen = sizeof(KeySystemResponse);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+
+    // test 3: system callback
+    errNo = OH_MediaKeySystem_SetMediaKeySystemCallback(mediaKeySystem, &TestSystemEventCallBack);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    OH_MediaKeySessionCallback sessionCallback = { &TestSessoinEventCallBack, &TestSessoinKeyChangeCallBack };
+    errNo = OH_MediaKeySession_SetMediaKeySessionCallback(mediaKeySession, &sessionCallback);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+OH_DrmErrCode GetDecryptModule(OH_MediaKeySession *mediaKeySessoin)
+{
+    sptr<MediaDecryptModuleImpl> mediaDecryptModuleImpl = nullptr;
+    MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySessoin);
+    mediaDecryptModuleImpl = sessionObject->sessionImpl_->GetDecryptModule();
+    bool secureDecodrtState = true;
+    IMediaDecryptModuleService::CryptInfo cryptInfo;
+    cryptInfo.type = IMediaDecryptModuleService::ALGTYPE_AES_CTR;
+    cryptInfo.keyId = { 0, 1, 2, 3 };
+    cryptInfo.iv = { 0, 1, 2, 3 };
+    cryptInfo.pattern = { 0, 0 };
+    cryptInfo.subSample = { { 0, 0 } };
+    int32_t err = mediaDecryptModuleImpl->DecryptMediaData(secureDecodrtState, cryptInfo, (uint64_t)0, (uint64_t)0);
+    err = mediaDecryptModuleImpl->Release();
+    if (err) {
+        return DRM_ERR_ERROR;
+    }
+    return DRM_ERR_OK;
+}
+
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_DecryptModuleNormal_066, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *request = nullptr;
+    int32_t requestLen = 0, defaultUrlLen = 0;
+    char *defaultUrl = nullptr;
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (request) {
+        free(request);
+    }
+    if (defaultUrl) {
+        free(defaultUrl);
+    }
+    unsigned char KeySystemResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    size_t KeySystemResponseLen = sizeof(KeySystemResponse);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    // mediakeysession
+    OH_DRM_MediaKeyRequest *mediaKeyRequest = nullptr;
+    OH_DRM_MediaKeyRequestInfo info;
+    unsigned char testData[139] = {0x00, 0x00, 0x00, 0x8B, 0x70, 0x73, 0x73, 0x68, 0x00, 0x00, 0x00, 0x00, 0x3D, 0x5E, 0x6D, 0x35, 0x9B, 0x9A, 0x41, 0xE8, 0xB8, 0x43, 0xDD, 0x3C, 0x6E, 0x72, 0xC4, 0x2C, 0x00, 0x00, 0x00, 0x6B, 0x7B, 0x22, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6F, 0x6E, 0x22, 0x3A, 0x22, 0x56, 0x31, 0x2E, 0x30, 0x22, 0x2C, 0x22, 0x63, 0x6F, 0x6E, 0x74, 0x65, 0x6E, 0x74, 0x49, 0x44, 0x22, 0x3A, 0x22, 0x64, 0x48, 0x4D, 0x74, 0x4D, 0x6A, 0x59, 0x30, 0x4C, 0x54, 0x45, 0x77, 0x4F, 0x44, 0x41, 0x74, 0x59, 0x57, 0x56, 0x7A, 0x22, 0x2C, 0x22, 0x6B, 0x69, 0x64, 0x73, 0x22, 0x3A, 0x5B, 0x22, 0x47, 0x2B, 0x45, 0x6B, 0x2F, 0x2B, 0x58, 0x6D, 0x55, 0x6B, 0x70, 0x42, 0x48, 0x51, 0x67, 0x58, 0x59, 0x57, 0x51, 0x51, 0x49, 0x67, 0x3D, 0x3D, 0x22, 0x5D, 0x2C, 0x22, 0x65, 0x6E, 0x73, 0x63, 0x68, 0x65, 0x6D, 0x61, 0x22, 0x3A, 0x22, 0x63, 0x62, 0x63, 0x31, 0x22, 0x7D};
+    OH_DRM_CharBufferPair sample[1];
+    filldata(&info, sample, testData);
+    errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *mediaKeyId = nullptr;
+    unsigned char testKeySessionResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    OH_DRM_Uint8Buffer response;
+    int32_t keyIdLen = 0;
+    response.buffer = testKeySessionResponse;
+    response.bufferLen = sizeof(testKeySessionResponse);
+    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, &response, &mediaKeyId, &keyIdLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = GetDecryptModule(mediaKeySession);
+    EXPECT_NE(errNo, DRM_ERR_ERROR);
+
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_DecryptModuleNormal_067, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    int32_t releaseRequestLen;
+    unsigned char *releaseRequest = (unsigned char *)&releaseRequestLen;
+    OH_DRM_Uint8Buffer mediaKeyIdToRelease;
+    mediaKeyIdToRelease.buffer = nullptr;
+    mediaKeyIdToRelease.bufferLen = 11;
+    OH_MediaKeySession *mediaKeySession = (OH_MediaKeySession *)&mediaKeyIdToRelease;
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, &mediaKeyIdToRelease, &releaseRequest,
+        &releaseRequestLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    mediaKeyIdToRelease.buffer = (unsigned char *)&releaseRequestLen;
+    mediaKeyIdToRelease.bufferLen = 0;
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, &mediaKeyIdToRelease, &releaseRequest,
+        &releaseRequestLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+    unsigned char testKeyReleaseResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    OH_DRM_Uint8Buffer keyReleaseResponse;
+    keyReleaseResponse.buffer = testKeyReleaseResponse;
+    keyReleaseResponse.bufferLen = sizeof(testKeyReleaseResponse);
+    mediaKeyIdToRelease.buffer = (unsigned char *)&releaseRequestLen;
+    mediaKeyIdToRelease.bufferLen = 0;
+    errNo =
+        OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, &mediaKeyIdToRelease, &keyReleaseResponse);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    mediaKeyIdToRelease.buffer = nullptr;
+    mediaKeyIdToRelease.bufferLen = 11;
+    errNo =
+        OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, &mediaKeyIdToRelease, &keyReleaseResponse);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    mediaKeyIdToRelease.buffer = (unsigned char *)&releaseRequestLen;
+    mediaKeyIdToRelease.bufferLen = 11;
+    keyReleaseResponse.buffer = nullptr;
+    errNo =
+        OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, &mediaKeyIdToRelease, &keyReleaseResponse);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    keyReleaseResponse.buffer = testKeyReleaseResponse;
+    keyReleaseResponse.bufferLen = 0;
+    errNo =
+        OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, &mediaKeyIdToRelease, &keyReleaseResponse);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RestoreOfflineMediaKeysAbNormal_068, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_DRM_Uint8Buffer mediaKeyIdToRelease;
+    mediaKeyIdToRelease.buffer = (unsigned char *)&mediaKeyIdToRelease;
+    mediaKeyIdToRelease.bufferLen = 0;
+    OH_MediaKeySession *mediaKeySession = (OH_MediaKeySession *)&mediaKeyIdToRelease;
+    errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(mediaKeySession, &mediaKeyIdToRelease);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    mediaKeyIdToRelease.buffer = nullptr;
+    mediaKeyIdToRelease.bufferLen = 11;
+    errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(mediaKeySession, &mediaKeyIdToRelease);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest__SetMediaKeySessionCallbackNormal_069, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *request = nullptr;
+    int32_t requestLen = 0;
+    char *defaultUrl = nullptr;
+    int32_t defaultUrlLen = 0;
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (request) {
+        free(request);
+    }
+    if (defaultUrl) {
+        free(defaultUrl);
+    }
+    unsigned char KeySystemResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    size_t KeySystemResponseLen = sizeof(KeySystemResponse);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+
+    // test 3: system callback
+    errNo = OH_MediaKeySystem_SetMediaKeySystemCallback(nullptr, &TestSystemEventCallBack);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_SetMediaKeySystemCallback(mediaKeySystem, nullptr);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+    OH_MediaKeySessionCallback sessionCallback = { &TestSessoinEventCallBack, &TestSessoinKeyChangeCallBack };
+    errNo = OH_MediaKeySession_SetMediaKeySessionCallback(mediaKeySession, nullptr);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySession_SetMediaKeySessionCallback(nullptr, &sessionCallback);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest__CreateMediaKeySessionAbNormal_070, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create(nullptr, &mediaKeySystem);
+    EXPECT_EQ(mediaKeySystem, nullptr);
+
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", nullptr);
+    EXPECT_EQ(mediaKeySystem, nullptr);
+
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(nullptr, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_EQ(mediaKeySession, nullptr);
+
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, nullptr, &mediaKeySession);
+    EXPECT_EQ(mediaKeySession, nullptr);
+
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, nullptr);
+    EXPECT_EQ(mediaKeySession, nullptr);
+
+    OH_DRM_Uint8Buffer mediaKeyIdToClear;
+    mediaKeyIdToClear.buffer = (unsigned char *)&mediaKeyIdToClear;
+    mediaKeyIdToClear.bufferLen = 0;
+    errNo = OH_MediaKeySystem_ClearOfflineMediaKeys(mediaKeySystem, &mediaKeyIdToClear);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    mediaKeyIdToClear.buffer = nullptr;
+    mediaKeyIdToClear.bufferLen = 11;
+    errNo = OH_MediaKeySystem_ClearOfflineMediaKeys(mediaKeySystem, &mediaKeyIdToClear);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySession_Destroy(nullptr);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(nullptr);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+}
+
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest__CreateMediaKeySessionAbNormal_071, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *request = nullptr;
+    int32_t requestLen = 0;
+    char *defaultUrl = nullptr;
+    int32_t defaultUrlLen = 0;
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    free(request);
+    free(defaultUrl);
+    unsigned char KeySystemResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    size_t KeySystemResponseLen = sizeof(KeySystemResponse);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_SetConfigurationString(mediaKeySystem, "testConfigurationString", "gezhegezhegezhe");
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+    char *value = nullptr;
+    int32_t valueLen = 0;
+    errNo = OH_MediaKeySystem_GetConfigurationString(mediaKeySystem, "testConfigurationString", &value, &valueLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+    unsigned char testArray[5] = {1, 2, 3, 4, 5};
+    errNo = OH_MediaKeySystem_SetConfigurationByteArray(mediaKeySystem, "testConfigurationByteArray", testArray, 5);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+    unsigned char *configByteArray = nullptr;
+    uint32_t byteArrayLen = 0;
+    errNo = OH_MediaKeySystem_GetConfigurationByteArray(mediaKeySystem, "testConfigurationByteArray", &configByteArray,
+        &byteArrayLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    OH_DRM_Statistics *statistics;
+    errNo = OH_MediaKeySystem_GetStatistics(mediaKeySystem, &statistics);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+    contentProtectionLevel = CONTENT_PROTECTION_LEVEL_UNKNOWN;
+    errNo = OH_MediaKeySystem_GetMaxContentProtectionLevel(mediaKeySystem, &contentProtectionLevel);
+
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest__CreateMediaKeySessionAbNormal_072, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    unsigned char *request = nullptr;
+    int32_t requestLen = 0, defaultUrlLen = 0;
+    char *defaultUrl = nullptr;
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (request) {
+        free(request);}
+    if (defaultUrl) {
+        free(defaultUrl);}
+    unsigned char KeySystemResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    size_t KeySystemResponseLen = sizeof(KeySystemResponse);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    OH_DRM_CertificateStatus certStatus = CERT_STATUS_GET_FAILED;
+    errNo = OH_MediaKeySystem_GetCertificateStatus(mediaKeySystem, &certStatus);
+    errNo = OH_MediaKeySystem_SetMediaKeySystemCallback(mediaKeySystem, &TestSystemEventCallBack);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    contentProtectionLevel = CONTENT_PROTECTION_LEVEL_UNKNOWN;
+    OH_MediaKeySession *OH_MediaKeySession2 = nullptr;
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &OH_MediaKeySession2);
+    EXPECT_EQ(OH_MediaKeySession2, nullptr);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    OH_DRM_MediakeyIdArray *mediaKeyIdss = nullptr;
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyIds(mediaKeySystem, &mediaKeyIdss);
+    OH_DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
+    OH_DRM_Uint8Buffer mediaKeyIds, mediaKeyIdToClear;
+    mediaKeyIds.buffer = (unsigned char *)&OfflineMediaKeyStatus;
+    mediaKeyIds.bufferLen = 1;
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, &mediaKeyIds, &OfflineMediaKeyStatus);
+    mediaKeyIdToClear.buffer = (unsigned char *)&OfflineMediaKeyStatus;
+    mediaKeyIdToClear.bufferLen = 1;
+    errNo = OH_MediaKeySystem_ClearOfflineMediaKeys(mediaKeySystem, &mediaKeyIdToClear);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest__CreateMediaKeySessionAbNormal_073, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *request = nullptr;
+    int32_t requestLen = 0;
+    char *defaultUrl = nullptr;
+    int32_t defaultUrlLen = 0;
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (request) {
+        free(request);
+    }
+    if (defaultUrl) {
+        free(defaultUrl);
+    }
+    unsigned char KeySystemResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    size_t KeySystemResponseLen = sizeof(KeySystemResponse);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    OH_DRM_MediaKeyRequest *mediaKeyRequest = nullptr;
+    OH_DRM_MediaKeyRequestInfo info;
+    unsigned char testData[139] = {0x00, 0x00, 0x00, 0x8B, 0x70, 0x73, 0x73, 0x68, 0x00, 0x00, 0x00, 0x00, 0x3D, 0x5E, 0x6D, 0x35, 0x9B, 0x9A, 0x41, 0xE8, 0xB8, 0x43, 0xDD, 0x3C, 0x6E, 0x72, 0xC4, 0x2C, 0x00, 0x00, 0x00, 0x6B, 0x7B, 0x22, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6F, 0x6E, 0x22, 0x3A, 0x22, 0x56, 0x31, 0x2E, 0x30, 0x22, 0x2C, 0x22, 0x63, 0x6F, 0x6E, 0x74, 0x65, 0x6E, 0x74, 0x49, 0x44, 0x22, 0x3A, 0x22, 0x64, 0x48, 0x4D, 0x74, 0x4D, 0x6A, 0x59, 0x30, 0x4C, 0x54, 0x45, 0x77, 0x4F, 0x44, 0x41, 0x74, 0x59, 0x57, 0x56, 0x7A, 0x22, 0x2C, 0x22, 0x6B, 0x69, 0x64, 0x73, 0x22, 0x3A, 0x5B, 0x22, 0x47, 0x2B, 0x45, 0x6B, 0x2F, 0x2B, 0x58, 0x6D, 0x55, 0x6B, 0x70, 0x42, 0x48, 0x51, 0x67, 0x58, 0x59, 0x57, 0x51, 0x51, 0x49, 0x67, 0x3D, 0x3D, 0x22, 0x5D, 0x2C, 0x22, 0x65, 0x6E, 0x73, 0x63, 0x68, 0x65, 0x6D, 0x61, 0x22, 0x3A, 0x22, 0x63, 0x62, 0x63, 0x31, 0x22, 0x7D};
+    info.type = MEDIA_KEY_TYPE_ONLINE;
+    info.mimeType.buffer = (char *)"video/mp4";
+    info.mimeType.bufferLen = sizeof("video/mp4");
+    info.data.buffer = testData;
+    info.data.bufferLen = sizeof(testData);
+    info.optionsCount = 1;
+    OH_DRM_CharBufferPair sample[1];
+    sample[0].name.buffer = (char *)"optionalDataName";
+    sample[0].name.bufferLen = sizeof("optionalDataName");
+    sample[0].value.buffer = (char *)"optionalDataValue";
+    sample[0].value.bufferLen = sizeof("optionalDataValue");
+    info.optionsData = sample;
+    errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest__CreateMediaKeySessionAbNormal_074, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *request = nullptr;
+    int32_t requestLen = 0;
+    char *defaultUrl = nullptr;
+    int32_t defaultUrlLen = 0;
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (request) {
+        free(request);
+    }
+    if (defaultUrl) {
+        free(defaultUrl);
+    }
+    unsigned char KeySystemResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    size_t KeySystemResponseLen = sizeof(KeySystemResponse);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *mediaKeyId = nullptr;
+    unsigned char testKeySessionResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    OH_DRM_Uint8Buffer response;
+    int32_t keyIdLen = 0;
+    response.buffer = testKeySessionResponse;
+    response.bufferLen = sizeof(testKeySessionResponse);
+    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, &response, &mediaKeyId, &keyIdLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest__CreateMediaKeySessionAbNormal_075, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *request = nullptr;
+    int32_t requestLen = 0;
+    char *defaultUrl = nullptr;
+    int32_t defaultUrlLen = 0;
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (request) {
+        free(request);
+    }
+    if (defaultUrl) {
+        free(defaultUrl);
+    }
+    unsigned char KeySystemResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    size_t KeySystemResponseLen = sizeof(KeySystemResponse);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    OH_DRM_MediaKeyDescription *mediaKeyDescription = nullptr;
+    errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyDescription);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_ClearMediaKeys(mediaKeySession);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    unsigned char *releaseRequest = nullptr;
+    int32_t releaseRequestLen;
+    OH_DRM_Uint8Buffer mediaKeyIdToRelease;
+    mediaKeyIdToRelease.buffer = (unsigned char *)"com.clearplay.drm";
+    mediaKeyIdToRelease.bufferLen = 11;
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, &mediaKeyIdToRelease, &releaseRequest,
+        &releaseRequestLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest__CreateMediaKeySessionAbNormal_076, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char *request = nullptr;
+    int32_t requestLen = 0;
+    char *defaultUrl = nullptr;
+    int32_t defaultUrlLen = 0;
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (request) {
+        free(request);}
+    if (defaultUrl) {
+        free(defaultUrl);
+    }
+    unsigned char KeySystemResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    size_t KeySystemResponseLen = sizeof(KeySystemResponse);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char testKeyReleaseResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    OH_DRM_Uint8Buffer keyReleaseResponse;
+    keyReleaseResponse.buffer = testKeyReleaseResponse;
+    keyReleaseResponse.bufferLen = sizeof(testKeyReleaseResponse);
+    OH_DRM_Uint8Buffer mediaKeyIdToRelease;
+    mediaKeyIdToRelease.buffer = (unsigned char *)"com.clearplay.drm";
+    mediaKeyIdToRelease.bufferLen = 11;
+    errNo =
+        OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, &mediaKeyIdToRelease, &keyReleaseResponse);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(mediaKeySession, &mediaKeyIdToRelease);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+    OH_DRM_ContentProtectionLevel sessionContentProtectionLevel = CONTENT_PROTECTION_LEVEL_UNKNOWN;
+    errNo = OH_MediaKeySession_GetContentProtectionLevel(mediaKeySession, &sessionContentProtectionLevel);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+    bool requireSecureDecoder;
+    errNo = OH_MediaKeySession_RequireSecureDecoderModule(mediaKeySession, "video/mp4", &requireSecureDecoder);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest__CreateMediaKeySessionAbNormal_077, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+
+    errNo = OH_MediaKeySystem_SetMediaKeySystemCallback(mediaKeySystem, &TestSystemEventCallBack);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *request = nullptr, *mediaKeyId = nullptr;
+    int32_t requestLen = 0, defaultUrlLen = 0;
+    char *defaultUrl = nullptr;
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (request) {
+        free(request);}
+    if (defaultUrl) {
+        free(defaultUrl);
+    }
+    unsigned char KeySystemResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    size_t KeySystemResponseLen = sizeof(KeySystemResponse);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    OH_MediaKeySessionCallback sessionCallback = { &TestSessoinEventCallBack, &TestSessoinKeyChangeCallBack };
+    errNo = OH_MediaKeySession_SetMediaKeySessionCallback(mediaKeySession, &sessionCallback);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    // mediakeysession
+    OH_DRM_MediaKeyRequest *mediaKeyRequest = nullptr;
+    OH_DRM_MediaKeyRequestInfo info;
+    unsigned char testData[139] = {0x00, 0x00, 0x00, 0x8B, 0x70, 0x73, 0x73, 0x68, 0x00, 0x00, 0x00, 0x00, 0x3D, 0x5E, 0x6D, 0x35, 0x9B, 0x9A, 0x41, 0xE8, 0xB8, 0x43, 0xDD, 0x3C, 0x6E, 0x72, 0xC4, 0x2C, 0x00, 0x00, 0x00, 0x6B, 0x7B, 0x22, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6F, 0x6E, 0x22, 0x3A, 0x22, 0x56, 0x31, 0x2E, 0x30, 0x22, 0x2C, 0x22, 0x63, 0x6F, 0x6E, 0x74, 0x65, 0x6E, 0x74, 0x49, 0x44, 0x22, 0x3A, 0x22, 0x64, 0x48, 0x4D, 0x74, 0x4D, 0x6A, 0x59, 0x30, 0x4C, 0x54, 0x45, 0x77, 0x4F, 0x44, 0x41, 0x74, 0x59, 0x57, 0x56, 0x7A, 0x22, 0x2C, 0x22, 0x6B, 0x69, 0x64, 0x73, 0x22, 0x3A, 0x5B, 0x22, 0x47, 0x2B, 0x45, 0x6B, 0x2F, 0x2B, 0x58, 0x6D, 0x55, 0x6B, 0x70, 0x42, 0x48, 0x51, 0x67, 0x58, 0x59, 0x57, 0x51, 0x51, 0x49, 0x67, 0x3D, 0x3D, 0x22, 0x5D, 0x2C, 0x22, 0x65, 0x6E, 0x73, 0x63, 0x68, 0x65, 0x6D, 0x61, 0x22, 0x3A, 0x22, 0x63, 0x62, 0x63, 0x31, 0x22, 0x7D};
+    OH_DRM_CharBufferPair sample[1];
+    filldata(&info, sample, testData);
+    errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char testKeySessionResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    OH_DRM_Uint8Buffer response;
+    int32_t keyIdLen = 0;
+    response.buffer = testKeySessionResponse;
+    response.bufferLen = sizeof(testKeySessionResponse);
+    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, &response, &mediaKeyId, &keyIdLen);
+    free(mediaKeyId);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest__CreateMediaKeySessionAbNormal_078, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    errNo = OH_MediaKeySystem_SetMediaKeySystemCallback(mediaKeySystem, &TestSystemEventCallBack);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char *request = nullptr;
+    int32_t requestLen = 0;
+    char *defaultUrl = nullptr;
+    int32_t defaultUrlLen = 0;
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (request) {
+        free(request);}
+    if (defaultUrl) {
+        free(defaultUrl);}
+    unsigned char KeySystemResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    size_t KeySystemResponseLen = sizeof(KeySystemResponse);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    OH_MediaKeySessionCallback sessionCallback = { &TestSessoinEventCallBack, &TestSessoinKeyChangeCallBack };
+    errNo = OH_MediaKeySession_SetMediaKeySessionCallback(mediaKeySession, &sessionCallback);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    // mediakeysession
+    OH_DRM_MediaKeyRequest *mediaKeyRequest = nullptr;
+    OH_DRM_MediaKeyRequestInfo info;
+    unsigned char testData[139] = {0x00, 0x00, 0x00, 0x8B, 0x70, 0x73, 0x73, 0x68, 0x00, 0x00, 0x00, 0x00, 0x3D, 0x5E, 0x6D, 0x35, 0x9B, 0x9A, 0x41, 0xE8, 0xB8, 0x43, 0xDD, 0x3C, 0x6E, 0x72, 0xC4, 0x2C, 0x00, 0x00, 0x00, 0x6B, 0x7B, 0x22, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6F, 0x6E, 0x22, 0x3A, 0x22, 0x56, 0x31, 0x2E, 0x30, 0x22, 0x2C, 0x22, 0x63, 0x6F, 0x6E, 0x74, 0x65, 0x6E, 0x74, 0x49, 0x44, 0x22, 0x3A, 0x22, 0x64, 0x48, 0x4D, 0x74, 0x4D, 0x6A, 0x59, 0x30, 0x4C, 0x54, 0x45, 0x77, 0x4F, 0x44, 0x41, 0x74, 0x59, 0x57, 0x56, 0x7A, 0x22, 0x2C, 0x22, 0x6B, 0x69, 0x64, 0x73, 0x22, 0x3A, 0x5B, 0x22, 0x47, 0x2B, 0x45, 0x6B, 0x2F, 0x2B, 0x58, 0x6D, 0x55, 0x6B, 0x70, 0x42, 0x48, 0x51, 0x67, 0x58, 0x59, 0x57, 0x51, 0x51, 0x49, 0x67, 0x3D, 0x3D, 0x22, 0x5D, 0x2C, 0x22, 0x65, 0x6E, 0x73, 0x63, 0x68, 0x65, 0x6D, 0x61, 0x22, 0x3A, 0x22, 0x63, 0x62, 0x63, 0x31, 0x22, 0x7D};
+    OH_DRM_CharBufferPair sample[1];
+    filldata(&info, sample, testData);
+    errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char *mediaKeyId = nullptr;
+    unsigned char testKeySessionResponse[2] = {0x07, 0x22};
+    OH_DRM_Uint8Buffer response;
+    int32_t keyIdLen = 0;
+    response.buffer = testKeySessionResponse;
+    response.bufferLen = sizeof(testKeySessionResponse);
+    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, &response, &mediaKeyId, &keyIdLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest__CreateMediaKeySessionAbNormal_079, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *request = nullptr;
+    int32_t requestLen = 0, defaultUrlLen = 0;
+    char *defaultUrl = nullptr;
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    free(request);
+    free(defaultUrl);
+    unsigned char KeySystemResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    size_t KeySystemResponseLen = sizeof(KeySystemResponse);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    // mediakeysession
+    OH_DRM_MediaKeyRequest *mediaKeyRequest = nullptr;
+    OH_DRM_MediaKeyRequestInfo info;
+    OH_DRM_CharBufferPair sample[1];
+    unsigned char testData[139] = {0x00, 0x00, 0x00, 0x8B, 0x70, 0x73, 0x73, 0x68, 0x00, 0x00, 0x00, 0x00, 0x3D, 0x5E, 0x6D, 0x35, 0x9B, 0x9A, 0x41, 0xE8, 0xB8, 0x43, 0xDD, 0x3C, 0x6E, 0x72, 0xC4, 0x2C, 0x00, 0x00, 0x00, 0x6B, 0x7B, 0x22, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6F, 0x6E, 0x22, 0x3A, 0x22, 0x56, 0x31, 0x2E, 0x30, 0x22, 0x2C, 0x22, 0x63, 0x6F, 0x6E, 0x74, 0x65, 0x6E, 0x74, 0x49, 0x44, 0x22, 0x3A, 0x22, 0x64, 0x48, 0x4D, 0x74, 0x4D, 0x6A, 0x59, 0x30, 0x4C, 0x54, 0x45, 0x77, 0x4F, 0x44, 0x41, 0x74, 0x59, 0x57, 0x56, 0x7A, 0x22, 0x2C, 0x22, 0x6B, 0x69, 0x64, 0x73, 0x22, 0x3A, 0x5B, 0x22, 0x47, 0x2B, 0x45, 0x6B, 0x2F, 0x2B, 0x58, 0x6D, 0x55, 0x6B, 0x70, 0x42, 0x48, 0x51, 0x67, 0x58, 0x59, 0x57, 0x51, 0x51, 0x49, 0x67, 0x3D, 0x3D, 0x22, 0x5D, 0x2C, 0x22, 0x65, 0x6E, 0x73, 0x63, 0x68, 0x65, 0x6D, 0x61, 0x22, 0x3A, 0x22, 0x63, 0x62, 0x63, 0x31, 0x22, 0x7D};
+    filldata(&info, sample, testData);
+    errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *mediaKeyId = nullptr;
+    unsigned char testKeySessionResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    OH_DRM_Uint8Buffer response;
+    int32_t keyIdLen = 0, releaseRequestLen;
+    response.buffer = testKeySessionResponse;
+    response.bufferLen = sizeof(testKeySessionResponse);
+    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, &response, &mediaKeyId, &keyIdLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *releaseRequest = nullptr;
+    OH_DRM_Uint8Buffer mediaKeyIdToRelease;
+    mediaKeyIdToRelease.buffer = (unsigned char *)"mediaKeyId";
+    mediaKeyIdToRelease.bufferLen = 2;
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, &mediaKeyIdToRelease, &releaseRequest,
+        &releaseRequestLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest__CreateMediaKeySessionAbNormal_080, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    unsigned char *request = nullptr, *mediaKeyId = nullptr, *releaseRequest = nullptr;
+    int32_t requestLen = 0, defaultUrlLen = 0;
+    char *defaultUrl = nullptr;
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (request) {
+        free(request);}
+    if (defaultUrl) {
+        free(defaultUrl);}
+    unsigned char KeySystemResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    size_t KeySystemResponseLen = sizeof(KeySystemResponse);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    // mediakeysession
+    OH_DRM_MediaKeyRequest *mediaKeyRequest = nullptr;
+    OH_DRM_MediaKeyRequestInfo info;
+    unsigned char testData[139] = {0x00, 0x00, 0x00, 0x8B, 0x70, 0x73, 0x73, 0x68, 0x00, 0x00, 0x00, 0x00, 0x3D, 0x5E, 0x6D, 0x35, 0x9B, 0x9A, 0x41, 0xE8, 0xB8, 0x43, 0xDD, 0x3C, 0x6E, 0x72, 0xC4, 0x2C, 0x00, 0x00, 0x00, 0x6B, 0x7B, 0x22, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6F, 0x6E, 0x22, 0x3A, 0x22, 0x56, 0x31, 0x2E, 0x30, 0x22, 0x2C, 0x22, 0x63, 0x6F, 0x6E, 0x74, 0x65, 0x6E, 0x74, 0x49, 0x44, 0x22, 0x3A, 0x22, 0x64, 0x48, 0x4D, 0x74, 0x4D, 0x6A, 0x59, 0x30, 0x4C, 0x54, 0x45, 0x77, 0x4F, 0x44, 0x41, 0x74, 0x59, 0x57, 0x56, 0x7A, 0x22, 0x2C, 0x22, 0x6B, 0x69, 0x64, 0x73, 0x22, 0x3A, 0x5B, 0x22, 0x47, 0x2B, 0x45, 0x6B, 0x2F, 0x2B, 0x58, 0x6D, 0x55, 0x6B, 0x70, 0x42, 0x48, 0x51, 0x67, 0x58, 0x59, 0x57, 0x51, 0x51, 0x49, 0x67, 0x3D, 0x3D, 0x22, 0x5D, 0x2C, 0x22, 0x65, 0x6E, 0x73, 0x63, 0x68, 0x65, 0x6D, 0x61, 0x22, 0x3A, 0x22, 0x63, 0x62, 0x63, 0x31, 0x22, 0x7D};
+    OH_DRM_CharBufferPair sample[1];
+    filldata(&info, sample, testData);
+    errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char testKeySessionResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    OH_DRM_Uint8Buffer response, mediaKeyIdToRelease, keyReleaseResponse;
+    int32_t keyIdLen = 0, releaseRequestLen;
+    response.buffer = testKeySessionResponse;
+    response.bufferLen = sizeof(testKeySessionResponse);
+    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, &response, &mediaKeyId, &keyIdLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    mediaKeyIdToRelease.buffer = mediaKeyId;
+    mediaKeyIdToRelease.bufferLen = keyIdLen;
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, &mediaKeyIdToRelease, &releaseRequest,
+        &releaseRequestLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char testKeyReleaseResponse[2] = {0x33, 0x22};
+    keyReleaseResponse.buffer = testKeyReleaseResponse;
+    keyReleaseResponse.bufferLen = sizeof(testKeyReleaseResponse);
+    errNo =
+        OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, &mediaKeyIdToRelease, &keyReleaseResponse);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+}
+
+static void filltest(OH_MediaKeySystem *mediaKeySystem, OH_MediaKeySession *mediaKeySession)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    unsigned char *mediaKeyId = nullptr;
+    OH_DRM_Uint8Buffer response;
+    int32_t keyIdLen = 0;
+    response.buffer = (unsigned char *)TESTKEYSESSIONRESPONSE;
+    response.bufferLen = sizeof(TESTKEYSESSIONRESPONSE);
+    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, &response, &mediaKeyId, &keyIdLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char *releaseRequest = nullptr;
+    int32_t releaseRequestLen;
+    OH_DRM_Uint8Buffer mediaKeyIdToRelease;
+    mediaKeyIdToRelease.buffer = mediaKeyId;
+    mediaKeyIdToRelease.bufferLen = keyIdLen;
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, &mediaKeyIdToRelease, &releaseRequest,
+        &releaseRequestLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    OH_DRM_Uint8Buffer keyReleaseResponse;
+    keyReleaseResponse.buffer = (unsigned char *)TESTKEYRELEASERESPONSE;
+    keyReleaseResponse.bufferLen = sizeof(TESTKEYRELEASERESPONSE);
+    errNo =
+        OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, &mediaKeyIdToRelease, &keyReleaseResponse);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    mediaKeyIdToRelease.buffer = (unsigned char *)"mediaKeyId";
+    mediaKeyIdToRelease.bufferLen = 1;
+    errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(mediaKeySession, &mediaKeyIdToRelease);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+}
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest__CreateMediaKeySessionAbNormal_081, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *request = nullptr;
+    int32_t requestLen = 0;
+    char *defaultUrl = nullptr;
+    int32_t defaultUrlLen = 0;
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (request) {
+        free(request);
+    }
+    if (defaultUrl) {
+        free(defaultUrl);
+    }
+    unsigned char KeySystemResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    size_t KeySystemResponseLen = sizeof(KeySystemResponse);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySession_ClearMediaKeys(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    // mediakeysession
+    OH_DRM_MediaKeyRequest *mediaKeyRequest = nullptr;
+    OH_DRM_MediaKeyRequestInfo info;
+    unsigned char testData[139] = {0x00, 0x00, 0x00, 0x8B, 0x70, 0x73, 0x73, 0x68, 0x00, 0x00, 0x00, 0x00, 0x3D, 0x5E, 0x6D, 0x35, 0x9B, 0x9A, 0x41, 0xE8, 0xB8, 0x43, 0xDD, 0x3C, 0x6E, 0x72, 0xC4, 0x2C, 0x00, 0x00, 0x00, 0x6B, 0x7B, 0x22, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6F, 0x6E, 0x22, 0x3A, 0x22, 0x56, 0x31, 0x2E, 0x30, 0x22, 0x2C, 0x22, 0x63, 0x6F, 0x6E, 0x74, 0x65, 0x6E, 0x74, 0x49, 0x44, 0x22, 0x3A, 0x22, 0x64, 0x48, 0x4D, 0x74, 0x4D, 0x6A, 0x59, 0x30, 0x4C, 0x54, 0x45, 0x77, 0x4F, 0x44, 0x41, 0x74, 0x59, 0x57, 0x56, 0x7A, 0x22, 0x2C, 0x22, 0x6B, 0x69, 0x64, 0x73, 0x22, 0x3A, 0x5B, 0x22, 0x47, 0x2B, 0x45, 0x6B, 0x2F, 0x2B, 0x58, 0x6D, 0x55, 0x6B, 0x70, 0x42, 0x48, 0x51, 0x67, 0x58, 0x59, 0x57, 0x51, 0x51, 0x49, 0x67, 0x3D, 0x3D, 0x22, 0x5D, 0x2C, 0x22, 0x65, 0x6E, 0x73, 0x63, 0x68, 0x65, 0x6D, 0x61, 0x22, 0x3A, 0x22, 0x63, 0x62, 0x63, 0x31, 0x22, 0x7D};
+    OH_DRM_CharBufferPair sample[1];
+    filldata(&info, sample, testData);
+    errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    filltest(mediaKeySystem, mediaKeySession);
+
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    sleep(1);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest__CreateMediaKeySessionAbNormal_082, TestSize.Level0)
+{
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_DrmErrCode errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+
+    MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+    IMediaKeySessionService::SecurityLevel securityLevel = IMediaKeySessionService::SECURITY_LEVEL_SW_CRYPTO;
+    OHOS::sptr<MediaKeySessionImpl> keySessionImpl = nullptr;
+    systemObject->systemImpl_->~MediaKeySystemImpl();
+    systemObject->systemImpl_->CreateMediaKeySession(securityLevel, &keySessionImpl);
+    keySessionImpl = nullptr;
+
+    MediaKeySystemCallback *allback = new MediaKeySystemCallback();
+    allback->~MediaKeySystemCallback();
+
+    OHOS::sptr<MediaKeySystemFactoryImpl> fatory = MediaKeySystemFactoryImpl::GetInstance();
+    fatory->Init();
+
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+
+    OH_MediaKeySystem *mediaKeySystem2 = nullptr;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem2);
+    EXPECT_NE(mediaKeySystem2, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem2);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest__CreateMediaKeySessionAbNormal_083, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *request = nullptr;
+    int32_t requestLen = 0;
+    char *defaultUrl = nullptr;
+    int32_t defaultUrlLen = 0;
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (request) {
+        free(request);}
+    if (defaultUrl) {
+        free(defaultUrl);}
+
+    unsigned char KeySystemResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    size_t KeySystemResponseLen = sizeof(KeySystemResponse);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    OH_MediaKeySessionCallback sessionCallback = { &TestSessoinEventCallBack, &TestSessoinKeyChangeCallBack };
+    errNo = OH_MediaKeySession_SetMediaKeySessionCallback(mediaKeySession, &sessionCallback);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *mediaKeyId = nullptr;
+    unsigned char testKeySessionResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    OH_DRM_Uint8Buffer response;
+    int32_t keyIdLen = 0;
+    response.buffer = testKeySessionResponse;
+    response.bufferLen = sizeof(testKeySessionResponse);
+    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, &response, &mediaKeyId, &keyIdLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySession);
+
+    MediaKeySessionServiceCallback *Object = new MediaKeySessionServiceCallback(sessionObject->sessionImpl_);
+
+    std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> statusTable = { { { 0x01 },
+        MEDIA_KEY_SESSION_KEY_STATUS_USABLE } };
+
+    bool hasNewGoodLicense = false;
+
+    Object->SendEventKeyChanged(statusTable, hasNewGoodLicense);
+
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+static void killclearplay(OH_MediaKeySystem *mediaKeySystem, OH_MediaKeySession *mediaKeySession)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    std::vector<uint8_t> licenseIdVec = {0x01};
+    std::vector<uint8_t> ReleaseRequest= {0x01};
+    IMediaKeySessionService::SecurityLevel securityLevel;
+    MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySession);
+    system("killall -9 clearplay_host");
+    uint32_t result = sessionObject->sessionImpl_->GenerateOfflineReleaseRequest(licenseIdVec, ReleaseRequest);
+    EXPECT_NE(result, DRM_ERR_OK);
+    result = sessionObject->sessionImpl_->ProcessOfflineReleaseResponse(licenseIdVec, ReleaseRequest);
+    EXPECT_NE(result, DRM_ERR_OK);
+    result = sessionObject->sessionImpl_->GetSecurityLevel(&securityLevel);
+    EXPECT_NE(result, DRM_ERR_OK);
+    sptr<MediaDecryptModuleImpl> result2 = sessionObject->sessionImpl_->GetDecryptModule();
+    EXPECT_EQ(result2, nullptr);
+    std::map<std::string, MediaKeySessionKeyStatus> licenseStatus2;
+    result = sessionObject->sessionImpl_->CheckLicenseStatus(licenseStatus2);
+    EXPECT_NE(result, DRM_ERR_OK);
+    result = sessionObject->sessionImpl_->RestoreOfflineLicense(licenseIdVec);
+    EXPECT_NE(result, DRM_ERR_OK);
+    result = sessionObject->sessionImpl_->RemoveLicense();
+    EXPECT_NE(result, DRM_ERR_OK);
+    std::string mimeType;
+    bool status;
+    result = sessionObject->sessionImpl_->RequireSecureDecoderModule(mimeType, &status);
+    EXPECT_NE(result, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_SetMediaKeySystemCallback(mediaKeySystem, &TestSystemEventCallBack);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    OH_MediaKeySessionCallback sessionCallback = { &TestSessoinEventCallBack, &TestSessoinKeyChangeCallBack };
+    errNo = OH_MediaKeySession_SetMediaKeySessionCallback(mediaKeySession, &sessionCallback);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+static void killclearplay2(OH_MediaKeySystem *mediaKeySystem, OH_MediaKeySession *mediaKeySession)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    bool supported = OH_MediaKeySystem_IsSupported("com.clearplay.drm");
+    EXPECT_EQ(supported, false);
+    supported = OH_MediaKeySystem_IsSupported2("com.clearplay.drm", "video/mp4");
+    EXPECT_EQ(supported, false);
+    supported = OH_MediaKeySystem_IsSupported3("com.clearplay.drm", "video/mp4", CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
+    EXPECT_EQ(supported, false);
+    errNo = OH_MediaKeySystem_SetConfigurationString(mediaKeySystem, "testConfigurationString",
+    "testConfigurationString");
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    char *value = nullptr;
+    int32_t valueLen = 0;
+    errNo = OH_MediaKeySystem_GetConfigurationString(mediaKeySystem, "testConfigurationString", &value, &valueLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    unsigned char testArray[5] = {1, 2, 3, 4, 5};
+    int32_t size = sizeof(testArray);
+    errNo = OH_MediaKeySystem_SetConfigurationByteArray(mediaKeySystem, "testConfigurationByteArray", testArray, size);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    unsigned char *configByteArray = nullptr;
+    uint32_t byteArrayLen = 0;
+    errNo = OH_MediaKeySystem_GetConfigurationByteArray(mediaKeySystem, "testConfigurationByteArray", &configByteArray,
+        &byteArrayLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    OH_DRM_Statistics *statistics;
+    errNo = OH_MediaKeySystem_GetStatistics(mediaKeySystem, &statistics);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_UNKNOWN;
+    errNo = OH_MediaKeySystem_GetMaxContentProtectionLevel(mediaKeySystem, &contentProtectionLevel);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest__CreateMediaKeySessionAbNormal1, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *request = nullptr;
+    int32_t requestLen = 0;
+    char *defaultUrl = nullptr;
+    int32_t defaultUrlLen = 0;
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (request) {
+        free(request);
+    }
+    if (defaultUrl) {
+        free(defaultUrl);
+    }
+    unsigned char KeySystemResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    size_t KeySystemResponseLen = sizeof(KeySystemResponse);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    killclearplay(mediaKeySystem, mediaKeySession);
+    killclearplay2(mediaKeySystem, mediaKeySession);
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    OH_DRM_CertificateStatus certStatus = CERT_STATUS_GET_FAILED;
+    errNo = OH_MediaKeySystem_GetCertificateStatus(mediaKeySystem, &certStatus);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    sleep(5);
+}
+
+static void killDrm_Service1(OH_MediaKeySystem *mediaKeySystem, OH_MediaKeySession *mediaKeySession)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    std::vector<uint8_t> licenseIdVec = {0x01};
+    std::vector<uint8_t> ReleaseRequest = {0x01};
+    IMediaKeySessionService::SecurityLevel securityLevel;
+    MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySession);
+    system("killall -9 drm_service");
+    uint32_t result = sessionObject->sessionImpl_->GenerateOfflineReleaseRequest(licenseIdVec, ReleaseRequest);
+    EXPECT_NE(result, DRM_ERR_OK);
+
+    result = sessionObject->sessionImpl_->ProcessOfflineReleaseResponse(licenseIdVec, ReleaseRequest);
+    EXPECT_NE(result, DRM_ERR_OK);
+
+    result = sessionObject->sessionImpl_->GetSecurityLevel(&securityLevel);
+    EXPECT_NE(result, DRM_ERR_OK);
+
+    sptr<MediaDecryptModuleImpl> result2 = sessionObject->sessionImpl_->GetDecryptModule();
+    EXPECT_EQ(result2, nullptr);
+    std::map<std::string, MediaKeySessionKeyStatus> licenseStatus2;
+    result = sessionObject->sessionImpl_->CheckLicenseStatus(licenseStatus2);
+    EXPECT_NE(result, DRM_ERR_OK);
+
+    result = sessionObject->sessionImpl_->RestoreOfflineLicense(licenseIdVec);
+    EXPECT_NE(result, DRM_ERR_OK);
+
+    result = sessionObject->sessionImpl_->RemoveLicense();
+    EXPECT_NE(result, DRM_ERR_OK);
+
+    std::string mimeType;
+    bool status;
+    result = sessionObject->sessionImpl_->RequireSecureDecoderModule(mimeType, &status);
+    EXPECT_NE(result, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_SetMediaKeySystemCallback(mediaKeySystem, &TestSystemEventCallBack);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    OH_MediaKeySessionCallback sessionCallback = { &TestSessoinEventCallBack, &TestSessoinKeyChangeCallBack };
+    errNo = OH_MediaKeySession_SetMediaKeySessionCallback(mediaKeySession, &sessionCallback);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+static void killDrm_Service2(OH_MediaKeySystem *mediaKeySystem, OH_MediaKeySession *mediaKeySession)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    bool supported = OH_MediaKeySystem_IsSupported("com.clearplay.drm");
+    EXPECT_EQ(supported, false);
+    supported = OH_MediaKeySystem_IsSupported2("com.clearplay.drm", "video/mp4");
+    EXPECT_EQ(supported, false);
+    supported = OH_MediaKeySystem_IsSupported3("com.clearplay.drm", "video/mp4", CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
+    EXPECT_EQ(supported, false);
+    errNo = OH_MediaKeySystem_SetConfigurationString(mediaKeySystem, "testConfigurationString", "gezhegezhegezhe");
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    char *value = nullptr;
+    int32_t valueLen = 0;
+    errNo = OH_MediaKeySystem_GetConfigurationString(mediaKeySystem, "testConfigurationString", &value, &valueLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    unsigned char testArray[5] = {1, 2, 3, 4, 5};
+    int32_t size = sizeof(testArray);
+    errNo = OH_MediaKeySystem_SetConfigurationByteArray(mediaKeySystem, "testConfigurationByteArray", testArray, size);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    unsigned char *configByteArray = nullptr;
+    uint32_t byteArrayLen = 0;
+    errNo = OH_MediaKeySystem_GetConfigurationByteArray(mediaKeySystem, "testConfigurationByteArray", &configByteArray,
+        &byteArrayLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    OH_DRM_Statistics *statistics;
+    errNo = OH_MediaKeySystem_GetStatistics(mediaKeySystem, &statistics);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_UNKNOWN;
+    errNo = OH_MediaKeySystem_GetMaxContentProtectionLevel(mediaKeySystem, &contentProtectionLevel);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+}
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest__CreateMediaKeySessionAbNormal, TestSize.Level0)
+{
+    OH_DrmErrCode errNo = DRM_ERR_ERROR;
+    OH_MediaKeySystem *mediaKeySystem = nullptr;
+    OH_MediaKeySession *mediaKeySession = nullptr;
+    OH_DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create("com.clearplay.drm", &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    unsigned char *request = nullptr;
+    int32_t requestLen = 0;
+    char *defaultUrl = nullptr;
+    int32_t defaultUrlLen = 0;
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (request) {
+        free(request);
+    }
+    if (defaultUrl) {
+        free(defaultUrl);
+    }
+    unsigned char KeySystemResponse[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47, 0x34, 0x34, 0x4E, 0x6A, 0x42, 0x30, 0x4D, 0x32, 0x77, 0x33, 0x4E, 0x67, 0x3D, 0x3D, 0x3A, 0x59, 0x7A, 0x56, 0x78, 0x63, 0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
+    size_t KeySystemResponseLen = sizeof(KeySystemResponse);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    killDrm_Service1(mediaKeySystem, mediaKeySession);
+    killDrm_Service2(mediaKeySystem, mediaKeySession);
+    errNo =
+        OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, &request, &requestLen, &defaultUrl, &defaultUrlLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    OH_DRM_CertificateStatus certStatus = CERT_STATUS_GET_FAILED;
+    errNo = OH_MediaKeySystem_GetCertificateStatus(mediaKeySystem, &certStatus);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    sleep(5);
 }
 } // DrmStandard
 } // OHOS
