@@ -45,7 +45,7 @@ DRM框架组件提供以下功能：
 ```
 ## 编译
 ~~~shell
-./build.sh --product-name {product name} --ccache --build-target multimedia_drm_framework
+./build.sh --product-name {product name} --ccache --build-target drm_framework
 ~~~
 {product_name}为当前支持的平台，比如rk3568。
 ## 使用说明
@@ -55,36 +55,36 @@ DRM框架组件提供以下功能：
 ~~~js
 import drm from  '@ohos.multimedia.drm';
 ~~~
-2.判断DRM框架是否支持指定的DRM方案, 示例以'e2719d58-a985-b3c9-781a-b030af78d30e'为例。
+2.判断DRM框架是否支持指定的DRM方案, 示例以'com.drm.clearplay'为例。
 ~~~js
-var isSupported = drm.isMediaKeySystemSupported('e2719d58-a985-b3c9-781a-b030af78d30e');
+var isSupported = drm.isMediaKeySystemSupported('com.drm.clearplay');
 ~~~
 3.创建MediaKeySystem实例, 
 ~~~js
-var keySystem = drm.createMediaKeySystem('e2719d58-a985-b3c9-781a-b030af78d30e');
+var keySystem = drm.createMediaKeySystem('com.drm.clearplay');
 ~~~
 4.如无本地DRM证书，需完成证书下载。
 ~~~js
 // 生成证书请求
-var drmRequest = keySystem.generateKeySystemRequest(drm.RequestType.REQUEST_TYPE_INITIAL);
+var drmRequest = keySystem.generateKeySystemRequest();
 // 获取证书响应
 var response = ...
 // 处理证书响应
-keySystem.processKeySystemResponse(drm.RequestType.REQUEST_TYPE_INITIAL, response);
+keySystem.processKeySystemResponse(response);
 ~~~
 5.创建MediaKeySession示例，传入安全等级。
 ~~~js
-var keySession = keySystem.createKeySession(drm.ContentProtectionLevel.SECURITY_LEVEL_HW_DECODE);
+var keySession = keySystem.createKeySession(drm.ContentProtectionLevel.CONTENT_PROTECTION_LEVEL_SW_CRYPTO);
 ~~~
 6.生成许可证请求。
 ~~~js
-var licenseType:number = 1; // 在线申请
+var mediaKeyType:number = 1; // 在线申请
 var initData = ...;
-keySession.generateMediaKeyRequest('video/avc', initData, licenseType);
+keySession.generateMediaKeyRequest('video/avc', initData, mediaKeyType);
 ~~~
 7.向DRM服务端发送许可证请求，获取许可证响应，并将许可证响应设置到keySession中。
 ~~~js
-keySession.processMediaKeyResponse(licenseResponse);
+keySession.processMediaKeyResponse(mediaKeyResponse);
 ~~~
 8.获取SVP(Secure Video Path，安全视频通路)属性。
 ~~~js
@@ -93,4 +93,4 @@ var svp:boolean = keySession.requireSecureDecoderModule('video/mp4');
 9.将keySession与SVP属性设置到媒体组件中，以实现解密播放。
 
 ## 相关仓
-[multimedia\_drm\_framework](https://gitee.com/openharmony-sig/multimedia_drm_framework/tree/master)
+[multimedia\_drm\_framework](https://gitee.com/openharmony/multimedia_drm_framework)
