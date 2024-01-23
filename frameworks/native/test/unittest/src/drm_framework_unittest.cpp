@@ -34,7 +34,6 @@
 #include "native_drm_object.h"
 #include "key_session_impl.h"
 #include "i_mediadecryptmodule_service.h"
-#include "media_decrypt_module_impl.h"
 #include "native_mediakeysession.h"
 #include "native_mediakeysystem.h"
 #include <cstring>
@@ -43,7 +42,6 @@
 #include "nocopyable.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
-#include "media_decrypt_module_impl.h"
 #include "i_keysession_service.h"
 #include "i_keysession_service_callback.h"
 #include "key_session_service_callback_stub.h"
@@ -4098,27 +4096,6 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelNormal_065,
     EXPECT_EQ(errNo, DRM_ERR_OK);
 }
 
-OH_DrmErrCode GetDecryptModule(OH_MediaKeySession *mediaKeySessoin)
-{
-    sptr<MediaDecryptModuleImpl> mediaDecryptModuleImpl = nullptr;
-    MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySessoin);
-    mediaDecryptModuleImpl = sessionObject->sessionImpl_->GetDecryptModule();
-    bool secureDecodrtState = true;
-    IMediaDecryptModuleService::CryptInfo cryptInfo;
-    cryptInfo.type = IMediaDecryptModuleService::ALGTYPE_AES_CTR;
-    cryptInfo.keyId = { 0, 1, 2, 3 };
-    cryptInfo.iv = { 0, 1, 2, 3 };
-    cryptInfo.pattern = { 0, 0 };
-    cryptInfo.subSample = { { 0, 0 } };
-    int32_t err = mediaDecryptModuleImpl->DecryptMediaData(secureDecodrtState, cryptInfo, (uint64_t)0, (uint64_t)0);
-    err = mediaDecryptModuleImpl->Release();
-    if (err) {
-        return DRM_ERR_ERROR;
-    }
-    return DRM_ERR_OK;
-}
-
-
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_DecryptModuleNormal_066, TestSize.Level0)
 {
     OH_DrmErrCode errNo = DRM_ERR_ERROR;
@@ -4167,9 +4144,6 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_DecryptModuleNormal_066, TestSize.Le
     response.bufferLen = sizeof(testKeySessionResponse);
     errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, &response, &mediaKeyId, &keyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-
-    errNo = GetDecryptModule(mediaKeySession);
-    EXPECT_NE(errNo, DRM_ERR_ERROR);
 
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
@@ -5074,8 +5048,6 @@ static void killclearplay(OH_MediaKeySystem *mediaKeySystem, OH_MediaKeySession 
     EXPECT_NE(result, DRM_ERR_OK);
     result = sessionObject->sessionImpl_->GetSecurityLevel(&securityLevel);
     EXPECT_NE(result, DRM_ERR_OK);
-    sptr<MediaDecryptModuleImpl> result2 = sessionObject->sessionImpl_->GetDecryptModule();
-    EXPECT_EQ(result2, nullptr);
     std::map<std::string, MediaKeySessionKeyStatus> licenseStatus2;
     result = sessionObject->sessionImpl_->CheckLicenseStatus(licenseStatus2);
     EXPECT_NE(result, DRM_ERR_OK);
@@ -5194,8 +5166,6 @@ static void killDrm_Service1(OH_MediaKeySystem *mediaKeySystem, OH_MediaKeySessi
     result = sessionObject->sessionImpl_->GetSecurityLevel(&securityLevel);
     EXPECT_NE(result, DRM_ERR_OK);
 
-    sptr<MediaDecryptModuleImpl> result2 = sessionObject->sessionImpl_->GetDecryptModule();
-    EXPECT_EQ(result2, nullptr);
     std::map<std::string, MediaKeySessionKeyStatus> licenseStatus2;
     result = sessionObject->sessionImpl_->CheckLicenseStatus(licenseStatus2);
     EXPECT_NE(result, DRM_ERR_OK);
