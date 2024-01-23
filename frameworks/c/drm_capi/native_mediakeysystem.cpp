@@ -167,9 +167,8 @@ Drm_ErrCode OH_MediaKeySystem_GetConfigurationString(MediaKeySystem *mediaKeySys
     return DRM_ERR_OK;
 }
 
-Drm_ErrCode OH_MediaKeySystem_SetConfigurationByteArray(MediaKeySystem *mediaKeySystem, const char *configName,
-    DRM_Uint8Buffer *value)
-
+Drm_ErrCode OH_MediaKeySystem_SetConfigurationByteArray(MediaKeySystem *mediaKeySystem,
+    const char *configName, DRM_Uint8Buffer *value)
 {
     DRM_INFO_LOG("OH_SetConfigurationByteArray enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySystem != nullptr) && (configName != nullptr) && (value != nullptr)),
