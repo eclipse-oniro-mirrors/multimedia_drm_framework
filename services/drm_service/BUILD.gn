@@ -23,7 +23,6 @@ ohos_shared_library("drm_service") {
     "./../../interfaces/inner_api/native",
     "./../../interfaces/inner_api/native/drm",
     "./../utils/include",
-    "//third_party/glib/glibmemdfx",
     "//foundation//arkui/napi/interfaces/kits",
   ]
 

@@ -78,8 +78,22 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
                 cryptInfo.subSample[i].clearHeaderLen = data.ReadUint32();
                 cryptInfo.subSample[i].payLoadLen = data.ReadUint32();
             }
-            uint64_t srcBuffer = data.ReadFileDescriptor();
-            uint64_t dstBuffer = data.ReadFileDescriptor();
+            IMediaDecryptModuleService::DrmBuffer srcBuffer;
+            IMediaDecryptModuleService::DrmBuffer dstBuffer;
+            srcBuffer.bufferType  = data.ReadUint32();
+            srcBuffer.fd  = data.ReadFileDescriptor();
+            srcBuffer.bufferLen  = data.ReadUint32();
+            srcBuffer.allocLen  = data.ReadUint32();
+            srcBuffer.filledLen  = data.ReadUint32();
+            srcBuffer.offset  = data.ReadUint32();
+            srcBuffer.sharedMemType  = data.ReadUint32();
+            dstBuffer.bufferType  = data.ReadUint32();
+            dstBuffer.fd  = data.ReadFileDescriptor();
+            dstBuffer.bufferLen  = data.ReadUint32();
+            dstBuffer.allocLen  = data.ReadUint32();
+            dstBuffer.filledLen  = data.ReadUint32();
+            dstBuffer.offset  = data.ReadUint32();
+            dstBuffer.sharedMemType  = data.ReadUint32();
             int32_t ret = DecryptMediaData(secureDecodrtState, cryptInfo, srcBuffer, dstBuffer);
             if (ret != 0) {
                 DRM_ERR_LOG("DecryptMediaData faild.");

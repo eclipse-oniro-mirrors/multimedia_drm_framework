@@ -24,7 +24,6 @@ namespace DrmStandard {
 static napi_value Export(napi_env env, napi_value exports)
 {
     DrmEnumNapi::Init(env, exports);
-    MediaDecryptModuleNapi::Init(env, exports);
     MediaKeySessionNapi::Init(env, exports);
     MediaKeySystemNapi::Init(env, exports);
     DrmNapi::Init(env, exports);

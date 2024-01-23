@@ -81,7 +81,9 @@ void DrmHostManager::ProcessMessage()
     std::thread([this] {
         while (serviceThreadRunning) {
             std::unique_lock<std::mutex> lock(queueMutex);
-            cv.wait(lock, [this] { return !this->messageQueue.empty(); });
+            cv.wait(lock, [this] {
+                return !this->messageQueue.empty();
+            });
             while (!messageQueue.empty()) {
                 auto message = messageQueue.front();
                 messageQueue.pop();
@@ -328,7 +330,7 @@ int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &uuid, std::string
         return DRM_SERVICE_ERROR;
     }
     ret = drmHostServieProxy_->IsMediaKeySystemSupported(uuid, mimeType,
-        (OHOS::HDI::Drm::V1_0::SecurityLevel)securityLevel, *isSurpported);
+        (OHOS::HDI::Drm::V1_0::ContentProtectionLevel)securityLevel, *isSurpported);
     if (ret != 0) {
         DRM_ERR_LOG("drmHostServieProxy_ return Code:%{public}d", ret);
     }

@@ -38,7 +38,7 @@ public:
     ~MediaDecryptModuleService();
     int32_t Release() override;
     int32_t DecryptMediaData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo,
-        uint64_t srcBuffer, uint64_t dstBuffer) override;
+        IMediaDecryptModuleService::DrmBuffer &srcBuffer, IMediaDecryptModuleService::DrmBuffer &dstBuffer) override;
 
 private:
     std::mutex moduleLock_;

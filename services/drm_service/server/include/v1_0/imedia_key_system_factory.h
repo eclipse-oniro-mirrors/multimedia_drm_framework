@@ -41,7 +41,7 @@
     do {                                                             \
         if ((lv)compare(rv)) {                                       \
             (ret) = (value);                                         \
-            goto (table);                                             \
+            goto(table);                                             \
         }                                                            \
     } while (false)
 #endif
@@ -69,7 +69,7 @@ public:
     static sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystemFactory> Get(const std::string &serviceName, bool isStub = false);
 
     virtual int32_t IsMediaKeySystemSupported(const std::string &name, const std::string &mimeType,
-        OHOS::HDI::Drm::V1_0::SecurityLevel level, bool &isSupported) = 0;
+        OHOS::HDI::Drm::V1_0::ContentProtectionLevel level, bool &isSupported) = 0;
 
     virtual int32_t CreateMediaKeySystem(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> &mediaKeySystem) = 0;
 

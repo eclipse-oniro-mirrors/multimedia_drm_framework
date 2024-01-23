@@ -37,7 +37,7 @@ public:
     bool IsMediaKeySystemSupported(std::string &uuid);
     bool IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType);
     bool IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType,
-        IMediaKeySessionService::SecurityLevel securityLevel);
+        IMediaKeySessionService::ContentProtectionLevel securityLevel);
     int32_t CreateMediaKeySystem(std::string &uuid, sptr<MediaKeySystemImpl> *mediaKeySystemImpl);
 
 private:

@@ -21,7 +21,6 @@
 #include "nocopyable.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
-#include "media_decrypt_module_impl.h"
 #include "i_keysession_service.h"
 #include "i_keysession_service_callback.h"
 #include "key_session_service_callback_stub.h"
@@ -29,10 +28,10 @@
 namespace OHOS {
 namespace DrmStandard {
 namespace MediaKeySessionEvent {
-const std::string EVENT_STR_KEY_NEEDED = "keyNeeded";
+const std::string EVENT_STR_KEY_NEEDED = "keyRequired";
 const std::string EVENT_STR_KEY_EXPIRED = "keyExpired";
 const std::string EVENT_STR_EXPIRATION_UPDATED = "expirationUpdated";
-const std::string EVENT_STR_KEY_CHANGED = "keyChanged";
+const std::string EVENT_STR_KEY_CHANGED = "keysChange";
 const std::string EVENT_STR_VENDOR_DEFINED = "vendorDefined";
 }
 
@@ -52,18 +51,17 @@ public:
     int32_t Release();
     int32_t Init();
 
-    int32_t GenerateLicenseRequest(IMediaKeySessionService::LicenseRequestInfo &licenseRequestInfo,
-        IMediaKeySessionService::LicenseRequest &licenseRequest);
-    int32_t ProcessLicenseResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &licenseResponse);
+    int32_t GenerateMediaKeyRequest(IMediaKeySessionService::MediaKeyRequestInfo &licenseRequestInfo,
+        IMediaKeySessionService::MediaKeyRequest &licenseRequest);
+    int32_t ProcessMediaKeyResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &licenseResponse);
     int32_t GenerateOfflineReleaseRequest(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &releaseRequest);
     int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &releaseReponse);
-    int32_t CheckLicenseStatus(std::map<std::string, MediaKeySessionKeyStatus> &licenseStatus);
-    int32_t RestoreOfflineLicense(std::vector<uint8_t> &licenseId);
+    int32_t CheckMediaKeyStatus(std::map<std::string, std::string> &licenseStatus);
+    int32_t RestoreOfflineMediaKeys(std::vector<uint8_t> &licenseId);
 
-    int32_t RemoveLicense();
+    int32_t ClearMediaKeys();
 
-    sptr<MediaDecryptModuleImpl> GetDecryptModule();
-    int32_t GetSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel);
+    int32_t GetContentProtectionLevel(IMediaKeySessionService::ContentProtectionLevel *securityLevel);
 
     sptr<IMediaKeySessionService> GetMediaKeySessionServiceProxy();
     sptr<MediaKeySessionImplCallback> GetApplicationCallback();
@@ -75,7 +73,6 @@ private:
     sptr<MediaKeySessionImplCallback> keySessionApplicationCallback_;
     sptr<IMediaKeySessionServiceCallback> keySessionServiceCallback_;
     sptr<OHOS::DrmStandard::IMediaKeySessionService> keySessionServiceProxy_;
-    sptr<MediaDecryptModuleImpl> mediaDecryptModuleImpl_;
     std::mutex mutex_;
 };
 

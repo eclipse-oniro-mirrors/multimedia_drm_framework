@@ -16,6 +16,7 @@
 #include "key_session_service_callback_proxy.h"
 #include "drm_log.h"
 #include "remote_request_code.h"
+#include "drm_error_code.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -45,12 +46,14 @@ int32_t MediaKeySessionServiceCallbackProxy::SendEvent(DrmEventType event, uint3
         DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent Write data size failed");
         return IPC_PROXY_ERR;
     }
-    for (auto item : data) {
-        if (!parcelData.WriteUint8(item)) {
-            DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent Write data failed");
+    DRM_CHECK_AND_RETURN_RET_LOG(data.size() < DATA_MAX_LEN, DRM_MEMORY_ERROR, "The size of data is too large.");
+    if (data.size() != 0) {
+        if (!parcelData.WriteBuffer(data.data(), data.size())) {
+            DRM_ERR_LOG("MediaKeySessionServiceProxy SendEvent write data failed");
             return IPC_PROXY_ERR;
         }
     }
+
     int32_t error = Remote()->SendRequest(MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT, parcelData, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent failed, error: %{public}d", error);
@@ -78,8 +81,12 @@ int32_t MediaKeySessionServiceCallbackProxy::SendEventKeyChanged(
     for (auto item : statusTable) {
         uint32_t idSize = item.first.size();
         (void)parcelData.WriteUint32(idSize);
-        for (uint32_t i = 0; i < idSize; i++) {
-            (void)parcelData.WriteUint8(item.first[i]);
+        DRM_CHECK_AND_RETURN_RET_LOG(idSize < DATA_MAX_LEN, DRM_MEMORY_ERROR, "The size of data is too large.");
+        if (idSize != 0) {
+            if (!parcelData.WriteBuffer(item.first.data(), idSize)) {
+                DRM_ERR_LOG("MediaKeySessionServiceProxy SendEventKeyChanged write data failed");
+                return IPC_PROXY_ERR;
+            }
         }
         (void)parcelData.WriteInt32(static_cast<int32_t>(item.second));
     }

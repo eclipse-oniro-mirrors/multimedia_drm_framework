@@ -30,8 +30,7 @@
 namespace OHOS {
 namespace DrmStandard {
 namespace MediaKeySystemEvent {
-const std::string EVENT_STR_PROVISION_REQUIRED = "provisionRequired";
-const std::string EVENT_STR_SESSION_LOST = "sessionLost";
+const std::string EVENT_STR_PROVISION_REQUIRED = "keySystemRequired";
 }
 class MediaKeySystemImplCallback : public RefBase {
 public:
@@ -49,18 +48,18 @@ public:
     int32_t GetConfigurationString(std::string &configName, std::string &value);
     int32_t SetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value);
     int32_t GetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value);
-    int32_t CreateMediaKeySession(IMediaKeySessionService::SecurityLevel securityLevel,
+    int32_t CreateMediaKeySession(IMediaKeySessionService::ContentProtectionLevel securityLevel,
         sptr<MediaKeySessionImpl> *keySessionImpl);
-    int32_t GetMetrics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics);
-    int32_t GetMaxSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel);
+    int32_t GetStatistics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics);
+    int32_t GetMaxContentProtectionLevel(IMediaKeySessionService::ContentProtectionLevel *securityLevel);
 
     int32_t GenerateKeySystemRequest(std::vector<uint8_t> &request, std::string &defaultUrl);
     int32_t ProcessKeySystemResponse(const std::vector<uint8_t> &response);
 
-    int32_t GetOfflineLicenseIds(std::vector<std::vector<uint8_t>> &licenseIds);
-    int32_t GetOfflineLicenseStatus(std::vector<uint8_t> &licenseId,
-        IMediaKeySessionService::OfflineLicenseStatus &status);
-    int32_t RemoveOfflineLicense(std::vector<uint8_t> &licenseId);
+    int32_t GetOfflineMediaKeyIds(std::vector<std::vector<uint8_t>> &licenseIds);
+    int32_t GetOfflineMediaKeyStatus(std::vector<uint8_t> &licenseId,
+        IMediaKeySessionService::OfflineMediaKeyStatus &status);
+    int32_t ClearOfflineMediaKeys(std::vector<uint8_t> &licenseId);
 
     int32_t GetCertificateStatus(IMediaKeySystemService::CertificateStatus *certStatus);
     sptr<MediaKeySystemImplCallback> GetApplicationCallback();

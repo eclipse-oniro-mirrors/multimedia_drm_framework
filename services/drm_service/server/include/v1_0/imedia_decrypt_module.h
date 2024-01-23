@@ -39,7 +39,7 @@
     do {                                                             \
         if ((lv)compare(rv)) {                                       \
             (ret) = (value);                                         \
-            goto (table);                                            \
+            goto(table);                                             \
         }                                                            \
     } while (false)
 #endif

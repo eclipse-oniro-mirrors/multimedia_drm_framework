@@ -83,44 +83,45 @@ int32_t MediaKeySessionService::SetMediaKeySessionServiceOperatorsCallback(
     return DRM_OK;
 }
 
-int32_t MediaKeySessionService::GenerateLicenseRequest(IMediaKeySessionService::LicenseRequestInfo &licenseRequestInfo,
-    IMediaKeySessionService::LicenseRequest &licenseRequest)
+int32_t MediaKeySessionService::GenerateMediaKeyRequest(
+    IMediaKeySessionService::MediaKeyRequestInfo &licenseRequestInfo,
+    IMediaKeySessionService::MediaKeyRequest &licenseRequest)
 {
-    DRM_INFO_LOG("MediaKeySessionService::GenerateLicenseRequest enter.");
+    DRM_INFO_LOG("MediaKeySessionService::GenerateMediaKeyRequest enter.");
     int32_t ret = DRM_OK;
-    OHOS::HDI::Drm::V1_0::LicenseRequestInfo hdiLicenseRequestInfo;
+    OHOS::HDI::Drm::V1_0::MediaKeyRequestInfo hdiMediaKeyRequestInfo;
 
-    hdiLicenseRequestInfo.licenseType = (OHOS::HDI::Drm::V1_0::LicenseType)licenseRequestInfo.licenseType;
-    hdiLicenseRequestInfo.mimeType = licenseRequestInfo.mimeType;
-    hdiLicenseRequestInfo.initData.assign(licenseRequestInfo.initData.begin(), licenseRequestInfo.initData.end());
+    hdiMediaKeyRequestInfo.mediaKeyType = (OHOS::HDI::Drm::V1_0::MediaKeyType)licenseRequestInfo.mediaKeyType;
+    hdiMediaKeyRequestInfo.mimeType = licenseRequestInfo.mimeType;
+    hdiMediaKeyRequestInfo.initData.assign(licenseRequestInfo.initData.begin(), licenseRequestInfo.initData.end());
     for (std::map<std::string, std::string>::iterator it = licenseRequestInfo.optionalData.begin();
         it != licenseRequestInfo.optionalData.end(); ++it) {
-        hdiLicenseRequestInfo.optionalData.insert(std::make_pair(it->first, it->second));
+        hdiMediaKeyRequestInfo.optionalData.insert(std::make_pair(it->first, it->second));
     }
-    OHOS::HDI::Drm::V1_0::LicenseRequest hdiLicenseRequest;
-    ret = hdiMediaKeySession_->GenerateLicenseRequest(hdiLicenseRequestInfo, hdiLicenseRequest);
+    OHOS::HDI::Drm::V1_0::MediaKeyRequest hdiMediaKeyRequest;
+    ret = hdiMediaKeySession_->GenerateMediaKeyRequest(hdiMediaKeyRequestInfo, hdiMediaKeyRequest);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySessionService::GenerateLicenseRequest failed");
+        DRM_ERR_LOG("MediaKeySessionService::GenerateMediaKeyRequest failed");
         return ret;
     }
-    licenseRequest.requestType = (IMediaKeySessionService::RequestType)hdiLicenseRequest.requestType;
-    licenseRequest.mData.assign(hdiLicenseRequest.mData.begin(), hdiLicenseRequest.mData.end());
-    licenseRequest.mDefaultURL = hdiLicenseRequest.mDefaultUrl;
-    DRM_INFO_LOG("MediaKeySessionService::GenerateLicenseRequest exit.");
+    licenseRequest.requestType = (IMediaKeySessionService::RequestType)hdiMediaKeyRequest.requestType;
+    licenseRequest.mData.assign(hdiMediaKeyRequest.data.begin(), hdiMediaKeyRequest.data.end());
+    licenseRequest.mDefaultURL = hdiMediaKeyRequest.defaultUrl;
+    DRM_INFO_LOG("MediaKeySessionService::GenerateMediaKeyRequest exit.");
     return ret;
 }
 
-int32_t MediaKeySessionService::ProcessLicenseResponse(std::vector<uint8_t> &licenseId,
+int32_t MediaKeySessionService::ProcessMediaKeyResponse(std::vector<uint8_t> &licenseId,
     std::vector<uint8_t> &licenseResponse)
 {
-    DRM_INFO_LOG("MediaKeySessionService::ProcessLicenseResponse enter.");
+    DRM_INFO_LOG("MediaKeySessionService::ProcessMediaKeyResponse enter.");
     int32_t ret = DRM_OK;
-    ret = hdiMediaKeySession_->ProcessLicenseResponse(licenseResponse, licenseId);
+    ret = hdiMediaKeySession_->ProcessMediaKeyResponse(licenseResponse, licenseId);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySessionService::ProcessLicenseResponse failed");
+        DRM_ERR_LOG("MediaKeySessionService::ProcessMediaKeyResponse failed");
         return ret;
     }
-    DRM_INFO_LOG("bMediaKeySessionService::ProcessLicenseResponse exit.");
+    DRM_INFO_LOG("bMediaKeySessionService::ProcessMediaKeyResponse exit.");
     return ret;
 }
 
@@ -153,69 +154,70 @@ int32_t MediaKeySessionService::ProcessOfflineReleaseResponse(std::vector<uint8_
     return ret;
 }
 
-int32_t MediaKeySessionService::CheckLicenseStatus(std::map<std::string, MediaKeySessionKeyStatus> &licenseStatus)
+int32_t MediaKeySessionService::CheckMediaKeyStatus(std::map<std::string, std::string> &licenseStatus)
 {
-    DRM_INFO_LOG("MediaKeySessionService::CheckLicenseStatus enter.");
+    DRM_INFO_LOG("MediaKeySessionService::CheckMediaKeyStatus enter.");
     int32_t ret = DRM_OK;
-    std::map<std::string, OHOS::HDI::Drm::V1_0::MediaKeySessionKeyStatus> mp;
-    ret = hdiMediaKeySession_->CheckLicenseStatus(mp);
+    std::map<std::string, std::string> mp;
+    ret = hdiMediaKeySession_->CheckMediaKeyStatus(mp);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySessionService::CheckLicenseStatus failed");
+        DRM_ERR_LOG("MediaKeySessionService::CheckMediaKeyStatus failed");
         return ret;
     }
     for (auto m : mp) {
         std::string name = m.first;
-        MediaKeySessionKeyStatus status = (MediaKeySessionKeyStatus)m.second;
+        std::string status = m.second;
         licenseStatus.insert(std::make_pair(name, status));
     }
     if (licenseStatus.size() == 0) {
-        DRM_ERR_LOG("MediaKeySessionService::CheckLicenseStatus licenseStatus is empty.");
+        DRM_ERR_LOG("MediaKeySessionService::CheckMediaKeyStatus licenseStatus is empty.");
         return DRM_ERROR;
     }
-    DRM_INFO_LOG("MediaKeySessionService::CheckLicenseStatus exit.");
+    DRM_INFO_LOG("MediaKeySessionService::CheckMediaKeyStatus exit.");
     return ret;
 }
 
-int32_t MediaKeySessionService::RestoreOfflineLicense(std::vector<uint8_t> &licenseId)
+int32_t MediaKeySessionService::RestoreOfflineMediaKeys(std::vector<uint8_t> &licenseId)
 {
-    DRM_INFO_LOG("MediaKeySessionService::RestoreOfflineLicense enter.");
+    DRM_INFO_LOG("MediaKeySessionService::RestoreOfflineMediaKeys enter.");
     int32_t ret = DRM_OK;
-    ret = hdiMediaKeySession_->RestoreOfflineLicense(licenseId);
+    ret = hdiMediaKeySession_->RestoreOfflineMediaKeys(licenseId);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySessionService::RestoreOfflineLicense failed");
+        DRM_ERR_LOG("MediaKeySessionService::RestoreOfflineMediaKeys failed");
         return ret;
     }
-    DRM_INFO_LOG("MediaKeySessionService::RestoreOfflineLicense exit.");
+    DRM_INFO_LOG("MediaKeySessionService::RestoreOfflineMediaKeys exit.");
     return ret;
 }
 
-int32_t MediaKeySessionService::RemoveLicense()
+int32_t MediaKeySessionService::ClearMediaKeys()
 {
-    DRM_INFO_LOG("MediaKeySessionService::RemoveLicense enter.");
+    DRM_INFO_LOG("MediaKeySessionService::ClearMediaKeys enter.");
     int32_t ret = DRM_OK;
-    ret = hdiMediaKeySession_->RemoveLicense();
+    ret = hdiMediaKeySession_->ClearMediaKeys();
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySessionService::RemoveLicense failed");
+        DRM_ERR_LOG("MediaKeySessionService::ClearMediaKeys failed");
         return ret;
     }
-    DRM_INFO_LOG("MediaKeySessionService::RemoveLicense exit.");
+    DRM_INFO_LOG("MediaKeySessionService::ClearMediaKeys exit.");
     return ret;
 }
 
-int32_t MediaKeySessionService::GetSecurityLevel(IMediaKeySessionService::SecurityLevel *securityLevel)
+int32_t MediaKeySessionService::GetContentProtectionLevel(
+    IMediaKeySessionService::ContentProtectionLevel *securityLevel)
 {
-    DRM_INFO_LOG("MediaKeySessionService::GetSecurityLevel enter.");
+    DRM_INFO_LOG("MediaKeySessionService::GetContentProtectionLevel enter.");
     int32_t ret = DRM_OK;
 
-    OHOS::HDI::Drm::V1_0::SecurityLevel level;
-    ret = hdiMediaKeySession_->GetSecurityLevel(level);
+    OHOS::HDI::Drm::V1_0::ContentProtectionLevel level;
+    ret = hdiMediaKeySession_->GetContentProtectionLevel(level);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySessionService::GetSecurityLevel failed");
+        DRM_ERR_LOG("MediaKeySessionService::GetContentProtectionLevel failed");
         return ret;
     }
-    *securityLevel = (IMediaKeySessionService::SecurityLevel)level;
+    *securityLevel = (IMediaKeySessionService::ContentProtectionLevel)level;
 
-    DRM_INFO_LOG("MediaKeySessionService::GetSecurityLevel exit.");
+    DRM_INFO_LOG("MediaKeySessionService::GetContentProtectionLevel exit.");
     return ret;
 }
 

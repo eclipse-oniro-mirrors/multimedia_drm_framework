@@ -41,7 +41,7 @@
     do {                                                             \
         if ((lv)compare(rv)) {                                       \
             (ret) = (value);                                         \
-            goto (table);                                             \
+            goto(table);                                             \
         }                                                            \
     } while (false)
 #endif
@@ -70,7 +70,7 @@ public:
 
     virtual int32_t SendEventKeyChange(
         const std::map<std::vector<uint8_t>, OHOS::HDI::Drm::V1_0::MediaKeySessionKeyStatus> &keyStatus,
-        bool hasNewGoodLicense) = 0;
+        bool newKeysAvailable) = 0;
 
     virtual int32_t GetVersion(uint32_t &majorVer, uint32_t &minorVer)
     {
