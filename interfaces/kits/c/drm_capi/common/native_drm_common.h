@@ -375,11 +375,17 @@ typedef struct DRM_MediaKeyDescription {
 } DRM_MediaKeyDescription;
 
 /**
- * @brief Drm system uuid.
+ * @brief Drm system uuid len.
  * @since 11
  * @version 1.0
  */
 #define DRM_UUID_LEN 16
+/**
+ * @brief Max len of PSSH data.
+ * @since 11
+ * @version 1.0
+ */
+#define MAX_PSSH_DATA_LEN 2048
 
 /**
  * @brief PSSH info by uuid.
@@ -392,14 +398,21 @@ typedef struct DRM_PsshInfo {
      */
     char uuid[DRM_UUID_LEN];
     /**
-     * Unsigned char PSSH len.
+     * PSSH data len.
      */
-    uint32_t dataLen;
+    int32_t dataLen;
     /**
      * Unsigned char PSSH data.
      */
-    unsigned char *data;
+    unsigned char data[MAX_PSSH_DATA_LEN];
 } DRM_PsshInfo;
+
+/**
+ * @brief Max count of PSSH info.
+ * @since 11
+ * @version 1.0
+ */
+#define MAX_PSSH_INFO_COUNT 8
 
 /**
  * @brief MediaKeySystemInfo used for player to get media key system info from media source.
@@ -410,7 +423,7 @@ typedef struct DRM_MediaKeySystemInfo {
     /* PSSH count. */
     uint32_t psshCount;
     /* PSSH info. */
-    DRM_PsshInfo psshInfo[0];
+    DRM_PsshInfo psshInfo[MAX_PSSH_INFO_COUNT];
 } DRM_MediaKeySystemInfo;
 
 typedef void (*DRM_MediaKeySystemInfoCallback)(DRM_MediaKeySystemInfo* mediaKeySystemInfo);
