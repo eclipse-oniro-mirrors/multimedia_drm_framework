@@ -50,13 +50,15 @@ extern "C"
 /**
  * @brief Call back will be invoked when event triggers.
  * @param eventType Event type.
- * @param eventInfo Event info gotten from media key system.
+ * @param info Event info gotten from media key session.
+ * @param infoLen Event info len.
+ * @param extra Extra info gotten from media key session.
  * @return Drm_ErrCode.
  * @since 11
  * @version 1.0
  */
-typedef  Drm_ErrCode (*MediaKeySession_EventCallback)(DRM_ListenerType eventType, DRM_Uint8CharBufferPair *eventInfo);
-
+typedef  Drm_ErrCode (*MediaKeySession_EventCallback)(DRM_ListenerType eventType, unsigned char *info,
+    int32_t infoLen, char *extra);
 /**
  * @brief Call back will be invoked when key changes.
  * @param keysInfo Key info gotten from media key system.

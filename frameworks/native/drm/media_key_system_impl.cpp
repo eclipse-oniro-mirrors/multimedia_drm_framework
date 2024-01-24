@@ -371,7 +371,7 @@ std::string MediaKeySystemCallback::GetEventName(DrmEventType event)
     return eventMap_[eventType];
 }
 
-int32_t MediaKeySystemCallback::SendEvent(DrmEventType event, uint32_t extra, const std::vector<uint8_t> data)
+int32_t MediaKeySystemCallback::SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> data)
 {
     DRM_INFO_LOG("MediaKeySystemCallback SendEvent");
     std::string eventName = GetEventName(event);

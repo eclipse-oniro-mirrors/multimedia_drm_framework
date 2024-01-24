@@ -36,7 +36,7 @@ class MediaKeySystemImplCallback : public RefBase {
 public:
     MediaKeySystemImplCallback() = default;
     virtual ~MediaKeySystemImplCallback() = default;
-    virtual void SendEvent(const std::string event, uint32_t extra, const std::vector<uint8_t> data) = 0;
+    virtual void SendEvent(const std::string event, int32_t extra, const std::vector<uint8_t> data) = 0;
 };
 
 class MediaKeySystemImpl : public RefBase {
@@ -86,7 +86,7 @@ public:
     ~MediaKeySystemCallback();
     void InitEventMap();
     std::string GetEventName(DrmEventType event);
-    int32_t SendEvent(DrmEventType event, uint32_t extra, const std::vector<uint8_t> data) override;
+    int32_t SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> data) override;
 
 private:
     sptr<MediaKeySystemImpl> systemImpl_;

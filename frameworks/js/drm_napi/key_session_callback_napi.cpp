@@ -37,7 +37,7 @@ void MediaKeySessionCallbackNapi::ClearCallbackReference(const std::string event
     callbackMap_.erase(eventType);
 }
 
-void MediaKeySessionCallbackNapi::SendEvent(const std::string event, uint32_t extra, const std::vector<uint8_t> data)
+void MediaKeySessionCallbackNapi::SendEvent(const std::string event, int32_t extra, const std::vector<uint8_t> data)
 {
     DRM_INFO_LOG("MediaKeySessionCallbackNapi SendEvent %{public}s", event.c_str());
     DRM_NAPI_CHECK_AND_RETURN_LOG(!event.empty(), "Service event code error");

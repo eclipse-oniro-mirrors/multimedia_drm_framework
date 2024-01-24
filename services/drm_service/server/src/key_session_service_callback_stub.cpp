@@ -45,7 +45,7 @@ int32_t MediaKeySessionServiceCallbackStub::HandleSendEvent(MessageParcel &data)
 {
     DRM_INFO_LOG("MediaKeySessionServiceCallbackStub HandleSendEvent enter.");
     int32_t event = data.ReadInt32();
-    uint32_t extra = data.ReadUint32();
+    int32_t extra = data.ReadInt32();
     uint32_t dataSize = data.ReadUint32();
     std::vector<uint8_t> customizedData;
     if (dataSize != 0) {

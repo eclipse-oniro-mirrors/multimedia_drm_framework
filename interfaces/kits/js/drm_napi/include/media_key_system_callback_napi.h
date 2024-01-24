@@ -28,7 +28,7 @@ public:
     virtual ~MediaKeySystemCallbackNapi();
     void SetCallbackReference(const std::string eventType, sptr<CallBackPair> callbackPair);
     void ClearCallbackReference(const std::string eventType);
-    void SendEvent(const std::string event, uint32_t extra, const std::vector<uint8_t> data) override;
+    void SendEvent(const std::string event, int32_t extra, const std::vector<uint8_t> data) override;
 
 private:
     std::mutex mutex_;
