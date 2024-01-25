@@ -61,7 +61,7 @@ public:
     void InitEventMap()
     {
         eventMap_.insert({ static_cast<std::string>(MediaKeySystemEvent::EVENT_STR_PROVISION_REQUIRED),
-            LISTENER_PROVISION_REQUIRED });
+            EVENT_PROVISION_REQUIRED });
     }
 
     virtual ~MediaKeySystemCallbackCapi()
@@ -122,13 +122,13 @@ public:
     void InitEventMap()
     {
         eventMap_.insert({ static_cast<std::string>(MediaKeySessionEvent::EVENT_STR_EXPIRATION_UPDATED),
-            LISTENER_EXPIRATION_UPDATE });
+            EVENT_EXPIRATION_UPDATE });
         eventMap_.insert(
-            { static_cast<std::string>(MediaKeySessionEvent::EVENT_STR_KEY_EXPIRED), LISTENER_KEY_EXPIRED });
+            { static_cast<std::string>(MediaKeySessionEvent::EVENT_STR_KEY_EXPIRED), EVENT_KEY_EXPIRED });
         eventMap_.insert(
-            { static_cast<std::string>(MediaKeySessionEvent::EVENT_STR_KEY_NEEDED), LISTENER_KEY_REQUIRED });
+            { static_cast<std::string>(MediaKeySessionEvent::EVENT_STR_KEY_NEEDED), EVENT_KEY_REQUIRED });
         eventMap_.insert(
-            { static_cast<std::string>(MediaKeySessionEvent::EVENT_STR_VENDOR_DEFINED), LISTENER_VENDOR_DEFINED });
+            { static_cast<std::string>(MediaKeySessionEvent::EVENT_STR_VENDOR_DEFINED), EVENT_VENDOR_DEFINED });
     }
 
     virtual ~MediaKeySessionCallbackCapi()

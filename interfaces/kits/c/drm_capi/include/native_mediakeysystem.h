@@ -135,7 +135,7 @@ Drm_ErrCode OH_MediaKeySystem_SetConfigurationString(MediaKeySystem *mediaKeySys
  * @version 1.0
  */
 Drm_ErrCode OH_MediaKeySystem_GetConfigurationString(MediaKeySystem *mediaKeySystem,
-    const char *configName, char **value, int32_t *valueLen);
+    const char *configName, char *value, int32_t valueLen);
 /**
  * @brief Set media key system configuration value by name.
  * @param mediaKeySystem Media key system instance.
@@ -146,7 +146,7 @@ Drm_ErrCode OH_MediaKeySystem_GetConfigurationString(MediaKeySystem *mediaKeySys
  * @version 1.0
  */
 Drm_ErrCode OH_MediaKeySystem_SetConfigurationByteArray(MediaKeySystem *mediaKeySystem,
-    const char *configName, DRM_Uint8Buffer *value);
+    const char *configName, unsigned char *value, int32_t valueLen);
 /**
  * @brief Get media key system configuration value by name.
  * @param mediaKeySystem Media key system instance.
@@ -158,7 +158,7 @@ Drm_ErrCode OH_MediaKeySystem_SetConfigurationByteArray(MediaKeySystem *mediaKey
  * @version 1.0
  */
 Drm_ErrCode OH_MediaKeySystem_GetConfigurationByteArray(MediaKeySystem *mediaKeySystem,
-    const char *configName, unsigned char **value, int32_t *valueLen);
+    const char *configName, unsigned char *value, int32_t *valueLen);
 /**
  * @brief Get media key system statistics info.
  * @param mediaKeySystem Media key system instance.
@@ -167,7 +167,7 @@ Drm_ErrCode OH_MediaKeySystem_GetConfigurationByteArray(MediaKeySystem *mediaKey
  * @since 11
  * @version 1.0
  */
-Drm_ErrCode OH_MediaKeySystem_GetStatistics(MediaKeySystem *mediaKeySystem, DRM_Statistics **statistics);
+Drm_ErrCode OH_MediaKeySystem_GetStatistics(MediaKeySystem *mediaKeySystem, DRM_Statistics *statistics);
 /**
  * @brief Get the max content protection level media key system supported.
  * @param mediaKeySystem Media key system instance.
