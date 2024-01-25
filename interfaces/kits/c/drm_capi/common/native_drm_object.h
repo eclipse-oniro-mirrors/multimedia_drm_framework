@@ -108,7 +108,7 @@ public:
 private:
     MediaKeySystem_Callback callback_ = nullptr;
     std::mutex mutex_;
-    std::unordered_map<std::string, DRM_ListenerType> eventMap_;
+    std::unordered_map<std::string, DRM_EventType> eventMap_;
 };
 
 class MediaKeySessionCallbackCapi : public MediaKeySessionImplCallback {
@@ -218,7 +218,7 @@ public:
 private:
     struct MediaKeySession_Callback callback_ = {};
     std::mutex mutex_;
-    std::unordered_map<std::string, DRM_ListenerType> eventMap_;
+    std::unordered_map<std::string, DRM_EventType> eventMap_;
 };
 } // DrmStandard
 } // OHOS
