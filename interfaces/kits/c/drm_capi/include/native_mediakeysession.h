@@ -50,9 +50,7 @@ extern "C"
 /**
  * @brief Call back will be invoked when event triggers.
  * @param eventType Event type.
- * @param info Event info gotten from media key session.
- * @param infoLen Event info len.
- * @param extra Extra info gotten from media key session.
+ * @param eventInfo Event info gotten from media key system.
  * @return Drm_ErrCode.
  * @since 11
  * @version 1.0
@@ -94,7 +92,7 @@ typedef struct MediaKeySession_Callback {
  * @version 1.0
  */
 Drm_ErrCode OH_MediaKeySession_GenerateMediaKeyRequest(MediaKeySession *mediaKeySession,
-    DRM_MediaKeyRequestInfo *info, DRM_MediaKeyRequest **mediaKeyRequest);
+    DRM_MediaKeyRequestInfo *info, DRM_MediaKeyRequest *mediaKeyRequest);
 
 /**
  * @brief Process media key response.
@@ -118,7 +116,7 @@ Drm_ErrCode OH_MediaKeySession_ProcessMediaKeyResponse(MediaKeySession *keySessi
  * @version 1.0
  */
 Drm_ErrCode OH_MediaKeySession_CheckMediaKeyStatus(MediaKeySession *mediaKeySessoin,
-    DRM_MediaKeyDescription **mediaKeyDescription);
+    DRM_MediaKeyStatus *mediaKeyStatus);
 
 /**
  * @brief Clear media keys of the current session .
@@ -163,7 +161,7 @@ Drm_ErrCode OH_MediaKeySession_ProcessOfflineReleaseResponse(MediaKeySession *me
  * @version 1.0
  */
 Drm_ErrCode OH_MediaKeySession_RestoreOfflineMediaKeys(MediaKeySession *mediaKeySessoin,
-    DRM_Uint8Buffer *mediaKeyId);
+    unsigned char *offlineMediaKeyId, int32_t offlineMediaKeyIdLen);;
 
 /**
  * @brief Get content protection level of the session.

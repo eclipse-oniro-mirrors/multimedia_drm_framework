@@ -134,54 +134,51 @@ Drm_ErrCode OH_MediaKeySystem_SetConfigurationString(MediaKeySystem *mediaKeySys
 }
 
 Drm_ErrCode OH_MediaKeySystem_GetConfigurationString(MediaKeySystem *mediaKeySystem, const char *configName,
-    char **value, int32_t *valueLen)
+    char *value, int32_t valueLen)
 {
     DRM_INFO_LOG("OH_GetConfigurationString enter");
     DRM_CHECK_AND_RETURN_RET_LOG(
-        ((mediaKeySystem != nullptr) && (configName != nullptr) && (value != nullptr) && (valueLen != nullptr)),
-        DRM_ERR_INVALID_VAL, "OH_GetConfigurationString mediaKeySystem is nullptr!");
+        ((mediaKeySystem != nullptr) && (configName != nullptr) && (value != nullptr) && (valueLen != 0)),
+        DRM_ERR_INVALID_VAL, "OH_GetConfigurationString params is error!");
+
     std::string valuePtr;
-    int32_t result = DRM_ERR_OK;
+    int32_t result = DRM_ERR_UNKNOWN;
     std::string name = std::string(configName);
     DRM_CHECK_AND_RETURN_RET_LOG(name.size() != 0, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationString configName.size is not zero!");
-
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
     result = systemObject->systemImpl_->GetConfigurationString(name, valuePtr);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationString mediaKeySystemImpl::GetConfigurationString faild!");
-    *value = (char *)malloc(valuePtr.size());
-    DRM_CHECK_AND_RETURN_RET_LOG(*value != nullptr, DRM_ERR_INVALID_VAL, "OH_SetConfigurationString malloc faild!");
-    *valueLen = valuePtr.size();
-    if (valuePtr.size() == 0) {
-        DRM_DEBUG_LOG("valuePtr.data() is nullptr!");
-    }
-    int32_t ret = memcpy_s(*value, valuePtr.size(), valuePtr.c_str(), valuePtr.size());
+    DRM_CHECK_AND_RETURN_RET_LOG(valueLen >= valuePtr.size(), DRM_ERR_INVALID_VAL,
+        "OH_SetConfigurationString The space for value is too small");
+    memset_s(value, valueLen, 0, valueLen);
+    int32_t ret = memcpy_s(value, valuePtr.size(), valuePtr.c_str(), valuePtr.size());
     if (ret != 0) {
-        DRM_ERR_LOG("OH_GetConfigurationString memcpy_s faild!");
-        free(*value);
-        *value = nullptr;
-        return DRM_ERR_NO_MEMORY;
+        DRM_ERR_LOG("OH_GetConfigurationString The length of the obtained value is zero !");
+        return DRM_ERR_UNKNOWN;
     }
     DRM_INFO_LOG("OH_GetConfigurationString exit");
     return DRM_ERR_OK;
 }
 
 Drm_ErrCode OH_MediaKeySystem_SetConfigurationByteArray(MediaKeySystem *mediaKeySystem,
-    const char *configName, DRM_Uint8Buffer *value)
+    const char *configName, unsigned char *value, int32_t valueLen)
+
 {
     DRM_INFO_LOG("OH_SetConfigurationByteArray enter.");
-    DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySystem != nullptr) && (configName != nullptr) && (value != nullptr)),
-        DRM_ERR_INVALID_VAL, "OH_SetConfigurationByteArray mediaKeySystem is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        ((mediaKeySystem != nullptr) && (configName != nullptr) && (value != nullptr) && (valueLen > 0)),
+        DRM_ERR_INVALID_VAL, "OH_SetConfigurationByteArray params is error!");
 
     int32_t result = DRM_ERR_OK;
     std::string name(configName);
     DRM_CHECK_AND_RETURN_RET_LOG(name.size() != 0, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationByteArray configName.size is not zero!");
-    uint8_t *valueDataPtr = reinterpret_cast<uint8_t *>(value->buffer);
+    uint8_t *valueDataPtr = reinterpret_cast<uint8_t *>(value);
     DRM_CHECK_AND_RETURN_RET_LOG(valueDataPtr != nullptr, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationByteArray value is nullptr!");
-    std::vector<uint8_t> valueptr(valueDataPtr, valueDataPtr + value->bufferLen);
+    std::vector<uint8_t> valueptr(valueDataPtr, valueDataPtr + valueLen);
     DRM_CHECK_AND_RETURN_RET_LOG(valueptr.size() != 0, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationByteArray value.size is not zero!");
 
@@ -193,8 +190,8 @@ Drm_ErrCode OH_MediaKeySystem_SetConfigurationByteArray(MediaKeySystem *mediaKey
     return DRM_ERR_OK;
 }
 
-Drm_ErrCode OH_MediaKeySystem_GetConfigurationByteArray(MediaKeySystem *mediaKeySystem, const char *configName,
-    unsigned char **value, int32_t *valueLen)
+Drm_ErrCode OH_MediaKeySystem_GetConfigurationByteArray(MediaKeySystem *mediaKeySystem,
+    const char *configName, unsigned char *value, int32_t *valueLen)
 {
     DRM_INFO_LOG("OH_GetConfigurationByteArray enter");
     DRM_CHECK_AND_RETURN_RET_LOG(
@@ -211,14 +208,10 @@ Drm_ErrCode OH_MediaKeySystem_GetConfigurationByteArray(MediaKeySystem *mediaKey
     result = systemObject->systemImpl_->GetConfigurationByteArray(name, valuePtr);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_GetConfigurationByteArray mediaKeySystemImpl::GetConfigurationByteArray faild!");
+    DRM_CHECK_AND_RETURN_RET_LOG(*valueLen >= valuePtr.size(), DRM_ERR_INVALID_VAL,
+        "OH_GetConfigurationByteArray The space for value is too small!");
     *valueLen = valuePtr.size();
-    if (valuePtr.size() == 0) {
-        DRM_DEBUG_LOG("valuePtr.data() is nullptr!");
-        return DRM_ERR_OK;
-    }
-    *value = (unsigned char *)malloc(valuePtr.size());
-    DRM_CHECK_AND_RETURN_RET_LOG(*value != nullptr, DRM_ERR_INVALID_VAL, "OH_GetConfigurationByteArray malloc faild!");
-    int32_t ret = memcpy_s(*value, valuePtr.size(), valuePtr.data(), valuePtr.size());
+    int32_t ret = memcpy_s(value, valuePtr.size(), valuePtr.data(), valuePtr.size());
     if (ret != 0) {
         DRM_ERR_LOG("OH_GetConfigurationByteArray memcpy_s faild!");
         return DRM_ERR_NO_MEMORY;
@@ -227,57 +220,45 @@ Drm_ErrCode OH_MediaKeySystem_GetConfigurationByteArray(MediaKeySystem *mediaKey
     return DRM_ERR_OK;
 }
 
-static DRM_Statistics *vectorToClist(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics)
+static Drm_ErrCode vectorToClist(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics,
+    DRM_Statistics *statistics)
 {
     DRM_INFO_LOG("vectorToCArray start.");
-    int32_t max = sizeof(uint32_t);
-    int offset = metrics.size() * sizeof(DRM_CharBufferPair);
+    memset_s(statistics, sizeof(DRM_Statistics), 0, sizeof(DRM_Statistics));
+    statistics->statisticsCount = metrics.size();
     for (size_t i = 0; i < metrics.size(); i++) {
-        max += (sizeof(DRM_CharBufferPair) + metrics[i].value.size() + metrics[i].name.size());
-    }
-    DRM_Statistics *cArray = (DRM_Statistics *)malloc(max);
-    DRM_CHECK_AND_RETURN_RET_LOG(cArray != nullptr, nullptr, "malloc faild!");
-    cArray->statisticsCount = metrics.size();
-    DRM_CharBufferPair *dest = &((cArray->info)[0]);
-    for (size_t i = 0; i < metrics.size(); i++) {
-        dest[i].name.bufferLen = metrics[i].name.size();
-        dest[i].name.buffer = (char *)((uint8_t *)dest + offset);
-        int32_t ret =
-            memcpy_s(dest[i].name.buffer, metrics[i].name.size(), metrics[i].name.c_str(), metrics[i].name.size());
+        int32_t ret = memcpy_s(statistics->statisticsName[i],
+            metrics[i].name.size(), metrics[i].name.c_str(), metrics[i].name.size());
         if (ret != 0) {
             DRM_ERR_LOG(" memcpy_s faild!");
-            return nullptr;
+            return DRM_ERR_INVALID_VAL;
         }
-        offset += metrics[i].name.size();
-        dest[i].value.bufferLen = metrics[i].value.size();
-        dest[i].value.buffer = (char *)((uint8_t *)dest + offset);
-        ret =
-            memcpy_s(dest[i].value.buffer, metrics[i].value.size(), metrics[i].value.c_str(), metrics[i].value.size());
+        ret = memcpy_s(statistics->statisticsDescription[i],
+            metrics[i].value.size(), metrics[i].value.c_str(), metrics[i].value.size());
         if (ret != 0) {
             DRM_ERR_LOG(" memcpy_s faild!");
-            return nullptr;
+            return DRM_ERR_INVALID_VAL;
         }
-        offset += metrics[i].value.size();
     }
     DRM_INFO_LOG("vectorToCArray exit.");
-    return cArray;
+    return DRM_ERR_OK;
 }
 
-Drm_ErrCode OH_MediaKeySystem_GetStatistics(MediaKeySystem *mediaKeySystem, DRM_Statistics **statistics)
+Drm_ErrCode OH_MediaKeySystem_GetStatistics(MediaKeySystem *mediaKeySystem, DRM_Statistics *statistics)
 {
     DRM_INFO_LOG("OH_MediaKeySystem_GetStatistics enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySystem != nullptr) && (statistics != nullptr)), DRM_ERR_INVALID_VAL,
-        "OH_MediaKeySystem_GetStatistics mediaKeySystem is nullptr!");
+        "OH_MediaKeySystem_GetStatistics params is error!");
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
     std::vector<IMediaKeySystemService::MetircKeyValue> metrics;
     int32_t result = systemObject->systemImpl_->GetStatistics(metrics);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_GetStatistics systemObject is nullptr!");
-    *(statistics) = vectorToClist(metrics);
-    DRM_CHECK_AND_RETURN_RET_LOG(*statistics != nullptr, DRM_ERR_INVALID_VAL,
+    Drm_ErrCode ret = vectorToClist(metrics, statistics);
+    DRM_CHECK_AND_RETURN_RET_LOG(statistics != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_GetStatistics *DRM_Statistics is nullptr!");
     DRM_INFO_LOG("OH_MediaKeySystem_GetStatistics exit.");
-    return DRM_ERR_OK;
+    return ret;
 }
 
 Drm_ErrCode OH_MediaKeySystem_GetMaxContentProtectionLevel(MediaKeySystem *mediaKeySystem,
