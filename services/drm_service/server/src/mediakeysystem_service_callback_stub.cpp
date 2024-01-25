@@ -44,7 +44,7 @@ int32_t MeidaKeySystemServiceCallbackStub::HandleSendEvent(MessageParcel &data)
 {
     DRM_INFO_LOG("MeidaKeySystemServiceCallbackStub HandleSendEvent enter.");
     int32_t event = data.ReadInt32();
-    uint32_t extra = data.ReadUint32();
+    int32_t extra = data.ReadInt32();
     uint32_t dataSize = data.ReadUint32();
     std::vector<uint8_t> customizedData;
     for (uint32_t i = 0; i < dataSize; i++) {

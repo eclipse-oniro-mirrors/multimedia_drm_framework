@@ -83,19 +83,26 @@ public:
         callback_ = nullptr;
     }
 
-    void SendEvent(const std::string event, uint32_t extra, const std::vector<uint8_t> data) override
+    void SendEvent(const std::string event, int32_t extra, const std::vector<uint8_t> data) override
     {
         DRM_INFO_LOG("MediaKeySystemCallbackCapi SendEvent.");
         std::lock_guard<std::mutex> lock(mutex_);
-        DRM_CHECK_AND_RETURN_LOG(callback_ != nullptr, "Callback is nullptr");
         if (eventMap_.find(event) == eventMap_.end()) {
             DRM_ERR_LOG("MediaKeySystemCallbackCapi SendEvent failed, not find this event type.");
             return;
         }
-        DRM_Uint8CharBufferPair extraData;
-        extraData.key.bufferLen = data.size();
-        extraData.key.buffer = const_cast<uint8_t *>(data.data());
-        callback_(eventMap_[event], &extraData);
+
+        unsigned char *dataInfo = (unsigned char *)malloc(data.size());
+        DRM_CHECK_AND_RETURN_LOG(dataInfo != nullptr, "malloc faild!");
+        errno_t ret = memcpy_s(dataInfo, data.size(), data.data(), data.size());
+        DRM_CHECK_AND_RETURN_LOG(ret == EOK, "memcpy_s faild!");
+
+        DRM_CHECK_AND_RETURN_LOG(callback_ != nullptr, "callback_ is nullptr");
+        callback_(eventMap_[event], dataInfo, data.size(), std::to_string(extra).data());
+        if (dataInfo != nullptr) {
+            free(dataInfo);
+            dataInfo = nullptr;
+        }
     }
 
 private:
@@ -143,7 +150,7 @@ public:
         callback_ = {};
     }
 
-    void SendEvent(const std::string event, uint32_t extra, const std::vector<uint8_t> data) override
+    void SendEvent(const std::string event, int32_t extra, const std::vector<uint8_t> data) override
     {
         DRM_INFO_LOG("MediaKeySessionCallbackCapi SendEvent.");
         std::lock_guard<std::mutex> lock(mutex_);
@@ -152,52 +159,61 @@ public:
             DRM_ERR_LOG("MediaKeySystemCallbackCapi SendEvent failed, not find this event type.");
             return;
         }
-        DRM_Uint8CharBufferPair extraData;
-        extraData.key.bufferLen = data.size();
-        extraData.key.buffer = const_cast<uint8_t *>(data.data());
-        callback_.eventCallback(eventMap_[event], &extraData);
+
+        unsigned char *dataInfo = (unsigned char *)malloc(data.size());
+        DRM_CHECK_AND_RETURN_LOG(dataInfo != nullptr, "malloc faild!");
+        errno_t ret = memcpy_s(dataInfo, data.size(), data.data(), data.size());
+        DRM_CHECK_AND_RETURN_LOG(ret == EOK, "memcpy_s faild!");
+
+        DRM_CHECK_AND_RETURN_LOG(callback_.eventCallback != nullptr, "eventCallback is nullptr");
+        callback_.eventCallback(eventMap_[event], dataInfo, data.size(), std::to_string(extra).data());
+        if (dataInfo != nullptr) {
+            free(dataInfo);
+            dataInfo = nullptr;
+        }
     }
 
     void SendEventKeyChanged(std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> statusTable,
         bool hasNewGoodLicense) override
     {
         DRM_INFO_LOG("MediaKeySessionCallbackCapi SendEventKeyChanged.");
-        int32_t max = sizeof(uint32_t);
-        int32_t offset = sizeof(DRM_Uint8CharBufferPair) * statusTable.size();
-        for (auto it = statusTable.begin(); it != statusTable.end(); it++) {
-            max += (sizeof(DRM_Uint8CharBufferPair) + it->first.size() + sizeof(char));
-        }
-        DRM_KeysInfo *info = (DRM_KeysInfo *)malloc(max);
-        if (info == nullptr) {
-            DRM_ERR_LOG("MediaKeySystemCallbackCapi SendEvent failed, malloc failed.");
-            return;
-        }
-        info->keysCount = statusTable.size();
-        DRM_Uint8CharBufferPair *dest = &((info->keysInfo)[0]);
+        static std::unordered_map<MediaKeySessionKeyStatus, std::string> KeyStatusStringMap {
+            {MediaKeySessionKeyStatus::MEDIA_KEY_SESSION_KEY_STATUS_USABLE, "USABLE"},
+            {MediaKeySessionKeyStatus::MEDIA_KEY_SESSION_KEY_STATUS_EXPIRED, "EXPIRED"},
+            {MediaKeySessionKeyStatus::MEDIA_KEY_SESSION_KEY_STATUS_OUTPUT_NOT_ALLOWED, "OUTPUT_NOT_ALLOWED"},
+            {MediaKeySessionKeyStatus::MEDIA_KEY_SESSION_KEY_STATUS_PENDING, "PENDING"},
+            {MediaKeySessionKeyStatus::MEDIA_KEY_SESSION_KEY_STATUS_INTERNAL_ERROR, "INTERNAL_ERROR"},
+            {MediaKeySessionKeyStatus::MEDIA_KEY_SESSION_KEY_STATUS_USABLE_IN_FUTURE, "USABLE_IN_FUTURE"},
+        };
+
+        uint32_t tableCount = statusTable.size();
+        DRM_CHECK_AND_RETURN_LOG(tableCount <= MAX_KEY_INFO_COUNT, "DRM_KeysInfo has not enough space!");
+
+        DRM_KeysInfo info;
+        info.keysInfoCount = tableCount;
         uint32_t index = 0;
-        for (auto item : statusTable) {
-            uint32_t bufferSize = item.first.size();
-            info->keysInfo[index].key.buffer = ((uint8_t *)dest + offset);
-            int32_t ret = memcpy_s(info->keysInfo[index].key.buffer, bufferSize, item.first.data(), bufferSize);
-            if (ret != 0) {
-                DRM_ERR_LOG("MediaKeySystemCallbackCapi SendEvent failed, memcpy failed.");
-                free(info);
-                info = nullptr;
-                return;
-            }
-            offset += item.first.size();
-            info->keysInfo[index].key.bufferLen = item.first.size();
-            info->keysInfo[index].value.buffer = (char *)((uint8_t *)dest + offset);
-            *(info->keysInfo[index].value.buffer) = static_cast<char>(item.second);
-            info->keysInfo[index].value.bufferLen = sizeof(char);
-            offset += sizeof(char);
+        for (auto &item : statusTable) {
+            uint32_t keyIdSize = item.first.size();
+            DRM_CHECK_AND_RETURN_LOG(keyIdSize <= MAX_KEY_ID_LEN, "DRM_KeysInfo keyId has not enough space!");
+            errno_t ret = memset_s(info.keyId[index], MAX_KEY_ID_LEN, 0x00, MAX_KEY_ID_LEN);
+            DRM_CHECK_AND_RETURN_LOG(ret == EOK, "memset_s keyId failed!");
+            ret = memcpy_s(info.keyId[index], keyIdSize, item.first.data(), keyIdSize);
+            DRM_CHECK_AND_RETURN_LOG(ret == EOK, "memcpy_s keyId failed!");
+
+            std::string keyStatus = KeyStatusStringMap[item.second];
+            uint32_t statusSize = keyStatus.size();
+            DRM_CHECK_AND_RETURN_LOG(statusSize <= MAX_KEY_STATUS_VALUE_LEN,
+                "DRM_KeysInfo statusValue has not enough space!");
+            ret = memset_s(info.statusValue[index], MAX_KEY_STATUS_VALUE_LEN, 0x00, MAX_KEY_STATUS_VALUE_LEN);
+            DRM_CHECK_AND_RETURN_LOG(ret == EOK, "memset_s statusValue failed!");
+            ret = memcpy_s(info.statusValue[index], statusSize, keyStatus.data(), statusSize);
+            DRM_CHECK_AND_RETURN_LOG(ret == EOK, "memcpy_s statusValue failed!");
+
             index++;
         }
         std::lock_guard<std::mutex> lock(mutex_);
         DRM_CHECK_AND_RETURN_LOG(callback_.keyChangeCallback != nullptr, "keyChangeCallback is nullptr");
-        callback_.keyChangeCallback(info, hasNewGoodLicense);
-        free(info);
-        info = nullptr;
+        callback_.keyChangeCallback(&info, hasNewGoodLicense);
     }
 private:
     struct MediaKeySession_Callback callback_ = {};

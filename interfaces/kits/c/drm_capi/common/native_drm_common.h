@@ -351,15 +351,36 @@ typedef struct DRM_MediakeyIdArray {
 } DRM_MediakeyIdArray;
 
 /**
+ * @brief Max count of key info.
+ * @since 11
+ * @version 1.0
+ */
+#define MAX_KEY_INFO_COUNT 64
+/**
+ * @brief Max len of key id.
+ * @since 11
+ * @version 1.0
+ */
+#define MAX_KEY_ID_LEN 16
+/**
+ * @brief Max len of key status value.
+ * @since 11
+ * @version 1.0
+ */
+#define MAX_KEY_STATUS_VALUE_LEN 128
+
+/**
  * @brief Media key info.
  * @since 11
  * @version 1.0
  */
 typedef struct DRM_KeysInfo {
     /* Keys count. */
-    uint32_t keysCount;
-    /* Keys info. */
-    DRM_Uint8CharBufferPair keysInfo[0];
+    uint32_t keysInfoCount;
+    /* Key id. */
+    unsigned char keyId[MAX_KEY_INFO_COUNT][MAX_KEY_ID_LEN];
+    /* Key status value. */
+    char statusValue[MAX_KEY_INFO_COUNT][MAX_KEY_STATUS_VALUE_LEN];
 } DRM_KeysInfo;
 
 /**
@@ -386,7 +407,6 @@ typedef struct DRM_MediaKeyDescription {
  * @version 1.0
  */
 #define MAX_PSSH_DATA_LEN 2048
-
 /**
  * @brief PSSH info by uuid.
  * @since 11

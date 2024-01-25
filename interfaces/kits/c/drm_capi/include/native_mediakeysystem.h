@@ -53,12 +53,16 @@ extern "C" {
 /**
  * @brief Call back will be invoked when event triggers.
  * @param eventType Event type.
- * @param eventInfo Event info gotten from media key system.
+ * @param info Event info gotten from media key system.
+ * @param infoLen Event info len.
+ * @param extra Extra info gotten from media key system.
  * @return DRM_ERR_INVALID_VAL when the params checked failure, return DRM_ERR_OK when function called successfully.
  * @since 11
  * @version 1.0
  */
-typedef  Drm_ErrCode (*MediaKeySystem_Callback)(DRM_ListenerType eventType, DRM_Uint8CharBufferPair *eventInfo);
+typedef  Drm_ErrCode (*MediaKeySystem_Callback)(DRM_ListenerType eventType, unsigned char *info,
+    int32_t infoLen, char *extra);
+
 /**
  * @brief Get a media key system name by uuid.
  * @param uuid Secifies drm system.

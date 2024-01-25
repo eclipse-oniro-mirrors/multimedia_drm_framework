@@ -23,7 +23,7 @@ namespace DrmStandard {
 MediaKeySessionServiceCallbackProxy::MediaKeySessionServiceCallbackProxy(const sptr<IRemoteObject> &impl)
     : IRemoteProxy<IMediaKeySessionServiceCallback>(impl) {};
 
-int32_t MediaKeySessionServiceCallbackProxy::SendEvent(DrmEventType event, uint32_t extra,
+int32_t MediaKeySessionServiceCallbackProxy::SendEvent(DrmEventType event, int32_t extra,
     const std::vector<uint8_t> data)
 {
     MessageParcel parcelData;
@@ -38,7 +38,7 @@ int32_t MediaKeySessionServiceCallbackProxy::SendEvent(DrmEventType event, uint3
         DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent Write event failed");
         return IPC_PROXY_ERR;
     }
-    if (!parcelData.WriteUint32(extra)) {
+    if (!parcelData.WriteInt32(extra)) {
         DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent Write extra failed");
         return IPC_PROXY_ERR;
     }

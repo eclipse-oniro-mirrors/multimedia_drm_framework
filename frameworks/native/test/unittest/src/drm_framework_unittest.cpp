@@ -4029,13 +4029,15 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelNormal_064,
 #define DRM_SAMPLE_INFO_LOG(fmt, ...) fprintf(stdout, "[INFO] " fmt "\n", ##__VA_ARGS__)
 #define DRM_SAMPLE_ERROR_LOG(fmt, ...) fprintf(stdout, "[ERROR] " fmt "\n", ##__VA_ARGS__)
 
-Drm_ErrCode TestSystemEventCallBack(DRM_ListenerType eventType, DRM_Uint8CharBufferPair *eventInfo)
+Drm_ErrCode TestSystemEventCallBack(DRM_ListenerType eventType, unsigned char *info,
+    int32_t infoLen, char *extra)
 {
     DRM_SAMPLE_INFO_LOG("TestSystemEventCallBack ok");
     return DRM_ERR_OK;
 }
 
-Drm_ErrCode TestSessoinEventCallBack(DRM_ListenerType eventType, DRM_Uint8CharBufferPair *eventInfo)
+Drm_ErrCode TestSessoinEventCallBack(DRM_ListenerType eventType, unsigned char *info,
+    int32_t infoLen, char *extra)
 {
     DRM_SAMPLE_INFO_LOG("TestSessoinEventCallBack ok");
     return DRM_ERR_OK;

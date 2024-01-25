@@ -37,7 +37,7 @@ void MediaKeySystemCallbackNapi::ClearCallbackReference(const std::string eventT
     callbackMap_.erase(eventType);
 }
 
-void MediaKeySystemCallbackNapi::SendEvent(const std::string event, uint32_t extra,
+void MediaKeySystemCallbackNapi::SendEvent(const std::string event, int32_t extra,
     const std::vector<uint8_t> data)
 {
     DRM_INFO_LOG("MediaKeySystemCallbackNapi SendEvent %{public}s", event.c_str());
