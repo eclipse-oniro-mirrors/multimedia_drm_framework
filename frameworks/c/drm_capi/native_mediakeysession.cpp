@@ -75,29 +75,28 @@ Drm_ErrCode OH_MediaKeySession_GenerateMediaKeyRequest(MediaKeySession *mediaKey
     return result;
 }
 
-Drm_ErrCode OH_MediaKeySession_ProcessMediaKeyResponse(MediaKeySession *keySession, DRM_Uint8Buffer *response,
-    unsigned char **mediaKeyId, int32_t *mediaKeyIdLen)
+Drm_ErrCode OH_MediaKeySession_ProcessMediaKeyResponse(MediaKeySession *mediaKeySession, uint8_t *response,
+    int32_t responseLen, uint8_t *offlineMediaKeyId, int32_t *offlineMediaKeyIdLen)
 {
     DRM_CHECK_AND_RETURN_RET_LOG(
-        ((keySession != nullptr) && (mediaKeyIdLen != nullptr) && (response != nullptr) && (mediaKeyId != nullptr)),
-        DRM_ERR_INVALID_VAL, "params is nullptr!");
-    MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(keySession);
-    std::vector<uint8_t> licenseResponseVec(response->buffer, response->buffer + response->bufferLen);
+        ((mediaKeySession != nullptr) && (response != nullptr) && (responseLen != 0) &&
+        (offlineMediaKeyId != nullptr) && (offlineMediaKeyIdLen != nullptr)), DRM_ERR_INVALID_VAL,
+        "params is nullptr!");
+    MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySession);
+    std::vector<uint8_t> licenseResponseVec(response, response + responseLen);
     std::vector<uint8_t> keyIdVec;
     int32_t ret = sessionObject->sessionImpl_->ProcessMediaKeyResponse(keyIdVec, licenseResponseVec);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_INVALID_VAL, "got licenseResponse null!");
-    *mediaKeyIdLen = keyIdVec.size();
     if (keyIdVec.size() == 0) {
         DRM_DEBUG_LOG("keyIdVec.data() is nullptr!");
         return DRM_ERR_OK;
     }
-    *mediaKeyId = (unsigned char *)malloc(keyIdVec.size());
-    DRM_CHECK_AND_RETURN_RET_LOG(*mediaKeyId != nullptr, DRM_ERR_INVALID_VAL, "malloc faild!");
-    ret = memcpy_s(*mediaKeyId, keyIdVec.size(), keyIdVec.data(), keyIdVec.size());
+    ret = memcpy_s(offlineMediaKeyId, *offlineMediaKeyIdLen, keyIdVec.data(), keyIdVec.size());
     if (ret != 0) {
         DRM_ERR_LOG("OH_MediaKeySession_ProcessMediaKeyResponse memcpy_s faild!");
         return DRM_ERR_NO_MEMORY;
     }
+    *offlineMediaKeyIdLen = keyIdVec.size();
     return DRM_ERR_OK;
 }
 
@@ -157,48 +156,43 @@ Drm_ErrCode OH_MediaKeySession_ClearMediaKeys(MediaKeySession *mediaKeySessoin)
 }
 
 Drm_ErrCode OH_MediaKeySession_GenerateOfflineReleaseRequest(MediaKeySession *mediaKeySessoin,
-    DRM_Uint8Buffer *mediaKeyId, unsigned char **releaseRequest, int32_t *releaseRequestLen)
+    uint8_t *offlineMediaKeyId, int32_t offlineMediaKeyIdLen, uint8_t *releaseRequest, int32_t *releaseRequestLen)
 {
     DRM_INFO_LOG("OH_MediaKeySession_GenerateOfflineReleaseRequest enter");
-    DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySessoin != nullptr) && (mediaKeyId != nullptr) &&
-        (mediaKeyId->buffer != nullptr) && (mediaKeyId->bufferLen != 0) && (releaseRequest != nullptr) &&
-        (releaseRequestLen != nullptr)),
+    DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySessoin != nullptr) && (offlineMediaKeyId != nullptr) &&
+        (offlineMediaKeyIdLen != 0) && (releaseRequest != nullptr) && (releaseRequestLen != nullptr)),
         DRM_ERR_INVALID_VAL, "OH_MediaKeySession_GenerateOfflineReleaseRequest keySession is nullptr!");
     std::vector<uint8_t> ReleaseRequest;
-    uint8_t *licenseIdPtr = reinterpret_cast<uint8_t *>(mediaKeyId->buffer);
-    std::vector<uint8_t> licenseIdVec(licenseIdPtr, licenseIdPtr + mediaKeyId->bufferLen);
+    std::vector<uint8_t> licenseIdVec(offlineMediaKeyId, offlineMediaKeyId + offlineMediaKeyIdLen);
 
     MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySessoin);
 
     uint32_t result = sessionObject->sessionImpl_->GenerateOfflineReleaseRequest(licenseIdVec, ReleaseRequest);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_GenerateOfflineReleaseRequest GenerateOfflineReleaseRequest faild!");
-    *releaseRequestLen = ReleaseRequest.size();
-    if (*releaseRequestLen == 0) {
+    if (ReleaseRequest.size() == 0) {
         DRM_DEBUG_LOG("ReleaseRequest.data() is nullptr!");
         return DRM_ERR_OK;
     }
-    *releaseRequest = (unsigned char *)malloc(ReleaseRequest.size());
-    DRM_CHECK_AND_RETURN_RET_LOG(*releaseRequest != nullptr, DRM_ERR_INVALID_VAL, "malloc faild!");
-    int32_t ret = memcpy_s(*releaseRequest, ReleaseRequest.size(), ReleaseRequest.data(), ReleaseRequest.size());
+    int32_t ret = memcpy_s(releaseRequest, *releaseRequestLen, ReleaseRequest.data(), ReleaseRequest.size());
     if (ret != 0) {
         DRM_ERR_LOG("OH_MediaKeySession_GenerateOfflineReleaseRequest memcpy_s faild!");
         return DRM_ERR_INVALID_VAL;
     }
+    *releaseRequestLen = ReleaseRequest.size();
     DRM_INFO_LOG("OH_MediaKeySession_GenerateOfflineReleaseRequest exit");
     return DRM_ERR_OK;
 }
 
 Drm_ErrCode OH_MediaKeySession_ProcessOfflineReleaseResponse(MediaKeySession *mediaKeySessoin,
-    DRM_Uint8Buffer *mediaKeyId, DRM_Uint8Buffer *releaseReponse)
+    uint8_t *offlineMediaKeyId, int32_t offlineMediaKeyIdLen, uint8_t *releaseReponse, int32_t releaseReponseLen)
 {
     DRM_INFO_LOG("OH_MediaKeySession_ProcessOfflineReleaseResponse enter.");
-    DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySessoin != nullptr) && (mediaKeyId != nullptr) &&
-        (mediaKeyId->buffer != nullptr) && (mediaKeyId->bufferLen != 0) && (releaseReponse != nullptr) &&
-        (releaseReponse->buffer != nullptr) && (releaseReponse->bufferLen != 0)),
+    DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySessoin != nullptr) && (offlineMediaKeyId != nullptr) &&
+        (offlineMediaKeyIdLen != 0) && (releaseReponse != nullptr) && (releaseReponseLen != 0)),
         DRM_ERR_INVALID_VAL, "OH_MediaKeySession_ClearMediaKeys keySession is nullptr!");
-    std::vector<uint8_t> licenseIdVec(mediaKeyId->buffer, mediaKeyId->buffer + mediaKeyId->bufferLen);
-    std::vector<uint8_t> responseVec(releaseReponse->buffer, releaseReponse->buffer + releaseReponse->bufferLen);
+    std::vector<uint8_t> licenseIdVec(offlineMediaKeyId, offlineMediaKeyId + offlineMediaKeyIdLen);
+    std::vector<uint8_t> responseVec(releaseReponse, releaseReponse + releaseReponseLen);
     int32_t result = DRM_ERR_OK;
     MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySessoin);
     result = sessionObject->sessionImpl_->ProcessOfflineReleaseResponse(licenseIdVec, responseVec);
@@ -209,7 +203,7 @@ Drm_ErrCode OH_MediaKeySession_ProcessOfflineReleaseResponse(MediaKeySession *me
 }
 
 Drm_ErrCode OH_MediaKeySession_RestoreOfflineMediaKeys(MediaKeySession *mediaKeySessoin,
-    unsigned char *offlineMediaKeyId, int32_t offlineMediaKeyIdLen)
+    uint8_t *offlineMediaKeyId, int32_t offlineMediaKeyIdLen)
 {
     DRM_INFO_LOG("OH_MediaKeySession_RestoreOfflineLMediaKey enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(
