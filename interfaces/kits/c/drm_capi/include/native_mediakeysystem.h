@@ -60,7 +60,7 @@ extern "C" {
  * @since 11
  * @version 1.0
  */
-typedef  Drm_ErrCode (*MediaKeySystem_Callback)(DRM_ListenerType eventType, unsigned char *info,
+typedef  Drm_ErrCode (*MediaKeySystem_Callback)(DRM_EventType eventType, unsigned char *info,
     int32_t infoLen, char *extra);
 
 /**
