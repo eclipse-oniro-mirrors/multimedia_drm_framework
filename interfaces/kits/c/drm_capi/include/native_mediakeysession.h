@@ -55,7 +55,7 @@ extern "C"
  * @since 11
  * @version 1.0
  */
-typedef  Drm_ErrCode (*MediaKeySession_EventCallback)(DRM_ListenerType eventType, unsigned char *info,
+typedef  Drm_ErrCode (*MediaKeySession_EventCallback)(DRM_EventType eventType, unsigned char *info,
     int32_t infoLen, char *extra);
 /**
  * @brief Call back will be invoked when key changes.
