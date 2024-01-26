@@ -44,36 +44,37 @@ extern "C" {
 #endif
 
 /**
- * @brief Enumerates event types of listener.
+ * Enumerates event types of listener.
+ * @brief Content potection level.
  * @since 11
  * @version 1.0
  */
-typedef enum DRM_EventType {
-    /**
+typedef enum DRM_ListenerType {
+    /* *
      * DRM event base.
      */
-    EVENT_DRM_BASE = 200,
-    /**
+    LISTENER_DRM_EVENT = 200,
+    /* *
      * Provision required event.
      */
-    EVENT_PROVISION_REQUIRED = 201,
-    /**
+    LISTENER_PROVISION_REQUIRED = 201,
+    /* *
      * Media key required event.
      */
-    EVENT_KEY_REQUIRED = 202,
-    /**
+    LISTENER_KEY_REQUIRED = 202,
+    /* *
      * Media key expired event.
      */
-    EVENT_KEY_EXPIRED = 203,
-    /**
+    LISTENER_KEY_EXPIRED = 203,
+    /* *
      * Vendor defined event.
      */
-    EVENT_VENDOR_DEFINED = 204,
-    /**
+    LISTENER_VENDOR_DEFINED = 204,
+    /* *
      * Expiration update event.
      */
-    EVENT_EXPIRATION_UPDATE = 206,
-} DRM_EventType;
+    LISTENER_EXPIRATION_UPDATE = 206,
+} DRM_ListenerType;
 
 /**
  * @brief Content potection level.
