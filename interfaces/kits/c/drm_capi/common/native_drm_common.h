@@ -49,32 +49,32 @@ extern "C" {
  * @since 11
  * @version 1.0
  */
-typedef enum DRM_ListenerType {
+typedef enum DRM_EventType {
     /* *
      * DRM event base.
      */
-    LISTENER_DRM_EVENT = 200,
+    EVENT_DRM_EVENT = 200,
     /* *
      * Provision required event.
      */
-    LISTENER_PROVISION_REQUIRED = 201,
+    EVENT_PROVISION_REQUIRED = 201,
     /* *
      * Media key required event.
      */
-    LISTENER_KEY_REQUIRED = 202,
+    EVENT_KEY_REQUIRED = 202,
     /* *
      * Media key expired event.
      */
-    LISTENER_KEY_EXPIRED = 203,
+    EVENT_KEY_EXPIRED = 203,
     /* *
      * Vendor defined event.
      */
-    LISTENER_VENDOR_DEFINED = 204,
+    EVENT_VENDOR_DEFINED = 204,
     /* *
      * Expiration update event.
      */
-    LISTENER_EXPIRATION_UPDATE = 206,
-} DRM_ListenerType;
+    EVENT_EXPIRATION_UPDATE = 206,
+} DRM_EventType;
 
 /**
  * @brief Content potection level.
