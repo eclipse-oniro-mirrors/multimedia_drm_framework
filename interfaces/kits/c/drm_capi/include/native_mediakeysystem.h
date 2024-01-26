@@ -44,7 +44,6 @@
 #include <stdio.h>
 #include "native_drm_err.h"
 #include "native_drm_common.h"
-#include "native_mediakeysystem.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -60,19 +59,8 @@ extern "C" {
  * @since 11
  * @version 1.0
  */
-typedef  Drm_ErrCode (*MediaKeySystem_Callback)(DRM_EventType eventType, unsigned char *info,
+typedef  Drm_ErrCode (*MediaKeySystem_Callback)(DRM_EventType eventType, uint8_t *info,
     int32_t infoLen, char *extra);
-
-/**
- * @brief Get a media key system name by uuid.
- * @param uuid Secifies drm system.
- * @param name Name string to be gotten.
- * @param nameLen Name string len.
- * @return DRM_ERR_INVALID_VAL when the params checked failure, return DRM_ERR_OK when function called successfully.
- * @since 11
- * @version 1.0
- */
-Drm_ErrCode OH_MediaKeySystem_GetMediaKeySystemName(const char *uuid, unsigned char **name, int32_t *nameLen);
 
 /**
  * @brief Query if media key system is supported.
@@ -116,8 +104,8 @@ Drm_ErrCode OH_MediaKeySystem_Create(const char *name, MediaKeySystem **mediaKey
 /**
  * @brief Set media key system configuration value by name.
  * @param mediaKeySystem Media key system instance.
- * @param configName Configuratoin name string.
- * @param value Configuratoin vaule string to be set.
+ * @param configName Configuration name string.
+ * @param value Configuration vaule string to be set.
  * @return DRM_ERR_INVALID_VAL when the params checked failure, return DRM_ERR_OK when function called successfully.
  * @since 11
  * @version 1.0
@@ -127,9 +115,9 @@ Drm_ErrCode OH_MediaKeySystem_SetConfigurationString(MediaKeySystem *mediaKeySys
 /**
  * @brief Get media key system configuration value by name.
  * @param mediaKeySystem Media key system instance.
- * @param configName Configuratoin name string.
- * @param value Configuratoin vaule string to be get.
- * @param valueLen Configuratoin vaule string len.
+ * @param configName Configuration name string.
+ * @param value Configuration vaule string to be get.
+ * @param valueLen Configuration vaule string len for in buffer.
  * @return DRM_ERR_INVALID_VAL when the params checked failure, return DRM_ERR_OK when function called successfully.
  * @since 11
  * @version 1.0
@@ -139,26 +127,27 @@ Drm_ErrCode OH_MediaKeySystem_GetConfigurationString(MediaKeySystem *mediaKeySys
 /**
  * @brief Set media key system configuration value by name.
  * @param mediaKeySystem Media key system instance.
- * @param configName Configuratoin name string.
- * @param value Configuratoin vaule in byte array to be set.
+ * @param configName Configuration name string.
+ * @param value Configuration vaule in byte array to be set.
+ * @param valueLen Value array len.
  * @return DRM_ERR_INVALID_VAL when the params checked failure, return DRM_ERR_OK when function called successfully.
  * @since 11
  * @version 1.0
  */
 Drm_ErrCode OH_MediaKeySystem_SetConfigurationByteArray(MediaKeySystem *mediaKeySystem,
-    const char *configName, unsigned char *value, int32_t valueLen);
+    const char *configName, uint8_t *value, int32_t valueLen);
 /**
  * @brief Get media key system configuration value by name.
  * @param mediaKeySystem Media key system instance.
- * @param configName Configuratoin name string.
- * @param value Configuratoin vaule in byte array to be get.
- * @param valueLen Configuratoin vaule len in byte.
+ * @param configName Configuration name string.
+ * @param value Configuration vaule in byte array to be get.
+ * @param valueLen Configuration vaule len for in buffer and out data.
  * @return DRM_ERR_INVALID_VAL when the params checked failure, return DRM_ERR_OK when function called successfully.
  * @since 11
  * @version 1.0
  */
 Drm_ErrCode OH_MediaKeySystem_GetConfigurationByteArray(MediaKeySystem *mediaKeySystem,
-    const char *configName, unsigned char *value, int32_t *valueLen);
+    const char *configName, uint8_t *value, int32_t *valueLen);
 /**
  * @brief Get media key system statistics info.
  * @param mediaKeySystem Media key system instance.
@@ -206,60 +195,63 @@ Drm_ErrCode OH_MediaKeySystem_CreateMediaKeySession(MediaKeySystem *mediaKeySyst
  * @brief Generate a media key system provision request.
  * @param mediaKeySystem Media key system instance.
  * @param request Provision request data sent to provision server.
- * @param requestLen Provision request data len.
+ * @param requestLen Provision request data len for in buffer and out data.
  * @param defaultUrl Provision server URL.
- * @param defaultUrlLen Provision server URL len.
+ * @param defaultUrlLen Provision server URL len for in buffer.
  * @return DRM_ERR_INVALID_VAL when the params checked failure, return DRM_ERR_OK when function called successfully.
  * @since 11
  * @version 1.0
  */
-Drm_ErrCode OH_MediaKeySystem_GenerateKeySystemRequest(MediaKeySystem *mediaKeySystem, unsigned char **request,
-    int32_t *requestLen, char **defaultUrl, int32_t *defaultUrlLen);
+Drm_ErrCode OH_MediaKeySystem_GenerateKeySystemRequest(MediaKeySystem *mediaKeySystem, uint8_t *request,
+    int32_t *requestLen, char *defaultUrl, int32_t defaultUrlLen);
 
 /**
  * @brief Process a media key system provision response.
  * @param mediaKeySystem Media key system instance.
  * @param response The provision reponse will be processed.
+ * @param responseLen The response len.
  * @return DRM_ERR_INVALID_VAL when the params checked failure, return DRM_ERR_OK when function called successfully.
  * @since 11
  * @version 1.0
  */
-Drm_ErrCode OH_MediaKeySystem_ProcessKeySystemResponse(MediaKeySystem *mediaKeySystem, uint8_t *reponseData,
-    size_t reponseDataLen);
+Drm_ErrCode OH_MediaKeySystem_ProcessKeySystemResponse(MediaKeySystem *mediaKeySystem,
+    uint8_t *response, int32_t responseLen);
 
 /**
  * @brief Get offline media key ids .
  * @param mediaKeySystem Media key system instance.
- * @param mediaKeyIds Media key ids of all offline media keys.
+ * @param offlineMediaKeyIds Media key ids of all offline media keys.
  * @return DRM_ERR_INVALID_VAL when the params checked failure, return DRM_ERR_OK when function called successfully.
  * @since 11
  * @version 1.0
  */
 Drm_ErrCode OH_MediaKeySystem_GetOfflineMediaKeyIds(MediaKeySystem *mediaKeySystem,
-    DRM_MediakeyIdArray **mediaKeyIds);
+    DRM_OfflineMediakeyIdArray *offlineMediaKeyIds);
 
 /**
  * @brief Get offline media key status.
  * @param mediaKeySystem Media key system instance.
- * @param mediaKeyId Media key identifier.
+ * @param offlineMediaKeyId Offline media key identifier.
+ * @param offlineMediaKeyIdLen Offline media key identifier len.
  * @param status The media key status gotten.
  * @return DRM_ERR_INVALID_VAL when the params checked failure, return DRM_ERR_OK when function called successfully.
  * @since 11
  * @version 1.0
  */
 Drm_ErrCode OH_MediaKeySystem_GetOfflineMediaKeyStatus(MediaKeySystem *mediaKeySystem,
-    DRM_Uint8Buffer *mediaKeyId, DRM_OfflineMediaKeyStatus *status);
+    uint8_t *offlineMediaKeyId, int32_t offlineMediaKeyIdLen, DRM_OfflineMediaKeyStatus *status);
 
 /**
  * @brief Clear an offline media key by id.
  * @param mediaKeySystem Media key system instance.
- * @param mediaKeyId Media key identifier.
+ * @param offlineMediaKeyId Offline media key identifier.
+ * @param offlineMediaKeyIdLen Offline media key identifier len.
  * @return DRM_ERR_INVALID_VAL when the params checked failure, return DRM_ERR_OK when function called successfully.
  * @since 11
  * @version 1.0
  */
 Drm_ErrCode OH_MediaKeySystem_ClearOfflineMediaKeys(MediaKeySystem *mediaKeySystem,
-    DRM_Uint8Buffer *mediaKeyId);
+    uint8_t *offlineMediaKeyId, int32_t offlineMediaKeyIdLen);
 
 /**
  * @brief Get certificate status of media key system.
