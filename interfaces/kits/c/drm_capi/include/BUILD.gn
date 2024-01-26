@@ -1,4 +1,4 @@
-# Copyright (C) 2022 Huawei Device Co., Ltd.
+# Copyright (C) 2023 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -23,7 +23,7 @@ ohos_ndk_headers("native_drm_header") {
 
 ohos_ndk_library("libnative_drm") {
   ndk_description_file = "./libnative_drm.ndk.json"
-  min_compact_version = "1"
+  min_compact_version = "11"
   output_name = "native_drm"
   output_extension = "so"
 
