@@ -350,7 +350,7 @@ static int32_t ProcessGetContentProtectionLevel(MediaKeySessionServiceStub *stub
     MessageParcel &reply, MessageOption &option)
 {
     DRM_INFO_LOG("MediaKeySessionServiceStub MEDIA_KEY_SESSION_GETSECURITYLEVEL enter.");
-    IMediaKeySessionService::ContentProtectionLevel securityLevel = IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN;
+    IMediaKeySessionService::ContentProtectionLevel securityLevel = IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN;
     int32_t ret = stub->GetContentProtectionLevel(&securityLevel);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessGetContentProtectionLevel faild, errCode:%{public}d", ret);
     if (!reply.WriteInt32(securityLevel)) {

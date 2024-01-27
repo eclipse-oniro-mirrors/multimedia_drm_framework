@@ -216,8 +216,8 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
     }
     IMediaKeySessionService::ContentProtectionLevel securityLevel =
         (IMediaKeySessionService::ContentProtectionLevel)jsContentProtectionLevel;
-    if ((securityLevel < IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN) ||
-        (securityLevel >= IMediaKeySessionService::SECURITY_LEVEL_MAX)) {
+    if ((securityLevel < IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN) ||
+        (securityLevel >= IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_MAX)) {
         DRM_ERR_LOG("jsContentProtectionLevel is invalid");
         return nullptr;
     }
@@ -247,14 +247,14 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
 
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
     if (argc == ARGS_ZERO) {
-        jsContentProtectionLevel = IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN;
+        jsContentProtectionLevel = IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN;
     } else {
         DRM_CHECK_AND_RETURN_RET_LOG(napi_get_value_int32(env, argv[PARAM0], &jsContentProtectionLevel) == napi_ok,
             nullptr, "MediaKeySystemNapi napi get jsContentProtectionLevel failure!");
         IMediaKeySessionService::ContentProtectionLevel securityLevel =
             (IMediaKeySessionService::ContentProtectionLevel)jsContentProtectionLevel;
-        if ((securityLevel < IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN) ||
-            (securityLevel > IMediaKeySessionService::SECURITY_LEVEL_MAX)) {
+        if ((securityLevel < IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN) ||
+            (securityLevel > IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_MAX)) {
             DRM_ERR_LOG("ContentProtectionLevel is invalid");
             return nullptr;
         }
@@ -262,8 +262,8 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
     napi_get_undefined(env, &result);
     IMediaKeySessionService::ContentProtectionLevel securityLevel =
         static_cast<IMediaKeySessionService::ContentProtectionLevel>(jsContentProtectionLevel);
-    if (securityLevel < IMediaKeySessionService::ContentProtectionLevel::SECURITY_LEVEL_UNKNOWN ||
-        securityLevel > IMediaKeySessionService::ContentProtectionLevel::SECURITY_LEVEL_MAX) {
+    if (securityLevel < IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN ||
+        securityLevel > IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_MAX) {
         DRM_ERR_LOG("securityLevel is error!!!");
         return nullptr;
     }
@@ -481,7 +481,7 @@ napi_value MediaKeySystemNapi::GetMaxContentProtectionLevel(napi_env env, napi_c
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
 
     NAPI_ASSERT(env, argc <= ARGS_ONE, "requires 1 parameters maximum");
-    IMediaKeySessionService::ContentProtectionLevel level = IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN;
+    IMediaKeySessionService::ContentProtectionLevel level = IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
     if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
         int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->GetMaxContentProtectionLevel(&level);

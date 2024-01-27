@@ -73,8 +73,8 @@ bool OH_MediaKeySystem_IsSupported3(const char *uuid, const char *mimeType,
 
     IMediaKeySessionService::ContentProtectionLevel securityLevel =
         (IMediaKeySessionService::ContentProtectionLevel)ContentProtectionLevel;
-    if ((securityLevel < IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN) ||
-        (securityLevel >= IMediaKeySessionService::SECURITY_LEVEL_MAX)) {
+    if ((securityLevel < IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN) ||
+        (securityLevel >= IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_MAX)) {
         DRM_ERR_LOG("ContentProtectionLevel is invalid");
         return false;
     }
@@ -269,11 +269,11 @@ Drm_ErrCode OH_MediaKeySystem_GetMaxContentProtectionLevel(MediaKeySystem *media
         DRM_ERR_INVALID_VAL, "OH_GetMaxContentProtectionLevel mediaKeySystem is nullptr!");
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
     int32_t result = DRM_ERR_OK;
-    IMediaKeySessionService::ContentProtectionLevel level = IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN;
+    IMediaKeySessionService::ContentProtectionLevel level = IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN;
     result = systemObject->systemImpl_->GetMaxContentProtectionLevel(&level);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL, "OH_GetMaxContentProtectionLevel  fail!");
-    if (level < IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN ||
-        level > IMediaKeySessionService::SECURITY_LEVEL_MAX) {
+    if (level < IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN ||
+        level > IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_MAX) {
         DRM_ERR_LOG("mediaKeySystemImpl::GetMaxContentProtectionLevel faild!");
         return DRM_ERR_INVALID_VAL;
     }
