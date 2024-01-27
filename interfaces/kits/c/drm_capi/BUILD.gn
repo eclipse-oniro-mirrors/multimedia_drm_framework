@@ -66,6 +66,7 @@ ohos_shared_library("native_drm") {
     "hitrace:hitrace_meter",
     "ipc:ipc_core",
   ]
+  innerapi_tags = [ "ndk" ]
   output_extension = "so"
   subsystem_name = "multimedia"
   part_name = "drm_framework"
