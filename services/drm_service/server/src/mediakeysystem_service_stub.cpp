@@ -279,7 +279,8 @@ static int32_t ProcessGetMaxContentProtectionLevel(MediaKeySystemServiceStub *st
     MessageParcel &reply, MessageOption &option)
 {
     DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GETMAXSECURITYLEVEL enter.");
-    IMediaKeySessionService::ContentProtectionLevel securityLevel = IMediaKeySessionService::SECURITY_LEVEL_UNKNOWN;
+    IMediaKeySessionService::ContentProtectionLevel securityLevel =
+        IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN;
     int32_t ret = stub->GetMaxContentProtectionLevel(&securityLevel);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessGetMaxContentProtectionLevel faild, errCode:%{public}d",
         ret);

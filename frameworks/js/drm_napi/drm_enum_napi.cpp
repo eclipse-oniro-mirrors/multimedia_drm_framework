@@ -33,33 +33,14 @@ struct JsEnumString {
 static const std::vector<struct JsEnumInt> g_listenerType = {
     { "LISTENER_DRM_EVENT", IMediaKeySessionService::ListenerType::LISTENER_DRM_EVENT },
     { "LISTENER_PROVISION_REQUIRED", IMediaKeySessionService::ListenerType::LISTENER_PROVISION_REQUIRED },
-    { "LISTENER_KEY_NEEDED", IMediaKeySessionService::ListenerType::LISTENER_KEY_NEEDED },
+    { "LISTENER_KEY_REQUIRED", IMediaKeySessionService::ListenerType::LISTENER_KEY_REQUIRED },
     { "LISTENER_KEY_EXPIRED", IMediaKeySessionService::ListenerType::LISTENER_KEY_EXPIRED },
     { "LISTENER_VENDOR_DEFINED", IMediaKeySessionService::ListenerType::LISTENER_VENDOR_DEFINED },
     { "LISTENER_EXPIRATION_UPDATE", IMediaKeySessionService::ListenerType::LISTENER_EXPIRATION_UPDATE },
     { "LISTENER_KEY_CHANGE", IMediaKeySessionService::ListenerType::LISTENER_KEY_CHANGE },
 };
 
-static const std::vector<struct JsEnumInt> g_hdcpLevel = {
-    { "HDCP_UNKNOWN", IMediaKeySystemService::HdcpLevel::HDCP_UNKNOWN },
-    { "HDCP_NONE", IMediaKeySystemService::HdcpLevel::HDCP_NONE },
-    { "HDCP_V1", IMediaKeySystemService::HdcpLevel::HDCP_V1 },
-    { "HDCP_V2", IMediaKeySystemService::HdcpLevel::HDCP_V2 },
-    { "HDCP_V2_1", IMediaKeySystemService::HdcpLevel::HDCP_V2_1 },
-    { "HDCP_V2_2", IMediaKeySystemService::HdcpLevel::HDCP_V2_2 },
-    { "HDCP_V2_3", IMediaKeySystemService::HdcpLevel::HDCP_V2_3 },
-    { "HDCP_NO_OUTPUT", IMediaKeySystemService::HdcpLevel::HDCP_NO_OUTPUT },
-};
-
-static const std::vector<struct JsEnumInt> g_adcpLevel = {
-    { "ADCP_UNKNOWN", IMediaKeySystemService::AdcpLevel::ADCP_UNKNOWN },
-    { "ADCP_V1_L1", IMediaKeySystemService::AdcpLevel::ADCP_V1_L1 },
-    { "ADCP_V1_L2", IMediaKeySystemService::AdcpLevel::ADCP_V1_L2 },
-    { "ADCP_V1_L3", IMediaKeySystemService::AdcpLevel::ADCP_V1_L3 },
-    { "ADCP_NO_OUTPUT", IMediaKeySystemService::AdcpLevel::ADCP_NO_OUTPUT },
-};
-
-static const std::vector<struct JsEnumInt> g_licenseType = {
+static const std::vector<struct JsEnumInt> g_mediaKeyType = {
     { "MEDIA_KEY_TYPE_OFFLINE", IMediaKeySessionService::MediaKeyType::LICENSETYPE_OFFLINE },
     { "MEDIA_KEY_TYPE_ONLINE", IMediaKeySessionService::MediaKeyType::LICENSETYPE_ONLINE },
 };
@@ -80,7 +61,7 @@ static const std::vector<struct JsEnumInt> g_certificateStatus = {
     { "CERT_STATUS_UNAVAILABLE", IMediaKeySystemService::CertificateStatus::CERT_STATUS_UNAVAILABLE },
 };
 
-static const std::vector<struct JsEnumInt> g_requestType = {
+static const std::vector<struct JsEnumInt> g_mediaKeyRequestType = {
     { "MEDIA_KEY_REQUEST_TYPE_UNKNOWN", IMediaKeySessionService::RequestType::REQUEST_TYPE_UNKNOWN },
     { "MEDIA_KEY_REQUEST_TYPE_INITIAL", IMediaKeySessionService::RequestType::REQUEST_TYPE_INITIAL },
     { "MEDIA_KEY_REQUEST_TYPE_RENEWAL", IMediaKeySessionService::RequestType::REQUEST_TYPE_RENEWAL },
@@ -89,15 +70,27 @@ static const std::vector<struct JsEnumInt> g_requestType = {
     { "MEDIA_KEY_REQUEST_TYPE_UPDATE", IMediaKeySessionService::RequestType::REQUEST_TYPE_UPDATE },
 };
 
-static const std::vector<struct JsEnumInt> g_securityLevel = {
-    { "CONTENT_PROTECTION_LEVEL_UNKNOWN", IMediaKeySessionService::ContentProtectionLevel::SECURITY_LEVEL_UNKNOWN },
-    { "CONTENT_PROTECTION_LEVEL_SW_CRYPTO", IMediaKeySessionService::ContentProtectionLevel::SECURITY_LEVEL_SW_CRYPTO },
-    { "CONTENT_PROTECTION_LEVEL_HW_CRYPTO", IMediaKeySessionService::ContentProtectionLevel::SECURITY_LEVEL_HW_CRYPTO },
-    { "CONTENT_PROTECTION_LEVEL_ENHANCED_HW", IMediaKeySessionService::ContentProtectionLevel::SECURITY_LEVEL_HW_ALL },
-    { "CONTENT_PROTECTION_LEVEL_MAX", IMediaKeySessionService::ContentProtectionLevel::SECURITY_LEVEL_MAX },
+static const std::vector<struct JsEnumInt> g_drmErrorCode = {
+    { "ERROR_UNKNOWN", 24700101 },
+    { "MAX_SYSTEM_NUM_REACHED", 24700103 },
+    { "MAX_SESSION_NUM_REACHED", 24700104 },
+    { "SERVICE_FATAL_ERROR", 24700201 },
 };
 
-static const std::vector<struct JsEnumString> g_configName = {
+static const std::vector<struct JsEnumInt> g_contentProtectionLevel = {
+    { "CONTENT_PROTECTION_LEVEL_UNKNOWN",
+        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN },
+    { "CONTENT_PROTECTION_LEVEL_SW_CRYPTO",
+        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_SW_CRYPTO },
+    { "CONTENT_PROTECTION_LEVEL_HW_CRYPTO",
+        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_HW_CRYPTO },
+    { "CONTENT_PROTECTION_LEVEL_ENHANCED_HW",
+        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_ENHANCED_HW },
+    { "CONTENT_PROTECTION_LEVEL_MAX",
+        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_MAX },
+};
+
+static const std::vector<struct JsEnumString> g_preDefinedConfigName = {
     { "CONFIG_DEVICE_VENDOR", "vendor" },
     { "CONFIG_DEVICE_VERSION", "version" },
     { "CONFIG_DEVICE_DESCRIPTION", "description" },
@@ -107,27 +100,18 @@ static const std::vector<struct JsEnumString> g_configName = {
     { "CONFIG_SESSION_CURRENT", "currentSessionNum" },
 };
 
-static const std::vector<struct JsEnumString> g_metricsName = {
-    { "METRICS_SESSION_CURRENT", "currentSessionNum" },
-    { "METRICS_DEVICE_VERSION", "version" },
-    { "METRICS_DECRYPT_NUMBER", "decryptNumber" },
-    { "METRICS_ERRO_DECRYPT_NUMBER", "errorDecryptNumber" },
-};
-
 static const std::map<std::string_view, const std::vector<struct JsEnumInt> &> g_intEnumClassMap = {
     { "ListenerType", g_listenerType },
-    { "HdcpLevel", g_hdcpLevel },
-    { "AdcpLevel", g_adcpLevel },
-    { "MediaKeyType", g_licenseType },
+    { "MediaKeyType", g_mediaKeyType },
     { "OfflineMediaKeyStatus", g_offlineMediaKeyStatus },
     { "CertificateStatus", g_certificateStatus },
-    { "RequestType", g_requestType },
-    { "ContentProtectionLevel", g_securityLevel },
+    { "MediaKeyRequestType", g_mediaKeyRequestType },
+    { "DrmErrorCode", g_drmErrorCode },
+    { "ContentProtectionLevel", g_contentProtectionLevel },
 };
 
 static const std::map<std::string_view, const std::vector<struct JsEnumString> &> g_stringEnumClassMap = {
-    { "ConfigName", g_configName },
-    { "StatisticsName", g_metricsName },
+    { "PreDefinedConfigName", g_preDefinedConfigName },
 };
 
 napi_value DrmEnumNapi::JsEnumIntInit(napi_env env, napi_value exports)

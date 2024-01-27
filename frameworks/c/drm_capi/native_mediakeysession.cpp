@@ -227,7 +227,7 @@ Drm_ErrCode OH_MediaKeySession_GetContentProtectionLevel(MediaKeySession *mediaK
         DRM_ERR_INVALID_VAL, "OH_MediaKeySession_GetContentProtectionLevel keySession is nullptr!");
     int32_t result = DRM_ERR_OK;
     IMediaKeySessionService::ContentProtectionLevel level =
-        IMediaKeySessionService::ContentProtectionLevel::SECURITY_LEVEL_UNKNOWN;
+        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN;
     MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySessoin);
     result = sessionObject->sessionImpl_->GetContentProtectionLevel(&level);
     DRM_CHECK_AND_RETURN_RET_LOG((result == DRM_ERR_OK), DRM_ERR_INVALID_VAL,

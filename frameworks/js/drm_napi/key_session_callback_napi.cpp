@@ -86,9 +86,9 @@ void MediaKeySessionCallbackNapi::SendEventKeyChanged(
     napi_value retVal;
     napi_status state;
 
-    DRM_NAPI_CHECK_AND_RETURN_LOG(callbackMap_.find("keyChanged") != callbackMap_.end(),
+    DRM_NAPI_CHECK_AND_RETURN_LOG(callbackMap_.find("keysChange") != callbackMap_.end(),
         "Not register this callback yet");
-    sptr<CallBackPair> item = callbackMap_["keyChanged"];
+    sptr<CallBackPair> item = callbackMap_["keysChange"];
 
     DRM_NAPI_CHECK_AND_RETURN_LOG(item != nullptr, "sptr callbackPair is nullptr");
     napi_env env = item->GetEnv();
@@ -148,7 +148,7 @@ void MediaKeySessionCallbackNapi::SendEventKeyChanged(
     napi_value args[ARGS_TWO] = {map, hasNewGoodLicenseValue};
     napi_get_reference_value(env, callbackRef, &jsCallback);
     state = napi_call_function(env, nullptr, jsCallback, ARGS_TWO, args, &retVal);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok, "failed to napi_call_function keyChanged");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok, "failed to napi_call_function keysChange");
 }
 }
 }

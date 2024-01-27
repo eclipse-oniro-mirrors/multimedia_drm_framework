@@ -3763,7 +3763,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CreateMediaKeySessionAbNormal_082, T
     if (mediaKeySystem) {
         MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
         IMediaKeySessionService::ContentProtectionLevel securityLevel =
-            IMediaKeySessionService::SECURITY_LEVEL_SW_CRYPTO;
+            IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
         OHOS::sptr<MediaKeySessionImpl> keySessionImpl = nullptr;
         systemObject->systemImpl_->~MediaKeySystemImpl();
         systemObject->systemImpl_->CreateMediaKeySession(securityLevel, &keySessionImpl);
