@@ -59,7 +59,8 @@ void MediaKeySystemCallbackNapi::SendEvent(const std::string event, int32_t extr
     napi_create_object(env, &result);
 
     napi_value extraValue;
-    napi_create_uint32(env, extra, &extraValue);
+    std::string extraData = std::to_string(extra);
+    napi_create_string_utf8(env, extraData.c_str(), NAPI_AUTO_LENGTH, &extraValue);
     napi_value array = nullptr;
     state = napi_create_array_with_length(env, data.size(), &array);
     DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok,
@@ -69,7 +70,10 @@ void MediaKeySystemCallbackNapi::SendEvent(const std::string event, int32_t extr
         (void)napi_create_uint32(env, data[i], &number);
         (void)napi_set_element(env, array, i, number);
     }
-    napi_value args[ARGS_TWO] = {extraValue, array};
+    napi_value args[1] = { nullptr };
+    napi_create_object(env, &args[0]);
+    napi_set_named_property(env, args[0], "info", array);
+    napi_set_named_property(env, args[0], "extraInfo", extraValue);
     napi_get_reference_value(env, callbackRef, &jsCallback);
     state = napi_call_function(env, nullptr, jsCallback, ARGS_TWO, args, &retVal);
     DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok,

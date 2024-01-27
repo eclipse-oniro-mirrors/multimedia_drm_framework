@@ -53,7 +53,7 @@ napi_value MediaKeySessionNapi::Init(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("generateOfflineReleaseRequest", GenerateOfflineReleaseRequest),
         DECLARE_NAPI_FUNCTION("processOfflineReleaseResponse", ProcessOfflineReleaseResponse),
         DECLARE_NAPI_FUNCTION("checkMediaKeyStatus", CheckMediaKeyStatus),
-        DECLARE_NAPI_FUNCTION("restoreOfflineMediaKey", RestoreOfflineMediaKeys),
+        DECLARE_NAPI_FUNCTION("restoreOfflineMediaKeys", RestoreOfflineMediaKeys),
         DECLARE_NAPI_FUNCTION("clearMediaKeys", ClearMediaKeys),
         DECLARE_NAPI_FUNCTION("getContentProtectionLevel", GetContentProtectionLevel),
         DECLARE_NAPI_FUNCTION("requireSecureDecoderModule", RequireSecureDecoderModule),
