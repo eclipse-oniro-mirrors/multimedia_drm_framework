@@ -78,11 +78,16 @@ static const std::vector<struct JsEnumInt> g_drmErrorCode = {
 };
 
 static const std::vector<struct JsEnumInt> g_contentProtectionLevel = {
-    { "CONTENT_PROTECTION_LEVEL_UNKNOWN", IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN },
-    { "CONTENT_PROTECTION_LEVEL_SW_CRYPTO", IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_SW_CRYPTO },
-    { "CONTENT_PROTECTION_LEVEL_HW_CRYPTO", IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_HW_CRYPTO },
-    { "CONTENT_PROTECTION_LEVEL_ENHANCED_HW", IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_ENHANCED_HW },
-    { "CONTENT_PROTECTION_LEVEL_MAX", IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_MAX },
+    { "CONTENT_PROTECTION_LEVEL_UNKNOWN",
+        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN },
+    { "CONTENT_PROTECTION_LEVEL_SW_CRYPTO",
+        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_SW_CRYPTO },
+    { "CONTENT_PROTECTION_LEVEL_HW_CRYPTO",
+        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_HW_CRYPTO },
+    { "CONTENT_PROTECTION_LEVEL_ENHANCED_HW",
+        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_ENHANCED_HW },
+    { "CONTENT_PROTECTION_LEVEL_MAX",
+        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_MAX },
 };
 
 static const std::vector<struct JsEnumString> g_preDefinedConfigName = {
