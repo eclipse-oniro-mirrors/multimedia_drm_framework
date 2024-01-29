@@ -216,17 +216,17 @@ static napi_value DealMediaKeyRequest(napi_env env, IMediaKeySessionService::Med
     napi_value result = nullptr;
 
     if (licenseRequest.requestType == IMediaKeySessionService::REQUEST_TYPE_UNKNOWN) {
-        requestTypeEnum = "ALGTYPE_UNENCRYPTED";
+        requestTypeEnum = "MEDIA_KEY_REQUEST_TYPE_UNKNOWN";
     } else if (licenseRequest.requestType == IMediaKeySessionService::REQUEST_TYPE_INITIAL) {
-        requestTypeEnum = "REQUEST_TYPE_INITIAL";
+        requestTypeEnum = "MEDIA_KEY_REQUEST_TYPE_INITIAL";
     } else if (licenseRequest.requestType == IMediaKeySessionService::REQUEST_TYPE_RENEWAL) {
-        requestTypeEnum = "REQUEST_TYPE_RENEWAL";
+        requestTypeEnum = "MEDIA_KEY_REQUEST_TYPE_RENEWAL";
     } else if (licenseRequest.requestType == IMediaKeySessionService::REQUEST_TYPE_RELEASE) {
-        requestTypeEnum = "REQUEST_TYPE_RELEASE";
+        requestTypeEnum = "MEDIA_KEY_REQUEST_TYPE_RELEASE";
     } else if (licenseRequest.requestType == IMediaKeySessionService::REQUEST_TYPE_NONE) {
-        requestTypeEnum = "REQUEST_TYPE_NONE";
+        requestTypeEnum = "MEDIA_KEY_REQUEST_TYPE_NONE";
     } else if (licenseRequest.requestType == IMediaKeySessionService::REQUEST_TYPE_UPDATE) {
-        requestTypeEnum = "REQUEST_TYPE_UPDATE";
+        requestTypeEnum = "MEDIA_KEY_REQUEST_TYPE_UPDATE";
     } else if (licenseRequest.requestType < IMediaKeySessionService::REQUEST_TYPE_UNKNOWN ||
         licenseRequest.requestType > IMediaKeySessionService::REQUEST_TYPE_UPDATE) {
         DRM_ERR_LOG("Do not understand licenseRequest.requestType enum!");
