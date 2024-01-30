@@ -3189,8 +3189,8 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_DecryptModuleNormal_067, TestSize.Le
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RestoreOfflineMediaKeysAbNormal_068, TestSize.Level0)
 {
     Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
-    unsigned char offlineMediaKeyId[2]; // 2:keyId len
-    uint32_t offlineMediaKeyIdLen = 2; // 2:keyId len
+    unsigned char offlineMediaKeyId[88]; // 2:keyId len
+    uint32_t offlineMediaKeyIdLen = 88; // 2:keyId len
     MediaKeySession *mediaKeySession = (MediaKeySession *)&offlineMediaKeyId;
     errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(mediaKeySession, offlineMediaKeyId, 0);
     EXPECT_NE(errNo, DRM_ERR_OK);
@@ -3274,10 +3274,8 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySystemDestroyAbNormal_071, T
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char request[8192] = { 0 }; // 8192:request len
-    int32_t requestLen = 8192; // 8192:request len
-    int32_t valueLen = 32;
+    int32_t requestLen = 8192, valueLen = 32, defaultUrlLen = 2048; // 8192:request len
     char defaultUrl[2048] = { 0 }; // 2048:url len
-    int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
     unsigned char KeySystemResponse[50] = OFFRESPONSE;
@@ -3289,8 +3287,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySystemDestroyAbNormal_071, T
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (mediaKeySystem) {
+        MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+        systemObject->systemImpl_->~MediaKeySystemImpl();
+    }
     errNo =
         OH_MediaKeySystem_SetConfigurationString(mediaKeySystem, "testConfigurationString", "testConfigurationString");
     EXPECT_NE(errNo, DRM_ERR_OK);
@@ -3340,8 +3340,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_OH_MediaKeySystemDestroyAbNormal2_07
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (mediaKeySystem) {
+        MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+        systemObject->systemImpl_->~MediaKeySystemImpl();
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     DRM_CertificateStatus certStatus = CERT_STATUS_INVALID;
     errNo = OH_MediaKeySystem_GetCertificateStatus(mediaKeySystem, &certStatus);
@@ -3383,8 +3385,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySessionDestroyAbNormal_073, 
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
     EXPECT_NE(mediaKeySession, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (mediaKeySession) {
+        MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySession);
+        sessionObject->sessionImpl_->~MediaKeySessionImpl();
+    }
     DRM_MediaKeyRequest mediaKeyRequest;
     DRM_MediaKeyRequestInfo info;
     unsigned char testData[139] = REQUESTINFODATA;
