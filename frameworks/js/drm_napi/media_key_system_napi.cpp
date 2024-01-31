@@ -35,6 +35,9 @@ MediaKeySystemNapi::~MediaKeySystemNapi()
     if (mediaKeySystemImpl_) {
         mediaKeySystemImpl_ = nullptr;
     }
+    if (mediaKeySystemCallbackNapi_) {
+        mediaKeySystemCallbackNapi_ = nullptr;
+    }
     DRM_INFO_LOG("MediaKeySystemNapi::~MediaKeySystemNapi exit.");
 }
 
