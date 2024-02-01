@@ -150,7 +150,7 @@ Drm_ErrCode OH_MediaKeySystem_GetConfigurationString(MediaKeySystem *mediaKeySys
     result = systemObject->systemImpl_->GetConfigurationString(name, valuePtr);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationString mediaKeySystemImpl::GetConfigurationString faild!");
-    DRM_CHECK_AND_RETURN_RET_LOG(valueLen >= valuePtr.size(), DRM_ERR_INVALID_VAL,
+    DRM_CHECK_AND_RETURN_RET_LOG(valueLen >= (int32_t)valuePtr.size(), DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationString The space for value is too small");
     memset_s(value, valueLen, 0, valueLen);
     int32_t ret = memcpy_s(value, valuePtr.size(), valuePtr.c_str(), valuePtr.size());
@@ -208,7 +208,7 @@ Drm_ErrCode OH_MediaKeySystem_GetConfigurationByteArray(MediaKeySystem *mediaKey
     result = systemObject->systemImpl_->GetConfigurationByteArray(name, valuePtr);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_GetConfigurationByteArray mediaKeySystemImpl::GetConfigurationByteArray faild!");
-    DRM_CHECK_AND_RETURN_RET_LOG(*valueLen >= valuePtr.size(), DRM_ERR_INVALID_VAL,
+    DRM_CHECK_AND_RETURN_RET_LOG(*valueLen >= (int32_t)valuePtr.size(), DRM_ERR_INVALID_VAL,
         "OH_GetConfigurationByteArray The space for value is too small!");
     *valueLen = valuePtr.size();
     int32_t ret = memcpy_s(value, valuePtr.size(), valuePtr.data(), valuePtr.size());
