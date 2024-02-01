@@ -81,9 +81,7 @@ void DrmHostManager::ProcessMessage()
     std::thread([this] {
         while (serviceThreadRunning) {
             std::unique_lock<std::mutex> lock(queueMutex);
-            cv.wait(lock, [this] {
-                return !this->messageQueue.empty();
-            });
+            cv.wait(lock, [this] { return !this->messageQueue.empty(); });
             while (!messageQueue.empty()) {
                 auto message = messageQueue.front();
                 messageQueue.pop();

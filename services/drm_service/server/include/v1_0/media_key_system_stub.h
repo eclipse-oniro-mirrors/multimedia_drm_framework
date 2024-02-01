@@ -152,7 +152,6 @@ private:
     int32_t MediaKeySystemStubGetVersion(MessageParcel &mediaKeySystemData, MessageParcel &mediaKeySystemReply,
         MessageOption &mediaKeySystemOption);
 
-
     static inline ObjectDelegator<OHOS::HDI::Drm::V1_0::MediaKeySystemStub, OHOS::HDI::Drm::V1_0::IMediaKeySystem>
         objDelegator_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> impl_;
