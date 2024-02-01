@@ -75,7 +75,7 @@ void MediaKeySystemCallbackNapi::SendEvent(const std::string event, int32_t extr
     napi_set_named_property(env, args[0], "info", array);
     napi_set_named_property(env, args[0], "extraInfo", extraValue);
     napi_get_reference_value(env, callbackRef, &jsCallback);
-    state = napi_call_function(env, nullptr, jsCallback, ARGS_TWO, args, &retVal);
+    state = napi_call_function(env, nullptr, jsCallback, ARGS_ONE, args, &retVal);
     DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok,
         "%{public}s failed to napi_call_function", event.c_str());
 }

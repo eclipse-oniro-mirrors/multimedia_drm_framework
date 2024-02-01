@@ -30,7 +30,7 @@ namespace DrmStandard {
 namespace MediaKeySessionEvent {
 const std::string EVENT_STR_KEY_NEEDED = "keyRequired";
 const std::string EVENT_STR_KEY_EXPIRED = "keyExpired";
-const std::string EVENT_STR_EXPIRATION_UPDATED = "expirationUpdated";
+const std::string EVENT_STR_EXPIRATION_UPDATED = "expirationUpdate";
 const std::string EVENT_STR_KEY_CHANGED = "keysChange";
 const std::string EVENT_STR_VENDOR_DEFINED = "vendorDefined";
 }
