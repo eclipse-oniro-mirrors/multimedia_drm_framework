@@ -38,6 +38,9 @@ MediaKeySessionNapi::~MediaKeySessionNapi()
     if (keySessionImpl_) {
         keySessionImpl_ = nullptr;
     }
+    if (keySessionCallbackNapi_) {
+        keySessionCallbackNapi_ = nullptr;
+    }
     DRM_INFO_LOG("MediaKeySessionNapi::~MediaKeySessionNapi Init exit.");
 }
 
