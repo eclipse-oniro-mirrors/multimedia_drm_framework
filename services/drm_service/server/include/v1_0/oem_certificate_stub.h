@@ -56,7 +56,6 @@ private:
     int32_t OemCertificateStubGetVersion(MessageParcel &oemCertificateData, MessageParcel &oemCertificateReply,
         MessageOption &oemCertificateOption);
 
-
     static inline ObjectDelegator<OHOS::HDI::Drm::V1_0::OemCertificateStub, OHOS::HDI::Drm::V1_0::IOemCertificate>
         objDelegator_;
     sptr<OHOS::HDI::Drm::V1_0::IOemCertificate> impl_;
