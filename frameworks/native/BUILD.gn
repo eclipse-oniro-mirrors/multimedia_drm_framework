@@ -79,6 +79,8 @@ ohos_shared_library("drm_framework") {
   deps = []
 
   external_deps = [
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:napi_base_context",
     "c_utils:utils",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
@@ -86,9 +88,7 @@ ohos_shared_library("drm_framework") {
     "ipc:ipc_core",
     "napi:ace_napi",
     "safwk:system_ability_fwk",
-    "samgr:samgr_proxy",
-    "ability_runtime:abilitykit_native",
-    "ability_runtime:napi_base_context"
+    "samgr:samgr_proxy"
   ]
 
   cflags_cc = cflags
