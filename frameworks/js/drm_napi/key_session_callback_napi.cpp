@@ -25,7 +25,8 @@ MediaKeySessionCallbackNapi::MediaKeySessionCallbackNapi(napi_env env)
 
 MediaKeySessionCallbackNapi::~MediaKeySessionCallbackNapi() {}
 
-void MediaKeySessionCallbackNapi::SetCallbackReference(const std::string eventType, std::shared_ptr<AutoRef> callbackPair)
+void MediaKeySessionCallbackNapi::SetCallbackReference(const std::string eventType,
+    std::shared_ptr<AutoRef> callbackPair)
 {
     DRM_INFO_LOG("MediaKeySessionCallbackNapi SetCallbackReference");
     std::lock_guard<std::mutex> lock(mutex_);
