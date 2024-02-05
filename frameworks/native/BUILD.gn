@@ -88,7 +88,7 @@ ohos_shared_library("drm_framework") {
     "ipc:ipc_core",
     "napi:ace_napi",
     "safwk:system_ability_fwk",
-    "samgr:samgr_proxy"
+    "samgr:samgr_proxy",
   ]
 
   cflags_cc = cflags
