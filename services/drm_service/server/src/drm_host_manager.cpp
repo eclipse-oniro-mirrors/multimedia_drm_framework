@@ -22,7 +22,7 @@
 #include "servmgr_hdi.h"
 #include "drm_log.h"
 #include "drm_error_code.h"
-#include "drm_napi_utils.h"
+#include "napi_param_utils.h"
 #include "drm_host_manager.h"
 
 namespace OHOS {

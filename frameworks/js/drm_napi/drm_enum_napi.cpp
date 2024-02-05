@@ -15,7 +15,7 @@
 
 #include <map>
 #include <vector>
-#include "drm_napi_utils.h"
+#include "napi_param_utils.h"
 #include "drm_enum_napi.h"
 
 namespace OHOS {
@@ -48,8 +48,7 @@ static const std::vector<struct JsEnumInt> g_mediaKeyType = {
 static const std::vector<struct JsEnumInt> g_offlineMediaKeyStatus = {
     { "OFFLINE_MEDIA_KEY_STATUS_UNKNOWN",
       IMediaKeySessionService::OfflineMediaKeyStatus::OFFLINELICENSESTATUS_UNKNOWN },
-    { "OFFLINE_MEDIA_KEY_STATUS_USABLE",
-      IMediaKeySessionService::OfflineMediaKeyStatus::OFFLINELICENSESTATUS_USABLE },
+    { "OFFLINE_MEDIA_KEY_STATUS_USABLE", IMediaKeySessionService::OfflineMediaKeyStatus::OFFLINELICENSESTATUS_USABLE },
     { "OFFLINE_MEDIA_KEY_STATUS_INACTIVE",
       IMediaKeySessionService::OfflineMediaKeyStatus::OFFLINELICENSESTATUS_INACTIVE },
 };

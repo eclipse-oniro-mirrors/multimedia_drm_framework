@@ -12,9 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "drm_napi_utils.h"
 #include "key_session_napi.h"
 #include "media_key_system_napi.h"
+#include "napi_param_utils.h"
+
 namespace OHOS {
 namespace DrmStandard {
 thread_local napi_ref MediaKeySystemNapi::sConstructor_ = nullptr;
@@ -100,15 +101,16 @@ napi_value MediaKeySystemNapi::MediaKeySystemNapiConstructor(napi_env env, napi_
             return result;
         }
         obj->mediaKeySystemImpl_ = MediaKeySystemNapi::sMediaKeySystemImpl_;
-        obj->mediaKeySystemCallbackNapi_ = new (std::nothrow) MediaKeySystemCallbackNapi();
+        obj->mediaKeySystemCallbackNapi_ = new (std::nothrow) MediaKeySystemCallbackNapi(env);
         obj->mediaKeySystemImpl_->SetCallback(obj->mediaKeySystemCallbackNapi_);
-
         status = napi_wrap(env, jsThis, reinterpret_cast<void *>(obj.get()),
             MediaKeySystemNapi::MediaKeySystemNapiDestructor, nullptr, nullptr);
         if (status == napi_ok) {
+            ObjectRefMap<MediaKeySystemNapi>::Insert(obj.get());
             obj.release();
             return jsThis;
         } else {
+            ObjectRefMap<MediaKeySystemNapi>::Erase(obj.get());
             DRM_ERR_LOG("Failure wrapping js to native napi");
         }
         DRM_ERR_LOG("will call IsMediaKeySystemSupported");
@@ -140,25 +142,28 @@ napi_value MediaKeySystemNapi::CreateMediaKeySystemInstance(napi_env env, napi_c
         size_t uuidBufferLen = 0;
         status = napi_get_value_string_utf8(env, argv[PARAM0], uuidBuffer, PATH_MAX, &uuidBufferLen);
         if (status != napi_ok) {
+            NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
             DRM_ERR_LOG("Could not able to read uuid argument!");
             return nullptr;
         }
         uuid = std::string(uuidBuffer);
-        int32_t retCode = MediaKeySystemFactoryImpl::GetInstance()->CreateMediaKeySystem(uuid,
+        int32_t ret = MediaKeySystemFactoryImpl::GetInstance()->CreateMediaKeySystem(uuid,
             &MediaKeySystemNapi::sMediaKeySystemImpl_);
-        if (retCode != DRM_OK || MediaKeySystemNapi::sMediaKeySystemImpl_ == nullptr) {
-            DRM_ERR_LOG("MediaKeySystemNapi sMediaKeySystemImpl_ get failed!!!");
+        if (ret != DRM_OK) {
+            NapiDrmError::ThrowError(env, ret);
+            DRM_ERR_LOG("CreateMediaKeySystem failed!");
             return nullptr;
         }
         status = napi_new_instance(env, ctor, 0, nullptr, &result);
         MediaKeySystemNapi::sMediaKeySystemImpl_ = nullptr;
         if (status == napi_ok) {
-            DRM_ERR_LOG("CreateMediaKeySystemInstance 164");
+            DRM_INFO_LOG("MediaKeySystemNapi::CreateMediaKeySystemInstance exit.");
             return result;
         } else {
             DRM_ERR_LOG("New instance could not be obtained");
         }
     }
+    NapiDrmError::ThrowError(env, "CreateMediaKeySystem faild.", DRM_UNKNOWN_ERROR);
     napi_get_undefined(env, &result);
     DRM_INFO_LOG("MediaKeySystemNapi::CreateMediaKeySystemInstance exit.");
     return result;
@@ -168,9 +173,7 @@ void MediaKeySystemNapi::MediaKeySystemNapiDestructor(napi_env env, void *native
 {
     DRM_INFO_LOG("MediaKeySystemNapi::MediaKeySystemNapiDestructor enter.");
     MediaKeySystemNapi *mediaKeySystemNapi = reinterpret_cast<MediaKeySystemNapi *>(nativeObject);
-    if (mediaKeySystemNapi != nullptr) {
-        mediaKeySystemNapi->~MediaKeySystemNapi();
-    }
+    ObjectRefMap<MediaKeySystemNapi>::DecreaseRef(mediaKeySystemNapi);
     DRM_INFO_LOG("MediaKeySystemNapi::MediaKeySystemNapiDestructor exit.");
 }
 
@@ -191,7 +194,12 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
     }
     std::string uuid = std::string(buffer);
     if (uuid.length() == 0 || uuid.length() > MAX_STRING_SIZE) {
+        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
         DRM_ERR_LOG("uuid lenth is not able to zero or more 256!");
+        return nullptr;
+    }
+    if (MediaKeySystemFactoryImpl::GetInstance() == nullptr) {
+        NapiDrmError::ThrowError(env, DRM_SERVICE_FATAL_ERROR);
         return nullptr;
     }
     if (argc == ARGS_ONE) {
@@ -201,6 +209,7 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
     }
     buffer[0] = '\0';
     if (napi_get_value_string_utf8(env, argv[PARAM1], buffer, PATH_MAX, &length) != napi_ok) {
+        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
         DRM_ERR_LOG("Could not able to read mimeType argument!");
         return nullptr;
     }
@@ -212,7 +221,7 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
     }
     buffer[0] = '\0';
 
-    int32_t jsContentProtectionLevel = -1;
+    int32_t jsContentProtectionLevel = DRM_ERROR;
     if (napi_get_value_int32(env, argv[PARAM2], &jsContentProtectionLevel) != napi_ok) {
         DRM_ERR_LOG("Could not able to read securityLevel argument!");
         return nullptr;
@@ -221,6 +230,7 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
         (IMediaKeySessionService::ContentProtectionLevel)jsContentProtectionLevel;
     if ((securityLevel < IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN) ||
         (securityLevel >= IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_MAX)) {
+        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
         DRM_ERR_LOG("jsContentProtectionLevel is invalid");
         return nullptr;
     }
@@ -232,6 +242,7 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
         DRM_INFO_LOG("MediaKeySystemNapi::IsMediaKeySystemSupported exit.");
         return result;
     }
+    NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
     DRM_INFO_LOG("MediaKeySystemNapi::IsMediaKeySystemSupported exit.");
     return nullptr;
 }
@@ -254,19 +265,13 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
     } else {
         DRM_CHECK_AND_RETURN_RET_LOG(napi_get_value_int32(env, argv[PARAM0], &jsContentProtectionLevel) == napi_ok,
             nullptr, "MediaKeySystemNapi napi get jsContentProtectionLevel failure!");
-        IMediaKeySessionService::ContentProtectionLevel securityLevel =
-            (IMediaKeySessionService::ContentProtectionLevel)jsContentProtectionLevel;
-        if ((securityLevel < IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN) ||
-            (securityLevel > IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_MAX)) {
-            DRM_ERR_LOG("ContentProtectionLevel is invalid");
-            return nullptr;
-        }
     }
     napi_get_undefined(env, &result);
     IMediaKeySessionService::ContentProtectionLevel securityLevel =
         static_cast<IMediaKeySessionService::ContentProtectionLevel>(jsContentProtectionLevel);
     if (securityLevel < IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN ||
         securityLevel > IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_MAX) {
+        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
         DRM_ERR_LOG("securityLevel is error!!!");
         return nullptr;
     }
@@ -274,7 +279,8 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
     if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
         int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->CreateMediaKeySession(
             (IMediaKeySessionService::ContentProtectionLevel)securityLevel, &keySessionImpl);
-        if (ret != DRM_OK || keySessionImpl == nullptr) {
+        if (ret != DRM_OK) {
+            NapiDrmError::ThrowError(env, "CreateMediaKeySession failed", ret);
             DRM_ERR_LOG("MediaKeySystemNapi::CreateMediaKeySession get failed!!!");
             return nullptr;
         }
@@ -308,6 +314,7 @@ napi_value MediaKeySystemNapi::SetConfigurationString(napi_env env, napi_callbac
 
     status = napi_get_value_string_utf8(env, argv[PARAM0], nameBuffer, PATH_MAX, &nameBufferLen);
     if (status != napi_ok) {
+        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
         DRM_ERR_LOG("Could not able to read name argument!");
         return nullptr;
     }
@@ -354,16 +361,22 @@ napi_value MediaKeySystemNapi::GetConfigurationString(napi_env env, napi_callbac
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
     NAPI_ASSERT(env, argc <= ARGS_TWO, "requires 2 parameters maximum");
 
-    napi_get_value_string_utf8(env, argv[PARAM0], nameStr, PATH_MAX, &nameStrLength);
+    status = napi_get_value_string_utf8(env, argv[PARAM0], nameStr, PATH_MAX, &nameStrLength);
+    if (status != napi_ok) {
+        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
+        return nullptr;
+    }
     std::string name = std::string(nameStr);
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
     if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
         int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->GetConfigurationString(name, value);
         if (ret != napi_ok) {
+            NapiDrmError::ThrowError(env, DRM_SERVICE_FATAL_ERROR);
             DRM_ERR_LOG("napi GetConfiguration faild!");
             return nullptr;
         }
     } else {
+        NapiDrmError::ThrowError(env, DRM_UNKNOWN_ERROR);
         DRM_ERR_LOG("mediaKeySystemNapi GetConfigurationString Failed!");
         return nullptr;
     }
@@ -398,17 +411,20 @@ napi_value MediaKeySystemNapi::SetConfigurationByteArray(napi_env env, napi_call
 
     status = napi_get_value_string_utf8(env, argv[PARAM0], nameBuffer, PATH_MAX, &nameBufferLen);
     if (status != napi_ok) {
+        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
         DRM_ERR_LOG("Could not able to read name argument!");
         return nullptr;
     }
     name = std::string(nameBuffer);
     napi_is_typedarray(env, argv[PARAM1], &isTypeArray);
     if (!isTypeArray) {
+        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
         DRM_ERR_LOG("argv[PARAM1] value is not array!");
         return nullptr;
     }
     napi_get_typedarray_info(env, argv[PARAM1], &type, &valueDataLen, &valueData, &arraybuffer, &offset);
     if (valueData == nullptr) {
+        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
         DRM_ERR_LOG("napi_get_typedarray_info faild!");
         return nullptr;
     }
@@ -418,10 +434,12 @@ napi_value MediaKeySystemNapi::SetConfigurationByteArray(napi_env env, napi_call
     if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
         int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->SetConfigurationByteArray(name, value);
         if (ret != napi_ok) {
+            NapiDrmError::ThrowError(env, DRM_SERVICE_FATAL_ERROR);
             DRM_ERR_LOG("napi SetConfigurationByteArray faild!");
             return nullptr;
         }
     } else {
+        NapiDrmError::ThrowError(env, DRM_UNKNOWN_ERROR);
         DRM_ERR_LOG("mediaKeySystemNapi SetConfigurationByteArray call Failed!");
         return nullptr;
     }
@@ -446,16 +464,23 @@ napi_value MediaKeySystemNapi::GetConfigurationByteArray(napi_env env, napi_call
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
     NAPI_ASSERT(env, argc <= ARGS_TWO, "requires 2 parameters maximum");
 
-    napi_get_value_string_utf8(env, argv[PARAM0], nameStr, PATH_MAX, &nameStrLength);
+    status = napi_get_value_string_utf8(env, argv[PARAM0], nameStr, PATH_MAX, &nameStrLength);
+    if (status != napi_ok) {
+        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
+        DRM_ERR_LOG("Could not able to read name argument!");
+        return nullptr;
+    }
     std::string name = std::string(nameStr);
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
     if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
         int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->GetConfigurationByteArray(name, value);
         if (ret != napi_ok) {
+            NapiDrmError::ThrowError(env, DRM_SERVICE_FATAL_ERROR);
             DRM_ERR_LOG("napi GetConfiguration faild!");
             return nullptr;
         }
     } else {
+        NapiDrmError::ThrowError(env, DRM_UNKNOWN_ERROR);
         DRM_ERR_LOG("mediaKeySystemNapi GetConfigurationByteArray Failed!");
         return nullptr;
     }
@@ -489,10 +514,12 @@ napi_value MediaKeySystemNapi::GetMaxContentProtectionLevel(napi_env env, napi_c
     if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
         int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->GetMaxContentProtectionLevel(&level);
         if (ret != napi_ok) {
+            NapiDrmError::ThrowError(env, DRM_SERVICE_FATAL_ERROR);
             DRM_ERR_LOG("mediaKeySystemImpl_->GetCertificateStatus faild!");
             return nullptr;
         }
     } else {
+        NapiDrmError::ThrowError(env, DRM_UNKNOWN_ERROR);
         DRM_ERR_LOG("MediaKeySystemNapi GetMaxContentProtectionLevel call Failed!");
         return nullptr;
     }
@@ -502,93 +529,94 @@ napi_value MediaKeySystemNapi::GetMaxContentProtectionLevel(napi_env env, napi_c
     return result;
 }
 
+bool MediaKeySystemNapi::CheckMediaKeySystemStatus(MediaKeySystemNapi *napi,
+    std::shared_ptr<MediaKeySystemAsyncContext> context)
+{
+    DRM_NAPI_CHECK_AND_RETURN_LOG(napi != nullptr, false, "napi object is nullptr.");
+    if (napi->mediaKeySystemImpl_ == nullptr) {
+        context->SignError(DRM_SERVICE_FATAL_ERROR);
+        return false;
+    }
+    return true;
+}
+
+bool MediaKeySystemNapi::CheckContextStatus(std::shared_ptr<MediaKeySystemAsyncContext> context)
+{
+    DRM_NAPI_CHECK_AND_RETURN_LOG(context != nullptr, false, "context object is nullptr.");
+    if (context->native == nullptr) {
+        context->SignError(DRM_SERVICE_FATAL_ERROR);
+        return false;
+    }
+    return true;
+}
+
 napi_value MediaKeySystemNapi::GenerateKeySystemRequest(napi_env env, napi_callback_info info)
 {
     DRM_INFO_LOG("MediaKeySystemNapi::GenerateKeySystemRequest enter");
-    napi_value result = nullptr;
-    napi_value thisVar = nullptr;
-    napi_status status;
-    size_t argc = ARGS_ZERO;
-    napi_value argv[ARGS_ZERO];
-    std::vector<uint8_t> request;
-    std::string defaultUrl;
-    napi_value mDefaultURL;
-    napi_value mData;
+    auto context = std::make_shared<MediaKeySystemAsyncContext>();
+    if (context == nullptr) {
+        DRM_ERR_LOG("GenerateKeySystemRequest failed.");
+        NapiDrmError::ThrowError(env, "GenerateKeySystemRequest failed.", DRM_UNKNOWN_ERROR);
+        return NapiParamUtils::GetUndefinedValue(env);
+    }
 
-    MediaKeySystemNapi *mediaKeySystemNapi = nullptr;
-    DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
-    status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
-    if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->GenerateKeySystemRequest(request, defaultUrl);
-        if (ret != napi_ok) {
-            DRM_ERR_LOG("napi GenerateKeySystemRequest faild!");
-            return nullptr;
+    context->GetCbInfo(env, info);
+
+    auto executor = [context]() {
+        DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(CheckContextStatus(context), "context object state is error.");
+        auto obj = reinterpret_cast<MediaKeySystemNapi *>(context->native);
+        ObjectRefMap objectGuard(obj);
+        auto *napiMediaKeySystem = objectGuard.GetPtr();
+        DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(CheckMediaKeySystemStatus(napiMediaKeySystem, context),
+            "context object state is error.");
+        context->intValue = napiMediaKeySystem->mediaKeySystemImpl_->GenerateKeySystemRequest(
+            context->provisionRequest.data, context->provisionRequest.defaultURL);
+        if (context->intValue != 0) {
+            context->SignError(DRM_SERVICE_FATAL_ERROR);
         }
-    } else {
-        DRM_ERR_LOG("mediaKeySystemNapi GenerateKeySystemRequest call Failed!");
-        return nullptr;
-    }
+    };
 
-    NAPI_CALL(env, napi_create_object(env, &result));
-    size_t requestLen = request.size();
-    NAPI_CALL(env, napi_create_array(env, &mData));
-    for (size_t i = 0; i < requestLen; i++) {
-        napi_value item;
-        napi_create_int32(env, request[i], &item);
-        napi_set_element(env, mData, i, item);
-    }
-    NAPI_CALL(env, napi_create_string_utf8(env, defaultUrl.c_str(), NAPI_AUTO_LENGTH, &mDefaultURL));
-    NAPI_CALL(env, napi_set_named_property(env, result, "defaultURL", mDefaultURL));
-    NAPI_CALL(env, napi_set_named_property(env, result, "data", mData));
-
+    auto complete = [env, context](napi_value &output) {
+        NapiParamUtils::SetProvisionRequest(env, context->provisionRequest, output);
+    };
     DRM_INFO_LOG("MediaKeySystemNapi::GenerateKeySystemRequest exit");
-    return result;
+    return NapiAsyncWork::Enqueue(env, context, "GenerateKeySystemRequest", executor, complete);
 }
 
 napi_value MediaKeySystemNapi::ProcessKeySystemResponse(napi_env env, napi_callback_info info)
 {
     DRM_INFO_LOG("MediaKeySystemNapi::ProcessKeySystemResponse enter.");
-    napi_value result = nullptr;
-    size_t argc = ARGS_TWO;
-    napi_value argv[ARGS_TWO] = {0};
-    napi_value thisVar = nullptr;
-    napi_status status;
-    bool isTypeArray;
-    void *reponseData = nullptr;
-    size_t reponseDataLen;
-    size_t offset;
-    napi_value arraybuffer = nullptr;
-    napi_typedarray_type type;
-    MediaKeySystemNapi *mediaKeySystemNapi = nullptr;
+    auto context = std::make_shared<MediaKeySystemAsyncContext>();
+    if (context == nullptr) {
+        DRM_ERR_LOG("ProcessKeySystemResponse failed.");
+        NapiDrmError::ThrowError(env, "ProcessKeySystemResponse failed.", DRM_UNKNOWN_ERROR);
+        return NapiParamUtils::GetUndefinedValue(env);
+    }
 
-    DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
-    NAPI_ASSERT(env, argc <= ARGS_ONE, "requires 1 parameters maximum");
-    napi_is_typedarray(env, argv[PARAM0], &isTypeArray);
-    if (!isTypeArray) {
-        DRM_ERR_LOG("argv[PARAM0] reponse is not array!");
-        return nullptr;
-    }
-    napi_get_typedarray_info(env, argv[PARAM0], &type, &reponseDataLen, &reponseData, &arraybuffer, &offset);
-    if (reponseData == nullptr) {
-        DRM_ERR_LOG("napi_get_typedarray_info faild!");
-        return nullptr;
-    }
-    uint8_t *reponseDataPtr = reinterpret_cast<uint8_t *>(reponseData);
-    std::vector<uint8_t> keySystemResponse(reponseDataPtr, reponseDataPtr + reponseDataLen);
-    status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
-    if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->ProcessKeySystemResponse(keySystemResponse);
-        if (ret != napi_ok) {
-            DRM_ERR_LOG("napi ProcessKeySystemResponse faild!");
-            return nullptr;
+    auto inputParser = [env, context](size_t argc, napi_value *argv) {
+        NAPI_CHECK_ARGS_RETURN_VOID(context, argc == ARGS_ONE, "invalid arguments", DRM_INVALID_PARAM);
+        context->status = NapiParamUtils::GetValueUint8Array(env, context->response, argv[PARAM0]);
+        NAPI_CHECK_STATUS_RETURN_VOID(context, "ProcessKeySystemResponse failed", DRM_INVALID_PARAM);
+    };
+
+    context->GetCbInfo(env, info, inputParser);
+
+    auto executor = [context]() {
+        DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(CheckContextStatus(context), "context object state is error.");
+        auto obj = reinterpret_cast<MediaKeySystemNapi *>(context->native);
+        ObjectRefMap objectGuard(obj);
+        auto *napiMediaKeySystem = objectGuard.GetPtr();
+        DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(CheckMediaKeySystemStatus(napiMediaKeySystem, context),
+            "context object state is error.");
+        context->intValue = napiMediaKeySystem->mediaKeySystemImpl_->ProcessKeySystemResponse(context->response);
+        if (context->intValue != DRM_OK) {
+            context->SignError(DRM_SERVICE_FATAL_ERROR);
         }
-    } else {
-        DRM_ERR_LOG("mediaKeySystemNapi ProcessKeySystemResponse call Failed!");
-        return nullptr;
-    }
+    };
 
+    auto complete = [env](napi_value &output) { output = NapiParamUtils::GetUndefinedValue(env); };
     DRM_INFO_LOG("MediaKeySystemNapi::ProcessKeySystemResponse exit.");
-    return result;
+    return NapiAsyncWork::Enqueue(env, context, "ProcessKeySystemResponse", executor, complete);
 }
 
 static napi_value vectorToJsArray(napi_env env, std::vector<IMediaKeySystemService::MetircKeyValue> &metrics)
@@ -628,10 +656,12 @@ napi_value MediaKeySystemNapi::GetStatistics(napi_env env, napi_callback_info in
     if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
         int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->GetStatistics(metrics);
         if (ret != napi_ok) {
+            NapiDrmError::ThrowError(env, DRM_SERVICE_FATAL_ERROR);
             DRM_ERR_LOG("mediaKeySystemImpl_->GetStatistics faild!");
             return nullptr;
         }
     } else {
+        NapiDrmError::ThrowError(env, DRM_UNKNOWN_ERROR);
         DRM_ERR_LOG("mediaKeySystemNapi GetStatistics Failed!");
         return nullptr;
     }
@@ -656,10 +686,12 @@ napi_value MediaKeySystemNapi::GetCertificateStatus(napi_env env, napi_callback_
     if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
         int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->GetCertificateStatus(&certStatus);
         if (ret != napi_ok) {
+            NapiDrmError::ThrowError(env, DRM_SERVICE_FATAL_ERROR);
             DRM_ERR_LOG("mediaKeySystemImpl_->GetCertificateStatus faild!");
             return nullptr;
         }
     } else {
+        NapiDrmError::ThrowError(env, DRM_UNKNOWN_ERROR);
         DRM_ERR_LOG("mediaKeySystemNapi GetCertificateStatus Failed!");
         return nullptr;
     }
@@ -726,11 +758,14 @@ napi_value MediaKeySystemNapi::GetOfflineMediaKeyIds(napi_env env, napi_callback
     if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
         int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->GetOfflineMediaKeyIds(licenseIds);
         if (ret != napi_ok) {
+            NapiDrmError::ThrowError(env, DRM_SERVICE_FATAL_ERROR);
             DRM_ERR_LOG("napi GetOfflineMediaKeyIds faild!");
             return nullptr;
         }
     } else {
+        NapiDrmError::ThrowError(env, DRM_UNKNOWN_ERROR);
         DRM_ERR_LOG("MediaKeySystemNapi GetOfflineMediaKeyIds call Failed!");
+        return nullptr;
     }
 
     result = vectorToJs2DArray(env, licenseIds);
@@ -758,11 +793,13 @@ napi_value MediaKeySystemNapi::GetOfflineMediaKeyStatus(napi_env env, napi_callb
     NAPI_ASSERT(env, argc <= ARGS_ONE, "requires 1 parameters maximum");
     napi_is_typedarray(env, argv[PARAM0], &isTypeArray);
     if (!isTypeArray) {
+        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
         DRM_ERR_LOG("argv[PARAM0] is not array!");
         return nullptr;
     }
     napi_get_typedarray_info(env, argv[PARAM0], &type, &licenseIdLen, &licenseId, &arraybuffer, &offset);
     if (licenseId == nullptr) {
+        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
         DRM_ERR_LOG("napi_get_typedarray_info faild!");
         return nullptr;
     }
@@ -775,10 +812,12 @@ napi_value MediaKeySystemNapi::GetOfflineMediaKeyStatus(napi_env env, napi_callb
         int32_t ret =
             mediaKeySystemNapi->mediaKeySystemImpl_->GetOfflineMediaKeyStatus(licenseIdVec, offlineMediaKeyStatus);
         if (ret != napi_ok) {
+            NapiDrmError::ThrowError(env, DRM_SERVICE_FATAL_ERROR);
             DRM_ERR_LOG("napi GetOfflineMediaKeyStatus faild!");
             return nullptr;
         }
     } else {
+        NapiDrmError::ThrowError(env, DRM_UNKNOWN_ERROR);
         DRM_ERR_LOG("MediaKeySystemNapi GetOfflineMediaKeyStatus call Failed!");
         return nullptr;
     }
@@ -808,6 +847,7 @@ napi_value MediaKeySystemNapi::ClearOfflineMediaKeys(napi_env env, napi_callback
     NAPI_ASSERT(env, argc <= ARGS_ONE, "requires 2 parameters maximum");
     napi_is_typedarray(env, argv[PARAM0], &isTypeArray);
     if (!isTypeArray) {
+        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
         DRM_ERR_LOG("argv[PARAM0] is not array!");
         return nullptr;
     }
@@ -823,10 +863,13 @@ napi_value MediaKeySystemNapi::ClearOfflineMediaKeys(napi_env env, napi_callback
         int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->ClearOfflineMediaKeys(licenseIdVec);
         if (ret != napi_ok) {
             DRM_ERR_LOG("napi ClearOfflineMediaKeys faild!");
+            NapiDrmError::ThrowError(env, DRM_SERVICE_FATAL_ERROR);
             return nullptr;
         }
     } else {
         DRM_ERR_LOG("MediaKeySystemNapi ClearOfflineMediaKeys call Failed!");
+        NapiDrmError::ThrowError(env, DRM_UNKNOWN_ERROR);
+        return nullptr;
     }
 
     DRM_INFO_LOG("MediaKeySystemNapi::ClearOfflineMediaKeys exit.");
@@ -852,19 +895,21 @@ napi_value MediaKeySystemNapi::Destroy(napi_env env, napi_callback_info info)
     if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
         int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->Release();
         if (ret != napi_ok) {
+            NapiDrmError::ThrowError(env, DRM_SERVICE_FATAL_ERROR);
             DRM_ERR_LOG("mediaKeySystemImpl_->GetCertificateStatus faild!");
             return nullptr;
         }
-        mediaKeySystemNapi->~MediaKeySystemNapi();
-        mediaKeySystemNapi = nullptr;
+        MediaKeySystemFactoryImpl::GetInstance()->keySystemNumber--;
     } else {
+        NapiDrmError::ThrowError(env, DRM_UNKNOWN_ERROR);
         DRM_ERR_LOG("mediaKeySystemNapi Destroy Failed!");
+        return nullptr;
     }
     DRM_INFO_LOG("MediaKeySystemNapi::Release exit.");
     return result;
 }
 
-void MediaKeySystemNapi::SaveEventCallbackReferrence(const std::string eventType, sptr<CallBackPair> callbackPair)
+void MediaKeySystemNapi::SaveEventCallbackReferrence(const std::string eventType, std::shared_ptr<AutoRef> callbackPair)
 {
     DRM_INFO_LOG("MediaKeySystemNapi::SaveEventCallbackReferrence");
     std::lock_guard<std::mutex> lock(mutex_);
@@ -897,12 +942,14 @@ napi_value MediaKeySystemNapi::SetEventCallback(napi_env env, napi_callback_info
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
     NAPI_ASSERT(env, argc == ARGS_TWO, "only requires 2 parameters");
     if (thisVar == nullptr || argv[PARAM0] == nullptr || argv[PARAM1] == nullptr) {
+        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
         DRM_ERR_LOG("Failed to retrieve arguments in SetEventCallback!");
         return result;
     }
     napi_valuetype valueType = napi_undefined;
     if (napi_typeof(env, argv[PARAM0], &valueType) != napi_ok || valueType != napi_string ||
         napi_typeof(env, argv[PARAM1], &valueType) != napi_ok || valueType != napi_function) {
+        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
         return result;
     }
 
@@ -916,10 +963,11 @@ napi_value MediaKeySystemNapi::SetEventCallback(napi_env env, napi_callback_info
         napi_create_reference(env, argv[PARAM1], 1, &callbackRef);
         DRM_INFO_LOG("SetEventCallback event is %{public}s", eventType.c_str());
 
-        sptr<CallBackPair> callbackPair = new CallBackPair(env, callbackRef);
+        std::shared_ptr<AutoRef> callbackPair = std::make_shared<AutoRef>(env, callbackRef);
         mediaKeySystemNapi->SaveEventCallbackReferrence(eventType, callbackPair);
         DRM_INFO_LOG("mediaKeySystemNapi::SetEventCallback out");
     } else {
+        NapiDrmError::ThrowError(env, DRM_UNKNOWN_ERROR);
         DRM_ERR_LOG("mediaKeySystemNapi SetEventCallback failed!");
     }
     return result;
@@ -937,11 +985,13 @@ napi_value MediaKeySystemNapi::UnsetEventCallback(napi_env env, napi_callback_in
     NAPI_ASSERT(env, argc == ARGS_ONE, "only requires 1 parameters");
     if (thisVar == nullptr || argv[PARAM0] == nullptr) {
         DRM_ERR_LOG("Failed to retrieve arguments in UnsetEventCallback!");
+        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
         return result;
     }
     napi_valuetype valueType = napi_undefined;
     if (napi_typeof(env, argv[PARAM0], &valueType) != napi_ok || valueType != napi_string) {
         DRM_ERR_LOG("Failed to retrieve reasonable arguments in UnsetEventCallback!");
+        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
         return result;
     }
 
@@ -955,6 +1005,7 @@ napi_value MediaKeySystemNapi::UnsetEventCallback(napi_env env, napi_callback_in
         mediaKeySystemNapi->ClearEventCallbackReferrence(eventType);
         DRM_INFO_LOG("MediaKeySystemNapi::UnsetEventCallback out");
     } else {
+        NapiDrmError::ThrowError(env, DRM_UNKNOWN_ERROR);
         DRM_ERR_LOG("MediaKeySystemNapi UnsetEventCallback failed!");
     }
     return result;

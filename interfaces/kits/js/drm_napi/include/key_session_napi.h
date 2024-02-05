@@ -22,10 +22,27 @@
 #include "drm_error_code.h"
 #include "key_session_callback_napi.h"
 #include "key_session_impl.h"
+#include "napi_param_utils.h"
+#include "drm_error_code.h"
+#include "napi_async_work.h"
 
 namespace OHOS {
 namespace DrmStandard {
 static const char KEY_SESSION_NAPI_CLASS_NAME[] = "MediaKeySession";
+
+struct MediaKeySessionAsyncContext : public ContextBase {
+    int32_t intValue;
+    std::vector<uint8_t> response;
+    std::vector<uint8_t> licenseId;
+    std::vector<uint8_t> releaseRequest;
+    std::vector<uint8_t> releaseLicenseId;
+    std::vector<uint8_t> restoreLicenseId;
+    std::vector<uint8_t> releaseResponse;
+    std::vector<uint8_t> releaseResponseLicenseId;
+    IMediaKeySessionService::MediaKeyRequestInfo mediaKeyRequestInfo;
+    IMediaKeySessionService::MediaKeyRequest mediaKeyRequest;
+};
+
 class MediaKeySessionNapi {
 public:
     MediaKeySessionNapi();
@@ -48,9 +65,12 @@ public:
     static napi_value UnsetEventCallback(napi_env env, napi_callback_info info);
     static bool SetMediaKeySessionNativeProperty(napi_env env, napi_value obj, const std::string &name,
         sptr<MediaKeySessionImpl> keySessionImpl);
-    void SetEventCallbackReference(const std::string eventType, sptr<CallBackPair> callbackPair);
+    void SetEventCallbackReference(const std::string eventType, std::shared_ptr<AutoRef> callbackPair);
     void ClearEventCallbackReference(const std::string eventType);
     static napi_value Destroy(napi_env env, napi_callback_info info);
+    static bool CheckMediaKeySessionStatus(MediaKeySessionNapi *napi,
+        std::shared_ptr<MediaKeySessionAsyncContext> context);
+    static bool CheckContextStatus(std::shared_ptr<MediaKeySessionAsyncContext> context);
 
 private:
     static napi_value MediaKeySessionNapiConstructor(napi_env env, napi_callback_info info);

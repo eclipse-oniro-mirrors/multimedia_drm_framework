@@ -21,22 +21,37 @@
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 #include "common_napi.h"
+#include "napi_param_utils.h"
+#include "napi_async_work.h"
 
 namespace OHOS {
 namespace DrmStandard {
 class MediaKeySessionCallbackNapi : public MediaKeySessionImplCallback {
 public:
-    explicit MediaKeySessionCallbackNapi();
+    explicit MediaKeySessionCallbackNapi(napi_env env);
     virtual ~MediaKeySessionCallbackNapi();
-    void SetCallbackReference(const std::string eventType, sptr<CallBackPair> callbackPair);
+    void SetCallbackReference(const std::string eventType, std::shared_ptr<AutoRef> callbackPair);
     void ClearCallbackReference(const std::string eventType);
-    void SendEvent(const std::string event, int32_t extra, const std::vector<uint8_t> data) override;
+    void SendEvent(const std::string &event, int32_t extra, const std::vector<uint8_t> &data) override;
     void SendEventKeyChanged(std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> statusTable,
         bool hasNewGoodLicense) override;
 
 private:
+    struct MediaKeySessionJsCallback {
+        std::shared_ptr<AutoRef> callback = nullptr;
+        std::string callbackName = "unknown";
+        DrmEventParame eventParame;
+        DrmKeysChangeEventParame keysChangeParame;
+    };
+
+    static void WorkCallbackStateChangeDone(uv_work_t *work, int status);
+    static void WorkCallbackInterruptDone(uv_work_t *work, int status);
+    void OnJsCallbackInterrupt(std::unique_ptr<MediaKeySessionJsCallback> &jsCb);
+    void OnJsCallbackStateChange(std::unique_ptr<MediaKeySessionJsCallback> &jsCb);
+
+    napi_env env_ = nullptr;
     std::mutex mutex_;
-    std::map<std::string, sptr<CallBackPair>> callbackMap_;
+    std::map<std::string, std::shared_ptr<AutoRef>> callbackMap_;
 };
 } // namespace DrmStandard
 } // namespace OHOS

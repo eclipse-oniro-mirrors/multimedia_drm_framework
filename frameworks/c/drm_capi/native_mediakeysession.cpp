@@ -19,7 +19,6 @@
 #include <refbase.h>
 #include <securec.h>
 #include "drm_log.h"
-#include "drm_error_code.h"
 #include "native_drm_base.h"
 #include "native_drm_object.h"
 #include "key_session_impl.h"
@@ -68,7 +67,7 @@ Drm_ErrCode OH_MediaKeySession_GenerateMediaKeyRequest(MediaKeySession *mediaKey
     }
     MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySession);
     int ret = sessionObject->sessionImpl_->GenerateMediaKeyRequest(licenseRequestInfo, licenseRequest);
-    DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), DRM_ERR_INVALID_VAL,
+    DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_ERR_OK), DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_GenerateMediaKeyRequest call Failed!");
     Drm_ErrCode result = DealMediaKeyRequest(licenseRequest, mediaKeyRequest);
     DRM_INFO_LOG("OH_MediaKeySession_GenerateMediaKeyRequest exit");

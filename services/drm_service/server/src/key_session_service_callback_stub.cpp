@@ -22,7 +22,7 @@ namespace DrmStandard {
 int32_t MediaKeySessionServiceCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    int32_t errCode = -1;
+    int32_t errCode = DRM_ERROR;
     if (data.ReadInterfaceToken() != GetDescriptor()) {
         return errCode;
     }
