@@ -14,7 +14,7 @@
  */
 
 #include "ipc_skeleton.h"
-#include "drm_napi_utils.h"
+#include "napi_param_utils.h"
 #include "drm_napi.h"
 
 namespace OHOS {

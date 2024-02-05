@@ -14,16 +14,18 @@
  */
 #include "drm_log.h"
 #include "drm_error_code.h"
-#include "drm_napi_utils.h"
 #include "key_session_callback_napi.h"
 
 namespace OHOS {
 namespace DrmStandard {
-MediaKeySessionCallbackNapi::MediaKeySessionCallbackNapi() {}
+MediaKeySessionCallbackNapi::MediaKeySessionCallbackNapi(napi_env env)
+{
+    env_ = env;
+}
 
 MediaKeySessionCallbackNapi::~MediaKeySessionCallbackNapi() {}
 
-void MediaKeySessionCallbackNapi::SetCallbackReference(const std::string eventType, sptr<CallBackPair> callbackPair)
+void MediaKeySessionCallbackNapi::SetCallbackReference(const std::string eventType, std::shared_ptr<AutoRef> callbackPair)
 {
     DRM_INFO_LOG("MediaKeySessionCallbackNapi SetCallbackReference");
     std::lock_guard<std::mutex> lock(mutex_);
@@ -37,118 +39,111 @@ void MediaKeySessionCallbackNapi::ClearCallbackReference(const std::string event
     callbackMap_.erase(eventType);
 }
 
-void MediaKeySessionCallbackNapi::SendEvent(const std::string event, int32_t extra, const std::vector<uint8_t> data)
+void MediaKeySessionCallbackNapi::WorkCallbackInterruptDone(uv_work_t *work, int status)
 {
-    DRM_INFO_LOG("MediaKeySessionCallbackNapi SendEvent %{public}s", event.c_str());
-    DRM_NAPI_CHECK_AND_RETURN_LOG(!event.empty(), "Service event code error");
+    // Js Thread
+    std::shared_ptr<MediaKeySessionJsCallback> context(static_cast<MediaKeySessionJsCallback *>(work->data),
+        [work](MediaKeySessionJsCallback *ptr) {
+            delete ptr;
+            delete work;
+        });
+    DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(work != nullptr, "work is nullptr");
+    MediaKeySessionJsCallback *event = reinterpret_cast<MediaKeySessionJsCallback *>(work->data);
+    DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(event != nullptr, "event is nullptr");
+    std::string request = event->callbackName;
 
-    napi_value result;
-    napi_value jsCallback = nullptr;
-    napi_value retVal;
-    napi_status state;
+    DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(event->callback != nullptr, "event is nullptr");
+    napi_env env = event->callback->env_;
+    napi_ref callback = event->callback->cb_;
 
-    DRM_NAPI_CHECK_AND_RETURN_LOG(callbackMap_.find(event) != callbackMap_.end(), "Not register this callback yet");
-    sptr<CallBackPair> item = callbackMap_[event];
+    napi_handle_scope scope = nullptr;
+    napi_open_handle_scope(env, &scope);
+    DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(scope != nullptr, "scope is nullptr");
+    DRM_DEBUG_LOG("JsCallBack %{public}s, uv_queue_work_with_qos start", request.c_str());
+    do {
+        DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(status != UV_ECANCELED, "%{public}s cancelled", request.c_str());
+        napi_value jsCallback = nullptr;
+        napi_status nstatus = napi_get_reference_value(env, callback, &jsCallback);
+        DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(nstatus == napi_ok && jsCallback != nullptr,
+            "%{public}s get reference value fail", request.c_str());
 
-    DRM_NAPI_CHECK_AND_RETURN_LOG(item != nullptr, "sptr callbackPair is nullptr");
-    napi_env env = item->GetEnv();
-    napi_ref callbackRef = item->GetCallback();
+        // Call back function
+        if (event->callbackName == "keysChange") {
+            napi_value statusTable;
+            napi_value hasNewGoodLicense;
+            nstatus = NapiParamUtils::SetDrmKeysChangeEventInfo(env, event->keysChangeParame,
+                statusTable, hasNewGoodLicense);
+            DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(nstatus == napi_ok,
+                "%{public}s fail to create keysession keyschange callback", request.c_str());
+            napi_value args[ARGS_TWO] = { statusTable, hasNewGoodLicense };
+            napi_value result = nullptr;
+            nstatus = napi_call_function(env, nullptr, jsCallback, ARGS_TWO, args, &result);
+            DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(nstatus == napi_ok, "%{public}s fail to call Interrupt callback",
+                request.c_str());
+        } else {
+            napi_value args[ARGS_ONE] = { nullptr };
+            nstatus = NapiParamUtils::SetDrmEventInfo(env, event->eventParame, args[PARAM0]);
+            DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(nstatus == napi_ok && args[PARAM0] != nullptr,
+                "%{public}s fail to create keysession callback", request.c_str());
+            napi_value result = nullptr;
+            nstatus = napi_call_function(env, nullptr, jsCallback, ARGS_ONE, args, &result);
+            DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(nstatus == napi_ok, "%{public}s fail to call Interrupt callback",
+                request.c_str());
+        }
+    } while (0);
+    napi_close_handle_scope(env, scope);
+}
 
-    napi_get_undefined(env, &result);
-    napi_create_object(env, &result);
-    napi_value extraValue;
-    napi_value array = nullptr;
-    std::string extraData = std::to_string(extra);
-    napi_create_string_utf8(env, extraData.c_str(), NAPI_AUTO_LENGTH, &extraValue);
-    state = napi_create_array_with_length(env, data.size(), &array);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok, "%{public}s failed to napi_create_array_with_length",
-        event.c_str());
-    for (uint32_t i = 0; i < data.size(); i++) {
-        napi_value number = nullptr;
-        (void)napi_create_uint32(env, data[i], &number);
-        (void)napi_set_element(env, array, i, number);
+void MediaKeySessionCallbackNapi::SendEvent(const std::string &event, int32_t extra, const std::vector<uint8_t> &data)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    std::unique_ptr<MediaKeySessionJsCallback> cb = std::make_unique<MediaKeySessionJsCallback>();
+    DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(cb != nullptr, "No memory");
+    cb->callback = callbackMap_[event];
+    cb->callbackName = event;
+    cb->eventParame.extra = extra;
+    cb->eventParame.data.assign(data.begin(), data.end());
+    return OnJsCallbackInterrupt(cb);
+}
+
+void MediaKeySessionCallbackNapi::OnJsCallbackInterrupt(std::unique_ptr<MediaKeySessionJsCallback> &jsCb)
+{
+    uv_loop_s *loop = nullptr;
+    napi_get_uv_event_loop(env_, &loop);
+    DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(loop != nullptr, "loop nullptr, No memory");
+
+    uv_work_t *work = new (std::nothrow) uv_work_t;
+    DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(work != nullptr, "work nullptr, No memory");
+
+    if (jsCb.get() == nullptr) {
+        DRM_DEBUG_LOG("OnJsCallBackInterrupt: jsCb.get() is null");
+        delete work;
+        return;
     }
-    napi_value args[1] = { nullptr };
-    napi_create_object(env, &args[0]);
-    napi_set_named_property(env, args[0], "info", array);
-    napi_set_named_property(env, args[0], "extraInfo", extraValue);
-    napi_get_reference_value(env, callbackRef, &jsCallback);
-    state = napi_call_function(env, nullptr, jsCallback, ARGS_ONE, args, &retVal);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok, "%{public}s failed to napi_call_function", event.c_str());
+    work->data = reinterpret_cast<void *>(jsCb.get());
+
+    int ret = uv_queue_work_with_qos(
+        loop, work, [](uv_work_t *work) {}, WorkCallbackInterruptDone, uv_qos_default);
+    if (ret != 0) {
+        DRM_DEBUG_LOG("Failed to execute libuv work queue");
+        delete work;
+    } else {
+        jsCb.release();
+    }
 }
 
 void MediaKeySessionCallbackNapi::SendEventKeyChanged(
     std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> statusTable, bool hasNewGoodLicense)
 {
-    DRM_INFO_LOG("MediaKeySessionCallbackNapi SendEventKeyChanged");
-    napi_value result;
-    napi_value jsCallback = nullptr;
-    napi_value retVal;
-    napi_status state;
-
-    DRM_NAPI_CHECK_AND_RETURN_LOG(callbackMap_.find("keysChange") != callbackMap_.end(),
-        "Not register this callback yet");
-    sptr<CallBackPair> item = callbackMap_["keysChange"];
-
-    DRM_NAPI_CHECK_AND_RETURN_LOG(item != nullptr, "sptr callbackPair is nullptr");
-    napi_env env = item->GetEnv();
-    napi_ref callbackRef = item->GetCallback();
-    napi_get_undefined(env, &result);
-    napi_create_object(env, &result);
-
-    uint32_t index = 0;
-    napi_value map;
-    napi_create_array_with_length(env, statusTable.size(), &map);
-    for (auto itemTmp : statusTable) {
-        napi_value jsObject;
-        napi_value jsKeyId;
-        napi_value jsKeyStatus;
-        napi_create_object(env, &jsObject);
-        state = napi_create_array_with_length(env, itemTmp.first.size(), &jsKeyId);
-        DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok, "failed to call napi_create_array_with_length");
-        for (uint32_t i = 0; i < itemTmp.first.size(); i++) {
-            napi_value number = nullptr;
-            (void)napi_create_uint32(env, itemTmp.first[i], &number);
-            (void)napi_set_element(env, jsKeyId, i, number);
-        }
-        napi_set_named_property(env, jsObject, "keyId", jsKeyId);
-        std::string value;
-        switch (itemTmp.second) {
-            case MEDIA_KEY_SESSION_KEY_STATUS_USABLE:
-                value = "USABLE";
-                break;
-            case MEDIA_KEY_SESSION_KEY_STATUS_EXPIRED:
-                value = "EXPIRED";
-                break;
-            case MEDIA_KEY_SESSION_KEY_STATUS_OUTPUT_NOT_ALLOWED:
-                value = "OUTPUT_NOT_ALLOWED";
-                break;
-            case MEDIA_KEY_SESSION_KEY_STATUS_PENDING:
-                value = "PENDING";
-                break;
-            case MEDIA_KEY_SESSION_KEY_STATUS_INTERNAL_ERROR:
-                value = "INTERNAL_ERROR";
-                break;
-            case MEDIA_KEY_SESSION_KEY_STATUS_USABLE_IN_FUTURE:
-                value = "USABLE_IN_FUTURE";
-                break;
-            default:
-                value = "Fault Status";
-                break;
-        }
-        napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &jsKeyStatus);
-        napi_set_named_property(env, jsObject, "value", jsKeyStatus);
-        napi_set_element(env, map, index, jsObject);
-        index++;
-    }
-
-    napi_value hasNewGoodLicenseValue;
-    napi_get_boolean(env, hasNewGoodLicense, &hasNewGoodLicenseValue);
-
-    napi_value args[ARGS_TWO] = {map, hasNewGoodLicenseValue};
-    napi_get_reference_value(env, callbackRef, &jsCallback);
-    state = napi_call_function(env, nullptr, jsCallback, ARGS_TWO, args, &retVal);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(state == napi_ok, "failed to napi_call_function keysChange");
+    std::lock_guard<std::mutex> lock(mutex_);
+    std::unique_ptr<MediaKeySessionJsCallback> cb = std::make_unique<MediaKeySessionJsCallback>();
+    DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(cb != nullptr, "No memory");
+    const std::string event = "keysChange";
+    cb->callback = callbackMap_[event];
+    cb->callbackName = event;
+    cb->keysChangeParame.hasNewGoodLicense = hasNewGoodLicense;
+    cb->keysChangeParame.statusTable = statusTable;
+    return OnJsCallbackInterrupt(cb);
 }
-}
-}
+} // DrmStandardr
+} // OHOS

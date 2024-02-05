@@ -19,7 +19,6 @@
 #include <refbase.h>
 #include <securec.h>
 #include "drm_log.h"
-#include "drm_error_code.h"
 #include "native_drm_common.h"
 #include "native_drm_base.h"
 #include "native_drm_object.h"

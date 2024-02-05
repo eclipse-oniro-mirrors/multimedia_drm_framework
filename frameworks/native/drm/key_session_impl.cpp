@@ -97,7 +97,6 @@ int32_t MediaKeySessionImpl::GenerateOfflineReleaseRequest(std::vector<uint8_t> 
     DRM_INFO_LOG("MediaKeySessionImpl::GenerateOfflineReleaseRequest enter.");
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t retCode = DRM_OK;
-
     if (keySessionServiceProxy_ == nullptr) {
         DRM_ERR_LOG("MediaKeySessionImpl::GenerateOfflineReleaseRequest keySessionServiceProxy_ is null");
         return DRM_SERVICE_ERROR;

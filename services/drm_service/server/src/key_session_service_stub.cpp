@@ -366,7 +366,7 @@ int32_t MediaKeySessionServiceStub::OnRemoteRequest(uint32_t code, MessageParcel
     MessageOption &option)
 {
     DRM_INFO_LOG("MediaKeySessionServiceStub::OnRemoteRequest enter.");
-    int32_t errCode = -1;
+    int32_t errCode = DRM_ERROR;
     DRM_DEBUG_LOG("OnRemoteRequest, cmd = %{public}u", code);
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " is keySessionServiceStub", FAKE_POINTER(this));
 

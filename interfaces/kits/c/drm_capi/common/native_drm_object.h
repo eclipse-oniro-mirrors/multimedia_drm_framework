@@ -83,7 +83,7 @@ public:
         callback_ = nullptr;
     }
 
-    void SendEvent(const std::string event, int32_t extra, const std::vector<uint8_t> data) override
+    void SendEvent(const std::string &event, int32_t extra, const std::vector<uint8_t> &data) override
     {
         DRM_INFO_LOG("MediaKeySystemCallbackCapi SendEvent.");
         std::lock_guard<std::mutex> lock(mutex_);
@@ -150,7 +150,7 @@ public:
         callback_ = {};
     }
 
-    void SendEvent(const std::string event, int32_t extra, const std::vector<uint8_t> data) override
+    void SendEvent(const std::string &event, int32_t extra, const std::vector<uint8_t> &data) override
     {
         DRM_INFO_LOG("MediaKeySessionCallbackCapi SendEvent.");
         std::lock_guard<std::mutex> lock(mutex_);

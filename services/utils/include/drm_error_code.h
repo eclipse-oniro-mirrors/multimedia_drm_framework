@@ -15,29 +15,39 @@
 
 #ifndef DRM_ERROR_CODE_H
 #define DRM_ERROR_CODE_H
+#include "napi/native_api.h"
+#include "napi/native_common.h"
+#include "napi/native_node_api.h"
 
 namespace OHOS {
 namespace DrmStandard {
-/**
- * @brief drm remote request code for IPC.
- *
- * @since 1.0
- * @version 1.0
- */
-enum DrmErrorCode {
-    DRM_ERROR = -1,
-    DRM_OK = 0,
-    DRM_ALLOC_ERROR,
-    DRM_INVALID_ARG,
-    DRM_UNSUPPORTED,
-    DRM_INVALID_SESSION_CFG,
-    DRM_INVALID_STATE,
-    DRM_UNKNOWN_ERROR,
-    DRM_OPERATION_NOT_ALLOWED,
-    DRM_HOST_ERROR,
-    DRM_SERVICE_ERROR,
-    DRM_MEMORY_ERROR,
+class NapiDrmError {
+public:
+    static napi_status ThrowError(napi_env env, const char *napiMessage, int32_t napiCode);
+    static void ThrowError(napi_env env, int32_t code);
+    static std::string GetMessageByCode(int32_t &code);
 };
+
+const int32_t DRM_ERROR = -1;
+const int32_t DRM_OK = 0;
+const int32_t DRM_ALLOC_ERROR = 1;
+const int32_t DRM_INVALID_ARG = 2;
+const int32_t DRM_INVALID_STATE = 3;
+const int32_t DRM_OPERATION_NOT_ALLOWED = 5;
+const int32_t DRM_HOST_ERROR = 6;
+const int32_t DRM_SERVICE_ERROR = 7;
+const int32_t DRM_MEMORY_ERROR = 8;
+const int32_t DRM_UNKNOWN_ERROR = 24700101;
+const int32_t DRM_MAX_SYSTEM_NUM_REACHED = 24700103;
+const int32_t DRM_MAX_SESSION_NUM_REACHED = 24700104;
+const int32_t DRM_SERVICE_FATAL_ERROR = 24700201;
+const int32_t DRM_INVALID_PARAM = 401;
+
+const std::string DRM_INVALID_PARAM_INFO = "input parameter value error";
+const std::string DRM_SERVICE_FATAL_ERRO_INFO = "service error";
+const std::string DRM_UNKNOWN_ERROR_INFO = "unknow error";
+const std::string DRM_MAX_SYSTEM_NUM_REACHED_INFO = "mediaKeySystem number limited";
+const std::string DRM_MAX_SESSION_NUM_REACHED_INFO = "mediaKeySession number limited";
 } // namespace DrmStandard
 } // namespace OHOS
 #endif // DRM_ERROR_CODE_H

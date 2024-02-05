@@ -87,6 +87,8 @@ ohos_shared_library("drm_framework") {
     "napi:ace_napi",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:napi_base_context"
   ]
 
   cflags_cc = cflags

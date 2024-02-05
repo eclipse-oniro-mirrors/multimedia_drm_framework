@@ -20,6 +20,7 @@
         "hisysevent_config": [ ],
         "deps": {
           "components": [
+              "ability_runtime",
               "safwk",
               "napi",
               "samgr",

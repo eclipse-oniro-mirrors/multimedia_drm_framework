@@ -24,7 +24,6 @@
 #include "i_mediakeysystemfactory_service.h"
 #include "drm_death_recipient.h"
 #include "drm_log.h"
-#include "drm_error_code.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -39,6 +38,7 @@ public:
     bool IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType,
         IMediaKeySessionService::ContentProtectionLevel securityLevel);
     int32_t CreateMediaKeySystem(std::string &uuid, sptr<MediaKeySystemImpl> *mediaKeySystemImpl);
+    int32_t keySystemNumber = 0;
 
 private:
     void MediaKeySystemServerDied(pid_t pid);

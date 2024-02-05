@@ -39,7 +39,7 @@ class MediaKeySessionImplCallback : public RefBase {
 public:
     MediaKeySessionImplCallback() = default;
     virtual ~MediaKeySessionImplCallback() = default;
-    virtual void SendEvent(const std::string event, int32_t extra, const std::vector<uint8_t> data) = 0;
+    virtual void SendEvent(const std::string &event, int32_t extra, const std::vector<uint8_t> &data) = 0;
     virtual void SendEventKeyChanged(std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> statusTable,
         bool hasNewGoodLicense) = 0;
 };
