@@ -78,7 +78,7 @@ Drm_ErrCode OH_MediaKeySession_ProcessMediaKeyResponse(MediaKeySession *mediaKey
     int32_t responseLen, uint8_t *offlineMediaKeyId, int32_t *offlineMediaKeyIdLen)
 {
     DRM_CHECK_AND_RETURN_RET_LOG(
-        ((mediaKeySession != nullptr) && (response != nullptr) && (responseLen != 0) &&
+        ((mediaKeySession != nullptr) && (response != nullptr) && (responseLen > 0) &&
         (offlineMediaKeyId != nullptr) && (offlineMediaKeyIdLen != nullptr)), DRM_ERR_INVALID_VAL,
         "params is nullptr!");
     MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySession);
@@ -159,7 +159,7 @@ Drm_ErrCode OH_MediaKeySession_GenerateOfflineReleaseRequest(MediaKeySession *me
 {
     DRM_INFO_LOG("OH_MediaKeySession_GenerateOfflineReleaseRequest enter");
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySessoin != nullptr) && (offlineMediaKeyId != nullptr) &&
-        (offlineMediaKeyIdLen != 0) && (releaseRequest != nullptr) && (releaseRequestLen != nullptr)),
+        (offlineMediaKeyIdLen > 0) && (releaseRequest != nullptr) && (releaseRequestLen != nullptr)),
         DRM_ERR_INVALID_VAL, "OH_MediaKeySession_GenerateOfflineReleaseRequest keySession is nullptr!");
     std::vector<uint8_t> ReleaseRequest;
     std::vector<uint8_t> licenseIdVec(offlineMediaKeyId, offlineMediaKeyId + offlineMediaKeyIdLen);
@@ -188,7 +188,7 @@ Drm_ErrCode OH_MediaKeySession_ProcessOfflineReleaseResponse(MediaKeySession *me
 {
     DRM_INFO_LOG("OH_MediaKeySession_ProcessOfflineReleaseResponse enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySessoin != nullptr) && (offlineMediaKeyId != nullptr) &&
-        (offlineMediaKeyIdLen != 0) && (releaseReponse != nullptr) && (releaseReponseLen != 0)),
+        (offlineMediaKeyIdLen > 0) && (releaseReponse != nullptr) && (releaseReponseLen > 0)),
         DRM_ERR_INVALID_VAL, "OH_MediaKeySession_ClearMediaKeys keySession is nullptr!");
     std::vector<uint8_t> licenseIdVec(offlineMediaKeyId, offlineMediaKeyId + offlineMediaKeyIdLen);
     std::vector<uint8_t> responseVec(releaseReponse, releaseReponse + releaseReponseLen);
