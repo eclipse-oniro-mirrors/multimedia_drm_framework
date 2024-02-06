@@ -437,13 +437,14 @@ napi_value MediaKeySessionNapi::CheckMediaKeyStatus(napi_env env, napi_callback_
         DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr, "MediaKeySessionNapi CheckMediaKeyStatus call Failed!");
     } else {
         DRM_ERR_LOG("MediaKeySessionNapi CheckMediaKeyStatus call Failed!");
-        NapiDrmError::ThrowError(env, DRM_UNKNOWN_ERROR);
+        NapiDrmError::ThrowError(env, "MediaKeySessionNapi CheckMediaKeyStatus call Failed!", DRM_UNKNOWN_ERROR);
         return nullptr;
     }
 
     if (licenseStatus.size() == 0) {
         DRM_ERR_LOG("Licence not exist.");
-        NapiDrmError::ThrowError(env, DRM_SERVICE_FATAL_ERROR);
+        NapiDrmError::ThrowError(env, "MediaKeySessionNapi CheckMediaKeyStatus call Failed!",
+            DRM_SERVICE_FATAL_ERROR);
         return nullptr;
     }
     result = vectorToJsArray(env, licenseStatus);
@@ -505,12 +506,14 @@ napi_value MediaKeySessionNapi::ClearMediaKeys(napi_env env, napi_callback_info 
         int32_t ret = keySessionNapi->keySessionImpl_->ClearMediaKeys();
         if (ret != DRM_OK) {
             DRM_ERR_LOG("MediaKeySessionNapi ClearMediaKeys call Failed!");
-            NapiDrmError::ThrowError(env, DRM_SERVICE_FATAL_ERROR);
+            NapiDrmError::ThrowError(env, "MediaKeySessionNapi ClearMediaKeys call Failed!",
+                DRM_SERVICE_FATAL_ERROR);
             return nullptr;
         }
     } else {
         DRM_ERR_LOG("MediaKeySessionNapi ClearMediaKeys call Failed!");
-        NapiDrmError::ThrowError(env, DRM_UNKNOWN_ERROR);
+        NapiDrmError::ThrowError(env, "MediaKeySessionNapi ClearMediaKeys call Failed!",
+            DRM_UNKNOWN_ERROR);
         return nullptr;
     }
 
@@ -529,7 +532,7 @@ napi_value MediaKeySessionNapi::RequireSecureDecoderModule(napi_env env, napi_ca
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
     napi_get_undefined(env, &result);
     if (argc != ARGS_ONE) {
-        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
+        NapiDrmError::ThrowError(env, "RequireSecureDecoderModule faild", DRM_INVALID_PARAM);
         DRM_ERR_LOG("invalid arguments.");
         return nullptr;
     }
@@ -631,13 +634,13 @@ napi_value MediaKeySessionNapi::SetEventCallback(napi_env env, napi_callback_inf
     NAPI_ASSERT(env, argc == ARGS_TWO, "only requires 2 parameters");
     if (thisVar == nullptr || argv[PARAM0] == nullptr || argv[PARAM1] == nullptr) {
         DRM_ERR_LOG("Failed to retrieve arguments in SetEventCallback!");
-        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
+        NapiDrmError::ThrowError(env, "SetEventCallback faild", DRM_INVALID_PARAM);
         return result;
     }
     napi_valuetype valueType = napi_undefined;
     if (napi_typeof(env, argv[PARAM0], &valueType) != napi_ok || valueType != napi_string ||
         napi_typeof(env, argv[PARAM1], &valueType) != napi_ok || valueType != napi_function) {
-        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
+        NapiDrmError::ThrowError(env, "SetEventCallback faild", DRM_INVALID_PARAM);
         return result;
     }
 
@@ -656,7 +659,7 @@ napi_value MediaKeySessionNapi::SetEventCallback(napi_env env, napi_callback_inf
         DRM_INFO_LOG("MediaKeySessionNapi::SetEventCallback out");
     } else {
         DRM_ERR_LOG("MediaKeySessionNapi SetEventCallback failed!");
-        NapiDrmError::ThrowError(env, DRM_UNKNOWN_ERROR);
+        NapiDrmError::ThrowError(env, "MediaKeySessionNapi SetEventCallback failed!", DRM_UNKNOWN_ERROR);
     }
     return result;
 }
@@ -673,13 +676,13 @@ napi_value MediaKeySessionNapi::UnsetEventCallback(napi_env env, napi_callback_i
     NAPI_ASSERT(env, argc == ARGS_ONE, "only requires 1 parameters");
     if (thisVar == nullptr || argv[PARAM0] == nullptr) {
         DRM_ERR_LOG("Failed to retrieve arguments in UnsetEventCallback!");
-        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
+        NapiDrmError::ThrowError(env, "MediaKeySessionNapi UnsetEventCallback failed!", DRM_INVALID_PARAM);
         return result;
     }
     napi_valuetype valueType = napi_undefined;
     if (napi_typeof(env, argv[PARAM0], &valueType) != napi_ok || valueType != napi_string) {
         DRM_ERR_LOG("Failed to retrieve reasonable arguments in UnsetEventCallback!");
-        NapiDrmError::ThrowError(env, DRM_INVALID_PARAM);
+        NapiDrmError::ThrowError(env, "MediaKeySessionNapi UnsetEventCallback failed!", DRM_INVALID_PARAM);
         return result;
     }
 
@@ -694,7 +697,7 @@ napi_value MediaKeySessionNapi::UnsetEventCallback(napi_env env, napi_callback_i
         DRM_INFO_LOG("MediaKeySessionNapi::UnsetEventCallback out");
     } else {
         DRM_ERR_LOG("MediaKeySessionNapi UnsetEventCallback failed!");
-        NapiDrmError::ThrowError(env, DRM_UNKNOWN_ERROR);
+        NapiDrmError::ThrowError(env, "MediaKeySessionNapi UnsetEventCallback failed!", DRM_UNKNOWN_ERROR);
     }
     return result;
 }
