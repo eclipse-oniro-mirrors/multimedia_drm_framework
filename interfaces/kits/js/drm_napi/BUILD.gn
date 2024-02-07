@@ -44,18 +44,20 @@ ohos_shared_library("drm_napi") {
   ]
   sources = [
     "./../../../../frameworks/js/drm_napi/drm_enum_napi.cpp",
+    "./../../../../frameworks/js/drm_napi/drm_error_code.cpp",
     "./../../../../frameworks/js/drm_napi/drm_napi.cpp",
     "./../../../../frameworks/js/drm_napi/key_session_callback_napi.cpp",
     "./../../../../frameworks/js/drm_napi/key_session_napi.cpp",
     "./../../../../frameworks/js/drm_napi/media_key_system_callback_napi.cpp",
     "./../../../../frameworks/js/drm_napi/media_key_system_napi.cpp",
-    "./../../../../frameworks/js/drm_napi/native_module_ohos_drm.cpp",
     "./../../../../frameworks/js/drm_napi/napi_async_work.cpp",
-    "./../../../../frameworks/js/drm_napi/drm_error_code.cpp",
     "./../../../../frameworks/js/drm_napi/napi_param_utils.cpp",
+    "./../../../../frameworks/js/drm_napi/native_module_ohos_drm.cpp",
   ]
   deps = [ "./../../../../frameworks/native:drm_framework" ]
   external_deps = [
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:napi_base_context",
     "access_token:libtokenid_sdk",
     "c_utils:utils",
     "hilog:libhilog",
@@ -63,8 +65,6 @@ ohos_shared_library("drm_napi") {
     "hitrace:hitrace_meter",
     "ipc:ipc_core",
     "napi:ace_napi",
-    "ability_runtime:abilitykit_native",
-    "ability_runtime:napi_base_context"
   ]
   sanitize = {
     cfi = true

@@ -62,7 +62,7 @@ ohos_shared_library("drm_service") {
     "ipc:ipc_single",
     "napi:ace_napi",
     "safwk:system_ability_fwk",
-    "samgr:samgr_proxy"
+    "samgr:samgr_proxy",
   ]
 
   cflags = [
