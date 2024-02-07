@@ -48,10 +48,10 @@ public:
 
     enum CertificateStatus {
         CERT_STATUS_PROVISIONED = 0,
-        CERT_STATUS_NOT_PROVISIONED = 1,
-        CERT_STATUS_EXPIRED = 3,
-        CERT_STATUS_INVALID = 4,
-        CERT_STATUS_UNAVAILABLE = 5,
+        CERT_STATUS_NOT_PROVISIONED,
+        CERT_STATUS_EXPIRED,
+        CERT_STATUS_INVALID,
+        CERT_STATUS_UNAVAILABLE,
     };
 
     struct MetircKeyValue {

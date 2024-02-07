@@ -79,6 +79,8 @@ ohos_shared_library("drm_framework") {
   deps = []
 
   external_deps = [
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:napi_base_context",
     "c_utils:utils",
     "hilog:libhilog",
     "hisysevent:libhisysevent",

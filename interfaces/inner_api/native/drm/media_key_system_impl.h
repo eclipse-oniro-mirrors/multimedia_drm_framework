@@ -21,7 +21,6 @@
 #include "nocopyable.h"
 #include "system_ability_definition.h"
 #include "drm_log.h"
-#include "drm_error_code.h"
 #include "drm_death_recipient.h"
 #include "key_session_impl.h"
 #include "i_mediakeysystem_service.h"
@@ -36,7 +35,7 @@ class MediaKeySystemImplCallback : public RefBase {
 public:
     MediaKeySystemImplCallback() = default;
     virtual ~MediaKeySystemImplCallback() = default;
-    virtual void SendEvent(const std::string event, int32_t extra, const std::vector<uint8_t> data) = 0;
+    virtual void SendEvent(const std::string &event, int32_t extra, const std::vector<uint8_t> &data) = 0;
 };
 
 class MediaKeySystemImpl : public RefBase {
@@ -71,6 +70,8 @@ private:
     sptr<IMediaKeySystemService> serviceProxy_;
     sptr<MediaKeySystemImplCallback> mediaKeySystemApplicationCallback_;
     sptr<IMeidaKeySystemServiceCallback> serviceCallback_;
+    std::vector<sptr<MediaKeySessionImpl>> keySessionVec;
+    uint32_t keySessionNumber = 0;
 };
 
 class MediaKeySystemCallback : public MeidaKeySystemServiceCallbackStub {

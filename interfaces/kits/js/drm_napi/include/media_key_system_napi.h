@@ -33,10 +33,19 @@
 #include "media_key_system_impl.h"
 #include "media_key_system_factory_impl.h"
 #include "media_key_system_callback_napi.h"
+#include "napi_param_utils.h"
+#include "drm_error_code.h"
+#include "napi_async_work.h"
 
 namespace OHOS {
 namespace DrmStandard {
 static const char MEDIA_KEY_SYSTEM_NAPI_CLASS_NAME[] = "MediaKeySystem";
+
+struct MediaKeySystemAsyncContext : public ContextBase {
+    int32_t intValue;
+    NapiProvisionRequest provisionRequest;
+    std::vector<uint8_t> response;
+};
 
 class MediaKeySystemNapi {
 public:
@@ -64,8 +73,11 @@ public:
 
     static napi_value SetEventCallback(napi_env env, napi_callback_info info);
     static napi_value UnsetEventCallback(napi_env env, napi_callback_info info);
-    void SaveEventCallbackReferrence(const std::string eventType, sptr<CallBackPair> callbackPair);
+    void SaveEventCallbackReferrence(const std::string eventType, std::shared_ptr<AutoRef> callbackPair);
     void ClearEventCallbackReferrence(const std::string eventType);
+    static bool CheckMediaKeySystemStatus(MediaKeySystemNapi *napi,
+        std::shared_ptr<MediaKeySystemAsyncContext> context);
+    static bool CheckContextStatus(std::shared_ptr<MediaKeySystemAsyncContext> context);
 
 private:
     static napi_value MediaKeySystemNapiConstructor(napi_env env, napi_callback_info info);

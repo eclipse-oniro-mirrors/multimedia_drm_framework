@@ -55,13 +55,13 @@ DRM框架组件提供以下功能：
 ~~~js
 import drm from  '@ohos.multimedia.drm';
 ~~~
-2.判断DRM框架是否支持指定的DRM方案, 示例以'com.drm.clearplay'为例。
+2.判断DRM框架是否支持指定的DRM方案, 示例以'com.clearplay.drm'为例。
 ~~~js
-var isSupported = drm.isMediaKeySystemSupported('com.drm.clearplay');
+var isSupported = drm.isMediaKeySystemSupported('com.clearplay.drm');
 ~~~
 3.创建MediaKeySystem实例, 
 ~~~js
-var keySystem = drm.createMediaKeySystem('com.drm.clearplay');
+var keySystem = drm.createMediaKeySystem('com.clearplay.drm');
 ~~~
 4.如无本地DRM证书，需完成证书下载。
 ~~~js
