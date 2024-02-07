@@ -55,6 +55,7 @@ ohos_unittest("drm_framework_capi_unittest_v1_0") {
   deps = [
     "../../../../frameworks/native:drm_framework",
     "../../../../interfaces/kits/c/drm_capi:native_drm",
+    "../../../../interfaces/kits/js/drm_napi:drm_napi",
     "../../../../services/drm_service:drm_service",
     "//third_party/googletest:gmock_main",
   ]

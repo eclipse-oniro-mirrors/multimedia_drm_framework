@@ -20,6 +20,8 @@
         "hisysevent_config": [ ],
         "deps": {
           "components": [
+              "ability_base",
+              "ability_runtime",
               "safwk",
               "napi",
               "samgr",
@@ -33,8 +35,7 @@
               "hdf_core",
               "eventhandler",
               "bundle_framework",
-              "drivers_interface_drm",
-              "ability_base"
+              "drivers_interface_drm"
             ]
         },
         "build": {

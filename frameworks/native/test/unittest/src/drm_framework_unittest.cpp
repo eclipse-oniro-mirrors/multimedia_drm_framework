@@ -18,7 +18,6 @@
 #include <refbase.h>
 #include <securec.h>
 #include "drm_log.h"
-#include "drm_error_code.h"
 #include "native_drm_base.h"
 #include "native_drm_object.h"
 #include "key_session_impl.h"
@@ -29,7 +28,6 @@
 #include "native_drm_common.h"
 #include "native_drm_err.h"
 #include "gmock/gmock.h"
-#include "drm_error_code.h"
 #include "native_drm_base.h"
 #include "native_drm_object.h"
 #include "key_session_impl.h"
@@ -49,7 +47,6 @@
 #include "drm_types.h"
 #include "drm_framework_unittest.h"
 #include "drm_log.h"
-#include "drm_error_code.h"
 
 #define DRM_SAMPLE_CHECK_AND_RETURN_RET_LOG(cond, ret, fmt, ...) \
     do {                                                         \
