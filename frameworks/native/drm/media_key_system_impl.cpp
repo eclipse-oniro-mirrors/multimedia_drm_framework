@@ -180,7 +180,7 @@ int32_t MediaKeySystemImpl::CreateMediaKeySession(IMediaKeySessionService::Conte
         /* In the case of initial and complete destruction,
 		*  all members of the keySession list are null pointers
 		*/
-        if (keySessionNumber > 0 && keySessionVec[i] == nullptr) {
+        if (keySessionNumber > 0 && keySessionVec[i]->GetMediaKeySessionServiceProxy() == nullptr) {
             keySessionNumber--;
             keySessionVec.erase(keySessionVec.begin() + i);
         }

@@ -100,7 +100,7 @@ private:
     std::string service_name_ = "drm_interface_service";
     sptr<IMediaKeySystemFactory> drmHostServieProxy_;
     sptr<IMediaKeySystem> hdiMediaKeySystem;
-    static std::mutex handleAndKeySystemMapMutex;
+    static std::recursive_mutex handleAndKeySystemMapMutex;
     static std::map<void *, sptr<IMediaKeySystem>> handleAndKeySystemMap;
     std::thread serviceThread;
     bool serviceThreadRunning = false;

@@ -261,7 +261,7 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
 
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
     if (argc == ARGS_ZERO) {
-        jsContentProtectionLevel = IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN;
+        jsContentProtectionLevel = IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
     } else {
         DRM_CHECK_AND_RETURN_RET_LOG(napi_get_value_int32(env, argv[PARAM0], &jsContentProtectionLevel) == napi_ok,
             nullptr, "MediaKeySystemNapi napi get jsContentProtectionLevel failure!");
