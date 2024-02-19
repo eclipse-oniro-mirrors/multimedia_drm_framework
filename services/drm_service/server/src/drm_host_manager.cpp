@@ -34,7 +34,7 @@ std::mutex DrmHostManager::libMutex;
 std::condition_variable DrmHostManager::cv;
 std::mutex DrmHostManager::libMapMutex;
 std::map<std::string, void *> DrmHostManager::libMap;
-std::mutex DrmHostManager::handleAndKeySystemMapMutex;
+std::recursive_mutex DrmHostManager::handleAndKeySystemMapMutex;
 std::map<void *, sptr<IMediaKeySystem>> DrmHostManager::handleAndKeySystemMap;
 
 void DrmHostManager::DrmHostDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
@@ -108,7 +108,7 @@ void DrmHostManager::ProcessMessage()
 
 void DrmHostManager::ReleaseHandleAndKeySystemMap(void *handle)
 {
-    std::lock_guard<std::mutex> lock(handleAndKeySystemMapMutex);
+    std::lock_guard<std::recursive_mutex> lock(handleAndKeySystemMapMutex);
     auto it = handleAndKeySystemMap.find(handle);
     if (it != handleAndKeySystemMap.end()) {
         it->second->Destroy();
@@ -165,7 +165,7 @@ void DrmHostManager::ServiceThreadMain()
                     DRM_ERR_LOG("DrmHostManager::CreateMediaKeySystem error!");
                     continue;
                 }
-                std::lock_guard<std::mutex> lockHandle(handleAndKeySystemMapMutex);
+                std::lock_guard<std::recursive_mutex> lockHandle(handleAndKeySystemMapMutex);
                 handleAndKeySystemMap.insert(std::make_pair(handle, hdiMediaKeySystem));
                 ret = SetMediaKeySystem(hdiMediaKeySystem);
                 if (ret != DRM_OK) {
