@@ -21,6 +21,7 @@ config("drm_framework_capi_unittest_v1_0_config") {
     "../../../../interfaces/kits/c/drm_capi/include",
     "../../../../interfaces/kits/c/drm_capi/common",
     "../../../../frameworks/native/test/unittest/include",
+    "../../../../frameworks/native/test/common/include",
     "../../../../interfaces/inner_api/native/drm",
     "../../../../services/utils/include",
   ]
@@ -50,13 +51,17 @@ ohos_unittest("drm_framework_capi_unittest_v1_0") {
     debug = true
   }
 
-  sources = [ "../../../../frameworks/native/test/unittest/src/drm_framework_unittest.cpp" ]
+  sources = [
+    "../../../../frameworks/native/test/common/src/http.cpp",
+    "../../../../frameworks/native/test/unittest/src/drm_framework_unittest.cpp",
+  ]
 
   deps = [
     "../../../../frameworks/native:drm_framework",
     "../../../../interfaces/kits/c/drm_capi:native_drm",
     "../../../../interfaces/kits/js/drm_napi:drm_napi",
     "../../../../services/drm_service:drm_service",
+    "//third_party/curl:curl_shared",
     "//third_party/googletest:gmock_main",
   ]
 

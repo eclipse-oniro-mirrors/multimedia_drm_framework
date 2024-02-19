@@ -16,12 +16,6 @@
 #include <shared_mutex>
 #include <string>
 #include <refbase.h>
-#include <securec.h>
-#include "drm_log.h"
-#include "native_drm_base.h"
-#include "native_drm_object.h"
-#include "key_session_impl.h"
-#include "native_mediakeysession.h"
 #include "cstdio"
 #include "cstdlib"
 #include <securec.h>
@@ -30,10 +24,21 @@
 #include "gmock/gmock.h"
 #include "native_drm_base.h"
 #include "native_drm_object.h"
-#include "key_session_impl.h"
 #include "i_mediadecryptmodule_service.h"
 #include "native_mediakeysession.h"
 #include "native_mediakeysystem.h"
+#include "cstdbool"
+#include "drm_types.h"
+#include "drm_framework_unittest.h"
+#include "system_ability_definition.h"
+#include "drm_log.h"
+#include "drm_death_recipient.h"
+#include "key_session_impl.h"
+#include "i_mediakeysystem_service.h"
+#include "mediakeysystem_service_callback_stub.h"
+#include "http.h"
+#include "ashmem.h"
+#include "media_decrypt_module_service_proxy.h"
 #include <cstring>
 #include <map>
 #include <unordered_map>
@@ -43,10 +48,6 @@
 #include "i_keysession_service.h"
 #include "i_keysession_service_callback.h"
 #include "key_session_service_callback_stub.h"
-#include "cstdbool"
-#include "drm_types.h"
-#include "drm_framework_unittest.h"
-#include "drm_log.h"
 
 #define DRM_SAMPLE_CHECK_AND_RETURN_RET_LOG(cond, ret, fmt, ...) \
     do {                                                         \
@@ -82,6 +83,31 @@
             0x22, 0x65, 0x6E, 0x73, 0x63, 0x68, 0x65, 0x6D, 0x61, 0x22,                                        \
             0x3A, 0x22, 0x63, 0x62, 0x63, 0x31, 0x22, 0x7D                                                     \
     }
+#define OFFREQUESTINFODATA                                                                                     \
+    {                                                                                                          \
+        0x00, 0x00, 0x00, 0xF1, 0x70, 0x73, 0x73, 0x68, 0x00, 0x00, 0x00, 0x00,                                \
+            0x3D, 0x5E, 0x6D, 0x35, 0x9B, 0x9A, 0x41, 0xE8, 0xB8, 0x43, 0xDD,                                  \
+            0x3C, 0x6E, 0x72, 0xC4, 0x2C, 0x00, 0x00, 0x00, 0xD1, 0x7B, 0x22,                                  \
+            0x76, 0x65, 0x72, 0x73, 0x69, 0x6F, 0x6E, 0x22, 0x3A, 0x22, 0x56,                                  \
+            0x31, 0x2E, 0x30, 0x22, 0x2C, 0x22, 0x63, 0x6F, 0x6E, 0x74, 0x65,                                  \
+            0x6E, 0x74, 0x49, 0x44, 0x22, 0x3A, 0x22, 0x78, 0x75, 0x78, 0x69,                                  \
+            0x6E, 0x30, 0x37, 0x31, 0x31, 0x22, 0x2C, 0x22, 0x6B, 0x69, 0x64,                                  \
+            0x73, 0x22, 0x3A, 0x5B, 0x22, 0x61, 0x63, 0x61, 0x32, 0x35, 0x35,                                  \
+            0x65, 0x35, 0x62, 0x32, 0x64, 0x64, 0x65, 0x32, 0x65, 0x34, 0x63,                                  \
+            0x38, 0x62, 0x62, 0x37, 0x63, 0x31, 0x36, 0x36, 0x63, 0x65, 0x61,                                  \
+            0x63, 0x31, 0x30, 0x30, 0x22, 0x2C, 0x22, 0x61, 0x63, 0x61, 0x32,                                  \
+            0x35, 0x35, 0x65, 0x35, 0x62, 0x32, 0x64, 0x64, 0x65, 0x32, 0x65,                                  \
+            0x34, 0x63, 0x38, 0x62, 0x62, 0x37, 0x63, 0x31, 0x36, 0x36, 0x63,                                  \
+            0x65, 0x61, 0x63, 0x31, 0x30, 0x31, 0x22, 0x2C, 0x22, 0x61, 0x63,                                  \
+            0x61, 0x32, 0x35, 0x35, 0x65, 0x35, 0x62, 0x32, 0x64, 0x64, 0x65,                                  \
+            0x32, 0x65, 0x34, 0x63, 0x38, 0x62, 0x62, 0x37, 0x63, 0x31, 0x36,                                  \
+            0x36, 0x63, 0x65, 0x61, 0x63, 0x31, 0x30, 0x31, 0x22, 0x2C, 0x22,                                  \
+            0x61, 0x63, 0x61, 0x32, 0x35, 0x35, 0x65, 0x35, 0x62, 0x32, 0x64,                                  \
+            0x64, 0x65, 0x32, 0x65, 0x34, 0x63, 0x38, 0x62, 0x62, 0x37, 0x63,                                  \
+            0x31, 0x36, 0x36, 0x63, 0x65, 0x61, 0x63, 0x31, 0x30, 0x31, 0x22,                                  \
+            0x5D, 0x2C, 0x22, 0x65, 0x6E, 0x73, 0x63, 0x68, 0x65, 0x6D, 0x61,                                  \
+            0x22, 0x3A, 0x22, 0x63, 0x62, 0x63, 0x31, 0x22, 0x7D                                               \
+    }
 #define ONRESPONSE                                                                                             \
     {                                                                                                          \
         0x30, 0x64, 0x6E, 0x5A, 0x32, 0x4E, 0x57, 0x74, 0x76, 0x4D, 0x47,                                      \
@@ -90,19 +116,20 @@
             0x48, 0x64, 0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45,                                        \
             0x34, 0x5A, 0x48, 0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D                                               \
     }
+
+
+#define LICENSE_URL "http://192.168.50.59:9528/getLicense"
+#define PROVISION_URL "http://192.168.50.59:9528/getProvision"
 using namespace testing::ext;
 using namespace std;
 
 namespace OHOS {
 namespace DrmStandard {
+
+bool g_isWisePlay = false;
 void DrmFrameworkUnitTest::SetUpTestCase(void) {}
 
 void DrmFrameworkUnitTest::TearDownTestCase(void) {}
-
-void DrmFrameworkUnitTest::SetUp() {}
-
-void DrmFrameworkUnitTest::TearDown() {}
-
 
 static const char *GetUuid()
 {
@@ -115,6 +142,15 @@ static const char *GetUuid()
     }
 }
 
+void DrmFrameworkUnitTest::SetUp()
+{
+    if (strcmp(GetUuid(), "com.wiseplay.drm") == 0) {
+        g_isWisePlay = true;
+    }
+}
+
+void DrmFrameworkUnitTest::TearDown() {}
+
 static const char *GetDrmPlugin()
 {
     if (OH_MediaKeySystem_IsSupported("com.clearplay.drm")) {
@@ -124,6 +160,26 @@ static const char *GetDrmPlugin()
     } else {
         return "ERROR";
     }
+}
+
+Drm_ErrCode TestSystemEventCallBack(DRM_EventType eventType, unsigned char *info,
+    int32_t infoLen, char *extra)
+{
+    DRM_SAMPLE_INFO_LOG("TestSystemEventCallBack ok");
+    return DRM_ERR_OK;
+}
+
+Drm_ErrCode TestSessoinEventCallBack(DRM_EventType eventType, unsigned char *info,
+    int32_t infoLen, char *extra)
+{
+    DRM_SAMPLE_INFO_LOG("TestSessoinEventCallBack ok");
+    return DRM_ERR_OK;
+}
+
+Drm_ErrCode TestSessoinKeyChangeCallBack(DRM_KeysInfo *keysInfo, bool hasNewGoodKeys)
+{
+    DRM_SAMPLE_INFO_LOG("TestSessoinKeyChangeCallBack ok");
+    return DRM_ERR_OK;
 }
 
 /*
@@ -350,8 +406,27 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CreateMediaKeySessionNormal_011, Tes
     errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_SetMediaKeySystemCallback(mediaKeySystem, &TestSystemEventCallBack);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
-    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(mediaKeySession, nullptr);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    unsigned char request[8192] = { 0 }; // 8192:request len
+    int32_t requestLen = 8192; // 8192:request len
+    char defaultUrl[2048] = { 0 }; // 2048:url len
+    int32_t defaultUrlLen = 2048; // 2048:url len
+    errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
+        defaultUrlLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
@@ -614,8 +689,15 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseNormal_020, T
 {
     Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
     MediaKeySystem *mediaKeySystem = nullptr;
+    MediaKeySession *mediaKeySession = nullptr;
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
     errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_SetMediaKeySystemCallback(mediaKeySystem, &TestSystemEventCallBack);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char request[8192] = { 0 }; // 8192:request len
     int32_t requestLen = 8192; // 8192:request len
@@ -624,8 +706,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseNormal_020, T
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
@@ -659,8 +747,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_021,
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(nullptr, KeySystemResponse, KeySystemResponseLen);
     EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
@@ -695,8 +789,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_022,
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, nullptr, KeySystemResponseLen);
     EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
@@ -726,8 +826,15 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_023,
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = 0;
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
+    KeySystemResponseLen = 0;
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
@@ -757,8 +864,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateMediaKeyRequestNormal_024, T
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -807,8 +920,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateMediaKeyRequestAbNormal_025,
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -857,8 +976,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateMediaKeyRequestAbNormal_026,
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -890,7 +1015,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateMediaKeyRequestAbNormal_026,
  * Sub function: NA
  * Function point: NA
  * Environmental conditions: NA
- * Case Description: Processing Device Certificate Response Testing
+  * Case Description: Processing Device Certificate Response Testing
  */
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateMediaKeyRequestAbNormal_027, TestSize.Level0)
 {
@@ -907,8 +1032,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateMediaKeyRequestAbNormal_027,
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -956,8 +1087,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseNormal_028, T
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -977,11 +1114,19 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseNormal_028, T
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }
     errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
@@ -1012,8 +1157,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_029,
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -1022,7 +1173,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_029,
     // mediakeysession
     DRM_MediaKeyRequest mediaKeyRequest;
     DRM_MediaKeyRequestInfo info;
-    unsigned char testData[50] = OFFRESPONSE;
+    unsigned char testData[1] = { 0 };
     memset_s(&info, sizeof(DRM_MediaKeyRequestInfo), 0, sizeof(DRM_MediaKeyRequestInfo));
     info.initDataLen = sizeof(testData);
     info.type = MEDIA_KEY_TYPE_ONLINE;
@@ -1033,11 +1184,18 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_029,
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_NE(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(nullptr, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(nullptr, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
@@ -1068,8 +1226,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_030,
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -1078,7 +1242,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_030,
     // mediakeysession
     DRM_MediaKeyRequest mediaKeyRequest;
     DRM_MediaKeyRequestInfo info;
-    unsigned char testData[50] = OFFRESPONSE;
+    unsigned char testData[1] = { 0 };
     memset_s(&info, sizeof(DRM_MediaKeyRequestInfo), 0, sizeof(DRM_MediaKeyRequestInfo));
     info.initDataLen = sizeof(testData);
     info.type = MEDIA_KEY_TYPE_ONLINE;
@@ -1089,10 +1253,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_030,
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_NE(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char onlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
     errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, nullptr, 0,
-        offlineMediaKeyId, &offlineMediaKeyIdLen);
+        onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
@@ -1123,8 +1287,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_031,
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -1145,9 +1315,9 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_031,
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
     errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), nullptr, &offlineMediaKeyIdLen);
+        (int32_t)(sizeof(testKeySessionResponse)), nullptr, &onlineMediaKeyIdLen);
     EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
@@ -1179,8 +1349,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_032,
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
@@ -1201,10 +1377,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_032,
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char onlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
     unsigned char testKeySessionResponse[50] = OFFRESPONSE;
     errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, nullptr);
+        (int32_t)(sizeof(testKeySessionResponse)), onlineMediaKeyId, nullptr);
     EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
@@ -1235,8 +1411,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CheckMediaKeyStatusNormal_033, TestS
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -1256,11 +1438,19 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CheckMediaKeyStatusNormal_033, TestS
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }
     errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_MediaKeyStatus mediaKeyStatus;
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyStatus);
@@ -1294,8 +1484,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CheckMediaKeyStatusAbNormal_034, Tes
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -1315,11 +1511,18 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CheckMediaKeyStatusAbNormal_034, Tes
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_MediaKeyStatus mediaKeyStatus;
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(nullptr, &mediaKeyStatus);
@@ -1353,8 +1556,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CheckMediaKeyStatusAbNormal_035, Tes
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -1374,11 +1583,18 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CheckMediaKeyStatusAbNormal_035, Tes
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, nullptr);
     EXPECT_NE(errNo, DRM_ERR_OK);
@@ -1411,8 +1627,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearMediaKeysNormal_036, TestSize.L
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -1432,11 +1654,18 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearMediaKeysNormal_036, TestSize.L
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_MediaKeyStatus mediaKeyStatus;
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyStatus);
@@ -1474,8 +1703,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearMediaKeysAbNormal_037, TestSize
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -1495,11 +1730,18 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearMediaKeysAbNormal_037, TestSize
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_MediaKeyStatus mediaKeyStatus;
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyStatus);
@@ -1535,8 +1777,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyStatusNormal_038, 
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -1545,10 +1793,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyStatusNormal_038, 
     // mediakeysession
     DRM_MediaKeyRequest mediaKeyRequest;
     DRM_MediaKeyRequestInfo info;
-    unsigned char testData[139] = REQUESTINFODATA;
+    unsigned char testData[241] = OFFREQUESTINFODATA;
     memset_s(&info, sizeof(DRM_MediaKeyRequestInfo), 0, sizeof(DRM_MediaKeyRequestInfo));
     info.initDataLen = sizeof(testData);
-    info.type = MEDIA_KEY_TYPE_ONLINE;
+    info.type = MEDIA_KEY_TYPE_OFFLINE;
     memcpy_s(info.mimeType, sizeof("video/mp4"), (char *)"video/mp4", sizeof("video/mp4"));
     memcpy_s(info.initData, sizeof(testData), testData, sizeof(testData));
     memcpy_s(info.optionName[0], sizeof("optionalDataName"), (char *)"optionalDataName", sizeof("optionalDataName"));
@@ -1556,17 +1804,24 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyStatusNormal_038, 
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_MediaKeyStatus mediaKeyStatus;
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyStatus);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
         &OfflineMediaKeyStatus);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
@@ -1598,8 +1853,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyStatusAbNormal_039
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -1619,17 +1880,24 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyStatusAbNormal_039
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_MediaKeyStatus mediaKeyStatus;
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyStatus);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(nullptr, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(nullptr, onlineMediaKeyId, onlineMediaKeyIdLen,
         &OfflineMediaKeyStatus);
     EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
@@ -1661,8 +1929,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyStatusAbNormal_040
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -1682,17 +1956,24 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyStatusAbNormal_040
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_MediaKeyStatus mediaKeyStatus;
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyStatus);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, nullptr, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, nullptr, onlineMediaKeyIdLen,
         &OfflineMediaKeyStatus);
     EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
@@ -1724,8 +2005,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyStatusAbNormal_041
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -1745,16 +2032,23 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyStatusAbNormal_041
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_MediaKeyStatus mediaKeyStatus;
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyStatus);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
         nullptr);
     EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
@@ -1786,8 +2080,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyIdsNormal_042, Tes
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -1796,10 +2096,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyIdsNormal_042, Tes
     // mediakeysession
     DRM_MediaKeyRequest mediaKeyRequest;
     DRM_MediaKeyRequestInfo info;
-    unsigned char testData[139] = REQUESTINFODATA;
+    unsigned char testData[241] = OFFREQUESTINFODATA;
     memset_s(&info, sizeof(DRM_MediaKeyRequestInfo), 0, sizeof(DRM_MediaKeyRequestInfo));
     info.initDataLen = sizeof(testData);
-    info.type = MEDIA_KEY_TYPE_ONLINE;
+    info.type = MEDIA_KEY_TYPE_OFFLINE;
     memcpy_s(info.mimeType, sizeof("video/mp4"), (char *)"video/mp4", sizeof("video/mp4"));
     memcpy_s(info.initData, sizeof(testData), testData, sizeof(testData));
     memcpy_s(info.optionName[0], sizeof("optionalDataName"), (char *)"optionalDataName", sizeof("optionalDataName"));
@@ -1807,11 +2107,18 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyIdsNormal_042, Tes
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_OfflineMediakeyIdArray offlineMediaKeyIds;
     errNo = OH_MediaKeySystem_GetOfflineMediaKeyIds(mediaKeySystem, &offlineMediaKeyIds);
@@ -1845,8 +2152,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyIdsAbNormal_043, T
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -1866,11 +2179,18 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyIdsAbNormal_043, T
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_OfflineMediakeyIdArray offlineMediaKeyIds;
     errNo = OH_MediaKeySystem_GetOfflineMediaKeyIds(nullptr, &offlineMediaKeyIds);
@@ -1904,8 +2224,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyIdsAbNormal_044, T
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -1925,11 +2251,18 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyIdsAbNormal_044, T
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_GetOfflineMediaKeyIds(mediaKeySystem, nullptr);
     EXPECT_NE(errNo, DRM_ERR_OK);
@@ -1962,8 +2295,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateOfflineReleaseRequestNormal_
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -1972,10 +2311,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateOfflineReleaseRequestNormal_
     // mediakeysession
     DRM_MediaKeyRequest mediaKeyRequest;
     DRM_MediaKeyRequestInfo info;
-    unsigned char testData[139] = REQUESTINFODATA;
+    unsigned char testData[241] = OFFREQUESTINFODATA;
     memset_s(&info, sizeof(DRM_MediaKeyRequestInfo), 0, sizeof(DRM_MediaKeyRequestInfo));
     info.initDataLen = sizeof(testData);
-    info.type = MEDIA_KEY_TYPE_ONLINE;
+    info.type = MEDIA_KEY_TYPE_OFFLINE;
     memcpy_s(info.mimeType, sizeof("video/mp4"), (char *)"video/mp4", sizeof("video/mp4"));
     memcpy_s(info.initData, sizeof(testData), testData, sizeof(testData));
     memcpy_s(info.optionName[0], sizeof("optionalDataName"), (char *)"optionalDataName", sizeof("optionalDataName"));
@@ -1983,20 +2322,27 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateOfflineReleaseRequestNormal_
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
         &OfflineMediaKeyStatus);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     EXPECT_EQ(OfflineMediaKeyStatus, 1);
     unsigned char releaseRequest[8192] = { 0 }; // 8192:request len
     int32_t releaseRequestLen = 8192; // 8192:request len
-    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
         releaseRequest, &releaseRequestLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
@@ -2004,37 +2350,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateOfflineReleaseRequestNormal_
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 }
-void TestPart_046(MediaKeySystem *mediaKeySystem, MediaKeySession *mediaKeySession)
-{
-    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
-        &OfflineMediaKeyStatus);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    EXPECT_EQ(OfflineMediaKeyStatus, 1);
-    unsigned char releaseRequest[8192] = { 0 }; // 8192:request len
-    int32_t releaseRequestLen = 8192; // 8192:request len
-    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(nullptr, offlineMediaKeyId, offlineMediaKeyIdLen,
-        releaseRequest, &releaseRequestLen);
-    EXPECT_NE(errNo, DRM_ERR_OK);
-    releaseRequestLen = 8192; // 8192:request len
-    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, nullptr, offlineMediaKeyIdLen,
-        releaseRequest, &releaseRequestLen);
-    EXPECT_NE(errNo, DRM_ERR_OK);
-    releaseRequestLen = 8192; // 8192:request len
-    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
-        nullptr, &releaseRequestLen);
-    EXPECT_NE(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
-        releaseRequest, nullptr);
-    EXPECT_NE(errNo, DRM_ERR_OK);
-}
+
 /*
  * Feature: Framework
  * Function: Processing device certificate response testing
@@ -2058,8 +2374,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateOfflineReleaseRequestAbNorma
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -2068,10 +2390,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateOfflineReleaseRequestAbNorma
     // mediakeysession
     DRM_MediaKeyRequest mediaKeyRequest;
     DRM_MediaKeyRequestInfo info;
-    unsigned char testData[139] = REQUESTINFODATA;
+    unsigned char testData[241] = OFFREQUESTINFODATA;
     memset_s(&info, sizeof(DRM_MediaKeyRequestInfo), 0, sizeof(DRM_MediaKeyRequestInfo));
     info.initDataLen = sizeof(testData);
-    info.type = MEDIA_KEY_TYPE_ONLINE;
+    info.type = MEDIA_KEY_TYPE_OFFLINE;
     memcpy_s(info.mimeType, sizeof("video/mp4"), (char *)"video/mp4", sizeof("video/mp4"));
     memcpy_s(info.initData, sizeof(testData), testData, sizeof(testData));
     memcpy_s(info.optionName[0], sizeof("optionalDataName"), (char *)"optionalDataName", sizeof("optionalDataName"));
@@ -2079,40 +2401,46 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateOfflineReleaseRequestAbNorma
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    TestPart_046(mediaKeySystem, mediaKeySession);
-    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-}
-void TestPart_047(MediaKeySystem *mediaKeySystem, MediaKeySession *mediaKeySession)
-{
-    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
         &OfflineMediaKeyStatus);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     EXPECT_EQ(OfflineMediaKeyStatus, 1);
     unsigned char releaseRequest[8192] = { 0 }; // 8192:request len
     int32_t releaseRequestLen = 8192; // 8192:request len
-    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(nullptr, onlineMediaKeyId, onlineMediaKeyIdLen,
         releaseRequest, &releaseRequestLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    releaseRequestLen = 8192; // 8192:request len
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, nullptr, onlineMediaKeyIdLen,
+        releaseRequest, &releaseRequestLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    releaseRequestLen = 8192; // 8192:request len
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
+        nullptr, &releaseRequestLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
+        releaseRequest, nullptr);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char testKeyReleaseResponse[50] = OFFRESPONSE;
-    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
-        testKeyReleaseResponse, (int32_t)(sizeof(testKeyReleaseResponse)));
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
-        &OfflineMediaKeyStatus);
-    EXPECT_EQ(OfflineMediaKeyStatus, OFFLINE_MEDIA_KEY_STATUS_INACTIVE);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 }
+
 /*
  * Feature: Framework
  * Function: Processing device certificate response testing
@@ -2136,8 +2464,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessOfflineReleaseResponseNormal_
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -2146,10 +2480,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessOfflineReleaseResponseNormal_
     // mediakeysession
     DRM_MediaKeyRequest mediaKeyRequest;
     DRM_MediaKeyRequestInfo info;
-    unsigned char testData[139] = REQUESTINFODATA;
+    unsigned char testData[241] = OFFREQUESTINFODATA;
     memset_s(&info, sizeof(DRM_MediaKeyRequestInfo), 0, sizeof(DRM_MediaKeyRequestInfo));
     info.initDataLen = sizeof(testData);
-    info.type = MEDIA_KEY_TYPE_ONLINE;
+    info.type = MEDIA_KEY_TYPE_OFFLINE;
     memcpy_s(info.mimeType, sizeof("video/mp4"), (char *)"video/mp4", sizeof("video/mp4"));
     memcpy_s(info.initData, sizeof(testData), testData, sizeof(testData));
     memcpy_s(info.optionName[0], sizeof("optionalDataName"), (char *)"optionalDataName", sizeof("optionalDataName"));
@@ -2157,7 +2491,37 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessOfflineReleaseResponseNormal_
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    TestPart_047(mediaKeySystem, mediaKeySession);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
+        &OfflineMediaKeyStatus);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    EXPECT_EQ(OfflineMediaKeyStatus, 1);
+    unsigned char releaseRequest[8192] = { 0 }; // 8192:request len
+    int32_t releaseRequestLen = 8192; // 8192:request len
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
+        releaseRequest, &releaseRequestLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char testKeyReleaseResponse[50] = OFFRESPONSE;
+    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
+        testKeyReleaseResponse, (int32_t)(sizeof(testKeyReleaseResponse)));
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
+        &OfflineMediaKeyStatus);
+    EXPECT_EQ(OfflineMediaKeyStatus, 2);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
@@ -2187,8 +2551,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessOfflineReleaseResponseAbNorma
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -2197,10 +2567,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessOfflineReleaseResponseAbNorma
     // mediakeysession
     DRM_MediaKeyRequest mediaKeyRequest;
     DRM_MediaKeyRequestInfo info;
-    unsigned char testData[139] = REQUESTINFODATA;
+    unsigned char testData[241] = OFFREQUESTINFODATA;
     memset_s(&info, sizeof(DRM_MediaKeyRequestInfo), 0, sizeof(DRM_MediaKeyRequestInfo));
     info.initDataLen = sizeof(testData);
-    info.type = MEDIA_KEY_TYPE_ONLINE;
+    info.type = MEDIA_KEY_TYPE_OFFLINE;
     memcpy_s(info.mimeType, sizeof("video/mp4"), (char *)"video/mp4", sizeof("video/mp4"));
     memcpy_s(info.initData, sizeof(testData), testData, sizeof(testData));
     memcpy_s(info.optionName[0], sizeof("optionalDataName"), (char *)"optionalDataName", sizeof("optionalDataName"));
@@ -2208,30 +2578,37 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessOfflineReleaseResponseAbNorma
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
         &OfflineMediaKeyStatus);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     EXPECT_EQ(OfflineMediaKeyStatus, 1);
     unsigned char releaseRequest[8192] = { 0 }; // 8192:request len
     int32_t releaseRequestLen = 8192; // 8192:request len
-    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
         releaseRequest, &releaseRequestLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char testKeyReleaseResponse[50] = OFFRESPONSE;
-    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(nullptr, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(nullptr, onlineMediaKeyId, onlineMediaKeyIdLen,
         testKeyReleaseResponse, (int32_t)(sizeof(testKeyReleaseResponse)));
     EXPECT_NE(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, nullptr, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, nullptr, onlineMediaKeyIdLen,
         testKeyReleaseResponse, (int32_t)(sizeof(testKeyReleaseResponse)));
     EXPECT_NE(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
         nullptr, (int32_t)(sizeof(testKeyReleaseResponse)));
     EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
@@ -2263,8 +2640,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetCertificateStatusNormal_049, Test
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -2303,8 +2686,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetCertificateStatusAbNormal_050, Te
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -2314,7 +2703,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetCertificateStatusAbNormal_050, Te
     errNo = OH_MediaKeySystem_GetCertificateStatus(nullptr, &certStatus);
     EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_GetCertificateStatus(mediaKeySystem, nullptr);
-    EXPECT_NE(errNo, DRM_ERR_OK);
+        EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
@@ -2342,8 +2731,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_SetConfigurationStringNormal_051, Te
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo =
@@ -2380,8 +2775,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_SetConfigurationStringAbNormal_052, 
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_SetConfigurationString(nullptr, "testConfigurationString", "gezhegezhegezhe");
@@ -2411,8 +2812,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetConfigurationStringAbNormal_053, 
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_SetConfigurationString(mediaKeySystem, "testConfigurationString", "gezhegezhegezhe");
@@ -2454,8 +2861,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetConfigurationByteArrayNormal_054,
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char testArray[5] = {1, 2, 3, 4, 5};
@@ -2492,8 +2905,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_SetConfigurationByteArrayAbNormal_05
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char testArray[5] = {1, 2, 3, 4, 5};
@@ -2534,8 +2953,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetConfigurationByteArrayAbNormal_05
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char testArray[5] = {1, 2, 3, 4, 5};
@@ -2582,8 +3007,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetStatisticsNormal_057, TestSize.Le
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_Statistics statistics;
@@ -2614,8 +3045,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetStatisticsAbNormal_058, TestSize.
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_Statistics statistics;
@@ -2652,40 +3089,6 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetMaxContentProtectionLevelAbNormal
     }
 }
 
-void TestPart_060(MediaKeySystem *mediaKeySystem, MediaKeySession *mediaKeySession)
-{
-    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
-        &OfflineMediaKeyStatus);
-    EXPECT_EQ(OfflineMediaKeyStatus, 1);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char releaseRequest[8192] = { 0 }; // 8192:request len
-    int32_t releaseRequestLen = 8192; // 8192:request len
-    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
-        releaseRequest, &releaseRequestLen);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char testKeyReleaseResponse[50] = OFFRESPONSE;
-    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
-        testKeyReleaseResponse, (int32_t)(sizeof(testKeyReleaseResponse)));
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
-        &OfflineMediaKeyStatus);
-    EXPECT_EQ(OfflineMediaKeyStatus, OFFLINE_MEDIA_KEY_STATUS_INACTIVE);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySystem_ClearOfflineMediaKeys(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
-        &OfflineMediaKeyStatus);
-    EXPECT_EQ(OfflineMediaKeyStatus, 0);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-}
 /*
  * Feature: Framework
  * Function: Processing device certificate response testing
@@ -2709,8 +3112,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearOfflineMediaKeysNormal_060, Tes
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -2719,10 +3128,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearOfflineMediaKeysNormal_060, Tes
     // mediakeysession
     DRM_MediaKeyRequest mediaKeyRequest;
     DRM_MediaKeyRequestInfo info;
-    unsigned char testData[139] = REQUESTINFODATA;
+    unsigned char testData[241] = OFFREQUESTINFODATA;
     memset_s(&info, sizeof(DRM_MediaKeyRequestInfo), 0, sizeof(DRM_MediaKeyRequestInfo));
     info.initDataLen = sizeof(testData);
-    info.type = MEDIA_KEY_TYPE_ONLINE;
+    info.type = MEDIA_KEY_TYPE_OFFLINE;
     memcpy_s(info.mimeType, sizeof("video/mp4"), (char *)"video/mp4", sizeof("video/mp4"));
     memcpy_s(info.initData, sizeof(testData), testData, sizeof(testData));
     memcpy_s(info.optionName[0], sizeof("optionalDataName"), (char *)"optionalDataName", sizeof("optionalDataName"));
@@ -2730,49 +3139,49 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearOfflineMediaKeysNormal_060, Tes
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    TestPart_060(mediaKeySystem, mediaKeySession);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
+        &OfflineMediaKeyStatus);
+    EXPECT_EQ(OfflineMediaKeyStatus, 1);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char releaseRequest[8192] = { 0 }; // 8192:request len
+    int32_t releaseRequestLen = 8192; // 8192:request len
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
+        releaseRequest, &releaseRequestLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char testKeyReleaseResponse[50] = OFFRESPONSE;
+    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
+        testKeyReleaseResponse, (int32_t)(sizeof(testKeyReleaseResponse)));
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
+        &OfflineMediaKeyStatus);
+    EXPECT_EQ(OfflineMediaKeyStatus, 2);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_ClearOfflineMediaKeys(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
+        &OfflineMediaKeyStatus);
+    EXPECT_EQ(OfflineMediaKeyStatus, 0);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 }
 
-void TestPart_061(MediaKeySystem *mediaKeySystem, MediaKeySession *mediaKeySession)
-{
-    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
-        &OfflineMediaKeyStatus);
-    EXPECT_EQ(OfflineMediaKeyStatus, 1);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char releaseRequest[8192] = { 0 }; // 8192:request len
-    int32_t releaseRequestLen = 8192; // 8192:request len
-    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
-        releaseRequest, &releaseRequestLen);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char testKeyReleaseResponse[50] = OFFRESPONSE;
-    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
-        testKeyReleaseResponse, (int32_t)(sizeof(testKeyReleaseResponse)));
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
-        &OfflineMediaKeyStatus);
-    EXPECT_EQ(OfflineMediaKeyStatus, OFFLINE_MEDIA_KEY_STATUS_INACTIVE);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySystem_ClearOfflineMediaKeys(nullptr, offlineMediaKeyId, offlineMediaKeyIdLen);
-    EXPECT_NE(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySystem_ClearOfflineMediaKeys(mediaKeySystem, nullptr, offlineMediaKeyIdLen);
-    EXPECT_NE(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
-        &OfflineMediaKeyStatus);
-    EXPECT_EQ(OfflineMediaKeyStatus, OFFLINE_MEDIA_KEY_STATUS_INACTIVE);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-}
 /*
  * Feature: Framework
  * Function: Processing device certificate response testing
@@ -2796,8 +3205,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearOfflineMediaKeysAbNormal_061, T
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -2806,10 +3221,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearOfflineMediaKeysAbNormal_061, T
     // mediakeysession
     DRM_MediaKeyRequest mediaKeyRequest;
     DRM_MediaKeyRequestInfo info;
-    unsigned char testData[139] = REQUESTINFODATA;
+    unsigned char testData[241] = OFFREQUESTINFODATA;
     memset_s(&info, sizeof(DRM_MediaKeyRequestInfo), 0, sizeof(DRM_MediaKeyRequestInfo));
     info.initDataLen = sizeof(testData);
-    info.type = MEDIA_KEY_TYPE_ONLINE;
+    info.type = MEDIA_KEY_TYPE_OFFLINE;
     memcpy_s(info.mimeType, sizeof("video/mp4"), (char *)"video/mp4", sizeof("video/mp4"));
     memcpy_s(info.initData, sizeof(testData), testData, sizeof(testData));
     memcpy_s(info.optionName[0], sizeof("optionalDataName"), (char *)"optionalDataName", sizeof("optionalDataName"));
@@ -2817,47 +3232,51 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearOfflineMediaKeysAbNormal_061, T
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    TestPart_061(mediaKeySystem, mediaKeySession);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
+        &OfflineMediaKeyStatus);
+    EXPECT_EQ(OfflineMediaKeyStatus, 1);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char releaseRequest[8192] = { 0 }; // 8192:request len
+    int32_t releaseRequestLen = 8192; // 8192:request len
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
+        releaseRequest, &releaseRequestLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char testKeyReleaseResponse[50] = OFFRESPONSE;
+    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
+        testKeyReleaseResponse, (int32_t)(sizeof(testKeyReleaseResponse)));
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
+        &OfflineMediaKeyStatus);
+    EXPECT_EQ(OfflineMediaKeyStatus, 2);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_ClearOfflineMediaKeys(nullptr, onlineMediaKeyId, onlineMediaKeyIdLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_ClearOfflineMediaKeys(mediaKeySystem, nullptr, onlineMediaKeyIdLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
+        &OfflineMediaKeyStatus);
+    EXPECT_EQ(OfflineMediaKeyStatus, 2);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 }
 
-void TestPart_062(MediaKeySystem *mediaKeySystem, MediaKeySession *mediaKeySession)
-{
-    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
-        &OfflineMediaKeyStatus);
-    EXPECT_EQ(OfflineMediaKeyStatus, 1);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char releaseRequest[8192] = { 0 }; // 8192:request len
-    int32_t releaseRequestLen = 8192; // 8192:request len
-    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
-        releaseRequest, &releaseRequestLen);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char testKeyReleaseResponse[50] = OFFRESPONSE;
-    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
-        testKeyReleaseResponse, (int32_t)(sizeof(testKeyReleaseResponse)));
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
-        &OfflineMediaKeyStatus);
-    EXPECT_EQ(OfflineMediaKeyStatus, OFFLINE_MEDIA_KEY_STATUS_INACTIVE);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
-        &OfflineMediaKeyStatus);
-    EXPECT_EQ(OfflineMediaKeyStatus, 1);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-}
 /*
  * Feature: Framework
  * Function: Processing device certificate response testing
@@ -2881,8 +3300,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RestoreOfflineMediaKeysNormal_062, T
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -2891,9 +3316,9 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RestoreOfflineMediaKeysNormal_062, T
     // mediakeysession
     DRM_MediaKeyRequest mediaKeyRequest;
     DRM_MediaKeyRequestInfo info;
-    unsigned char testData[139] = REQUESTINFODATA;
+    unsigned char testData[241] = OFFREQUESTINFODATA;
     info.initDataLen = sizeof(testData);
-    info.type = MEDIA_KEY_TYPE_ONLINE;
+    info.type = MEDIA_KEY_TYPE_OFFLINE;
     memcpy_s(info.mimeType, sizeof("video/mp4"), (char *)"video/mp4", sizeof("video/mp4"));
     memcpy_s(info.initData, sizeof(testData), testData, sizeof(testData));
     memcpy_s(info.optionName[0], sizeof("optionalDataName"), (char *)"optionalDataName", sizeof("optionalDataName"));
@@ -2901,48 +3326,46 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RestoreOfflineMediaKeysNormal_062, T
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    TestPart_062(mediaKeySystem, mediaKeySession);
-    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-}
-void TestPart_063(MediaKeySystem *mediaKeySystem, MediaKeySession *mediaKeySession)
-{
-    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
         &OfflineMediaKeyStatus);
     EXPECT_EQ(OfflineMediaKeyStatus, 1);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char releaseRequest[8192] = { 0 }; // 8192:request len
     int32_t releaseRequestLen = 8192; // 8192:request len
-    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
         releaseRequest, &releaseRequestLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char testKeyReleaseResponse[50] = OFFRESPONSE;
-    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
         testKeyReleaseResponse, (int32_t)(sizeof(testKeyReleaseResponse)));
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
         &OfflineMediaKeyStatus);
-    EXPECT_EQ(OfflineMediaKeyStatus, OFFLINE_MEDIA_KEY_STATUS_INACTIVE);
+    EXPECT_EQ(OfflineMediaKeyStatus, 2);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(nullptr, offlineMediaKeyId, offlineMediaKeyIdLen);
-    EXPECT_NE(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(mediaKeySession, nullptr, offlineMediaKeyIdLen);
-    EXPECT_NE(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(mediaKeySession, offlineMediaKeyId, 0);
-    EXPECT_NE(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
         &OfflineMediaKeyStatus);
-    EXPECT_EQ(OfflineMediaKeyStatus, OFFLINE_MEDIA_KEY_STATUS_INACTIVE);
+    EXPECT_EQ(OfflineMediaKeyStatus, 1);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 }
 /*
@@ -2968,8 +3391,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RestoreOfflineMediaKeysAbNormal_063,
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -2978,10 +3407,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RestoreOfflineMediaKeysAbNormal_063,
     // mediakeysession
     DRM_MediaKeyRequest mediaKeyRequest;
     DRM_MediaKeyRequestInfo info;
-    unsigned char testData[139] = REQUESTINFODATA;
+    unsigned char testData[241] = OFFREQUESTINFODATA;
     memset_s(&info, sizeof(DRM_MediaKeyRequestInfo), 0, sizeof(DRM_MediaKeyRequestInfo));
     info.initDataLen = sizeof(testData);
-    info.type = MEDIA_KEY_TYPE_ONLINE;
+    info.type = MEDIA_KEY_TYPE_OFFLINE;
     memcpy_s(info.mimeType, sizeof("video/mp4"), (char *)"video/mp4", sizeof("video/mp4"));
     memcpy_s(info.initData, sizeof(testData), testData, sizeof(testData));
     memcpy_s(info.optionName[0], sizeof("optionalDataName"), (char *)"optionalDataName", sizeof("optionalDataName"));
@@ -2989,7 +3418,47 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RestoreOfflineMediaKeysAbNormal_063,
     info.optionsCount = 1;
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    TestPart_063(mediaKeySystem, mediaKeySession);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
+        &OfflineMediaKeyStatus);
+    EXPECT_EQ(OfflineMediaKeyStatus, 1);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char releaseRequest[8192] = { 0 }; // 8192:request len
+    int32_t releaseRequestLen = 8192; // 8192:request len
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
+        releaseRequest, &releaseRequestLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char testKeyReleaseResponse[50] = OFFRESPONSE;
+    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
+        testKeyReleaseResponse, (int32_t)(sizeof(testKeyReleaseResponse)));
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
+        &OfflineMediaKeyStatus);
+    EXPECT_EQ(OfflineMediaKeyStatus, 2);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(nullptr, onlineMediaKeyId, onlineMediaKeyIdLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(mediaKeySession, nullptr, onlineMediaKeyIdLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(mediaKeySession, onlineMediaKeyId, 0);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
+        &OfflineMediaKeyStatus);
+    EXPECT_EQ(OfflineMediaKeyStatus, 2);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
@@ -3021,25 +3490,26 @@ const unsigned char TESTKEYSESSIONRESPONSE[50] = {0x31, 0x64, 0x6E, 0x5A, 0x32, 
                                                   0x70, 0x61, 0x6D, 0x30, 0x34, 0x59, 0x57, 0x45, 0x34, 0x5A, 0x48,
                                                   0x6B, 0x79, 0x4D, 0x67, 0x3D, 0x3D};
 
-static void filltest3(MediaKeySystem *mediaKeySystem, MediaKeySession *mediaKeySession)
+static void filltest3(MediaKeySystem *mediaKeySystem,
+    MediaKeySession *mediaKeySession, unsigned char *keySystemResponse, int32_t KeySystemResponseLen)
 {
     Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, (uint8_t *)TESTKEYSESSIONRESPONSE,
-        (int32_t)(sizeof(TESTKEYSESSIONRESPONSE)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, keySystemResponse,
+        KeySystemResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
-    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, onlineMediaKeyId, onlineMediaKeyIdLen,
         &OfflineMediaKeyStatus);
     EXPECT_EQ(OfflineMediaKeyStatus, 1);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char releaseRequest[8192] = { 0 }; // 8192:request len
     int32_t releaseRequestLen = 8192; // 8192:request len
-    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
         releaseRequest, &releaseRequestLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
         (uint8_t *)(TESTKEYRELEASERESPONSE), (int32_t)(sizeof(TESTKEYRELEASERESPONSE)));
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_ContentProtectionLevel sessionContentProtectionLevel = CONTENT_PROTECTION_LEVEL_UNKNOWN;
@@ -3065,8 +3535,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelNormal_064,
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -3077,8 +3553,16 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelNormal_064,
     DRM_MediaKeyRequestInfo info;
     filldata(&info);
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
+    KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    filltest3(mediaKeySystem, mediaKeySession);
+    filltest3(mediaKeySystem, mediaKeySession, KeySystemResponse, KeySystemResponseLen);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
@@ -3088,27 +3572,6 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelNormal_064,
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
     EXPECT_NE(errNo, DRM_ERR_OK);
 }
-
-Drm_ErrCode TestSystemEventCallBack(DRM_EventType eventType, unsigned char *info,
-    int32_t infoLen, char *extra)
-{
-    DRM_SAMPLE_INFO_LOG("TestSystemEventCallBack ok");
-    return DRM_ERR_OK;
-}
-
-Drm_ErrCode TestSessoinEventCallBack(DRM_EventType eventType, unsigned char *info,
-    int32_t infoLen, char *extra)
-{
-    DRM_SAMPLE_INFO_LOG("TestSessoinEventCallBack ok");
-    return DRM_ERR_OK;
-}
-
-Drm_ErrCode TestSessoinKeyChangeCallBack(DRM_KeysInfo *keysInfo, bool hasNewGoodKeys)
-{
-    DRM_SAMPLE_INFO_LOG("TestSessoinKeyChangeCallBack ok");
-    return DRM_ERR_OK;
-}
-
 
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelNormal_065, TestSize.Level0)
 {
@@ -3125,8 +3588,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelNormal_065,
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -3158,8 +3627,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_DecryptModuleNormal_066, TestSize.Le
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -3171,11 +3646,54 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_DecryptModuleNormal_066, TestSize.Le
     filldata(&info);
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
+    errNo = OH_MediaKeySystem_SetMediaKeySystemCallback(mediaKeySystem, &TestSystemEventCallBack);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    if (mediaKeySession) {
+        MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySession);
+        sptr<IMediaKeySessionService> SessionServiceProxy =
+            sessionObject->sessionImpl_->GetMediaKeySessionServiceProxy();
+        sptr<IMediaDecryptModuleService> decryptModule;
+        SessionServiceProxy->CreateMediaDecryptModule(decryptModule);
+        MessageParcel data;
+        IMediaDecryptModuleService::DrmBuffer srcBuffer;
+        IMediaDecryptModuleService::DrmBuffer dstBuffer;
+        bool secureDecodrtState = false;
+        IMediaDecryptModuleService::CryptInfo cryptInfo;
+        decryptModule->DecryptMediaData(secureDecodrtState, cryptInfo, srcBuffer, dstBuffer);
+        decryptModule->Release();
+        sptr<MediaKeySessionImplCallback> callback = sessionObject->sessionImpl_->GetApplicationCallback();
+        callback->~MediaKeySessionImplCallback();
+    }
+    if (mediaKeySystem) {
+        MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
+        sptr<IMeidaKeySystemServiceCallback> serviceCallback =
+            new (std::nothrow) MediaKeySystemCallback(systemObject->systemImpl_);
+        sptr<MediaKeySystemCallback> Callback = new (std::nothrow) MediaKeySystemCallback(systemObject->systemImpl_);
+        const std::vector<uint8_t> data = { 0x01 };
+        MessageParcel data1;
+        MessageParcel reply;
+        MessageOption option;
+        Callback->OnRemoteRequest(MEDIA_KEY_SYSTEM_SERVICE_CALLBACK_SEND_EVENT,  data1, reply, option);
+        serviceCallback->SendEvent(OHOS::DrmStandard::DrmEventType::DRM_EVENT_PROVISION_REQUIRED,  1, data);
+        OHOS::sptr<OHOS::DrmStandard::MediaKeySystemCallbackCapi> SystemCallbackCapi =
+            new (std::nothrow) MediaKeySystemCallbackCapi();
+        SystemCallbackCapi->SetCallbackReference(&TestSystemEventCallBack);
+        SystemCallbackCapi->SendEvent("1",  1, data);
+        sptr<MediaKeySystemImplCallback> SystemImplCallba = systemObject->systemImpl_->GetApplicationCallback();
+        SystemImplCallba->~MediaKeySystemImplCallback();
+    }
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
@@ -3214,12 +3732,12 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_DecryptModuleNormal_067, TestSize.Le
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RestoreOfflineMediaKeysAbNormal_068, TestSize.Level0)
 {
     Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
-    unsigned char offlineMediaKeyId[88]; // 2:keyId len
-    uint32_t offlineMediaKeyIdLen = 88; // 2:keyId len
-    MediaKeySession *mediaKeySession = (MediaKeySession *)&offlineMediaKeyId;
-    errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(mediaKeySession, offlineMediaKeyId, 0);
+    unsigned char onlineMediaKeyId[88]; // 88:keyId len
+    uint32_t onlineMediaKeyIdLen = 88; // 88:keyId len
+    MediaKeySession *mediaKeySession = (MediaKeySession *)&onlineMediaKeyId;
+    errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(mediaKeySession, onlineMediaKeyId, 0);
     EXPECT_NE(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(mediaKeySession, nullptr, offlineMediaKeyIdLen);
+    errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(mediaKeySession, nullptr, onlineMediaKeyIdLen);
     EXPECT_NE(errNo, DRM_ERR_OK);
 }
 
@@ -3238,8 +3756,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_SetMediaKeySessionCallbackNormal_069
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -3274,7 +3798,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CreateMediaKeySessionAbNormal_070, T
     errNo = OH_MediaKeySystem_CreateMediaKeySession(nullptr, &contentProtectionLevel, &mediaKeySession);
     EXPECT_EQ(mediaKeySession, nullptr);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, nullptr, &mediaKeySession);
-    EXPECT_EQ(mediaKeySession, nullptr);
+        EXPECT_EQ(mediaKeySession, nullptr);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, nullptr);
     EXPECT_EQ(mediaKeySession, nullptr);
     uint8_t mediaKeyIdToClear;
@@ -3299,12 +3823,20 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySystemDestroyAbNormal_071, T
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char request[8192] = { 0 }; // 8192:request len
-    int32_t requestLen = 8192, valueLen = 32, defaultUrlLen = 2048; // 8192:request len
+    int32_t requestLen = 8192; // 8192:request len
+    int32_t valueLen = 32;
     char defaultUrl[2048] = { 0 }; // 2048:url len
+    int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -3356,8 +3888,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_OH_MediaKeySystemDestroyAbNormal2_07
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -3403,8 +3941,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySessionDestroyAbNormal_073, 
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -3446,8 +3990,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySessionDestroyAbNormal2_074,
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -3457,11 +4007,12 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySessionDestroyAbNormal2_074,
         MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySession);
         sessionObject->sessionImpl_->~MediaKeySessionImpl();
     }
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = { 0 };
+    int32_t testKeySessionResponseLen = 12288;
     errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
     EXPECT_EQ(errNo, DRM_ERR_OK);
@@ -3482,8 +4033,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySession_DestroyAbNormal3_075
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -3522,8 +4079,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySessionDestroyAbNormal4_076,
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -3565,8 +4128,12 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_SetCallbackNormal_077, TestSize.Leve
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);} else {
+        KeySystemResponseLen = 50;}
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -3581,11 +4148,17 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_SetCallbackNormal_077, TestSize.Leve
     filldata(&info);
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data, (uint32_t)mediaKeyRequest.dataLen,
+            testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);} else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
@@ -3609,8 +4182,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_SetCallbackNormal2_078, TestSize.Lev
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -3625,11 +4204,11 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_SetCallbackNormal2_078, TestSize.Lev
     filldata(&info);
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char onlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
     unsigned char testKeySessionResponse[2] = {0x07, 0x22};
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
     errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+        (int32_t)(sizeof(testKeySessionResponse)), onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
@@ -3652,8 +4231,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_079,
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -3665,15 +4250,22 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_079,
     filldata(&info);
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data, (uint32_t)mediaKeyRequest.dataLen,
+            testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char releaseRequest[8192] = { 0 }; // 8192:request len
     int32_t releaseRequestLen = 8192; // 8192:request len
-    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, (uint8_t *)("offlineMediaKeyId"),
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, (uint8_t *)("onlineMediaKeyId"),
         2, releaseRequest, &releaseRequestLen); // 2:len
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
@@ -3696,8 +4288,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessOfflineReleaseResponseAbNorma
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
     // mediakeysession
@@ -3706,19 +4304,26 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessOfflineReleaseResponseAbNorma
     filldata(&info);
     errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+    unsigned char onlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
+    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, KeySystemResponse,
+        KeySystemResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char releaseRequest[8192] = { 0 }; // 8192:request len
     int32_t releaseRequestLen = 8192; // 8192:request len
-    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
         releaseRequest, &releaseRequestLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char testKeyReleaseResponse[2] = {0x33, 0x22};
-    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
         testKeyReleaseResponse, (int32_t)(sizeof(testKeyReleaseResponse)));
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
@@ -3729,20 +4334,20 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessOfflineReleaseResponseAbNorma
 static void filltest(MediaKeySystem *mediaKeySystem, MediaKeySession *mediaKeySession)
 {
     Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char onlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
     errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, (uint8_t *)TESTKEYSESSIONRESPONSE,
-        (int32_t)(sizeof(TESTKEYSESSIONRESPONSE)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+        (int32_t)(sizeof(TESTKEYSESSIONRESPONSE)), onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char releaseRequest[8192] = { 0 }; // 8192:request len
     int32_t releaseRequestLen = 8192; // 8192:request len
-    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySession_GenerateOfflineReleaseRequest(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
         releaseRequest, &releaseRequestLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, offlineMediaKeyId, offlineMediaKeyIdLen,
+    errNo = OH_MediaKeySession_ProcessOfflineReleaseResponse(mediaKeySession, onlineMediaKeyId, onlineMediaKeyIdLen,
         (uint8_t *)TESTKEYRELEASERESPONSE, (int32_t)(sizeof(TESTKEYRELEASERESPONSE)));
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(mediaKeySession, (unsigned char *)"offlineMediaKeyId", 1);
+    errNo = OH_MediaKeySession_RestoreOfflineMediaKeys(mediaKeySession, (unsigned char *)"onlineMediaKeyId", 1);
     EXPECT_NE(errNo, DRM_ERR_OK);
 }
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearMediaKeysAbNormal_081, TestSize.Level0)
@@ -3760,8 +4365,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearMediaKeysAbNormal_081, TestSize
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -3827,8 +4438,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_SessionImplAbNormal_083, TestSize.Le
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -3837,11 +4454,12 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_SessionImplAbNormal_083, TestSize.Le
     MediaKeySession_Callback sessionCallback = { &TestSessoinEventCallBack, &TestSessoinKeyChangeCallBack };
     errNo = OH_MediaKeySession_SetMediaKeySessionCallback(mediaKeySession, &sessionCallback);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char offlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    unsigned char testKeySessionResponse[50] = OFFRESPONSE;
-    int32_t offlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 50;
     errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)(sizeof(testKeySessionResponse)), offlineMediaKeyId, &offlineMediaKeyIdLen);
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
@@ -3941,8 +4559,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_KillClearPlayHostAbNormal1, TestSize
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -4049,8 +4673,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_KillDrmServiceAbNormal, TestSize.Lev
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
         defaultUrlLen);
-    unsigned char KeySystemResponse[50] = OFFRESPONSE;
-    int32_t KeySystemResponseLen = (int32_t)(sizeof(KeySystemResponse));
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
     errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
@@ -4075,5 +4705,6 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_KillDrmServiceAbNormal, TestSize.Lev
     EXPECT_NE(errNo, DRM_ERR_OK);
     sleep(5);
 }
+
 } // DrmStandard
 } // OHOS
