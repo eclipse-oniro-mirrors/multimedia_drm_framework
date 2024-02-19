@@ -40,6 +40,9 @@ static Drm_ErrCode DealMediaKeyRequest(IMediaKeySessionService::MediaKeyRequest 
         DRM_DEBUG_LOG("licenseRequest.mData.data() is nullptr!");
         return DRM_ERR_NO_MEMORY;
     }
+    if (licenseRequest.mDefaultURL.size() == 0) {
+        continue;
+    }
     ret = memcpy_s(mediaKeyRequest->defaultUrl, licenseRequest.mDefaultURL.size(), licenseRequest.mDefaultURL.data(),
         licenseRequest.mDefaultURL.size());
     if (ret != 0) {
