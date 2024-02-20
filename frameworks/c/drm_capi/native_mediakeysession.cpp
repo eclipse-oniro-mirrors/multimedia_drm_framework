@@ -41,7 +41,7 @@ static Drm_ErrCode DealMediaKeyRequest(IMediaKeySessionService::MediaKeyRequest 
         return DRM_ERR_NO_MEMORY;
     }
     if (licenseRequest.mDefaultURL.size() == 0) {
-        continue;
+        return DRM_ERR_OK;
     }
     ret = memcpy_s(mediaKeyRequest->defaultUrl, licenseRequest.mDefaultURL.size(), licenseRequest.mDefaultURL.data(),
         licenseRequest.mDefaultURL.size());
