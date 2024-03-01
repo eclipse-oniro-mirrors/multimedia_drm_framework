@@ -409,8 +409,8 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CreateMediaKeySessionNormal_011, Tes
     errNo = OH_MediaKeySystem_SetMediaKeySystemCallback(mediaKeySystem, &TestSystemEventCallBack);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
-    EXPECT_EQ(mediaKeySession, nullptr);
-    EXPECT_NE(errNo, DRM_ERR_OK);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
     unsigned char request[8192] = { 0 }; // 8192:request len
     int32_t requestLen = 8192; // 8192:request len
     char defaultUrl[2048] = { 0 }; // 2048:url len
