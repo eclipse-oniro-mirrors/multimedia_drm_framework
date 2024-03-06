@@ -198,7 +198,7 @@ int32_t MediaKeySystemImpl::CreateMediaKeySession(IMediaKeySessionService::Conte
                 DRM_ERR_LOG("Failed to new MediaKeySessionImpl");
                 return DRM_SERVICE_FATAL_ERROR;
             }
-            if (keySessionNumber > KEY_SESSION_MAX_NUMBER) {
+            if (keySessionNumber >= KEY_SESSION_MAX_NUMBER) {
                 DRM_ERR_LOG("The number of MediaKeySession is greater than 64");
                 return DRM_MAX_SESSION_NUM_REACHED;
             }
