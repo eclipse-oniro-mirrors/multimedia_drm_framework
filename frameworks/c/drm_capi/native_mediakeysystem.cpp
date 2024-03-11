@@ -14,6 +14,7 @@
  */
 
 #include <mutex>
+#include<map>
 #include <shared_mutex>
 #include <string>
 #include <refbase.h>
@@ -84,6 +85,13 @@ bool OH_MediaKeySystem_IsSupported3(const char *uuid, const char *mimeType,
 
 Drm_ErrCode OH_MediaKeySystem_Create(const char *name, MediaKeySystem **mediaKeySystem)
 {
+    std::map<int32_t, Drm_ErrCode> maps = {
+        {401, DRM_ERR_INVALID_VAL},
+        {24700201, DRM_ERR_SERVICE_DIED},
+        {24700103, DRM_ERR_MAX_SYSTEM_NUM_REACHED},
+        {24700101, DRM_ERR_UNKNOWN},
+        {0, DRM_ERR_OK}
+    };
     DRM_CHECK_AND_RETURN_RET_LOG(((name != nullptr) && (mediaKeySystem != nullptr)), DRM_ERR_INVALID_VAL,
         "parameter is error!");
     OHOS::sptr<MediaKeySystemFactoryImpl> factory = MediaKeySystemFactoryImpl::GetInstance();
@@ -92,8 +100,8 @@ Drm_ErrCode OH_MediaKeySystem_Create(const char *name, MediaKeySystem **mediaKey
     std::string nameStr = name;
     DRM_CHECK_AND_RETURN_RET_LOG(nameStr.size() != 0, DRM_ERR_INVALID_VAL, "nameStr.size() is zero");
     OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> system = nullptr;
-    factory->CreateMediaKeySystem(nameStr, &system);
-    DRM_CHECK_AND_RETURN_RET_LOG(system != nullptr, DRM_ERR_INVALID_VAL, "system create by name failed!");
+    int32_t result = factory->CreateMediaKeySystem(nameStr, &system);
+    DRM_CHECK_AND_RETURN_RET_LOG(system != nullptr, maps[result], "system create by name failed!");
 
     struct MediaKeySystemObject *object = new (std::nothrow) MediaKeySystemObject(system);
     DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_ERR_INVALID_VAL, "MediaKeySystemObject create failed!");
@@ -374,6 +382,12 @@ Drm_ErrCode OH_MediaKeySystem_SetMediaKeySystemCallback(MediaKeySystem *mediaKey
 Drm_ErrCode OH_MediaKeySystem_CreateMediaKeySession(MediaKeySystem *mediaKeySystem, DRM_ContentProtectionLevel *level,
     MediaKeySession **mediaKeySession)
 {
+    std::map<int32_t, Drm_ErrCode> maps = {
+        {24700201, DRM_ERR_SERVICE_DIED},
+        {24700104, DRM_ERR_MAX_SESSION_NUM_REACHED},
+        {24700101, DRM_ERR_UNKNOWN},
+        {0, DRM_ERR_OK}
+    };
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySystem != nullptr) && (level != nullptr) && (mediaKeySession != nullptr) &&
         (*level > CONTENT_PROTECTION_LEVEL_UNKNOWN) && (*level < CONTENT_PROTECTION_LEVEL_MAX)),
         DRM_ERR_INVALID_VAL, "mediaKeySystem is nullptr!");
@@ -384,8 +398,9 @@ Drm_ErrCode OH_MediaKeySystem_CreateMediaKeySession(MediaKeySystem *mediaKeySyst
         static_cast<IMediaKeySessionService::ContentProtectionLevel>(secure);
     OHOS::sptr<MediaKeySessionImpl> keySessionImpl = nullptr;
     int32_t ret = systemObject->systemImpl_->CreateMediaKeySession(secureLevel, &keySessionImpl);
-    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_UNKNOWN, "session create return failed!");
-    DRM_CHECK_AND_RETURN_RET_LOG(keySessionImpl != nullptr, DRM_ERR_UNKNOWN, "session create failed!");
+
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, maps[ret], "session create return failed!");
+    DRM_CHECK_AND_RETURN_RET_LOG(keySessionImpl != nullptr, DRM_ERR_INVALID_VAL, "session create failed!");
 
     struct MediaKeySessionObject *sessionObject = new (std::nothrow) MediaKeySessionObject(keySessionImpl);
     DRM_CHECK_AND_RETURN_RET_LOG(sessionObject != nullptr, DRM_ERR_NO_MEMORY, "MediaKeySessionObject create failed!");
@@ -394,10 +409,10 @@ Drm_ErrCode OH_MediaKeySystem_CreateMediaKeySession(MediaKeySystem *mediaKeySyst
     if (sessionObject->sessionCallback_ == nullptr) {
         delete sessionObject;
         DRM_ERR_LOG("MediaKeySessionObject create sessionCallback failed!");
-        return DRM_ERR_UNKNOWN;
+        return DRM_ERR_INVALID_VAL;
     }
     ret = sessionObject->sessionImpl_->SetCallback(sessionObject->sessionCallback_);
-    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_UNKNOWN, "session set callback failed!");
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_INVALID_VAL, "session set callback failed!");
 
     *mediaKeySession = static_cast<MediaKeySession *>(sessionObject);
     return DRM_ERR_OK;
