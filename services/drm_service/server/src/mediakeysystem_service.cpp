@@ -46,7 +46,19 @@ int32_t MediaKeySystemService::CloseMediaKeySystemServiceByCallback()
 {
     DRM_INFO_LOG("MediaKeySystemService::CloseMediaKeySystemServiceByCallback enter.");
     int32_t currentPid = IPCSkeleton::GetCallingPid();
-    DRM_ERR_LOG("MediaKeySystemService GetCallingPID: %{public}d", currentPid);
+    DRM_DEBUG_LOG("MediaKeySystemService GetCallingPID: %{public}d", currentPid);
+
+    DRM_DEBUG_LOG("sessionsSet size before clearing : %{public}d", sessionsSet_.size());
+    for (auto it = sessionsSet_.begin(); it != sessionsSet_.end();) {
+        if ((*it) != nullptr) {
+            (*it)->CloseMediaKeySessionServiceByCallback();
+        }
+        it = sessionsSet_.erase(it);
+    }
+    DRM_DEBUG_LOG("sessionsSet size after clearing : %{public}d", sessionsSet_.size());
+    sessionsSet_.clear();
+
+    // release itself
     if (hdiKeySystem_ != nullptr) {
         DRM_ERR_LOG("hdiKeySystem_ CloseHdiMediaKeySession");
         hdiKeySystem_->Destroy();
@@ -185,8 +197,8 @@ int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::Co
 
     int32_t pid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemService CreateMediaKeySession GetCallingPID: %{public}d", pid);
-    auto fn = [&](std::set<sptr<MediaKeySessionService>> &value) -> void { value.insert(keySessionService); };
-    sessionsForPid_.ChangeValueByLambda(pid, fn);
+    sessionsSet_.insert(keySessionService);
+
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " is Current keySessionService", FAKE_POINTER(keySessionService.GetRefPtr()));
     keySessionProxy = keySessionService;
     DRM_INFO_LOG("MediaKeySystemService::CreateMediaKeySession exit.");
@@ -200,20 +212,11 @@ int32_t MediaKeySystemService::CloseMediaKeySessionService(sptr<MediaKeySessionS
     int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemService GetCallingPID: %{public}d", currentPid);
 
-    int32_t pid = currentPid;
     if (sessionService != nullptr) {
         DRM_INFO_LOG("MediaKeySystemService call CloseMediaKeySessionServiceByCallback ");
         ret = sessionService->CloseMediaKeySessionServiceByCallback();
     }
-    auto fn = [&](std::set<sptr<MediaKeySessionService>> &value) -> void {
-        if (value.find(sessionService) != value.end()) {
-            DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " will be deleted", FAKE_POINTER(sessionService.GetRefPtr()));
-            value.erase(sessionService);
-        } else {
-            DRM_DEBUG_LOG("MediaKeySystemService not find sessions for PID:%{public}d", pid);
-        }
-    };
-    sessionsForPid_.ChangeValueByLambda(pid, fn);
+    sessionsSet_.erase(sessionService);
     sessionService = nullptr;
     DRM_INFO_LOG("MediaKeySystemService::CloseMediaKeySessionService exit.");
     return ret;

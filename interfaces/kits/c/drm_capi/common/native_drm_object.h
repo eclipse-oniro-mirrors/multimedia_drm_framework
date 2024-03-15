@@ -87,17 +87,20 @@ public:
     {
         DRM_INFO_LOG("MediaKeySystemCallbackCapi SendEvent.");
         std::lock_guard<std::mutex> lock(mutex_);
+        DRM_CHECK_AND_RETURN_LOG(callback_ != nullptr, "hasn't register the callback of this event");
         if (eventMap_.find(event) == eventMap_.end()) {
             DRM_ERR_LOG("MediaKeySystemCallbackCapi SendEvent failed, not find this event type.");
             return;
         }
 
-        unsigned char *dataInfo = (unsigned char *)malloc(data.size());
-        DRM_CHECK_AND_RETURN_LOG(dataInfo != nullptr, "malloc faild!");
-        errno_t ret = memcpy_s(dataInfo, data.size(), data.data(), data.size());
-        DRM_CHECK_AND_RETURN_LOG(ret == EOK, "memcpy_s faild!");
+        unsigned char *dataInfo = nullptr;
+        if (data.size() != 0) {
+            dataInfo = (unsigned char *)malloc(data.size());
+            DRM_CHECK_AND_RETURN_LOG(dataInfo != nullptr, "malloc faild!");
+            errno_t ret = memcpy_s(dataInfo, data.size(), data.data(), data.size());
+            DRM_CHECK_AND_RETURN_LOG(ret == EOK, "memcpy_s faild!");
+        }
 
-        DRM_CHECK_AND_RETURN_LOG(callback_ != nullptr, "callback_ is nullptr");
         callback_(eventMap_[event], dataInfo, data.size(), std::to_string(extra).data());
         if (dataInfo != nullptr) {
             free(dataInfo);
@@ -154,18 +157,20 @@ public:
     {
         DRM_INFO_LOG("MediaKeySessionCallbackCapi SendEvent.");
         std::lock_guard<std::mutex> lock(mutex_);
-        DRM_CHECK_AND_RETURN_LOG(callback_.eventCallback != nullptr, "Callback is nullptr");
+        DRM_CHECK_AND_RETURN_LOG(callback_.eventCallback != nullptr, "hasn't register the callback of this event");
         if (eventMap_.find(event) == eventMap_.end()) {
             DRM_ERR_LOG("MediaKeySystemCallbackCapi SendEvent failed, not find this event type.");
             return;
         }
 
-        unsigned char *dataInfo = (unsigned char *)malloc(data.size());
-        DRM_CHECK_AND_RETURN_LOG(dataInfo != nullptr, "malloc faild!");
-        errno_t ret = memcpy_s(dataInfo, data.size(), data.data(), data.size());
-        DRM_CHECK_AND_RETURN_LOG(ret == EOK, "memcpy_s faild!");
+        unsigned char *dataInfo = nullptr;
+        if (data.size() != 0) {
+            dataInfo = (unsigned char *)malloc(data.size());
+            DRM_CHECK_AND_RETURN_LOG(dataInfo != nullptr, "malloc faild!");
+            errno_t ret = memcpy_s(dataInfo, data.size(), data.data(), data.size());
+            DRM_CHECK_AND_RETURN_LOG(ret == EOK, "memcpy_s faild!");
+        }
 
-        DRM_CHECK_AND_RETURN_LOG(callback_.eventCallback != nullptr, "eventCallback is nullptr");
         callback_.eventCallback(eventMap_[event], dataInfo, data.size(), std::to_string(extra).data());
         if (dataInfo != nullptr) {
             free(dataInfo);

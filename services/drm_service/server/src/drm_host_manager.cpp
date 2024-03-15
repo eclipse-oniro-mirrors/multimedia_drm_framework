@@ -37,9 +37,19 @@ std::map<std::string, void *> DrmHostManager::libMap;
 std::recursive_mutex DrmHostManager::handleAndKeySystemMapMutex;
 std::map<void *, sptr<IMediaKeySystem>> DrmHostManager::handleAndKeySystemMap;
 
+DrmHostManager::DrmHostDeathRecipient::DrmHostDeathRecipient()
+{
+    DRM_DEBUG_LOG("DrmHostManager::DrmHostDeathRecipient");
+}
+
+DrmHostManager::DrmHostDeathRecipient::~DrmHostDeathRecipient()
+{
+    DRM_DEBUG_LOG("DrmHostManager::~DrmHostDeathRecipient");
+}
+
 void DrmHostManager::DrmHostDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
-    DRM_DEBUG_LOG("Remote died, do clean works.");
+    DRM_ERR_LOG("DrmHostManager Service died, do clean works.");
 }
 
 DrmHostManager::DrmHostManager(StatusCallback *statusCallback)
@@ -347,12 +357,15 @@ int32_t DrmHostManager::CreateMediaKeySystem(std::string &uuid, sptr<IMediaKeySy
         DRM_INFO_LOG("DrmHostManager::CreateMediaKeySystem faild.");
         return ret;
     }
-    sptr<DrmHostDeathRecipient> drmHostDeathRecipient = new DrmHostDeathRecipient();
+
+    drmHostDeathRecipient_ = new DrmHostDeathRecipient();
     const sptr<IRemoteObject> &remote = OHOS::HDI::hdi_objcast<IMediaKeySystemFactory>(drmHostServieProxy_);
-    bool result = remote->AddDeathRecipient(drmHostDeathRecipient);
-    if (!result) {
-        DRM_ERR_LOG("AddDeathRecipient for drm Host failed.");
-        return DRM_HOST_ERROR;
+    if (remote != nullptr) {
+        bool result = remote->AddDeathRecipient(drmHostDeathRecipient_);
+        if (!result) {
+            DRM_ERR_LOG("AddDeathRecipient for drm Host failed.");
+            return DRM_HOST_ERROR;
+        }
     }
 
     ret = drmHostServieProxy_->CreateMediaKeySystem(hdiMediaKeySystem);

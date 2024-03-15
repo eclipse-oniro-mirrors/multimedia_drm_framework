@@ -41,7 +41,7 @@ public:
     int32_t CreateMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule) override;
     int32_t GetContentProtectionLevel(IMediaKeySessionService::ContentProtectionLevel *securityLevel) override;
     int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status) override;
-
+    int32_t SetListenerObject(const sptr<IRemoteObject> &object) override;
     int32_t SetCallback(sptr<IMediaKeySessionServiceCallback> &callback) override;
 
 private:

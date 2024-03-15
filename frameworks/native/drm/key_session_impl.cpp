@@ -19,11 +19,42 @@
 
 namespace OHOS {
 namespace DrmStandard {
+
 MediaKeySessionImpl::MediaKeySessionImpl(sptr<IMediaKeySessionService> &keySession)
+    : keySessionServiceCallback_(nullptr), keySessionServiceProxy_(keySession)
 {
-    DRM_DEBUG_LOG("MediaKeySessionImpl::MediaKeySessionImpl enter.");
-    keySessionServiceProxy_ = keySession;
-    keySessionServiceCallback_ = nullptr;
+    DRM_DEBUG_LOG("MediaKeySessionImpl: 0x%{public}06" PRIXPTR "MediaKeySessionImpl Instances create",
+        FAKE_POINTER(this));
+
+    sptr<IRemoteObject> object = keySessionServiceProxy_->AsObject();
+    pid_t pid = 0;
+    deathRecipient_ = new(std::nothrow) DrmDeathRecipient(pid);
+    DRM_CHECK_AND_RETURN_LOG(deathRecipient_ != nullptr, "failed to new DrmDeathRecipient.");
+
+    deathRecipient_->SetNotifyCb(
+        std::bind(&MediaKeySessionImpl::MediaKeySessionServerDied, this, std::placeholders::_1));
+    bool result = object->AddDeathRecipient(deathRecipient_);
+    if (!result) {
+        DRM_ERR_LOG("failed to add deathRecipient");
+        return;
+    }
+
+    CreateListenerObject();
+}
+
+int32_t MediaKeySessionImpl::CreateListenerObject()
+{
+    DRM_INFO_LOG("MediaKeySessionImpl::CreateListenerObject");
+    listenerStub_ = new(std::nothrow) DrmListenerStub();
+    DRM_CHECK_AND_RETURN_RET_LOG(listenerStub_ != nullptr, DRM_MEMORY_ERROR,
+        "failed to new DrmListenerStub object");
+    DRM_CHECK_AND_RETURN_RET_LOG(keySessionServiceProxy_ != nullptr, DRM_MEMORY_ERROR,
+        "Drm service does not exist.");
+
+    sptr<IRemoteObject> object = listenerStub_->AsObject();
+    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_MEMORY_ERROR, "listener object is nullptr.");
+
+    return keySessionServiceProxy_->SetListenerObject(object);
 }
 
 MediaKeySessionImpl::~MediaKeySessionImpl()
@@ -31,6 +62,18 @@ MediaKeySessionImpl::~MediaKeySessionImpl()
     DRM_INFO_LOG("MediaKeySessionImpl::~MediaKeySessionImpl enter.");
     keySessionServiceProxy_ = nullptr;
     keySessionServiceCallback_ = nullptr;
+}
+
+void MediaKeySessionImpl::MediaKeySessionServerDied(pid_t pid)
+{
+    DRM_ERR_LOG("MediaKeySession server has died, pid:%{public}d!", pid);
+
+    if (keySessionServiceProxy_ != nullptr && keySessionServiceProxy_->AsObject() != nullptr) {
+        (void)keySessionServiceProxy_->AsObject()->RemoveDeathRecipient(deathRecipient_);
+        keySessionServiceProxy_ = nullptr;
+    }
+    listenerStub_ = nullptr;
+    deathRecipient_ = nullptr;
 }
 
 int32_t MediaKeySessionImpl::Release()

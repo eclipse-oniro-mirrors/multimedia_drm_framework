@@ -70,6 +70,26 @@ void MediaKeySystemFactoryService::OnStop()
     }
 }
 
+void MediaKeySystemFactoryService::DistroyForClientDied(pid_t pid)
+{
+    // destroy all system objects for this pid
+    DRM_INFO_LOG("MediaKeySystemFactoryService::DistroyForClientDied pid: %{public}d", pid);
+    DRM_DEBUG_LOG("mediaKeySystemForPid_ map size before clearing: %{public}d", mediaKeySystemForPid_.size());
+    if (mediaKeySystemForPid_.find(pid) != mediaKeySystemForPid_.end()) {
+        DRM_DEBUG_LOG("%{public}d has %{public}d systems before clearing", pid, mediaKeySystemForPid_[pid].size());
+        for (auto it = mediaKeySystemForPid_[pid].begin(); it != mediaKeySystemForPid_[pid].end();) {
+            if ((*it) != nullptr) {
+                (*it)->CloseMediaKeySystemServiceByCallback();
+            }
+            it = mediaKeySystemForPid_[pid].erase(it);
+        }
+        DRM_DEBUG_LOG("%{public}d has %{public}d systems after clearing", pid, mediaKeySystemForPid_[pid].size());
+        mediaKeySystemForPid_[pid].clear();
+        mediaKeySystemForPid_.erase(pid);
+    }
+    DRM_DEBUG_LOG("mediaKeySystemForPid_ map size after clearing: %{public}d", mediaKeySystemForPid_.size());
+}
+
 int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &uuid,
     sptr<IMediaKeySystemService> &mediaKeySystemProxy)
 {
@@ -90,8 +110,7 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &uuid,
     mediaKeySystemService->SetMediaKeySystemServiceOperatorsCallback(this);
     int32_t pid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemFactoryService CreateMediaKeySystem GetCallingPID: %{public}d", pid);
-    auto fn = [&](std::set<sptr<MediaKeySystemService>> &value) -> void { value.insert(mediaKeySystemService); };
-    mediaKeySystemForPid_.ChangeValueByLambda(pid, fn);
+    mediaKeySystemForPid_[pid].insert(mediaKeySystemService);
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " is Current mediaKeySystemService",
         FAKE_POINTER(mediaKeySystemService.GetRefPtr()));
     mediaKeySystemProxy = mediaKeySystemService;
@@ -106,21 +125,13 @@ int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySy
     int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemFactoryService GetCallingPID: %{public}d", currentPid);
 
-    int32_t pid = currentPid;
-    auto fn = [&](std::set<sptr<MediaKeySystemService>> &value) -> void {
-        if (mediaKeySystemService != nullptr) {
-            DRM_INFO_LOG("MediaKeySystemFactoryService call CloseMediaKeySystemService ");
-            errCode = mediaKeySystemService->CloseMediaKeySystemServiceByCallback();
+    for (auto &pidSystemsSet : mediaKeySystemForPid_) {
+        if (pidSystemsSet.second.find(mediaKeySystemService) != pidSystemsSet.second.end()) {
+            mediaKeySystemService->CloseMediaKeySystemServiceByCallback();
+            pidSystemsSet.second.erase(mediaKeySystemService);
+            break;
         }
-        if (value.find(mediaKeySystemService) != value.end()) {
-            value.erase(mediaKeySystemService);
-        } else {
-            DRM_ERR_LOG("MediaKeySystemFactoryService not find sessions for PID:%{public}d", pid);
-        }
-    };
-
-    mediaKeySystemForPid_.ChangeValueByLambda(pid, fn);
-
+    }
     mediaKeySystemService = nullptr;
     DRM_INFO_LOG("MediaKeySystemFactoryService CloseMediaKeySystemService exit.");
     return errCode;

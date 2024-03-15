@@ -50,6 +50,21 @@ sptr<MediaKeySystemFactoryImpl> &MediaKeySystemFactoryImpl::GetInstance()
     return MediaKeySystemFactoryImpl::mediaKeySystemFactoryImpl_;
 }
 
+int32_t MediaKeySystemFactoryImpl::CreateListenerObject()
+{
+    DRM_INFO_LOG("MediaKeySystemFactoryImpl::CreateListenerObject");
+    listenerStub_ = new(std::nothrow) DrmListenerStub();
+    DRM_CHECK_AND_RETURN_RET_LOG(listenerStub_ != nullptr, DRM_MEMORY_ERROR,
+        "failed to new DrmListenerStub object");
+    DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy_ != nullptr, DRM_MEMORY_ERROR,
+        "Drm service does not exist.");
+
+    sptr<IRemoteObject> object = listenerStub_->AsObject();
+    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_MEMORY_ERROR, "listener object is nullptr.");
+
+    return serviceProxy_->SetListenerObject(object);
+}
+
 void MediaKeySystemFactoryImpl::Init()
 {
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::Init enter.");
@@ -72,24 +87,26 @@ void MediaKeySystemFactoryImpl::Init()
     }
     pid_t pid = 0;
     deathRecipient_ = new (std::nothrow) DrmDeathRecipient(pid);
-
+    DRM_CHECK_AND_RETURN_LOG(deathRecipient_ != nullptr, "failed to new DrmDeathRecipient!");
     deathRecipient_->SetNotifyCb(
-        std::bind(&MediaKeySystemFactoryImpl::MediaKeySystemServerDied, this, std::placeholders::_1));
+        std::bind(&MediaKeySystemFactoryImpl::MediaKeySystemFactoryServerDied, this, std::placeholders::_1));
     bool result = object->AddDeathRecipient(deathRecipient_);
     if (!result) {
         DRM_ERR_LOG("failed to add deathRecipient");
-        return;
     }
+
+    CreateListenerObject();
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::Init exit.");
 }
 
-void MediaKeySystemFactoryImpl::MediaKeySystemServerDied(pid_t pid)
+void MediaKeySystemFactoryImpl::MediaKeySystemFactoryServerDied(pid_t pid)
 {
-    DRM_ERR_LOG("MediaKeySystemServer has died, pid:%{public}d!", pid);
-    if (serviceProxy_ != nullptr) {
+    DRM_ERR_LOG("MediaKeySystemFactoryServerDied has died, pid:%{public}d!", pid);
+    if (serviceProxy_ != nullptr && serviceProxy_->AsObject() != nullptr) {
         (void)serviceProxy_->AsObject()->RemoveDeathRecipient(deathRecipient_);
         serviceProxy_ = nullptr;
     }
+    listenerStub_ = nullptr;
     deathRecipient_ = nullptr;
 }
 

@@ -26,6 +26,24 @@ MediaKeySystemFactoryServiceProxy::MediaKeySystemFactoryServiceProxy(const sptr<
     DRM_DEBUG_LOG("MediaKeySystemFactoryServiceProxy Initialized.");
 }
 
+int32_t MediaKeySystemFactoryServiceProxy::SetListenerObject(const sptr<IRemoteObject> &object)
+{
+    DRM_INFO_LOG("MediaKeySystemFactoryServiceProxy SetListenerObject.");
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+
+    data.WriteInterfaceToken(GetDescriptor());
+    (void)data.WriteRemoteObject(object);
+    int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_SET_LISTENER_OBJ, data, reply, option);
+    if (error != ERR_NONE) {
+        DRM_ERR_LOG("Set listener obj failed, error: %{public}d", error);
+        return IPC_PROXY_ERR;
+    }
+    DRM_INFO_LOG("MediaKeySystemFactoryServiceProxy SetListenerObject exit.");
+    return reply.ReadInt32();
+}
+
 int32_t MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported(std::string &uuid, bool *isSurpported)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported one param called, enter.");

@@ -34,6 +34,49 @@ MediaKeySystemFactoryServiceStub::~MediaKeySystemFactoryServiceStub()
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " Instances destroy", (POINTER_MASK & reinterpret_cast<uintptr_t>(this)));
 }
 
+void MediaKeySystemFactoryServiceStub::MediaKeySystemFactoryClientDied(pid_t pid)
+{
+    DRM_ERR_LOG("MediaKeySystemFactory client has died, pid:%{public}d", pid);
+    if (clientListenerMap_.find(pid) != clientListenerMap_.end()) {
+        if (clientListenerMap_[pid] != nullptr && clientListenerMap_[pid]->AsObject() != nullptr &&
+            deathRecipientMap_.find(pid) != deathRecipientMap_.end() && deathRecipientMap_[pid] != nullptr) {
+            (void)clientListenerMap_[pid]->AsObject()->RemoveDeathRecipient(deathRecipientMap_[pid]);
+        }
+        deathRecipientMap_.erase(pid);
+        clientListenerMap_.erase(pid);
+    }
+    DistroyForClientDied(pid);
+}
+
+int32_t MediaKeySystemFactoryServiceStub::SetListenerObject(const sptr<IRemoteObject> &object)
+{
+    pid_t pid = IPCSkeleton::GetCallingPid();
+    if (clientListenerMap_.find(pid) != clientListenerMap_.end()) {
+        if (clientListenerMap_[pid] != nullptr && clientListenerMap_[pid]->AsObject() != nullptr &&
+            deathRecipientMap_.find(pid) != deathRecipientMap_.end() && deathRecipientMap_[pid] != nullptr) {
+            (void)clientListenerMap_[pid]->AsObject()->RemoveDeathRecipient(deathRecipientMap_[pid]);
+        }
+        deathRecipientMap_.erase(pid);
+        clientListenerMap_.erase(pid);
+    }
+
+    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_MEMORY_ERROR, "set listener object is nullptr");
+    sptr<IDrmListener> clientListener = iface_cast<IDrmListener>(object);
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        clientListener != nullptr, DRM_MEMORY_ERROR, "failed to convert IDrmListener");
+    sptr<DrmDeathRecipient> deathRecipient = new (std::nothrow) DrmDeathRecipient(pid);
+    DRM_CHECK_AND_RETURN_RET_LOG(deathRecipient != nullptr, DRM_MEMORY_ERROR, "failed to new DrmDeathRecipient");
+    deathRecipient->SetNotifyCb(
+        std::bind(&MediaKeySystemFactoryServiceStub::MediaKeySystemFactoryClientDied, this, std::placeholders::_1));
+    if (clientListener->AsObject() != nullptr) {
+        (void)clientListener->AsObject()->AddDeathRecipient(deathRecipient);
+    }
+    DRM_DEBUG_LOG("MediaKeySystem client pid:%{public}d", pid);
+    deathRecipientMap_[pid] = deathRecipient;
+    clientListenerMap_[pid] = clientListener;
+    return DRM_OK;
+}
+
 static int32_t ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServiceStub *stub, MessageParcel &data,
     MessageParcel &reply, MessageOption &option)
 {
@@ -70,6 +113,19 @@ static int32_t ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServic
     return DRM_OK;
 }
 
+static int32_t ProcessSetListenerObject(MediaKeySystemFactoryServiceStub *stub, MessageParcel &data,
+    MessageParcel &reply, MessageOption &option)
+{
+    DRM_INFO_LOG("MediaKeySystemFactoryServiceStub ProcessSetListenerObject.");
+    (void)reply;
+    sptr<IRemoteObject> object = data.ReadRemoteObject();
+    int32_t errCode = stub->SetListenerObject(object);
+    DRM_CHECK_AND_RETURN_RET_LOG(errCode == DRM_OK, errCode,
+        "ProcessSetListenerObject faild, errCode:%{public}d", errCode);
+    DRM_INFO_LOG("MediaKeySystemFactoryServiceStub ProcessSetListenerObject exit.");
+    return errCode;
+}
+
 int32_t MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
@@ -100,6 +156,12 @@ int32_t MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, Message
             }
             DRM_INFO_LOG("MediaKeySystemFactoryServiceStub CREATE_MEDIA_KEYSYSTEM exit.");
             return errCode;
+        }
+        case MEDIA_KEY_SYSTEM_FACTORY_SET_LISTENER_OBJ: {
+            DRM_INFO_LOG("MediaKeySystemFactoryServiceStub IS_MEDIA_KEY_SYSTEM_SURPPORTED enter.");
+            int32_t ret = ProcessSetListenerObject(this, data, reply, option);
+            DRM_INFO_LOG("MediaKeySystemFactoryServiceStub IS_MEDIA_KEY_SYSTEM_SURPPORTED exit.");
+            return ret;
         }
     }
     return DRM_OK;

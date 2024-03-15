@@ -22,9 +22,9 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <map>
 #include <unordered_set>
 #include <refbase.h>
-#include "safe_map.h"
 #include "iremote_stub.h"
 #include "system_ability.h"
 #include "drm_host_manager.h"
@@ -61,11 +61,12 @@ public:
         bool *isSurpported) override;
     int32_t CreateMediaKeySystem(std::string &uuid, sptr<IMediaKeySystemService> &mediaKeySystemProxy) override;
     int32_t CloseMediaKeySystemService(sptr<MediaKeySystemService> mediaKeySystemService) override;
+    void DistroyForClientDied(pid_t pid) override;
 
 private:
     std::mutex mutex_;
     sptr<DrmHostManager> drmHostManager_;
-    SafeMap<int32_t, std::set<sptr<MediaKeySystemService>>> mediaKeySystemForPid_;
+    std::map<int32_t, std::set<sptr<MediaKeySystemService>>> mediaKeySystemForPid_;
 };
 } // DrmStandard
 } // OHOS

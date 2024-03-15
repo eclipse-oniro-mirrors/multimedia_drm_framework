@@ -72,6 +72,9 @@ static int32_t ProcessGetOfflineMediaKeyStatus(MediaKeySystemServiceStub *stub, 
 static int32_t ProcessRemoveOfflineLMediaKey(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
+static int32_t ProcessSetListenerObject(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+    MessageOption &option);
+
 static int32_t ProcessSetCallabck(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
@@ -90,18 +93,20 @@ static struct ProcessRemoteRequestFuncArray g_mediaKeySystemServiceStubRequestPr
     {MEDIA_KEY_SYSTEM_GET_OFFLINELICENSEIDS, ProcessGetOfflineLMediaKeyIds},
     {MEDIA_KEY_SYSTEM_GET_OFFLINEKEY_STATUS, ProcessGetOfflineMediaKeyStatus},
     {MEDIA_KEY_SYSTEM_REMOVE_OFFLINELICENSE, ProcessRemoveOfflineLMediaKey},
+    {MEDIA_KEY_SYSTEM_SET_LISTENER_OBJ, ProcessSetListenerObject},
     {MEDIA_KEY_SYSTEM_SETCALLBACK, ProcessSetCallabck},
 };
 
 MediaKeySystemServiceStub::MediaKeySystemServiceStub()
 {
-    deathRecipientMap_.clear();
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " Instances create", (POINTER_MASK & reinterpret_cast<uintptr_t>(this)));
 }
 
 MediaKeySystemServiceStub::~MediaKeySystemServiceStub()
 {
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " Instances destroy", (POINTER_MASK & reinterpret_cast<uintptr_t>(this)));
+    sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
+    sptr<IDrmListener> clientListener_ = nullptr;
 }
 
 static int32_t ProcessCreatekeySession(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
@@ -382,6 +387,49 @@ static int32_t ProcessRemoveOfflineLMediaKey(MediaKeySystemServiceStub *stub, Me
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessRemoveOfflineLMediaKey faild, errCode:%{public}d", ret);
     DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_REMOVE_OFFLINELICENSE exit.");
     return ret;
+}
+
+void MediaKeySystemServiceStub::MediaKeySystemClientDied(pid_t pid)
+{
+    DRM_ERR_LOG("MediaKeySystemService client has died, pid:%{public}d", pid);
+}
+
+int32_t MediaKeySystemServiceStub::SetListenerObject(const sptr<IRemoteObject> &object)
+{
+    pid_t pid = IPCSkeleton::GetCallingPid();
+    if (clientListener_ != nullptr && clientListener_->AsObject() != nullptr && deathRecipient_ != nullptr) {
+        DRM_DEBUG_LOG("This MediaKeySystemServiceStub has already set listener!");
+        (void)clientListener_->AsObject()->RemoveDeathRecipient(deathRecipient_);
+        deathRecipient_ = nullptr;
+        clientListener_ = nullptr;
+    }
+
+    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_MEMORY_ERROR, "set listener object is nullptr");
+    sptr<IDrmListener> clientListener_ = iface_cast<IDrmListener>(object);
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        clientListener_ != nullptr, DRM_MEMORY_ERROR, "failed to convert IDrmListener");
+    deathRecipient_ = new (std::nothrow) DrmDeathRecipient(pid);
+    DRM_CHECK_AND_RETURN_RET_LOG(deathRecipient_ != nullptr, DRM_MEMORY_ERROR, "failed to new DrmDeathRecipient");
+    deathRecipient_->SetNotifyCb(
+        std::bind(&MediaKeySystemServiceStub::MediaKeySystemClientDied, this, std::placeholders::_1));
+    if (clientListener_->AsObject() != nullptr) {
+        (void)clientListener_->AsObject()->AddDeathRecipient(deathRecipient_);
+    }
+    DRM_DEBUG_LOG("MediaKeySystem client pid:%{public}d", pid);
+    return DRM_OK;
+}
+
+static int32_t ProcessSetListenerObject(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+    MessageOption &option)
+{
+    DRM_INFO_LOG("MediaKeySystemServiceStub ProcessSetListenerObject.");
+    (void)reply;
+    sptr<IRemoteObject> object = data.ReadRemoteObject();
+    int32_t errCode = stub->SetListenerObject(object);
+    DRM_CHECK_AND_RETURN_RET_LOG(errCode == DRM_OK, errCode,
+        "ProcessSetListenerObject faild, errCode:%{public}d", errCode);
+    DRM_INFO_LOG("MediaKeySystemServiceStub ProcessSetListenerObject exit.");
+    return errCode;
 }
 
 static int32_t ProcessSetCallabck(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,

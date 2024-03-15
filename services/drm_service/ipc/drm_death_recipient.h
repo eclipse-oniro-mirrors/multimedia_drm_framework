@@ -18,6 +18,7 @@
 
 #include "iremote_object.h"
 #include "nocopyable.h"
+#include "drm_log.h"
 
 namespace OHOS {
 namespace DrmStandard {

@@ -97,6 +97,7 @@ public:
     virtual int32_t ClearMediaKeys() = 0;
     virtual int32_t GetContentProtectionLevel(IMediaKeySessionService::ContentProtectionLevel *securityLevel) = 0;
     virtual int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status) = 0;
+    virtual int32_t SetListenerObject(const sptr<IRemoteObject> &object) = 0;
     virtual int32_t SetCallback(sptr<IMediaKeySessionServiceCallback> &callback) = 0;
     DECLARE_INTERFACE_DESCRIPTOR(u"IMediaKeySessionService");
 };

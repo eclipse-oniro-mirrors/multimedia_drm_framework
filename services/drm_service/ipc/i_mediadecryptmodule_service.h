@@ -16,7 +16,6 @@
 #ifndef OHOS_DRM_I_MEDIA_DECRYPT_MODULE_SERVICE_H
 #define OHOS_DRM_I_MEDIA_DECRYPT_MODULE_SERVICE_H
 
-#include "i_mediadecryptmodule_service.h"
 #include "ipc_types.h"
 #include "iremote_broker.h"
 #include "iremote_proxy.h"
@@ -65,6 +64,7 @@ public:
 
     virtual ~IMediaDecryptModuleService() = default;
     virtual int32_t Release() = 0;
+    virtual int32_t SetListenerObject(const sptr<IRemoteObject> &object) = 0;
     virtual int32_t DecryptMediaData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo,
         DrmBuffer &srcBuffer, DrmBuffer &dstBuffer) = 0;
     DECLARE_INTERFACE_DESCRIPTOR(u"IMediaDecryptModuleService");

@@ -46,6 +46,7 @@ public:
     int32_t GetOfflineMediaKeyStatus(std::vector<uint8_t> &licenseId,
         IMediaKeySessionService::OfflineMediaKeyStatus &status) override;
     int32_t ClearOfflineMediaKeys(std::vector<uint8_t> &licenseId) override;
+    int32_t SetListenerObject(const sptr<IRemoteObject> &object) override;
     int32_t SetCallback(sptr<IMeidaKeySystemServiceCallback> &callback) override;
 
 private:

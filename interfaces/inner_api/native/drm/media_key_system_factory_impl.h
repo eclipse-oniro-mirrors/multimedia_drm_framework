@@ -41,11 +41,13 @@ public:
     int32_t keySystemNumber = 0;
 
 private:
-    void MediaKeySystemServerDied(pid_t pid);
+    int32_t CreateListenerObject();
+    void MediaKeySystemFactoryServerDied(pid_t pid);
     std::mutex mutex_;
     static sptr<MediaKeySystemFactoryImpl> mediaKeySystemFactoryImpl_;
     sptr<OHOS::DrmStandard::IMediaKeySystemFactoryService> serviceProxy_;
-    sptr<DrmDeathRecipient> deathRecipient_;
+    sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
+    sptr<DrmListenerStub> listenerStub_ = nullptr;
 };
 } // DrmStandard
 } // OHOS
