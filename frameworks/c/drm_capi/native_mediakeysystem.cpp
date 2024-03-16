@@ -134,8 +134,6 @@ Drm_ErrCode OH_MediaKeySystem_SetConfigurationString(MediaKeySystem *mediaKeySys
         "OH_SetConfigurationString value.size is not zero!");
 
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_SetConfigurationString OH_MediaKeySystem_SetConfigurationString faild!");
     result = systemObject->systemImpl_->SetConfigurationString(name, valuePtr);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationString mediaKeySystemImpl::SetConfigurationString faild!");
@@ -158,8 +156,6 @@ Drm_ErrCode OH_MediaKeySystem_GetConfigurationString(MediaKeySystem *mediaKeySys
     DRM_CHECK_AND_RETURN_RET_LOG(name.size() != 0, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationString configName.size is not zero!");
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_SetConfigurationString mediaKeySystemImpl::GetConfigurationString faild!");
     result = systemObject->systemImpl_->GetConfigurationString(name, valuePtr);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationString mediaKeySystemImpl::GetConfigurationString faild!");
@@ -196,8 +192,6 @@ Drm_ErrCode OH_MediaKeySystem_SetConfigurationByteArray(MediaKeySystem *mediaKey
         "OH_SetConfigurationByteArray value.size is not zero!");
 
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_SetConfigurationString mediaKeySystemImpl::SetConfigurationByteArray faild!");
     result = systemObject->systemImpl_->SetConfigurationByteArray(name, valueptr);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationByteArray mediaKeySystemImpl::SetConfigurationByteArray faild!");
@@ -220,8 +214,6 @@ Drm_ErrCode OH_MediaKeySystem_GetConfigurationByteArray(MediaKeySystem *mediaKey
         "OH_GetConfigurationByteArray configName.size is not zero!");
 
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_SetConfigurationString mediaKeySystemImpl::GetConfigurationByteArray faild!");
     result = systemObject->systemImpl_->GetConfigurationByteArray(name, valuePtr);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_GetConfigurationByteArray mediaKeySystemImpl::GetConfigurationByteArray faild!");
@@ -268,8 +260,6 @@ Drm_ErrCode OH_MediaKeySystem_GetStatistics(MediaKeySystem *mediaKeySystem, DRM_
         "OH_MediaKeySystem_GetStatistics params is error!");
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
     std::vector<IMediaKeySystemService::MetircKeyValue> metrics;
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_SetConfigurationString mediaKeySystemImpl::GetStatistics faild!");
     int32_t result = systemObject->systemImpl_->GetStatistics(metrics);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_GetStatistics systemObject is nullptr!");
@@ -287,8 +277,6 @@ Drm_ErrCode OH_MediaKeySystem_GetMaxContentProtectionLevel(MediaKeySystem *media
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySystem != nullptr) && (contentProtectionLevel != nullptr)),
         DRM_ERR_INVALID_VAL, "OH_GetMaxContentProtectionLevel parameter is error!");
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_SetConfigurationString mediaKeySystemImpl::GetMaxContentProtectionLevel faild!");
     int32_t result = DRM_ERR_OK;
     IMediaKeySessionService::ContentProtectionLevel level = IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN;
     result = systemObject->systemImpl_->GetMaxContentProtectionLevel(&level);
@@ -314,8 +302,6 @@ Drm_ErrCode OH_MediaKeySystem_GenerateKeySystemRequest(MediaKeySystem *mediaKeyS
     std::string defaultUrlData;
 
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_SetConfigurationString mediaKeySystemImpl::GenerateKeySystemRequest faild!");
     int32_t result = systemObject->systemImpl_->GenerateKeySystemRequest(requestData, defaultUrlData);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_GenerateKeySystemRequest mediaKeySystem is nullptr!");
@@ -351,8 +337,6 @@ Drm_ErrCode OH_MediaKeySystem_ProcessKeySystemResponse(MediaKeySystem *mediaKeyS
     int32_t result = DRM_ERR_OK;
     std::vector<uint8_t> keySystemResponse(response, response + responseLen);
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_SetConfigurationString mediaKeySystemImpl::ProcessKeySystemResponse faild!");
     result = systemObject->systemImpl_->ProcessKeySystemResponse(keySystemResponse);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_ProcessKeySystemResponse systemObject is nullptr!");
@@ -367,8 +351,6 @@ Drm_ErrCode OH_MediaKeySystem_GetCertificateStatus(MediaKeySystem *mediaKeySyste
         "OH_ProcessKeySystemResponse parameter is error!");
     IMediaKeySystemService::CertificateStatus CertStatus;
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_SetConfigurationString mediaKeySystemImpl::GetCertificateStatus faild!");
     int32_t result = systemObject->systemImpl_->GetCertificateStatus(&CertStatus);
     if (result != DRM_ERR_OK) {
         *certStatus = CERT_STATUS_UNAVAILABLE;
@@ -392,8 +374,6 @@ Drm_ErrCode OH_MediaKeySystem_SetMediaKeySystemCallback(MediaKeySystem *mediaKey
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySystem != nullptr) && (callback != nullptr)), DRM_ERR_INVALID_VAL,
         "parameter is error!");
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_SetConfigurationString mediaKeySystemImpl::SetCallbackReference faild!");
     systemObject->systemCallback_->SetCallbackReference(callback);
     DRM_INFO_LOG("OH_MediaKeySystem_SetMediaKeySystemCallback exit.");
     return DRM_ERR_OK;
@@ -412,8 +392,7 @@ Drm_ErrCode OH_MediaKeySystem_CreateMediaKeySession(MediaKeySystem *mediaKeySyst
         (*level > CONTENT_PROTECTION_LEVEL_UNKNOWN) && (*level < CONTENT_PROTECTION_LEVEL_MAX)),
         DRM_ERR_INVALID_VAL, "mediaKeySystem is nullptr!");
     struct MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_SetConfigurationString mediaKeySystemImpl::CreateMediaKeySession faild!");
+
     int32_t secure = static_cast<int32_t>(*level);
     IMediaKeySessionService::ContentProtectionLevel secureLevel =
         static_cast<IMediaKeySessionService::ContentProtectionLevel>(secure);
@@ -470,8 +449,6 @@ Drm_ErrCode OH_MediaKeySystem_GetOfflineMediaKeyIds(MediaKeySystem *mediaKeySyst
     std::vector<std::vector<uint8_t>> licenseIds;
 
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_SetConfigurationString mediaKeySystemImpl::GetOfflineMediaKeyIds faild!");
     int32_t result = systemObject->systemImpl_->GetOfflineMediaKeyIds(licenseIds);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_GetOfflineMediaKeyIds faild!");
@@ -500,8 +477,6 @@ Drm_ErrCode OH_MediaKeySystem_GetOfflineMediaKeyStatus(MediaKeySystem *mediaKeyS
         IMediaKeySessionService::OFFLINELICENSESTATUS_UNKNOWN;
 
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_SetConfigurationString mediaKeySystemImpl::GetOfflineMediaKeyStatus faild!");
     result = systemObject->systemImpl_->GetOfflineMediaKeyStatus(licenseIdVec, offlineMediaKeyStatus);
     if (result != DRM_ERR_OK) {
         DRM_ERR_LOG("OH_MediaKeySystem_GetOfflineMediaKeyStatus faild!");
@@ -530,8 +505,6 @@ Drm_ErrCode OH_MediaKeySystem_ClearOfflineMediaKeys(MediaKeySystem *mediaKeySyst
     DRM_CHECK_AND_RETURN_RET_LOG(licenseIdVec.size() != 0, DRM_ERR_INVALID_VAL,
         "OH_RemoveOfflineLMediaKey configName.size is not zero!");
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_SetConfigurationString mediaKeySystemImpl::ClearOfflineMediaKeys faild!");
     result = systemObject->systemImpl_->ClearOfflineMediaKeys(licenseIdVec);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_RemoveOfflineLMediaKey mediaKeySystemImpl::ClearOfflineMediaKeys faild!");
@@ -544,8 +517,7 @@ Drm_ErrCode OH_MediaKeySystem_Destroy(MediaKeySystem *mediaKeySystem)
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, DRM_ERR_INVALID_VAL, "mediaKeySystem is nullptr!");
 
     struct MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
-        "OH_SetConfigurationString mediaKeySystemImpl::Release faild!");
+
     int32_t ret = systemObject->systemImpl_->Release();
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_INVALID_VAL, "call media key system release failed!");
     MediaKeySystemFactoryImpl::GetInstance()->keySystemNumber--;
