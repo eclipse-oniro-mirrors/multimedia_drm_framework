@@ -13,11 +13,11 @@
 
 #import("//build/config/ohos/rules.gni")
 import("//build/ohos.gni")
-group("multimedia_drm_framework") {
+group("drm_framework") {
   deps = [
-    "./frameworks/native:drm_framework",
-    "./interfaces/kits/c/drm_capi:native_drm",
-    "./interfaces/kits/js/drm_napi:drm_napi",
-    "./services/drm_service:drm_service",
+    "./drm_framework/frameworks/native:drm_framework",
+    "./drm_framework/interfaces/kits/c/drm_capi:native_drm",
+    "./drm_framework/interfaces/kits/js/drm_napi:drm_napi",
+    "./drm_framework/services:drm_service",
   ]
 }

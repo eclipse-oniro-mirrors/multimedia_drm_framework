@@ -11,10 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-group("drmframeworktest") {
-  testonly = true
-  deps = [
-    "./fuzztest:drm_framework_capi_fuzztest_v1_0",
-    "./unittest:drm_framework_capi_unittest_v1_0",
-  ]
+if (defined(ohos_lite)) {
+  group("drmframeworktest") {
+  }
+} else {
+  group("drmframeworktest") {
+    testonly = true
+    deps = [ "./unittest:drm_framework_capi_unittest_v1_0" ]
+  }
 }
