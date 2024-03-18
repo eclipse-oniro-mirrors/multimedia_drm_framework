@@ -23,6 +23,7 @@
 #include "drm_log.h"
 #include "drm_death_recipient.h"
 #include "key_session_impl.h"
+#include "drm_listener_stub.h"
 #include "i_mediakeysystem_service.h"
 #include "mediakeysystem_service_callback_stub.h"
 
@@ -66,12 +67,16 @@ public:
     int32_t Release();
 
 private:
+    void MediaKeySystemServerDied(pid_t pid);
+    int32_t CreateListenerObject();
     std::mutex mutex_;
     sptr<IMediaKeySystemService> serviceProxy_;
     sptr<MediaKeySystemImplCallback> mediaKeySystemApplicationCallback_;
     sptr<IMeidaKeySystemServiceCallback> serviceCallback_;
     std::vector<sptr<MediaKeySessionImpl>> keySessionVec;
     uint32_t keySessionNumber = 0;
+    sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
+    sptr<DrmListenerStub> listenerStub_ = nullptr;
 };
 
 class MediaKeySystemCallback : public MeidaKeySystemServiceCallbackStub {

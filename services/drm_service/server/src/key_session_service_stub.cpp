@@ -65,6 +65,9 @@ static int32_t ProcessRequireSecureDecoder(MediaKeySessionServiceStub *stub, Mes
 static int32_t ProcessGetContentProtectionLevel(MediaKeySessionServiceStub *stub, MessageParcel &data,
     MessageParcel &reply, MessageOption &option);
 
+static int32_t ProcessSetListenerObject(MediaKeySessionServiceStub *stub, MessageParcel &data,
+    MessageParcel &reply, MessageOption &option);
+
 static struct ProcessRemoteRequestFuncArray g_mediaKeySessionServiceStubRequestProcessFunc[] = {
     {CREATE_MEDIA_DECRYPT_MODULE, ProcessCreateMediaDecryptModule},
     {KEY_SESSION_RELEASE, ProcessRleaseKeySession},
@@ -77,6 +80,7 @@ static struct ProcessRemoteRequestFuncArray g_mediaKeySessionServiceStubRequestP
     {MEDIA_KEY_SESSION_REMOVE_LICENSE, ProcessClearMediaKeys},
     {MEDIA_KEY_SESSION_SET_CALLBACK, ProcessSetCallback},
     {MEDIA_KEY_SESSION_REQUIRE_SECURE_DECODER, ProcessRequireSecureDecoder},
+    {MEDIA_KEY_SESSION_SET_LISTENER_OBJ, ProcessSetListenerObject},
     {MEDIA_KEY_SESSION_GETSECURITYLEVEL, ProcessGetContentProtectionLevel},
 };
 
@@ -344,6 +348,49 @@ static int32_t ProcessRequireSecureDecoder(MediaKeySessionServiceStub *stub, Mes
     reply.WriteBool(status);
     DRM_INFO_LOG("MediaKeySessionServiceStub MEDIA_KEY_SESSION_REQUIRE_SECURE_DECODER exit.");
     return ret;
+}
+
+void MediaKeySessionServiceStub::MediaKeySessionClientDied(pid_t pid)
+{
+    DRM_ERR_LOG("MediaKeySession client has died, pid:%{public}d", pid);
+}
+
+int32_t MediaKeySessionServiceStub::SetListenerObject(const sptr<IRemoteObject> &object)
+{
+    pid_t pid = IPCSkeleton::GetCallingPid();
+    if (clientListener_ != nullptr && clientListener_->AsObject() != nullptr && deathRecipient_ != nullptr) {
+        DRM_DEBUG_LOG("This MediaKeySessionServiceStub has already set listener!");
+        (void)clientListener_->AsObject()->RemoveDeathRecipient(deathRecipient_);
+        deathRecipient_ = nullptr;
+        clientListener_ = nullptr;
+    }
+
+    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_MEMORY_ERROR, "set listener object is nullptr");
+    sptr<IDrmListener> clientListener_ = iface_cast<IDrmListener>(object);
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        clientListener_ != nullptr, DRM_MEMORY_ERROR, "failed to convert IDrmListener");
+    deathRecipient_ = new (std::nothrow) DrmDeathRecipient(pid);
+    DRM_CHECK_AND_RETURN_RET_LOG(deathRecipient_ != nullptr, DRM_MEMORY_ERROR, "failed to new DrmDeathRecipient");
+    deathRecipient_->SetNotifyCb(
+        std::bind(&MediaKeySessionServiceStub::MediaKeySessionClientDied, this, std::placeholders::_1));
+    if (clientListener_->AsObject() != nullptr) {
+        (void)clientListener_->AsObject()->AddDeathRecipient(deathRecipient_);
+    }
+    DRM_DEBUG_LOG("MediaKeySession client pid pid:%{public}d", pid);
+    return DRM_OK;
+}
+
+static int32_t ProcessSetListenerObject(MediaKeySessionServiceStub *stub, MessageParcel &data,
+    MessageParcel &reply, MessageOption &option)
+{
+    DRM_INFO_LOG("MediaKeySessionServiceStub ProcessSetListenerObject.");
+    (void)reply;
+    sptr<IRemoteObject> object = data.ReadRemoteObject();
+    int32_t errCode = stub->SetListenerObject(object);
+    DRM_CHECK_AND_RETURN_RET_LOG(errCode == DRM_OK, errCode,
+        "ProcessSetListenerObject faild, errCode:%{public}d", errCode);
+    DRM_INFO_LOG("MediaKeySessionServiceStub ProcessSetListenerObject exit.");
+    return errCode;
 }
 
 static int32_t ProcessGetContentProtectionLevel(MediaKeySessionServiceStub *stub, MessageParcel &data,

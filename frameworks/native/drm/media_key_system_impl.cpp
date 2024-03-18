@@ -20,15 +20,57 @@
 
 namespace OHOS {
 namespace DrmStandard {
-MediaKeySystemImpl::MediaKeySystemImpl(sptr<IMediaKeySystemService> &mediaKeysystem)
+MediaKeySystemImpl::MediaKeySystemImpl(sptr<IMediaKeySystemService> &mediaKeysystem) : serviceProxy_(mediaKeysystem)
 {
-    DRM_DEBUG_LOG("MediaKeySystemImpl:0x%{public}06" PRIXPTR "MediaKeySystemImpl Instances create", FAKE_POINTER(this));
-    serviceProxy_ = mediaKeysystem;
+    DRM_DEBUG_LOG("MediaKeySystemImpl:0x %{public}06" PRIXPTR "MediaKeySystemImpl Instances create",
+        FAKE_POINTER(this));
+
+    sptr<IRemoteObject> object = serviceProxy_->AsObject();
+    pid_t pid = 0;
+    deathRecipient_ = new(std::nothrow) DrmDeathRecipient(pid);
+    DRM_CHECK_AND_RETURN_LOG(deathRecipient_ != nullptr, "failed to new DrmDeathRecipient.");
+
+    deathRecipient_->SetNotifyCb(
+        std::bind(&MediaKeySystemImpl::MediaKeySystemServerDied, this, std::placeholders::_1));
+    bool result = object->AddDeathRecipient(deathRecipient_);
+    if (!result) {
+        DRM_ERR_LOG("failed to add deathRecipient");
+        return;
+    }
+
+    CreateListenerObject();
 }
 
 MediaKeySystemImpl::~MediaKeySystemImpl()
 {
     serviceProxy_ = nullptr;
+}
+
+void MediaKeySystemImpl::MediaKeySystemServerDied(pid_t pid)
+{
+    DRM_ERR_LOG("MediaKeySystem server has died, pid:%{public}d!", pid);
+
+    if (serviceProxy_ != nullptr && serviceProxy_->AsObject() != nullptr) {
+        (void)serviceProxy_->AsObject()->RemoveDeathRecipient(deathRecipient_);
+        serviceProxy_ = nullptr;
+    }
+    listenerStub_ = nullptr;
+    deathRecipient_ = nullptr;
+}
+
+int32_t MediaKeySystemImpl::CreateListenerObject()
+{
+    DRM_INFO_LOG("MediaKeySystemImpl::CreateListenerObject");
+    listenerStub_ = new(std::nothrow) DrmListenerStub();
+    DRM_CHECK_AND_RETURN_RET_LOG(listenerStub_ != nullptr, DRM_MEMORY_ERROR,
+        "failed to new DrmListenerStub object");
+    DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy_ != nullptr, DRM_MEMORY_ERROR,
+        "Drm service does not exist.");
+
+    sptr<IRemoteObject> object = listenerStub_->AsObject();
+    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_MEMORY_ERROR, "listener object is nullptr.");
+
+    return serviceProxy_->SetListenerObject(object);
 }
 
 int32_t MediaKeySystemImpl::Release()

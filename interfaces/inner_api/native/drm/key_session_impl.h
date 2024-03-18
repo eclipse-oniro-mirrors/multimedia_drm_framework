@@ -23,7 +23,9 @@
 #include "iservice_registry.h"
 #include "i_keysession_service.h"
 #include "i_keysession_service_callback.h"
+#include "drm_listener_stub.h"
 #include "key_session_service_callback_stub.h"
+#include "drm_death_recipient.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -70,10 +72,14 @@ public:
     int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status);
 
 private:
+    int32_t CreateListenerObject();
+    void MediaKeySessionServerDied(pid_t pid);
     sptr<MediaKeySessionImplCallback> keySessionApplicationCallback_;
     sptr<IMediaKeySessionServiceCallback> keySessionServiceCallback_;
     sptr<OHOS::DrmStandard::IMediaKeySessionService> keySessionServiceProxy_;
     std::mutex mutex_;
+    sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
+    sptr<DrmListenerStub> listenerStub_ = nullptr;
 };
 
 class MediaKeySessionServiceCallback : public MediaKeySessionServiceCallbackStub {

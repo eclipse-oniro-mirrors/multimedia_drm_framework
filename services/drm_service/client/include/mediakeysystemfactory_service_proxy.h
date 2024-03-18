@@ -31,6 +31,7 @@ public:
     int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, int32_t securityLevel,
         bool *isSurpported) override;
     int32_t CreateMediaKeySystem(std::string &uuid, sptr<IMediaKeySystemService> &mediaKeySystemProxy) override;
+    int32_t SetListenerObject(const sptr<IRemoteObject> &object) override;
 
 private:
     static inline BrokerDelegator<MediaKeySystemFactoryServiceProxy> delegator_;

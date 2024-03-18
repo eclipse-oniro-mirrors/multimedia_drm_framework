@@ -24,7 +24,6 @@
 #include <set>
 #include <unordered_set>
 #include <refbase.h>
-#include "safe_map.h"
 #include "mediakeysystem_service_stub.h"
 #include "key_session_service.h"
 #include "drm_host_manager.h"
@@ -82,7 +81,7 @@ private:
     sptr<DrmHostManager> drmHostManager_;
     sptr<IMeidaKeySystemServiceCallback> callback_;
     wptr<IMediaKeySystemServiceOperatorsCallback> keySystemOperatoersCallback_;
-    SafeMap<int32_t, std::set<sptr<MediaKeySessionService>>> sessionsForPid_;
+    std::set<sptr<MediaKeySessionService>> sessionsSet_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem_;
 };
 

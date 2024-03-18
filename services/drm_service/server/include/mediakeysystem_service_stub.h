@@ -21,6 +21,7 @@
 #include <iostream>
 #include <vector>
 #include "i_mediakeysystem_service.h"
+#include "i_drm_listener.h"
 #include "iremote_stub.h"
 #include "drm_death_recipient.h"
 #include "remote_request_code.h"
@@ -33,9 +34,12 @@ public:
     ~MediaKeySystemServiceStub();
     virtual int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
         MessageOption &option) override;
+    int32_t SetListenerObject(const sptr<IRemoteObject> &object) override;
 
 private:
-    std::map<pid_t, sptr<DrmDeathRecipient>> deathRecipientMap_;
+    void MediaKeySystemClientDied(pid_t pid);
+    sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
+    sptr<IDrmListener> clientListener_ = nullptr;
 };
 } // namespace DrmStandard
 } // namespace OHOS

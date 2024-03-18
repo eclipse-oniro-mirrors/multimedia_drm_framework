@@ -47,6 +47,24 @@ int32_t MediaDecryptModuleServiceProxy::Release()
     return ret;
 }
 
+int32_t MediaDecryptModuleServiceProxy::SetListenerObject(const sptr<IRemoteObject> &object)
+{
+    DRM_INFO_LOG("MediaDecryptModuleServiceProxy::SetListenerObject enter.");
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+
+    data.WriteInterfaceToken(GetDescriptor());
+    (void)data.WriteRemoteObject(object);
+    int error = Remote()->SendRequest(MEDIA_KEY_SESSION_SET_LISTENER_OBJ, data, reply, option);
+    if (error != ERR_NONE) {
+        DRM_ERR_LOG("Set listener obj failed, error: %{public}d", error);
+        return IPC_PROXY_ERR;
+    }
+    DRM_INFO_LOG("MediaDecryptModuleServiceProxy::SetListenerObject exit.");
+    return reply.ReadInt32();
+}
+
 int32_t MediaDecryptModuleServiceProxy::ProcessDrmBuffer(MessageParcel &data,
     IMediaDecryptModuleService::DrmBuffer &srcBuffer, IMediaDecryptModuleService::DrmBuffer &dstBuffer)
 {

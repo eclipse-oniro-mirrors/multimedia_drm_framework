@@ -16,14 +16,15 @@
 #ifndef OHOS_DRM_MEDIA_DECRYPT_MODULE_SERVICE_STUB_H
 #define OHOS_DRM_MEDIA_DECRYPT_MODULE_SERVICE_STUB_H
 
-#include "i_mediadecryptmodule_service.h"
-#include "remote_request_code.h"
-#include "iremote_stub.h"
-
 #include <mutex>
 #include <map>
 #include <iostream>
 #include <vector>
+#include "remote_request_code.h"
+#include "iremote_stub.h"
+#include "drm_death_recipient.h"
+#include "i_drm_listener.h"
+#include "i_mediadecryptmodule_service.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -34,7 +35,12 @@ public:
     virtual int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
         MessageOption &option) override;
 
+    int32_t SetListenerObject(const sptr<IRemoteObject> &object) override;
+
 private:
+    void MediaDecryptModuleClientDied(pid_t pid);
+    sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
+    sptr<IDrmListener> clientListener_ = nullptr;
 };
 } // namespace DrmStandard
 } // namespace OHOS

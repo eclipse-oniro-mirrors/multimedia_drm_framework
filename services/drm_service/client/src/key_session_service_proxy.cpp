@@ -418,6 +418,24 @@ int32_t MediaKeySessionServiceProxy::RequireSecureDecoderModule(std::string &mim
     return ret;
 }
 
+int32_t MediaKeySessionServiceProxy::SetListenerObject(const sptr<IRemoteObject> &object)
+{
+    DRM_INFO_LOG("MediaKeySessionServiceProxy::RequireSecureDecoderModule enter.");
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+
+    data.WriteInterfaceToken(GetDescriptor());
+    (void)data.WriteRemoteObject(object);
+    int error = Remote()->SendRequest(MEDIA_KEY_SESSION_SET_LISTENER_OBJ, data, reply, option);
+    if (error != ERR_NONE) {
+        DRM_ERR_LOG("Set listener obj failed, error: %{public}d", error);
+        return IPC_PROXY_ERR;
+    }
+    DRM_INFO_LOG("MediaKeySessionServiceProxy::RequireSecureDecoderModule exit.");
+    return reply.ReadInt32();
+}
+
 int32_t MediaKeySessionServiceProxy::SetCallback(sptr<IMediaKeySessionServiceCallback> &callback)
 {
     DRM_INFO_LOG("MediaKeySessionServiceProxy::SetCallback enter.");

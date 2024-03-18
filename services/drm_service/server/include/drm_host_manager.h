@@ -70,8 +70,8 @@ public:
     };
     class DrmHostDeathRecipient : public IRemoteObject::DeathRecipient {
     public:
-        explicit DrmHostDeathRecipient() {};
-        virtual ~DrmHostDeathRecipient() = default;
+        explicit DrmHostDeathRecipient();
+        virtual ~DrmHostDeathRecipient();
         void OnRemoteDied(const wptr<IRemoteObject> &remote) override;
     };
 
@@ -99,6 +99,7 @@ private:
     StatusCallback *statusCallback_;
     std::string service_name_ = "drm_interface_service";
     sptr<IMediaKeySystemFactory> drmHostServieProxy_;
+    sptr<DrmHostDeathRecipient> drmHostDeathRecipient_ = nullptr;
     sptr<IMediaKeySystem> hdiMediaKeySystem;
     static std::recursive_mutex handleAndKeySystemMapMutex;
     static std::map<void *, sptr<IMediaKeySystem>> handleAndKeySystemMap;
