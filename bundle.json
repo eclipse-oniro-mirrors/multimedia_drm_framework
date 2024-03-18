@@ -43,10 +43,7 @@
             "base_group": [
             ],
             "fwk_group": [
-              "//foundation/multimedia/drm_framework/frameworks/native:drm_framework",
-              "//foundation/multimedia/drm_framework/interfaces/kits/c/drm_capi:native_drm",
-              "//foundation/multimedia/drm_framework/interfaces/kits/js/drm_napi:drm_napi",
-              "//foundation/multimedia/drm_framework/interfaces/kits/js/drm_napi:drm_js"
+              "//foundation/multimedia/drm_framework/:multimedia_drm_framework"
             ],
             "service_group": [
               "//foundation/multimedia/drm_framework/sa_profile:drm_service_sa_profile",
@@ -106,7 +103,8 @@
           ],
           "test": [
             "//foundation/multimedia/drm_framework/frameworks/native/test:drmframeworktest",
-            "//foundation/multimedia/drm_framework/frameworks/native/test/unittest:drm_framework_capi_unittest_v1_0"
+            "//foundation/multimedia/drm_framework/frameworks/native/test/unittest:drm_framework_capi_unittest_v1_0",
+            "//foundation/multimedia/drm_framework/frameworks/native/test/fuzztest:drm_framework_capi_fuzztest_v1_0"
           ]
         }
     }
