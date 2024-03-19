@@ -93,7 +93,7 @@ ohos_shared_library("drm_framework") {
   ]
 
   cflags_cc = cflags
-
+  innerapi_tags = [ "platformsdk" ]
   part_name = "drm_framework"
   subsystem_name = "multimedia"
 }

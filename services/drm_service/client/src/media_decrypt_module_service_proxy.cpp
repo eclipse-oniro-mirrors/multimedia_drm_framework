@@ -56,7 +56,7 @@ int32_t MediaDecryptModuleServiceProxy::SetListenerObject(const sptr<IRemoteObje
 
     data.WriteInterfaceToken(GetDescriptor());
     (void)data.WriteRemoteObject(object);
-    int error = Remote()->SendRequest(MEDIA_KEY_SESSION_SET_LISTENER_OBJ, data, reply, option);
+    int error = Remote()->SendRequest(DECRYPT_MODULE_SET_LISTENER_OBJ, data, reply, option);
     if (error != ERR_NONE) {
         DRM_ERR_LOG("Set listener obj failed, error: %{public}d", error);
         return IPC_PROXY_ERR;
