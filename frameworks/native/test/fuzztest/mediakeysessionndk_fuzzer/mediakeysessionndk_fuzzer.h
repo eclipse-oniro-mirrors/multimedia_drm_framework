@@ -41,10 +41,10 @@ public:
     void IsWisePlay();
     void GenerateDeviceCertificate();
     void GenerateLicense();
+    void DestroySession();
     MediaKeySystem *mediaKeySystem = nullptr;
     MediaKeySession *mediaKeySession = nullptr;
     std::string uuid;
-    std::string mimeType;
     DRM_ContentProtectionLevel ContentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
 };
 } // namespace DrmStandard

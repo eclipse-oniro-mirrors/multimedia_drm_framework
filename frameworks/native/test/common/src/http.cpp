@@ -18,7 +18,7 @@
 #include "http.h"
 #include <securec.h>
 #define CURLEASYGETINFO 200
-static size_t http_curl_write_str_data(void *buffer, size_t size, size_t nmemb, void *userp)
+static size_t HttpCurlWriteStrData(void *buffer, size_t size, size_t nmemb, void *userp)
 {
     if (userp == nullptr || buffer == nullptr || size == 0) {
         return 0;
@@ -34,7 +34,7 @@ static size_t http_curl_write_str_data(void *buffer, size_t size, size_t nmemb, 
 }
 
 int HttpPost(std::string url, unsigned char *request, uint32_t requestLen, unsigned char *response,
-    int32_t *ResponseLen, uint32_t timeout)
+    int32_t *responseLen, uint32_t timeout)
 {
     int ret = -1;
     CURL *curl = curl_easy_init();
@@ -55,7 +55,7 @@ int HttpPost(std::string url, unsigned char *request, uint32_t requestLen, unsig
     // response raw data
     std::string tempStr;
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&tempStr);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, http_curl_write_str_data);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, HttpCurlWriteStrData);
     // timeout
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
     // http post
@@ -75,7 +75,7 @@ int HttpPost(std::string url, unsigned char *request, uint32_t requestLen, unsig
         printf("[error] memcpy_s faild!\n");
         return ret;
     }
-    *ResponseLen = tempStr.size();
+    *responseLen = tempStr.size();
     curl_easy_cleanup(curl);
     curl_slist_free_all(headers);
     return 0;
