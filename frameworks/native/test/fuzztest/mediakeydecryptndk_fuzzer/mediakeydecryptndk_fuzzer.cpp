@@ -44,7 +44,7 @@
             0x2C, 0x22, 0x65, 0x6E, 0x73, 0x63, 0x68, 0x65, 0x6D, 0x61, 0x22, 0x3A, 0x22, 0x63, 0x62, 0x63, 0x31,   \
             0x22, 0x7D                                                                                              \
     }
-#define PROVISION_URL "http://192.168.50.59:9528/getProvision"
+#define PROVISION_URL "https://drmkit.hwcloudtest.cn:8080/provision/v1/wiseplay"
 #define LICENSE_URL "http://license.dev.trustdta.com:8080/drmproxy/v3/getLicense"
 #define HTTPOUTTIME 10
 using namespace std;
@@ -103,7 +103,7 @@ void MediadecryptNdkFuzzer::GenerateDeviceCertificate()
     uint8_t Response[12288] = OFFRESPONSE;
     int32_t ResponseLen = sizeof(Response);
     if (wisePlay == true) {
-        int rett = HttpPost(PROVISION_URL, request, requestLen, Response, &ResponseLen, HTTPOUTTIME);
+        HttpPost(PROVISION_URL, request, requestLen, Response, &ResponseLen, HTTPOUTTIME);
     }
     OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, Response, ResponseLen);
     DRM_INFO_LOG("MediadecryptNdkFuzzer::GenerateDeviceCertificate end");
@@ -111,20 +111,26 @@ void MediadecryptNdkFuzzer::GenerateDeviceCertificate()
 
 void MediadecryptNdkFuzzer::GenerateLicense()
 {
-    DRM_INFO_LOG("MediadecryptNdkFuzzer::GenerateLicense start");
+    DRM_INFO_LOG("MediaKeysessionNdkFuzzer::GenerateLicense start");
     DRM_MediaKeyRequest mediaKeyRequest;
     DRM_MediaKeyRequestInfo info;
     unsigned char testData[139] = REQUESTINFODATA;
     memset_s(&info, sizeof(DRM_MediaKeyRequestInfo), 0, sizeof(DRM_MediaKeyRequestInfo));
     info.initDataLen = sizeof(testData);
     info.type = MEDIA_KEY_TYPE_ONLINE;
-    memcpy_s(info.mimeType, sizeof("video/mp4"), (char *)"video/mp4", sizeof("video/mp4"));
+    memcpy_s(info.mimeType, sizeof("video/mp4"), "video/mp4", sizeof("video/mp4"));
     memcpy_s(info.initData, sizeof(testData), testData, sizeof(testData));
-    memcpy_s(info.optionName[0], sizeof("optionalDataName"), (char *)"optionalDataName", sizeof("optionalDataName"));
-    memcpy_s(info.optionData[0], sizeof("optionalDataValue"), (char *)"optionalDataValue", sizeof("optionalDataValue"));
+    int ret = memcpy_s(info.optionName[0], sizeof("optionalDataName"), "optionalDataName", sizeof("optionalDataName"));
+    if (ret != 0) {
+        DRM_INFO_LOG("memcpy_s faild!");
+    }
+    ret = memcpy_s(info.optionData[0], sizeof("optionalDataValue"), "optionalDataValue", sizeof("optionalDataValue"));
+    if (ret != 0) {
+        DRM_INFO_LOG("memcpy_s faild!");
+    }
     info.optionsCount = 1;
-    Drm_ErrCode ret = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
-    DRM_INFO_LOG("MediadecryptNdkFuzzer::GenerateLicense end");
+    OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
+    DRM_INFO_LOG("MediaKeysessionNdkFuzzer::GenerateLicense end");
     unsigned char keySessionResponse[12288] = OFFRESPONSE;
     int32_t keySessionResponseLen = sizeof(keySessionResponse);
     if (wisePlay) {
@@ -133,10 +139,10 @@ void MediadecryptNdkFuzzer::GenerateLicense()
     } else {
         keySessionResponseLen = OFFRESPONSELEN;
     }
-    uint8_t MediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    int32_t MediaKeyIdLen = 64;     // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    ret = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, keySessionResponse, keySessionResponseLen,
-        MediaKeyId, &MediaKeyIdLen);
+    uint8_t mediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t mediaKeyIdLen = 64;     // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, keySessionResponse, keySessionResponseLen,
+        mediaKeyId, &mediaKeyIdLen);
 }
 
 

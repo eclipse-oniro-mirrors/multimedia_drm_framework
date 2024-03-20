@@ -56,9 +56,9 @@ bool MediaKeySystemFactoryNdkFuzzer::FuzzTestSystemFactoryNdk(uint8_t *rawData, 
         return false;
     }
     uuid.assign(reinterpret_cast<const char *>(rawData), size);
-    OH_MediaKeySystem_IsSupported((const char *)uuid.c_str());
+    OH_MediaKeySystem_IsSupported(uuid.c_str());
     mimeType.assign(reinterpret_cast<const char *>(rawData), size);
-    OH_MediaKeySystem_IsSupported2((const char *)uuid.c_str(), (const char *)mimeType.c_str());
+    OH_MediaKeySystem_IsSupported2(uuid.c_str(), mimeType.c_str());
     const int32_t number = 5;
     DRM_ContentProtectionLevel randomSet[number] = {
         CONTENT_PROTECTION_LEVEL_UNKNOWN,
@@ -67,10 +67,10 @@ bool MediaKeySystemFactoryNdkFuzzer::FuzzTestSystemFactoryNdk(uint8_t *rawData, 
         CONTENT_PROTECTION_LEVEL_ENHANCED_HW_CRYPTO,
         CONTENT_PROTECTION_LEVEL_MAX
     };
-    int32_t randomNumber = ((int32_t)*rawData) % number;
-    OH_MediaKeySystem_IsSupported3((const char *)uuid.c_str(), (const char *)mimeType.c_str(), randomSet[randomNumber]);
+    int32_t randomNumber = (static_cast<int32_t>(*rawData)) % number;
+    OH_MediaKeySystem_IsSupported3(uuid.c_str(), mimeType.c_str(), randomSet[randomNumber]);
     mediaKeySystem = reinterpret_cast<MediaKeySystem *>(rawData);
-    Drm_ErrCode ret = OH_MediaKeySystem_Create((const char *)uuid.c_str(), &mediaKeySystem);
+    Drm_ErrCode ret = OH_MediaKeySystem_Create(uuid.c_str(), &mediaKeySystem);
     if (ret == DRM_ERR_OK) {
         OH_MediaKeySystem_Destroy(mediaKeySystem);
     }

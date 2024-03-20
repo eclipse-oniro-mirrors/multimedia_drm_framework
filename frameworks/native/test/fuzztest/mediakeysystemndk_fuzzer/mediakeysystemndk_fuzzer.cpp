@@ -43,7 +43,7 @@
             0x2C, 0x22, 0x65, 0x6E, 0x73, 0x63, 0x68, 0x65, 0x6D, 0x61, 0x22, 0x3A, 0x22, 0x63, 0x62, 0x63, 0x31,   \
             0x22, 0x7D                                                                                              \
     }
-#define PROVISION_URL "http://192.168.50.59:9528/getProvision"
+#define PROVISION_URL "https://drmkit.hwcloudtest.cn:8080/provision/v1/wiseplay"
 #define LICENSE_URL "http://license.dev.trustdta.com:8080/drmproxy/v3/getLicense"
 #define HTTPOUTTIME 10
 using namespace std;
@@ -86,12 +86,12 @@ void MediaKeySystemNdkFuzzer::GenerateDeviceCertificate()
     char defaultUrl[2048] = { 0 };       // 2048:url len
     int32_t defaultUrlLen = 2048;        // 2048:url len
     OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl, defaultUrlLen);
-    uint8_t Response[12288] = OFFRESPONSE;
-    int32_t ResponseLen = sizeof(Response);
+    uint8_t response[12288] = OFFRESPONSE;
+    int32_t responseLen = sizeof(response);
     if (wisePlay == true) {
-        int rett = HttpPost(PROVISION_URL, request, requestLen, Response, &ResponseLen, HTTPOUTTIME);
+        HttpPost(PROVISION_URL, request, requestLen, response, &responseLen, HTTPOUTTIME);
     }
-    OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, Response, ResponseLen);
+    OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, response, responseLen);
     DRM_INFO_LOG("MediaKeySystemNdkFuzzer::GenerateDeviceCertificate end");
 }
 
@@ -104,12 +104,18 @@ void MediaKeySystemNdkFuzzer::GenerateLicense()
     memset_s(&info, sizeof(DRM_MediaKeyRequestInfo), 0, sizeof(DRM_MediaKeyRequestInfo));
     info.initDataLen = sizeof(testData);
     info.type = MEDIA_KEY_TYPE_ONLINE;
-    memcpy_s(info.mimeType, sizeof("video/mp4"), (char *)"video/mp4", sizeof("video/mp4"));
+    memcpy_s(info.mimeType, sizeof("video/mp4"), "video/mp4", sizeof("video/mp4"));
     memcpy_s(info.initData, sizeof(testData), testData, sizeof(testData));
-    memcpy_s(info.optionName[0], sizeof("optionalDataName"), (char *)"optionalDataName", sizeof("optionalDataName"));
-    memcpy_s(info.optionData[0], sizeof("optionalDataValue"), (char *)"optionalDataValue", sizeof("optionalDataValue"));
+    int ret = memcpy_s(info.optionName[0], sizeof("optionalDataName"), "optionalDataName", sizeof("optionalDataName"));
+    if (ret != 0) {
+        DRM_INFO_LOG("memcpy_s faild!");
+    }
+    ret = memcpy_s(info.optionData[0], sizeof("optionalDataValue"), "optionalDataValue", sizeof("optionalDataValue"));
+    if (ret != 0) {
+        DRM_INFO_LOG("memcpy_s faild!");
+    }
     info.optionsCount = 1;
-    Drm_ErrCode ret = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
+    OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
     DRM_INFO_LOG("MediaKeysessionNdkFuzzer::GenerateLicense end");
     unsigned char keySessionResponse[12288] = OFFRESPONSE;
     int32_t keySessionResponseLen = sizeof(keySessionResponse);
@@ -119,10 +125,10 @@ void MediaKeySystemNdkFuzzer::GenerateLicense()
     } else {
         keySessionResponseLen = OFFRESPONSELEN;
     }
-    uint8_t MediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    int32_t MediaKeyIdLen = 64;     // 64:OFFLINE_MEDIA_KEY_ID_LEN
-    ret = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, keySessionResponse, keySessionResponseLen,
-        MediaKeyId, &MediaKeyIdLen);
+    uint8_t mediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t mediaKeyIdLen = 64;     // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, keySessionResponse, keySessionResponseLen,
+        mediaKeyId, &mediaKeyIdLen);
 }
 
 void MediaKeySystemNdkFuzzer::Init()
@@ -132,7 +138,7 @@ void MediaKeySystemNdkFuzzer::Init()
     IsWisePlay();
     DRM_INFO_LOG("uuid = %{public}s", uuid.c_str());
     DRM_INFO_LOG("wisePlay = %{public}d", wisePlay);
-    OH_MediaKeySystem_Create((const char *)uuid.c_str(), &mediaKeySystem);
+    OH_MediaKeySystem_Create(uuid.c_str(), &mediaKeySystem);
     DRM_INFO_LOG("MediaKeySystemNdkFuzzer::Init end");
 }
 
@@ -162,11 +168,13 @@ bool MediaKeySystemNdkFuzzer::FuzzTestMediaKeySystemConfigurationNdk(uint8_t *ra
     OH_MediaKeySystem_GetConfigurationString(mediaKeySystem, name, destValue, size);
     OH_MediaKeySystem_SetConfigurationByteArray(mediaKeySystem, name, rawData, size);
     memset_s(destValue, size, 0, size);
-    OH_MediaKeySystem_GetConfigurationByteArray(mediaKeySystem, name, (uint8_t *)destValue, (int32_t *)&size);
+    OH_MediaKeySystem_GetConfigurationByteArray(mediaKeySystem, name,
+        reinterpret_cast<uint8_t *>(destValue), reinterpret_cast<int32_t *>(&size));
     OH_MediaKeySystem_SetConfigurationString(tmpSystem, name, value);
     OH_MediaKeySystem_GetConfigurationString(tmpSystem, name, destValue, size);
     OH_MediaKeySystem_SetConfigurationByteArray(tmpSystem, name, rawData, size);
-    OH_MediaKeySystem_GetConfigurationByteArray(tmpSystem, name, (uint8_t *)destValue, (int32_t *)&size);
+    OH_MediaKeySystem_GetConfigurationByteArray(tmpSystem, name,
+        reinterpret_cast<uint8_t *>(destValue), reinterpret_cast<int32_t *>(&size));
     delete tmp;
     Deinitialize();
     DRM_INFO_LOG("MediaKeySystemNdkFuzzer::FuzzTestMediaKeySystemConfigurationNdk end");
@@ -212,16 +220,16 @@ bool MediaKeySystemNdkFuzzer::FuzzTestMediaKeySystemDeviceCertificateNdk(uint8_t
     requestLen = sizeof(request);
     defaultUrlLen = sizeof(defaultUrl);
     OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl, defaultUrlLen);
-    uint8_t Response[12288] = OFFRESPONSE;
-    int32_t ResponseLen = size % 12288;
+    uint8_t response[12288] = OFFRESPONSE;
+    int32_t responseLen = size % 12288;
 
-    Drm_ErrCode ret = OH_MediaKeySystem_ProcessKeySystemResponse(tmpSystem, rawData, size);
-    ret = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, Response, ResponseLen);
-    ResponseLen = sizeof(Response);
+    OH_MediaKeySystem_ProcessKeySystemResponse(tmpSystem, rawData, size);
+    OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, response, responseLen);
+    responseLen = sizeof(response);
     if (wisePlay == true) {
-        int rett = HttpPost(PROVISION_URL, request, requestLen, Response, &ResponseLen, HTTPOUTTIME);
+        HttpPost(PROVISION_URL, request, requestLen, response, &responseLen, HTTPOUTTIME);
     }
-    ret = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, Response, ResponseLen);
+    OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, response, responseLen);
     delete tmp;
     Deinitialize();
     DRM_INFO_LOG("MediaKeySystemNdkFuzzer::FuzzTestMediaKeySystemDeviceCertificateNdk end");
@@ -242,15 +250,15 @@ bool MediaKeySystemNdkFuzzer::FuzzTestMediaKeySystemCertificateOperationNdk(uint
     OH_MediaKeySystem_SetMediaKeySystemCallback(tmpSystem, &TestSystemEventCallBack);
     OH_MediaKeySystem_SetMediaKeySystemCallback(mediaKeySystem, &TestSystemEventCallBack);
     MediaKeySession *session = nullptr;
-    Drm_ErrCode ret = OH_MediaKeySystem_CreateMediaKeySession(tmpSystem, contentProtectionLevel, &session);
+    OH_MediaKeySystem_CreateMediaKeySession(tmpSystem, contentProtectionLevel, &session);
 
-    ret = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &ContentProtectionLevel, &session);
+    OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &ContentProtectionLevel, &session);
     if (session != nullptr) {
         OH_MediaKeySession_Destroy(session);
         session = nullptr;
     }
     GenerateDeviceCertificate();
-    ret = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &ContentProtectionLevel, &session);
+    OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &ContentProtectionLevel, &session);
     if (session != nullptr) {
         OH_MediaKeySession_Destroy(session);
         session = nullptr;
@@ -277,16 +285,16 @@ bool MediaKeySystemNdkFuzzer::FuzzTestMediaKeySystemLicenseOperationNdk(uint8_t 
     DRM_OfflineMediakeyIdArray offlineMediaKeyIds;
     MediaKeySystemObject *tmp = new MediaKeySystemObject(nullptr);
     MediaKeySystem *tmpSystem = reinterpret_cast<MediaKeySystemObject *>(tmp);
-    Drm_ErrCode ret = OH_MediaKeySystem_GetOfflineMediaKeyIds(tmpSystem, &offlineMediaKeyIds);
-    ret = OH_MediaKeySystem_GetOfflineMediaKeyIds(mediaKeySystem, &offlineMediaKeyIds);
+    OH_MediaKeySystem_GetOfflineMediaKeyIds(tmpSystem, &offlineMediaKeyIds);
+    OH_MediaKeySystem_GetOfflineMediaKeyIds(mediaKeySystem, &offlineMediaKeyIds);
     DRM_OfflineMediaKeyStatus status = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
-    ret = OH_MediaKeySystem_GetOfflineMediaKeyStatus(tmpSystem, rawData, size, &status);
-    ret = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyIds.ids[0],
+    OH_MediaKeySystem_GetOfflineMediaKeyStatus(tmpSystem, rawData, size, &status);
+    OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyIds.ids[0],
         offlineMediaKeyIds.idsLen[0], &status);
-    ret = OH_MediaKeySystem_ClearOfflineMediaKeys(tmpSystem, rawData, size);
-    ret = OH_MediaKeySystem_ClearOfflineMediaKeys(mediaKeySystem, offlineMediaKeyIds.ids[0],
+    OH_MediaKeySystem_ClearOfflineMediaKeys(tmpSystem, rawData, size);
+    OH_MediaKeySystem_ClearOfflineMediaKeys(mediaKeySystem, offlineMediaKeyIds.ids[0],
         offlineMediaKeyIds.idsLen[0]);
-    ret = OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyIds.ids[0],
+    OH_MediaKeySystem_GetOfflineMediaKeyStatus(mediaKeySystem, offlineMediaKeyIds.ids[0],
         offlineMediaKeyIds.idsLen[0], &status);
     OH_MediaKeySystem_Destroy(tmpSystem);
     if (mediaKeySession != nullptr) {
