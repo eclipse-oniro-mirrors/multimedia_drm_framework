@@ -47,15 +47,12 @@ int32_t MediaKeySystemService::CloseMediaKeySystemServiceByCallback()
     DRM_INFO_LOG("MediaKeySystemService::CloseMediaKeySystemServiceByCallback enter.");
     int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemService GetCallingPID: %{public}d", currentPid);
-
-    DRM_DEBUG_LOG("sessionsSet size before clearing : %{public}lu", sessionsSet_.size());
     for (auto it = sessionsSet_.begin(); it != sessionsSet_.end();) {
         if ((*it) != nullptr) {
             (*it)->CloseMediaKeySessionServiceByCallback();
         }
         it = sessionsSet_.erase(it);
     }
-    DRM_DEBUG_LOG("sessionsSet size after clearing : %{public}lu", sessionsSet_.size());
     sessionsSet_.clear();
 
     // release itself
