@@ -74,20 +74,16 @@ void MediaKeySystemFactoryService::DistroyForClientDied(pid_t pid)
 {
     // destroy all system objects for this pid
     DRM_INFO_LOG("MediaKeySystemFactoryService::DistroyForClientDied pid: %{public}d", pid);
-    DRM_DEBUG_LOG("mediaKeySystemForPid_ map size before clearing: %{public}d", mediaKeySystemForPid_.size());
     if (mediaKeySystemForPid_.find(pid) != mediaKeySystemForPid_.end()) {
-        DRM_DEBUG_LOG("%{public}d has %{public}d systems before clearing", pid, mediaKeySystemForPid_[pid].size());
         for (auto it = mediaKeySystemForPid_[pid].begin(); it != mediaKeySystemForPid_[pid].end();) {
             if ((*it) != nullptr) {
                 (*it)->CloseMediaKeySystemServiceByCallback();
             }
             it = mediaKeySystemForPid_[pid].erase(it);
         }
-        DRM_DEBUG_LOG("%{public}d has %{public}d systems after clearing", pid, mediaKeySystemForPid_[pid].size());
         mediaKeySystemForPid_[pid].clear();
         mediaKeySystemForPid_.erase(pid);
     }
-    DRM_DEBUG_LOG("mediaKeySystemForPid_ map size after clearing: %{public}d", mediaKeySystemForPid_.size());
 }
 
 int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &uuid,
