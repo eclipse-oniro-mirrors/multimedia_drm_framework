@@ -178,7 +178,8 @@ bool MediadecryptNdkFuzzer::FuzzTestMediaKeyDecryptNdk(uint8_t *rawData, size_t 
     GenerateLicense();
     if (mediaKeySession) {
         MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySession);
-        sptr<IMediaKeySessionService> SessionServiceProxy = sessionObject->sessionImpl_->GetMediaKeySessionServiceProxy();
+        sptr<IMediaKeySessionService> SessionServiceProxy =
+            sessionObject->sessionImpl_->GetMediaKeySessionServiceProxy();
         sptr<IMediaDecryptModuleService> decryptModule;
         SessionServiceProxy->CreateMediaDecryptModule(decryptModule);
         IMediaDecryptModuleService::DrmBuffer srcBuffer;
