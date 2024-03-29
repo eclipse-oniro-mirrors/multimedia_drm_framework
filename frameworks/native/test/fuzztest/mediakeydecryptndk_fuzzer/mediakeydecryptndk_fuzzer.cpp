@@ -176,18 +176,21 @@ bool MediadecryptNdkFuzzer::FuzzTestMediaKeyDecryptNdk(uint8_t *rawData, size_t 
     GenerateDeviceCertificate();
     OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &ContentProtectionLevel, &mediaKeySession);
     GenerateLicense();
-    MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySession);
-    sptr<IMediaKeySessionService> SessionServiceProxy = sessionObject->sessionImpl_->GetMediaKeySessionServiceProxy();
-    sptr<IMediaDecryptModuleService> decryptModule;
-    SessionServiceProxy->CreateMediaDecryptModule(decryptModule);
-    IMediaDecryptModuleService::DrmBuffer srcBuffer;
-    IMediaDecryptModuleService::DrmBuffer dstBuffer;
-    bool secureDecodrtState = false;
-    IMediaDecryptModuleService::CryptInfo cryptInfo;
-    decryptModule->DecryptMediaData(secureDecodrtState, cryptInfo, srcBuffer, dstBuffer);
-    decryptModule->Release();
-    sptr<MediaKeySessionImplCallback> callback = sessionObject->sessionImpl_->GetApplicationCallback();
-    callback->~MediaKeySessionImplCallback();
+    if (mediaKeySession) {
+        MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySession);
+        sptr<IMediaKeySessionService> SessionServiceProxy =
+            sessionObject->sessionImpl_->GetMediaKeySessionServiceProxy();
+        sptr<IMediaDecryptModuleService> decryptModule;
+        SessionServiceProxy->CreateMediaDecryptModule(decryptModule);
+        IMediaDecryptModuleService::DrmBuffer srcBuffer;
+        IMediaDecryptModuleService::DrmBuffer dstBuffer;
+        bool secureDecodrtState = false;
+        IMediaDecryptModuleService::CryptInfo cryptInfo;
+        decryptModule->DecryptMediaData(secureDecodrtState, cryptInfo, srcBuffer, dstBuffer);
+        decryptModule->Release();
+        sptr<MediaKeySessionImplCallback> callback = sessionObject->sessionImpl_->GetApplicationCallback();
+        callback->~MediaKeySessionImplCallback();
+    }
     if (mediaKeySession != nullptr) {
         OH_MediaKeySession_Destroy(mediaKeySession);
         mediaKeySession = nullptr;
