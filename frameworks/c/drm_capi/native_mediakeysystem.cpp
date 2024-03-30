@@ -250,11 +250,13 @@ static Drm_ErrCode vectorToClist(std::vector<IMediaKeySystemService::MetircKeyVa
             DRM_ERR_LOG(" memcpy_s faild!");
             return DRM_ERR_INVALID_VAL;
         }
-        ret = memcpy_s(statistics->statisticsDescription[i],
-            metrics[i].value.size(), metrics[i].value.c_str(), metrics[i].value.size());
-        if (ret != 0) {
-            DRM_ERR_LOG(" memcpy_s faild!");
-            return DRM_ERR_INVALID_VAL;
+        if (metrics[i].value.size() != 0) {
+            ret = memcpy_s(statistics->statisticsDescription[i],
+                metrics[i].value.size(), metrics[i].value.c_str(), metrics[i].value.size());
+            if (ret != 0) {
+                DRM_ERR_LOG(" memcpy_s faild!");
+                return DRM_ERR_INVALID_VAL;
+            }
         }
     }
     DRM_INFO_LOG("vectorToCArray exit.");
