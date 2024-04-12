@@ -22,11 +22,13 @@ ohos_shared_library("drm_service") {
     "./ipc",
     "./../../interfaces/inner_api/native",
     "./../../interfaces/inner_api/native/drm",
+    "./../utils",
     "./../utils/include",
     "//foundation//arkui/napi/interfaces/kits",
   ]
 
   sources = [
+    "./../utils/drm_trace.cpp",
     "./client/src/drm_listener_proxy.cpp",
     "./client/src/key_session_service_callback_proxy.cpp",
     "./client/src/mediakeysystem_service_callback_proxy.cpp",

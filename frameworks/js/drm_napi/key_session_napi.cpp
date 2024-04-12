@@ -17,6 +17,7 @@
 #include "key_session_impl.h"
 #include "media_key_system_impl.h"
 #include "key_session_napi.h"
+#include "drm_trace.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -82,6 +83,7 @@ napi_value MediaKeySessionNapi::Init(napi_env env, napi_value exports)
 
 napi_value MediaKeySessionNapi::MediaKeySessionNapiConstructor(napi_env env, napi_callback_info info)
 {
+    DrmTrace trace("MediaKeySessionNapi::MediaKeySessionNapiConstructor");
     DRM_INFO_LOG("MediaKeySessionNapi::MediaKeySessionNapiConstructor enter.");
 
     napi_status status;
@@ -123,6 +125,7 @@ napi_value MediaKeySessionNapi::MediaKeySessionNapiConstructor(napi_env env, nap
 
 void MediaKeySessionNapi::MediaKeySessionNapiDestructor(napi_env env, void *nativeObject, void *finalize)
 {
+    DrmTrace trace("MediaKeySessionNapi::MediaKeySessionNapiDestructor");
     DRM_INFO_LOG("MediaKeySessionNapi::MediaKeySessionNapiDestructor enter.");
     MediaKeySessionNapi *keySessionNapiObj = reinterpret_cast<MediaKeySessionNapi *>(nativeObject);
     ObjectRefMap<MediaKeySessionNapi>::DecreaseRef(keySessionNapiObj);
@@ -153,6 +156,7 @@ bool MediaKeySessionNapi::SetMediaKeySessionNativeProperty(napi_env env, napi_va
 
 napi_value MediaKeySessionNapi::CreateMediaKeySession(napi_env env, sptr<MediaKeySessionImpl> keySessionImpl)
 {
+    DrmTrace trace("MediaKeySessionNapi::CreateMediaKeySession");
     DRM_INFO_LOG("MediaKeySessionNapi::CreateMediaKeySession enter.");
     napi_status status;
     napi_value result = nullptr;
@@ -183,6 +187,7 @@ napi_value MediaKeySessionNapi::CreateMediaKeySession(napi_env env, sptr<MediaKe
 
 napi_value MediaKeySessionNapi::Destroy(napi_env env, napi_callback_info info)
 {
+    DrmTrace trace("MediaKeySessionNapi::Destroy");
     DRM_INFO_LOG("MediaKeySessionNapi::Release enter.");
     int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySessionNapi GetCallingPID: %{public}d", currentPid);
@@ -237,6 +242,7 @@ bool MediaKeySessionNapi::CheckContextStatus(std::shared_ptr<MediaKeySessionAsyn
 
 napi_value MediaKeySessionNapi::GenerateMediaKeyRequest(napi_env env, napi_callback_info info)
 {
+    DrmTrace trace("MediaKeySessionNapi::GenerateMediaKeyRequest");
     DRM_INFO_LOG("MediaKeySessionNapi::GenerateMediaKeyRequest enter");
     auto context = std::make_shared<MediaKeySessionAsyncContext>();
     if (context == nullptr) {
@@ -283,6 +289,7 @@ napi_value MediaKeySessionNapi::GenerateMediaKeyRequest(napi_env env, napi_callb
 
 napi_value MediaKeySessionNapi::ProcessMediaKeyResponse(napi_env env, napi_callback_info info)
 {
+    DrmTrace trace("MediaKeySessionNapi::ProcessMediaKeyResponse");
     DRM_INFO_LOG("MediaKeySessionNapi::ProcessMediaKeyResponse enter.");
     auto context = std::make_shared<MediaKeySessionAsyncContext>();
     if (context == nullptr) {

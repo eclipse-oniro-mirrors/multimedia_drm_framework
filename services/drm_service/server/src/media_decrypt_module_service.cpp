@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <securec.h>
 #include "ashmem.h"
+#include "drm_trace.h"
 #include "ipc_skeleton.h"
 #include "media_decrypt_module_service.h"
 
@@ -41,6 +42,7 @@ MediaDecryptModuleService::~MediaDecryptModuleService()
 
 int32_t MediaDecryptModuleService::Release()
 {
+    DrmTrace trace("MediaDecryptModuleService::Release");
     DRM_INFO_LOG("MediaDecryptModuleService::Release enter.");
     int32_t errCode = DRM_OK;
     if (hdiMediaDecryptModule_ != nullptr) {
@@ -55,6 +57,7 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
     IMediaDecryptModuleService::CryptInfo &cryptInfo, IMediaDecryptModuleService::DrmBuffer &srcBuffer,
     IMediaDecryptModuleService::DrmBuffer &dstBuffer)
 {
+    DrmTrace trace("MediaDecryptModuleService::DecryptMediaData");
     DRM_INFO_LOG("MediaDecryptModuleService::DecryptMediaData enter.");
     int32_t ret = DRM_OK;
     int32_t bufLen = 0;

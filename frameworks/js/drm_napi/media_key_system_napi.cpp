@@ -15,6 +15,7 @@
 #include "key_session_napi.h"
 #include "media_key_system_napi.h"
 #include "napi_param_utils.h"
+#include "drm_trace.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -83,6 +84,7 @@ napi_value MediaKeySystemNapi::Init(napi_env env, napi_value exports)
 
 napi_value MediaKeySystemNapi::MediaKeySystemNapiConstructor(napi_env env, napi_callback_info info)
 {
+    DrmTrace trace("MediaKeySystemNapi::MediaKeySystemNapiConstructor");
     DRM_INFO_LOG("MediaKeySystemNapi::MediaKeySystemNapiConstructor enter.");
     napi_value result = nullptr;
     size_t argCount = 0;
@@ -171,6 +173,7 @@ napi_value MediaKeySystemNapi::CreateMediaKeySystemInstance(napi_env env, napi_c
 
 void MediaKeySystemNapi::MediaKeySystemNapiDestructor(napi_env env, void *nativeObject, void *finalize)
 {
+    DrmTrace trace("MediaKeySystemNapi::MediaKeySystemNapiDestructor");
     DRM_INFO_LOG("MediaKeySystemNapi::MediaKeySystemNapiDestructor enter.");
     MediaKeySystemNapi *mediaKeySystemNapi = reinterpret_cast<MediaKeySystemNapi *>(nativeObject);
     ObjectRefMap<MediaKeySystemNapi>::DecreaseRef(mediaKeySystemNapi);
@@ -249,6 +252,7 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
 
 napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback_info info)
 {
+    DrmTrace trace("MediaKeySystemNapi::CreateMediaKeySession");
     DRM_INFO_LOG("MediaKeySystemNapi::CreateMediaKeySession enter.");
     napi_status status;
     napi_value result = nullptr;
@@ -556,6 +560,7 @@ bool MediaKeySystemNapi::CheckContextStatus(std::shared_ptr<MediaKeySystemAsyncC
 
 napi_value MediaKeySystemNapi::GenerateKeySystemRequest(napi_env env, napi_callback_info info)
 {
+    DrmTrace trace("MediaKeySystemNapi::GenerateKeySystemRequest");
     DRM_INFO_LOG("MediaKeySystemNapi::GenerateKeySystemRequest enter");
     auto context = std::make_shared<MediaKeySystemAsyncContext>();
     if (context == nullptr) {
@@ -589,6 +594,7 @@ napi_value MediaKeySystemNapi::GenerateKeySystemRequest(napi_env env, napi_callb
 
 napi_value MediaKeySystemNapi::ProcessKeySystemResponse(napi_env env, napi_callback_info info)
 {
+    DrmTrace trace("MediaKeySystemNapi::ProcessKeySystemResponse");
     DRM_INFO_LOG("MediaKeySystemNapi::ProcessKeySystemResponse enter.");
     auto context = std::make_shared<MediaKeySystemAsyncContext>();
     if (context == nullptr) {
@@ -676,6 +682,7 @@ napi_value MediaKeySystemNapi::GetStatistics(napi_env env, napi_callback_info in
 
 napi_value MediaKeySystemNapi::GetCertificateStatus(napi_env env, napi_callback_info info)
 {
+    DrmTrace trace("MediaKeySystemNapi::GetCertificateStatus");
     DRM_INFO_LOG("MediaKeySystemNapi::GetCertificateStatus enter.");
     napi_value result = nullptr;
     size_t argc = ARGS_ZERO;

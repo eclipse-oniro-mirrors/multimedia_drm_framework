@@ -16,6 +16,7 @@
 #include "key_session_impl.h"
 #include "drm_log.h"
 #include "drm_error_code.h"
+#include "drm_trace.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -97,6 +98,7 @@ int32_t MediaKeySessionImpl::Release()
 int32_t MediaKeySessionImpl::GenerateMediaKeyRequest(IMediaKeySessionService::MediaKeyRequestInfo &licenseRequestInfo,
     IMediaKeySessionService::MediaKeyRequest &licenseRequest)
 {
+    DrmTrace trace("MediaKeySessionImpl::GenerateMediaKeyRequest");
     DRM_INFO_LOG("MediaKeySessionImpl::GenerateMediaKeyRequest enter.");
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t retCode = DRM_OK;
@@ -116,6 +118,7 @@ int32_t MediaKeySessionImpl::GenerateMediaKeyRequest(IMediaKeySessionService::Me
 int32_t MediaKeySessionImpl::ProcessMediaKeyResponse(std::vector<uint8_t> &licenseId,
     std::vector<uint8_t> &licenseResponse)
 {
+    DrmTrace trace("MediaKeySessionImpl::ProcessMediaKeyResponse");
     DRM_INFO_LOG("MediaKeySessionImpl::ProcessMediaKeyResponse enter.");
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t retCode = DRM_OK;

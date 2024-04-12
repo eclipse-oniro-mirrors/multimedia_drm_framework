@@ -19,6 +19,7 @@
 #include <refbase.h>
 #include <securec.h>
 #include "drm_log.h"
+#include "drm_trace.h"
 #include "native_drm_base.h"
 #include "native_drm_object.h"
 #include "key_session_impl.h"
@@ -31,6 +32,7 @@ using namespace OHOS::DrmStandard;
 static Drm_ErrCode DealMediaKeyRequest(IMediaKeySessionService::MediaKeyRequest &licenseRequest,
     DRM_MediaKeyRequest *mediaKeyRequest)
 {
+    DrmTrace trace("DealMediaKeyRequest");
     memset_s(mediaKeyRequest, sizeof(DRM_MediaKeyRequest), 0, sizeof(DRM_MediaKeyRequest));
     mediaKeyRequest->type = (DRM_MediaKeyRequestType)(licenseRequest.requestType);
     mediaKeyRequest->dataLen = licenseRequest.mData.size();
@@ -55,6 +57,7 @@ static Drm_ErrCode DealMediaKeyRequest(IMediaKeySessionService::MediaKeyRequest 
 Drm_ErrCode OH_MediaKeySession_GenerateMediaKeyRequest(MediaKeySession *mediaKeySession, DRM_MediaKeyRequestInfo *info,
     DRM_MediaKeyRequest *mediaKeyRequest)
 {
+    DrmTrace trace("OH_MediaKeySession_GenerateMediaKeyRequest");
     DRM_INFO_LOG("OH_MediaKeySession_GenerateMediaKeyRequest enter");
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySession != nullptr) && (info != nullptr) && (mediaKeyRequest != nullptr)),
         DRM_ERR_INVALID_VAL, "parameter is error");
@@ -82,6 +85,7 @@ Drm_ErrCode OH_MediaKeySession_GenerateMediaKeyRequest(MediaKeySession *mediaKey
 Drm_ErrCode OH_MediaKeySession_ProcessMediaKeyResponse(MediaKeySession *mediaKeySession, uint8_t *response,
     int32_t responseLen, uint8_t *offlineMediaKeyId, int32_t *offlineMediaKeyIdLen)
 {
+    DrmTrace trace("OH_MediaKeySession_ProcessMediaKeyResponse");
     DRM_CHECK_AND_RETURN_RET_LOG(
         ((mediaKeySession != nullptr) && (response != nullptr) && (responseLen > 0) &&
         (offlineMediaKeyId != nullptr) && (offlineMediaKeyIdLen != nullptr)), DRM_ERR_INVALID_VAL,

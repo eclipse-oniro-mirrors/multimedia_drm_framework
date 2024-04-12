@@ -15,6 +15,7 @@
 
 #include "key_session_service.h"
 #include "drm_log.h"
+#include "drm_trace.h"
 #include "ipc_skeleton.h"
 
 namespace OHOS {
@@ -87,6 +88,7 @@ int32_t MediaKeySessionService::GenerateMediaKeyRequest(
     IMediaKeySessionService::MediaKeyRequestInfo &licenseRequestInfo,
     IMediaKeySessionService::MediaKeyRequest &licenseRequest)
 {
+    DrmTrace trace("MediaKeySessionService::GenerateMediaKeyRequest");
     DRM_INFO_LOG("MediaKeySessionService::GenerateMediaKeyRequest enter.");
     int32_t ret = DRM_OK;
     OHOS::HDI::Drm::V1_0::MediaKeyRequestInfo hdiMediaKeyRequestInfo;
@@ -114,6 +116,7 @@ int32_t MediaKeySessionService::GenerateMediaKeyRequest(
 int32_t MediaKeySessionService::ProcessMediaKeyResponse(std::vector<uint8_t> &licenseId,
     std::vector<uint8_t> &licenseResponse)
 {
+    DrmTrace trace("MediaKeySessionService::ProcessMediaKeyResponse");
     DRM_INFO_LOG("MediaKeySessionService::ProcessMediaKeyResponse enter.");
     int32_t ret = DRM_OK;
     ret = hdiMediaKeySession_->ProcessMediaKeyResponse(licenseResponse, licenseId);
@@ -223,6 +226,7 @@ int32_t MediaKeySessionService::GetContentProtectionLevel(
 
 int32_t MediaKeySessionService::CreateMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule)
 {
+    DrmTrace trace("MediaKeySessionService::CreateMediaDecryptModule");
     DRM_INFO_LOG("MediaKeySessionService::CreateMediaDecryptModule enter.");
     std::lock_guard<std::mutex> lock(sessionMutex_);
     sptr<MediaDecryptModuleService> mediaDecryptService = nullptr;
