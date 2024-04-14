@@ -103,7 +103,7 @@ void MediaKeySystemNdkFuzzer::GenerateLicense()
     unsigned char testData[139] = REQUESTINFODATA;
     memset_s(&info, sizeof(DRM_MediaKeyRequestInfo), 0, sizeof(DRM_MediaKeyRequestInfo));
     info.initDataLen = sizeof(testData);
-    info.type = MEDIA_KEY_TYPE_ONLINE;
+    info.type = MEDIA_KEY_TYPE_OFFLINE;
     memcpy_s(info.mimeType, sizeof("video/mp4"), "video/mp4", sizeof("video/mp4"));
     memcpy_s(info.initData, sizeof(testData), testData, sizeof(testData));
     int ret = memcpy_s(info.optionName[0], sizeof("optionalDataName"), "optionalDataName", sizeof("optionalDataName"));
@@ -155,7 +155,7 @@ void MediaKeySystemNdkFuzzer::Deinitialize()
 bool MediaKeySystemNdkFuzzer::FuzzTestMediaKeySystemConfigurationNdk(uint8_t *rawData, size_t size)
 {
     DRM_INFO_LOG("MediaKeySystemNdkFuzzer::FuzzTestMediaKeySystemConfigurationNdk start");
-    if (rawData == nullptr || size < MEMMAXSIZE) {
+    if (rawData == nullptr) {
         return false;
     }
     Init();
@@ -165,6 +165,9 @@ bool MediaKeySystemNdkFuzzer::FuzzTestMediaKeySystemConfigurationNdk(uint8_t *ra
     const char *value = reinterpret_cast<const char *>(rawData);
     OH_MediaKeySystem_SetConfigurationString(mediaKeySystem, name, value);
     char destValue[size];
+    char val[OFFRESPONSELEN];
+    int valLen = OFFRESPONSELEN;
+    OH_MediaKeySystem_GetConfigurationString(mediaKeySystem, "vendor", val, valLen);
     OH_MediaKeySystem_GetConfigurationString(mediaKeySystem, name, destValue, size);
     OH_MediaKeySystem_SetConfigurationByteArray(mediaKeySystem, name, rawData, size);
     memset_s(destValue, size, 0, size);
@@ -173,6 +176,8 @@ bool MediaKeySystemNdkFuzzer::FuzzTestMediaKeySystemConfigurationNdk(uint8_t *ra
     OH_MediaKeySystem_SetConfigurationString(tmpSystem, name, value);
     OH_MediaKeySystem_GetConfigurationString(tmpSystem, name, destValue, size);
     OH_MediaKeySystem_SetConfigurationByteArray(tmpSystem, name, rawData, size);
+    OH_MediaKeySystem_GetConfigurationByteArray(tmpSystem, "deviceUniqueId",
+        reinterpret_cast<uint8_t *>(val), reinterpret_cast<int32_t *>(&valLen));
     OH_MediaKeySystem_GetConfigurationByteArray(tmpSystem, name,
         reinterpret_cast<uint8_t *>(destValue), reinterpret_cast<int32_t *>(&size));
     delete tmp;
@@ -184,7 +189,7 @@ bool MediaKeySystemNdkFuzzer::FuzzTestMediaKeySystemConfigurationNdk(uint8_t *ra
 bool MediaKeySystemNdkFuzzer::FuzzTestMediaKeySystemGetNdk(uint8_t *rawData, size_t size)
 {
     DRM_INFO_LOG("MediaKeySystemNdkFuzzer::FuzzTestMediaKeySystemGetNdk start");
-    if (rawData == nullptr || size < sizeof(DRM_Statistics)) {
+    if (rawData == nullptr) {
         return false;
     }
     Init();

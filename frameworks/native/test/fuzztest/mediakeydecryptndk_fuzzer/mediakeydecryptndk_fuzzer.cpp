@@ -186,7 +186,6 @@ bool MediadecryptNdkFuzzer::FuzzTestMediaKeyDecryptNdk(uint8_t *rawData, size_t 
         IMediaDecryptModuleService::DrmBuffer dstBuffer;
         bool secureDecodrtState = false;
         IMediaDecryptModuleService::CryptInfo cryptInfo;
-        decryptModule->DecryptMediaData(secureDecodrtState, cryptInfo, srcBuffer, dstBuffer);
         decryptModule->Release();
         sptr<MediaKeySessionImplCallback> callback = sessionObject->sessionImpl_->GetApplicationCallback();
         callback->~MediaKeySessionImplCallback();

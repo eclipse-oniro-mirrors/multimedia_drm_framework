@@ -378,11 +378,6 @@ Drm_ErrCode OH_MediaKeySystem_GetCertificateStatus(MediaKeySystem *mediaKeySyste
         return DRM_ERR_INVALID_VAL;
     }
     *certStatus = (DRM_CertificateStatus)((int32_t)(CertStatus));
-    if (*certStatus < CERT_STATUS_PROVISIONED || *certStatus > CERT_STATUS_UNAVAILABLE) {
-        DRM_ERR_LOG("OH_MediaKeySystem_GetCertificateStatus faild!");
-        *certStatus = CERT_STATUS_UNAVAILABLE;
-        return DRM_ERR_INVALID_VAL;
-    }
     DRM_INFO_LOG("OH_MediaKeySystem_GetCertificateStatus exit.");
     return DRM_ERR_OK;
 }

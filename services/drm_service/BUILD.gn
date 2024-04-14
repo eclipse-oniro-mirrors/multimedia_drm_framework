@@ -70,6 +70,11 @@ ohos_shared_library("drm_service") {
     "-Wall",
     "-fPIC",
   ]
+
+  if (use_libfuzzer) {
+    cflags += [ "-fsanitize-coverage=inline-8bit-counters" ]
+  }
+
   if (target_cpu == "arm") {
     cflags += [ "-DBINDER_IPC_32BIT" ]
   }

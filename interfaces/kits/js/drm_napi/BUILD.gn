@@ -72,6 +72,9 @@ ohos_shared_library("drm_napi") {
     debug = false
   }
   cflags = [ "-fPIC" ]
+  if (use_libfuzzer) {
+    cflags += [ "-fsanitize-coverage=inline-8bit-counters" ]
+  }
   cflags_cc = cflags
   relative_install_dir = "module/multimedia"
   part_name = "drm_framework"
