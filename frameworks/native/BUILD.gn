@@ -60,11 +60,6 @@ ohos_shared_library("drm_framework") {
   if (target_cpu == "arm") {
     cflags += [ "-DBINDER_IPC_32BIT" ]
   }
-
-  if (use_libfuzzer) {
-    cflags += [ "-fsanitize-coverage=inline-8bit-counters" ]
-  }
-
   sanitize = {
     cfi = true
     cfi_cross_dso = true
