@@ -69,6 +69,7 @@ bool MediaKeySystemFactoryNdkFuzzer::FuzzTestSystemFactoryNdk(uint8_t *rawData, 
     };
     int32_t randomNumber = (static_cast<int32_t>(*rawData)) % number;
     OH_MediaKeySystem_IsSupported3(uuid.c_str(), mimeType.c_str(), randomSet[randomNumber]);
+    OH_MediaKeySystem_IsSupported3(uuid.c_str(), mimeType.c_str(), CONTENT_PROTECTION_LEVEL_SW_CRYPTO);
     mediaKeySystem = reinterpret_cast<MediaKeySystem *>(rawData);
     Drm_ErrCode ret = OH_MediaKeySystem_Create(uuid.c_str(), &mediaKeySystem);
     if (ret == DRM_ERR_OK) {
