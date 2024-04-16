@@ -39,10 +39,6 @@ config("drm_framework_capi_unittest_v1_0_config") {
     "-Wdate-time",
   ]
   cflags_cc = [ "-fno-rtti" ]
-  if (use_libfuzzer) {
-    cflags += [ "-fsanitize-coverage=inline-8bit-counters" ]
-    cflags_cc += [ "-fsanitize-coverage=inline-8bit-counters" ]
-  }
 }
 
 ohos_unittest("drm_framework_capi_unittest_v1_0") {
