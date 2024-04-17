@@ -92,6 +92,15 @@ bool OH_MediaKeySystem_IsSupported3(const char *name, const char *mimeType,
     DRM_ContentProtectionLevel contentProtectionLevel);
 
 /**
+ * @brief Acquire supported media key systems' name and uuid.
+ * @param infos Array used to save media key systems' name and uuid.
+ * @param count Used to indicate count of struct DRM_MediaKeySystemDescription.
+ * @return DRM_ERR_INVALID_VAL when the params checked failure, return DRM_ERR_OK when function called successfully.
+ * @since 12
+ * @version 1.0
+ */
+Drm_ErrCode  OH_MediaKeySystem_GetMediaKeySystems(DRM_MediaKeySystemDescription *description, uint32_t *count);
+/**
  * @brief Creates a media key system instance from the name.
  * @param name Secifies which drm system will be created by name.
  * @param mediaKeySystem Media key system instance.

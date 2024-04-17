@@ -54,6 +54,7 @@ public:
     ~MediaKeySystemNapi();
     static napi_value IsMediaKeySystemSupported(napi_env env, napi_callback_info info);
     static napi_value CreateMediaKeySystemInstance(napi_env env, napi_callback_info info);
+    static napi_value GetMediaKeySystemName(napi_env env, napi_callback_info info);
     static napi_value SetConfigurationString(napi_env env, napi_callback_info info);
     static napi_value GetConfigurationString(napi_env env, napi_callback_info info);
     static napi_value SetConfigurationByteArray(napi_env env, napi_callback_info info);

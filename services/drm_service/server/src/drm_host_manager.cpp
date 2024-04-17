@@ -36,7 +36,7 @@ std::mutex DrmHostManager::libMapMutex;
 std::map<std::string, void *> DrmHostManager::libMap;
 std::recursive_mutex DrmHostManager::handleAndKeySystemMapMutex;
 std::map<void *, sptr<IMediaKeySystem>> DrmHostManager::handleAndKeySystemMap;
-
+std::map<std::string, std::string> mediaKeySystemNameMap;
 DrmHostManager::DrmHostDeathRecipient::DrmHostDeathRecipient()
 {
     DRM_DEBUG_LOG("DrmHostManager::DrmHostDeathRecipient");
@@ -53,13 +53,12 @@ void DrmHostManager::DrmHostDeathRecipient::OnRemoteDied(const wptr<IRemoteObjec
 }
 
 DrmHostManager::DrmHostManager(StatusCallback *statusCallback)
-    : statusCallback_(statusCallback), drmHostServieProxy_(nullptr)
+    : statusCallback_(statusCallback)
 {}
 
 DrmHostManager::~DrmHostManager()
 {
     DRM_INFO_LOG("DrmHostManager::~DrmHostManager enter.");
-    drmHostServieProxy_ = nullptr;
     statusCallback_ = nullptr;
     if (serviceThreadRunning) {
         StopServiceThread();
@@ -231,10 +230,6 @@ void DrmHostManager::OemCertificateManager()
 int32_t DrmHostManager::Init(void)
 {
     DRM_INFO_LOG("DrmHostManager::Init enter.");
-    if (drmHostServieProxy_ != nullptr) {
-        DRM_ERR_LOG("DrmHostManager::Init, no drm host proxy");
-        return DRM_HOST_ERROR;
-    }
     OemCertificateManager();
     DRM_INFO_LOG("DrmHostManager::Init exit.");
     return DRM_OK;
@@ -259,14 +254,14 @@ int32_t DrmHostManager::GetSevices(std::string &uuid, bool *isSurpported)
     }
 
     for (auto hdiServiceName : serviceName) {
-        drmHostServieProxy_ = OHOS::HDI::Drm::V1_0::IMediaKeySystemFactory::Get(hdiServiceName, false);
-        if (drmHostServieProxy_ == nullptr) {
+        drmHostServieProxyMap[uuid] = OHOS::HDI::Drm::V1_0::IMediaKeySystemFactory::Get(hdiServiceName, false);
+        if (drmHostServieProxyMap[uuid]  == nullptr) {
             DRM_ERR_LOG("Failed to GetSevices");
             return DRM_HOST_ERROR;
         }
-        ret = drmHostServieProxy_->IsMediaKeySystemSupported(uuid, "", SECURE_UNKNOWN, *isSurpported);
+        ret = drmHostServieProxyMap[uuid]->IsMediaKeySystemSupported(uuid, "", SECURE_UNKNOWN, *isSurpported);
         if (ret != 0) {
-            DRM_ERR_LOG("drmHostServieProxy_ return Code:%{public}d", ret);
+            DRM_ERR_LOG("IsMediaKeySystemSupported return Code:%{public}d", ret);
             return DRM_HOST_ERROR;
         }
         if (*isSurpported == true) {
@@ -312,9 +307,9 @@ int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &uuid, std::string
         DRM_ERR_LOG("mimeType is null!");
         return DRM_SERVICE_ERROR;
     }
-    ret = drmHostServieProxy_->IsMediaKeySystemSupported(uuid, mimeType, SECURE_UNKNOWN, *isSurpported);
+    ret = drmHostServieProxyMap[uuid]->IsMediaKeySystemSupported(uuid, mimeType, SECURE_UNKNOWN, *isSurpported);
     if (ret != 0) {
-        DRM_ERR_LOG("drmHostServieProxy_ return Code:%{public}d", ret);
+        DRM_ERR_LOG("IsMediaKeySystemSupported return Code:%{public}d", ret);
     }
     DRM_INFO_LOG("DrmHostManager::IsMediaKeySystemSupported two parameters exit, isSurpported:%{public}d.",
         *isSurpported);
@@ -337,10 +332,10 @@ int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &uuid, std::string
         DRM_ERR_LOG("mimeType is null!");
         return DRM_SERVICE_ERROR;
     }
-    ret = drmHostServieProxy_->IsMediaKeySystemSupported(uuid, mimeType,
+    ret = drmHostServieProxyMap[uuid]->IsMediaKeySystemSupported(uuid, mimeType,
         (OHOS::HDI::Drm::V1_0::ContentProtectionLevel)securityLevel, *isSurpported);
     if (ret != 0) {
-        DRM_ERR_LOG("drmHostServieProxy_ return Code:%{public}d", ret);
+        DRM_ERR_LOG("IsMediaKeySystemSupported return Code:%{public}d", ret);
     }
     DRM_INFO_LOG("DrmHostManager::IsMediaKeySystemSupported three parameters exit, isSurpported:%{public}d.",
         *isSurpported);
@@ -359,7 +354,7 @@ int32_t DrmHostManager::CreateMediaKeySystem(std::string &uuid, sptr<IMediaKeySy
     }
 
     drmHostDeathRecipient_ = new DrmHostDeathRecipient();
-    const sptr<IRemoteObject> &remote = OHOS::HDI::hdi_objcast<IMediaKeySystemFactory>(drmHostServieProxy_);
+    const sptr<IRemoteObject> &remote = OHOS::HDI::hdi_objcast<IMediaKeySystemFactory>(drmHostServieProxyMap[uuid]);
     if (remote != nullptr) {
         bool result = remote->AddDeathRecipient(drmHostDeathRecipient_);
         if (!result) {
@@ -368,12 +363,41 @@ int32_t DrmHostManager::CreateMediaKeySystem(std::string &uuid, sptr<IMediaKeySy
         }
     }
 
-    ret = drmHostServieProxy_->CreateMediaKeySystem(hdiMediaKeySystem);
+    ret = drmHostServieProxyMap[uuid]->CreateMediaKeySystem(hdiMediaKeySystem);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("drmHostServieProxy_ CreateMediaKeySystem return Code:%{public}d", ret);
+        DRM_ERR_LOG("drmHostServieProxyMap CreateMediaKeySystem return Code:%{public}d", ret);
         return ret;
     }
     DRM_INFO_LOG("DrmHostManager::CreateMediaKeySystem exit.");
+    return DRM_OK;
+}
+
+int32_t DrmHostManager::GetMediaKeySystemName(std::map<std::string, std::string> &mediaKeySystemNames)
+{
+    DRM_ERR_LOG("DrmHostManager::GetMediaKeySystemName enter.");
+    std::vector<std::string> serviceName;
+    auto servmgr = IServiceManager::Get();
+    int32_t ret = servmgr->ListServiceByInterfaceDesc(serviceName, "ohos.hdi.drm.v1_0.IMediaKeySystemFactory");
+    if (ret != 0) {
+        DRM_ERR_LOG("ListServiceByInterfaceDesc faild, return Code:%{public}d", ret);
+        return ret;
+    }
+    for (auto hdiServiceName : serviceName) {
+        std::string pluginName = "";
+        std::string pluginUuid = "";
+        sptr<IMediaKeySystemFactory> drmHostServieProxy = OHOS::HDI::Drm::V1_0::IMediaKeySystemFactory::Get(hdiServiceName, false);
+        if (drmHostServieProxy  == nullptr) {
+            DRM_ERR_LOG("Failed to GetSevices");
+            return DRM_HOST_ERROR;
+        }
+        ret = drmHostServieProxy->GetMediaKeySystemName(pluginName, pluginUuid);
+        if (ret != 0) {
+            DRM_ERR_LOG("GetMediaKeySystemName return Code:%{public}d", ret);
+            return DRM_HOST_ERROR;
+        }
+        mediaKeySystemNames.insert(std::pair<std::string, std::string>(pluginName, pluginUuid));
+    }
+    DRM_ERR_LOG("DrmHostManager::GetMediaKeySystemName exit.");
     return DRM_OK;
 }
 } // namespace DrmStandard

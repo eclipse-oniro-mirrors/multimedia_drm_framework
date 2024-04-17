@@ -30,6 +30,7 @@ public:
     int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, bool *isSurpported) override;
     int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, int32_t securityLevel,
         bool *isSurpported) override;
+    int32_t GetMediaKeySystemName(std::map<std::string, std::string> &keySystemNames) override;
     int32_t CreateMediaKeySystem(std::string &uuid, sptr<IMediaKeySystemService> &mediaKeySystemProxy) override;
     int32_t SetListenerObject(const sptr<IRemoteObject> &object) override;
 

@@ -166,6 +166,36 @@ int32_t MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported(std::string
     return error;
 }
 
+int32_t MediaKeySystemFactoryServiceProxy::GetMediaKeySystemName(std::map<std::string, std::string> &keySystemNames)
+{
+    DRM_INFO_LOG("MediaKeySystemFactoryServiceProxy::GetMediaKeySystemName enter.");
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+
+    if (!data.WriteInterfaceToken(MediaKeySystemFactoryServiceProxy::GetDescriptor())) {
+        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy::GetMediaKeySystemName Write interface token failed");
+        return IPC_PROXY_ERR;
+    }
+    DRM_INFO_LOG("MediaKeySystemFactoryServiceStub GetMediaKeySystemName enter. code:%{public}d",MEDIA_KEY_SYSTEM_FACTORY_GET_MEDIA_KEYSYSTEM_NAME);
+    int32_t ret =
+        MediaKeySystemFactoryServiceProxy::Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_GET_MEDIA_KEYSYSTEM_NAME,
+        data, reply, option);
+    if (ret != ERR_NONE) {
+        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy::GetMediaKeySystemName failed, ret: %{public}d", ret);
+        return ret;
+    }
+    int32_t mediaKeySystemNameMapSize = reply.ReadInt32();
+    for (int32_t i = 0; i < mediaKeySystemNameMapSize; i++) {
+        std::string name = reply.ReadString();
+        std::string uuid = reply.ReadString();
+        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy::GetMediaKeySystemName name:%{public}s,uuid:%{public}s.",name.c_str(),uuid.c_str());
+        keySystemNames.insert(std::make_pair(name, uuid));
+    }
+    DRM_INFO_LOG("MediaKeySessiMediaKeySystemFactoryServiceProxyonServiceProxy::GetMediaKeySystemName exit.");
+    return ret;
+}
+
 int32_t MediaKeySystemFactoryServiceProxy::CreateMediaKeySystem(std::string &uuid,
     sptr<IMediaKeySystemService> &mediaKeySystemProxy)
 {

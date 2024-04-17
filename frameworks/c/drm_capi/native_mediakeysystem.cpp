@@ -83,6 +83,44 @@ bool OH_MediaKeySystem_IsSupported3(const char *uuid, const char *mimeType,
     return isSurooprtted;
 }
 
+Drm_ErrCode OH_MediaKeySystem_GetMediaKeySystems(DRM_MediaKeySystemDescription *description, uint32_t *count)
+{
+    DRM_INFO_LOG("OH_MediaKeySystem_GetMediaKeySystems enter");
+    DRM_CHECK_AND_RETURN_RET_LOG((description != nullptr), DRM_ERR_INVALID_VAL, "description is nullptr");
+    DRM_CHECK_AND_RETURN_RET_LOG((count != nullptr), DRM_ERR_INVALID_VAL, "count is nullptr");
+    std::map<std::string, std::string> keySystemNames;
+    OHOS::sptr<MediaKeySystemFactoryImpl> fatory = MediaKeySystemFactoryImpl::GetInstance();
+    int32_t ret = fatory->GetMediaKeySystemName(keySystemNames);
+    DRM_CHECK_AND_RETURN_RET_LOG((*count >= keySystemNames.size()), DRM_ERR_INVALID_VAL, "MediaKeySystemNapi GetMediaKeySystemName call Failed!");
+    int32_t times = 0;
+    DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_ERR_OK), DRM_ERR_INVALID_VAL, "MediaKeySystemNapi GetMediaKeySystemName call Failed!");
+    for (auto it = keySystemNames.begin(); it != keySystemNames.end(); it++) {
+        DRM_ERR_LOG("OH_MediaKeySystem_GetMediaKeySystems name:%{public}s,uuid:%{public}s.",it->first.c_str(),it->second.c_str());
+        if (it->first.size() != 0) {
+            ret = memcpy_s(description[times].name, it->first.size(), it->first.c_str(), it->first.size());
+            if (ret != 0) {
+                DRM_ERR_LOG("OH_MediaKeySystem_GetMediaKeySystems memcpy_s faild!");
+                return DRM_ERR_NO_MEMORY;
+            }
+        }
+        if (it->second.size() != 0) {
+            ret = memcpy_s(description[times].uuid, it->second.size(), it->second.c_str(), it->second.size());
+            if (ret != 0) {
+                DRM_ERR_LOG("OH_MediaKeySystem_GetMediaKeySystems memcpy_s faild!");
+                return DRM_ERR_NO_MEMORY;
+            }
+        }
+        times++;
+    }
+    if (keySystemNames.size() == 0) {
+        DRM_ERR_LOG("plugin not exist.");
+        return DRM_ERR_INVALID_VAL;
+    }
+    *count = keySystemNames.size();
+    DRM_INFO_LOG("OH_MediaKeySystem_GetMediaKeySystems exit.");
+    return DRM_ERR_OK;
+}
+
 Drm_ErrCode OH_MediaKeySystem_Create(const char *name, MediaKeySystem **mediaKeySystem)
 {
     std::map<int32_t, Drm_ErrCode> maps = {

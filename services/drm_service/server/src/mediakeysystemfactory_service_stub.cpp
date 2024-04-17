@@ -126,6 +126,29 @@ static int32_t ProcessSetListenerObject(MediaKeySystemFactoryServiceStub *stub, 
     return errCode;
 }
 
+static int32_t ProcessGetMediaKeySystemName(MediaKeySystemFactoryServiceStub *stub, MessageParcel &data,
+    MessageParcel &reply, MessageOption &option)
+{
+    DRM_INFO_LOG("MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystemName enter.");
+    std::map<std::string, std::string> mediaKeySystemNames;
+    int32_t ret = stub->GetMediaKeySystemName(mediaKeySystemNames);
+    DRM_ERR_LOG("MediaKeySystemFactoryServiceStub::ProcessGetMediaKeySystemName mapSize:%{public}d.",mediaKeySystemNames.size());
+    for (auto it = mediaKeySystemNames.begin(); it != mediaKeySystemNames.end(); it++) {
+        DRM_ERR_LOG("MediaKeySystemFactoryService::ProcessGetMediaKeySystemName name:%{public}s,uuid:%{public}s.",it->first.c_str(),it->second.c_str());
+    }
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "GetMediaKeySystemName faild, errCode:%{public}d", ret);
+    DRM_INFO_LOG("MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystemName enter.");
+    reply.WriteInt32(mediaKeySystemNames.size());
+    for (auto mediaKeySystemName : mediaKeySystemNames) {
+        DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteString(mediaKeySystemName.first), IPC_STUB_WRITE_PARCEL_ERR,
+            "MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystemName failed");
+        DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteString(mediaKeySystemName.second), IPC_STUB_WRITE_PARCEL_ERR,
+            "MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystemName failed");
+    }
+    DRM_INFO_LOG("MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystemName exit.");
+    return DRM_OK;
+}
+
 int32_t MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
@@ -158,9 +181,15 @@ int32_t MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, Message
             return errCode;
         }
         case MEDIA_KEY_SYSTEM_FACTORY_SET_LISTENER_OBJ: {
-            DRM_INFO_LOG("MediaKeySystemFactoryServiceStub IS_MEDIA_KEY_SYSTEM_SURPPORTED enter.");
+            DRM_INFO_LOG("MediaKeySystemFactoryServiceStub MEDIA_KEY_SYSTEM_FACTORY_SET_LISTENER_OBJ enter.");
             int32_t ret = ProcessSetListenerObject(this, data, reply, option);
-            DRM_INFO_LOG("MediaKeySystemFactoryServiceStub IS_MEDIA_KEY_SYSTEM_SURPPORTED exit.");
+            DRM_INFO_LOG("MediaKeySystemFactoryServiceStub MEDIA_KEY_SYSTEM_FACTORY_SET_LISTENER_OBJ exit.");
+            return ret;
+        }
+        case MEDIA_KEY_SYSTEM_FACTORY_GET_MEDIA_KEYSYSTEM_NAME: {
+            DRM_INFO_LOG("MediaKeySystemFactoryServiceStub MEDIA_KEY_SYSTEM_FACTORY_GST_MEDIA_KEYSYSTEM_NAME enter.");
+            int32_t ret = ProcessGetMediaKeySystemName(this, data, reply, option);
+            DRM_INFO_LOG("MediaKeySystemFactoryServiceStub MEDIA_KEY_SYSTEM_FACTORY_GST_MEDIA_KEYSYSTEM_NAME exit.");
             return ret;
         }
     }
