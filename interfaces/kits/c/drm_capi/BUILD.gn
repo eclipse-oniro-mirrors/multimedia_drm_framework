@@ -12,7 +12,6 @@
 # limitations under the License.
 
 import("//build/ohos.gni")
-
 config("drm_capi_common_config") {
   include_dirs = [
     "./common",
@@ -40,8 +39,19 @@ config("drm_capi_common_config") {
   ]
 }
 
+config("drm_capi_common_public_config") {
+  include_dirs = [
+    "./common",
+    "./include",
+    "./../../../../interfaces/inner_api/native/drm",
+    "./../../../../services/utils/include",
+  ]
+}
+
 ohos_shared_library("native_drm") {
   install_enable = true
+
+  public_configs = [ ":drm_capi_common_public_config" ]
   configs = [ ":drm_capi_common_config" ]
 
   sanitize = {
