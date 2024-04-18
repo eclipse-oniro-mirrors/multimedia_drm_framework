@@ -91,14 +91,14 @@ public:
     void ProcessMessage();
     void ServiceThreadMain();
     void OemCertificateManager();
-
+    int32_t GetMediaKeySystemName(std::map<std::string, std::string> &mediaKeySystemNames);
 private:
     int32_t GetSevices(std::string &uuid, bool *isSurpported);
     void ReleaseHandleAndKeySystemMap(void *handle);
     std::mutex mutex_;
     StatusCallback *statusCallback_;
     std::string service_name_ = "drm_interface_service";
-    sptr<IMediaKeySystemFactory> drmHostServieProxy_;
+    std::map<std::string, sptr<IMediaKeySystemFactory>> drmHostServieProxyMap;
     sptr<DrmHostDeathRecipient> drmHostDeathRecipient_ = nullptr;
     sptr<IMediaKeySystem> hdiMediaKeySystem;
     static std::recursive_mutex handleAndKeySystemMapMutex;

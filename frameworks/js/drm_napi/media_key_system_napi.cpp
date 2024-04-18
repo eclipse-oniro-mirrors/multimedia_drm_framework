@@ -247,6 +247,46 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
     return nullptr;
 }
 
+static napi_value mapToJsArray(napi_env env, std::map<std::string, std::string> &mediaKeySystemNames)
+{
+    DRM_INFO_LOG("mapToJsArray enter.");
+    napi_value jsArray;
+    int32_t i = 0;
+    napi_create_array_with_length(env, mediaKeySystemNames.size(), &jsArray);
+    for (auto it = mediaKeySystemNames.begin(); it != mediaKeySystemNames.end(); it++) {
+        napi_value jsObject;
+        napi_value jsName;
+        napi_value jsValue;
+        napi_create_object(env, &jsObject);
+        napi_create_string_utf8(env, it->first.c_str(), NAPI_AUTO_LENGTH, &jsName);
+        napi_set_named_property(env, jsObject, "name", jsName);
+        napi_create_string_utf8(env, it->second.c_str(), NAPI_AUTO_LENGTH, &jsValue);
+        napi_set_named_property(env, jsObject, "uuid", jsValue);
+        napi_set_element(env, jsArray, i++, jsObject);
+    }
+    DRM_INFO_LOG("mapToJsArray exit.");
+    return jsArray;
+}
+
+napi_value MediaKeySystemNapi::GetMediaKeySystemName(napi_env env, napi_callback_info info)
+{
+    DRM_INFO_LOG("MediaKeySystemNapi::GetMediaKeySystemName enter");
+    napi_value result = nullptr;
+    std::map<std::string, std::string> keySystemNames;
+
+    int32_t ret = MediaKeySystemFactoryImpl::GetInstance()->GetMediaKeySystemName(keySystemNames);
+    DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr, "MediaKeySystemNapi GetMediaKeySystemName call Failed!");
+    if (keySystemNames.size() == 0) {
+        DRM_ERR_LOG("plugin not exist.");
+        NapiDrmError::ThrowError(env, "MediaKeySystemNapi GetMediaKeySystemName call Failed!",
+            DRM_SERVICE_FATAL_ERROR);
+        return nullptr;
+    }
+    result = mapToJsArray(env, keySystemNames);
+    DRM_INFO_LOG("MediaKeySystemNapi::GetMediaKeySystemName exit.");
+    return result;
+}
+
 napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback_info info)
 {
     DRM_INFO_LOG("MediaKeySystemNapi::CreateMediaKeySession enter.");

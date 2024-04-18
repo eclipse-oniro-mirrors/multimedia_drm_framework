@@ -170,5 +170,17 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &uui
     DRM_INFO_LOG("MediaKeySystemFactoryService enter IsMediaKeySystemSupported  three parameters exit");
     return ret;
 }
+
+int32_t MediaKeySystemFactoryService::GetMediaKeySystemName(std::map<std::string, std::string> &mediaKeySystemNames)
+{
+    DRM_INFO_LOG("MediaKeySystemFactoryService::GetMediaKeySystemName three parameters enter");
+    int32_t ret = drmHostManager_->GetMediaKeySystemName(mediaKeySystemNames);
+    if (ret != DRM_OK) {
+        DRM_ERR_LOG("MediaKeySystemFactoryService::GetMediaKeySystemName failed");
+        return ret;
+    }
+    DRM_INFO_LOG("MediaKeySystemFactoryService::GetMediaKeySystemName exit");
+    return ret;
+}
 } // DrmStandard
 } // OHOS

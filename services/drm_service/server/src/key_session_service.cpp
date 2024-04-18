@@ -121,7 +121,7 @@ int32_t MediaKeySessionService::ProcessMediaKeyResponse(std::vector<uint8_t> &li
         DRM_ERR_LOG("MediaKeySessionService::ProcessMediaKeyResponse failed");
         return ret;
     }
-    DRM_INFO_LOG("bMediaKeySessionService::ProcessMediaKeyResponse exit.");
+    DRM_INFO_LOG("MediaKeySessionService::ProcessMediaKeyResponse exit.");
     return ret;
 }
 
