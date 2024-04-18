@@ -73,7 +73,7 @@ public:
         OHOS::HDI::Drm::V1_0::ContentProtectionLevel level, bool &isSupported) = 0;
 
     virtual int32_t CreateMediaKeySystem(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> &mediaKeySystem) = 0;
-    virtual int32_t GetMediaKeySystemName(std::string &name, std::string &uuid) = 0;
+    virtual int32_t GetMediaKeySystemDescription(std::string &name, std::string &uuid) = 0;
     virtual int32_t GetVersion(uint32_t &majorVer, uint32_t &minorVer)
     {
         majorVer = 1;
