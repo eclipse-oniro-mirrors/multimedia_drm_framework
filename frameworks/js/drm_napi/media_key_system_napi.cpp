@@ -276,9 +276,6 @@ napi_value MediaKeySystemNapi::GetMediaKeySystemName(napi_env env, napi_callback
 
     int32_t ret = MediaKeySystemFactoryImpl::GetInstance()->GetMediaKeySystemName(keySystemNames);
     DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr, "MediaKeySystemNapi GetMediaKeySystemName call Failed!");
-    for (auto it = keySystemNames.begin(); it != keySystemNames.end(); it++) {
-        DRM_ERR_LOG("MediaKeySystemNapi::GetMediaKeySystemName name:%{public}s,uuid:%{public}s.",it->first.c_str(),it->second.c_str());
-    }
     if (keySystemNames.size() == 0) {
         DRM_ERR_LOG("plugin not exist.");
         NapiDrmError::ThrowError(env, "MediaKeySystemNapi GetMediaKeySystemName call Failed!",
