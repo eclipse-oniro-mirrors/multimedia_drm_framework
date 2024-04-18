@@ -91,7 +91,8 @@ Drm_ErrCode OH_MediaKeySystem_GetMediaKeySystems(DRM_MediaKeySystemDescription *
     std::map<std::string, std::string> keySystemNames;
     OHOS::sptr<MediaKeySystemFactoryImpl> fatory = MediaKeySystemFactoryImpl::GetInstance();
     int32_t ret = fatory->GetMediaKeySystemName(keySystemNames);
-    DRM_CHECK_AND_RETURN_RET_LOG((*count >= keySystemNames.size()), DRM_ERR_INVALID_VAL, "MediaKeySystemNapi GetMediaKeySystemName call Failed!");
+    DRM_CHECK_AND_RETURN_RET_LOG((*count >= keySystemNames.size()), DRM_ERR_INVALID_VAL,
+        "MediaKeySystemNapi GetMediaKeySystemName call Failed!");
     int32_t times = 0;
     DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_ERR_OK), DRM_ERR_INVALID_VAL,
         "MediaKeySystemNapi GetMediaKeySystemName call Failed!");
