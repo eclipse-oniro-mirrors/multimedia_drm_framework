@@ -385,7 +385,8 @@ int32_t DrmHostManager::GetMediaKeySystemName(std::map<std::string, std::string>
     for (auto hdiServiceName : serviceName) {
         std::string pluginName = "";
         std::string pluginUuid = "";
-        sptr<IMediaKeySystemFactory> drmHostServieProxy = OHOS::HDI::Drm::V1_0::IMediaKeySystemFactory::Get(hdiServiceName, false);
+        sptr<IMediaKeySystemFactory> drmHostServieProxy =
+            OHOS::HDI::Drm::V1_0::IMediaKeySystemFactory::Get(hdiServiceName, false);
         if (drmHostServieProxy  == nullptr) {
             DRM_ERR_LOG("Failed to GetSevices");
             return DRM_HOST_ERROR;
