@@ -179,9 +179,6 @@ int32_t MediaKeySystemFactoryService::GetMediaKeySystemName(std::map<std::string
         DRM_ERR_LOG("MediaKeySystemFactoryService::GetMediaKeySystemName failed");
         return ret;
     }
-    for (auto it = mediaKeySystemNames.begin(); it != mediaKeySystemNames.end(); it++) {
-        DRM_ERR_LOG("MediaKeySystemFactoryService::GetMediaKeySystemName name:%{public}s,uuid:%{public}s.",it->first.c_str(),it->second.c_str());
-    }
     DRM_INFO_LOG("MediaKeySystemFactoryService::GetMediaKeySystemName exit");
     return ret;
 }
