@@ -132,11 +132,7 @@ static int32_t ProcessGetMediaKeySystemName(MediaKeySystemFactoryServiceStub *st
     DRM_INFO_LOG("MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystemName enter.");
     std::map<std::string, std::string> mediaKeySystemNames;
     int32_t ret = stub->GetMediaKeySystemName(mediaKeySystemNames);
-    for (auto it = mediaKeySystemNames.begin(); it != mediaKeySystemNames.end(); it++) {
-        DRM_ERR_LOG("MediaKeySystemFactoryService::ProcessGetMediaKeySystemName name:%{public}s,uuid:%{public}s.",it->first.c_str(),it->second.c_str());
-    }
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "GetMediaKeySystemName faild, errCode:%{public}d", ret);
-    DRM_INFO_LOG("MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystemName enter.");
     reply.WriteInt32(mediaKeySystemNames.size());
     for (auto mediaKeySystemName : mediaKeySystemNames) {
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteString(mediaKeySystemName.first), IPC_STUB_WRITE_PARCEL_ERR,
