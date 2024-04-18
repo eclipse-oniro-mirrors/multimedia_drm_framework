@@ -177,7 +177,6 @@ int32_t MediaKeySystemFactoryServiceProxy::GetMediaKeySystemName(std::map<std::s
         DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy::GetMediaKeySystemName Write interface token failed");
         return IPC_PROXY_ERR;
     }
-    DRM_INFO_LOG("MediaKeySystemFactoryServiceStub GetMediaKeySystemName enter. code:%{public}d",MEDIA_KEY_SYSTEM_FACTORY_GET_MEDIA_KEYSYSTEM_NAME);
     int32_t ret =
         MediaKeySystemFactoryServiceProxy::Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_GET_MEDIA_KEYSYSTEM_NAME,
         data, reply, option);
