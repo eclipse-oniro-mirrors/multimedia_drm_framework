@@ -95,7 +95,6 @@ Drm_ErrCode OH_MediaKeySystem_GetMediaKeySystems(DRM_MediaKeySystemDescription *
     int32_t times = 0;
     DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_ERR_OK), DRM_ERR_INVALID_VAL, "MediaKeySystemNapi GetMediaKeySystemName call Failed!");
     for (auto it = keySystemNames.begin(); it != keySystemNames.end(); it++) {
-        DRM_ERR_LOG("OH_MediaKeySystem_GetMediaKeySystems name:%{public}s,uuid:%{public}s.",it->first.c_str(),it->second.c_str());
         if (it->first.size() != 0) {
             ret = memcpy_s(description[times].name, it->first.size(), it->first.c_str(), it->first.size());
             if (ret != 0) {
