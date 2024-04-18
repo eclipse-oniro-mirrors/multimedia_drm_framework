@@ -188,7 +188,6 @@ int32_t MediaKeySystemFactoryServiceProxy::GetMediaKeySystemName(std::map<std::s
     for (int32_t i = 0; i < mediaKeySystemNameMapSize; i++) {
         std::string name = reply.ReadString();
         std::string uuid = reply.ReadString();
-        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy::GetMediaKeySystemName name:%{public}s,uuid:%{public}s.",name.c_str(),uuid.c_str());
         keySystemNames.insert(std::make_pair(name, uuid));
     }
     DRM_INFO_LOG("MediaKeySessiMediaKeySystemFactoryServiceProxyonServiceProxy::GetMediaKeySystemName exit.");
