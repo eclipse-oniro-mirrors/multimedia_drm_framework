@@ -330,6 +330,9 @@ napi_value MediaKeySessionNapi::GenerateOfflineReleaseRequest(napi_env env, napi
     }
 
     auto inputParser = [env, context](size_t argc, napi_value *argv) {
+        if (argc != ARGS_ONE) {
+            NapiDrmError::ThrowError(env, "only need one param", DRM_INVALID_PARAM);
+        }
         NAPI_CHECK_ARGS_RETURN_VOID(context, argc == ARGS_ONE, "invalid arguments", DRM_INVALID_PARAM);
         context->status = NapiParamUtils::GetValueUint8Array(env, context->releaseLicenseId, argv[PARAM0]);
         NAPI_CHECK_STATUS_RETURN_VOID(context, "GenerateOfflineReleaseRequest failed", DRM_INVALID_PARAM);
@@ -370,6 +373,9 @@ napi_value MediaKeySessionNapi::ProcessOfflineReleaseResponse(napi_env env, napi
     auto inputParser = [env, context](size_t argc, napi_value *argv) {
         NAPI_CHECK_ARGS_RETURN_VOID(context, argc == ARGS_TWO, "invalid arguments", DRM_INVALID_PARAM);
         context->status = NapiParamUtils::GetValueUint8Array(env, context->releaseResponseLicenseId, argv[PARAM0]);
+        if (context->status != napi_ok) {
+            NapiDrmError::ThrowError(env, "get mediaKeyId failed, please check mediaKeyId", DRM_INVALID_PARAM);
+        }
         NAPI_CHECK_STATUS_RETURN_VOID(context, "GetValueUint8Array failed", DRM_INVALID_PARAM);
         context->status = NapiParamUtils::GetValueUint8Array(env, context->releaseResponse, argv[PARAM1]);
         NAPI_CHECK_STATUS_RETURN_VOID(context, "ProcessOfflineReleaseResponse failed", DRM_INVALID_PARAM);
@@ -462,6 +468,9 @@ napi_value MediaKeySessionNapi::RestoreOfflineMediaKeys(napi_env env, napi_callb
     }
 
     auto inputParser = [env, context](size_t argc, napi_value *argv) {
+        if (argc != ARGS_ONE) {
+            NapiDrmError::ThrowError(env, "only need one param, please check the param.", DRM_INVALID_PARAM);
+        }
         NAPI_CHECK_ARGS_RETURN_VOID(context, argc == ARGS_ONE, "invalid arguments", DRM_INVALID_PARAM);
         context->status = NapiParamUtils::GetValueUint8Array(env, context->restoreLicenseId, argv[PARAM0]);
         NAPI_CHECK_STATUS_RETURN_VOID(context, "RestoreOfflineMediaKeys failed", DRM_INVALID_PARAM);

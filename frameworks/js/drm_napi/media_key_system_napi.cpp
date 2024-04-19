@@ -147,7 +147,7 @@ napi_value MediaKeySystemNapi::CreateMediaKeySystemInstance(napi_env env, napi_c
             return nullptr;
         }
         drmSchemaName = std::string(nameBuffer);
-        int32_t ret = MediaKeySystemFactoryImpl::GetInstance()->CreateMediaKeySystem(uuid,
+        int32_t ret = MediaKeySystemFactoryImpl::GetInstance()->CreateMediaKeySystem(drmSchemaName,
             &MediaKeySystemNapi::sMediaKeySystemImpl_);
         if (ret != DRM_OK) {
             NapiDrmError::ThrowError(env, "create MediaKeySystem faild.", ret);
