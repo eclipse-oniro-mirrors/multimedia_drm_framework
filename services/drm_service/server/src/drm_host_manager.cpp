@@ -391,9 +391,9 @@ int32_t DrmHostManager::GetMediaKeySystemName(std::map<std::string, std::string>
             DRM_ERR_LOG("Failed to GetSevices");
             return DRM_HOST_ERROR;
         }
-        ret = drmHostServieProxy->GetMediaKeySystemName(pluginName, pluginUuid);
+        ret = drmHostServieProxy->GetMediaKeySystemDescription(pluginName, pluginUuid);
         if (ret != 0) {
-            DRM_ERR_LOG("GetMediaKeySystemName return Code:%{public}d", ret);
+            DRM_ERR_LOG("GetMediaKeySystemDescription return Code:%{public}d", ret);
             return DRM_HOST_ERROR;
         }
         mediaKeySystemNames.insert(std::pair<std::string, std::string>(pluginName, pluginUuid));
