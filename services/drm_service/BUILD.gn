@@ -81,6 +81,7 @@ ohos_shared_library("drm_service") {
     boundary_sanitize = true
     cfi = true
     cfi_cross_dso = true
+    cfi_vcall_icall_only = true
     debug = false
   }
 

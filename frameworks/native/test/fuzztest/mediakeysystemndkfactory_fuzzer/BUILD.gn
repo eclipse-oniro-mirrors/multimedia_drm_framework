@@ -48,6 +48,7 @@ ohos_fuzztest("mediakeysystemndkfactoryFuzzTest") {
   sanitize = {
     cfi = true
     cfi_cross_dso = true
+    cfi_vcall_icall_only = true
     debug = true
   }
 
