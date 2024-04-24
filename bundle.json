@@ -104,7 +104,8 @@
           "test": [
             "//foundation/multimedia/drm_framework/frameworks/native/test:drmframeworktest",
             "//foundation/multimedia/drm_framework/frameworks/native/test/unittest:drm_framework_capi_unittest_v1_0",
-            "//foundation/multimedia/drm_framework/frameworks/native/test/fuzztest:drm_framework_capi_fuzztest_v1_0"
+            "//foundation/multimedia/drm_framework/frameworks/native/test/fuzztest:drm_framework_capi_fuzztest_v1_0",
+            "//foundation/multimedia/drm_framework/frameworks/native/test/unittest:play_framework_capi_unittest_v1_0"
           ]
         }
     }
