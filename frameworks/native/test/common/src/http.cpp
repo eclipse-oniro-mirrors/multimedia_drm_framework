@@ -59,11 +59,13 @@ int HttpPost(std::string url, unsigned char *request, uint32_t requestLen, unsig
     // timeout
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
     // http post
+#ifndef SUPPORT_FUZZ
     CURLcode res = curl_easy_perform(curl);
     if (res != CURLE_OK) {
         printf("[error] curl_easy_perform failed\n");
         ret = -1;
     }
+#endif
     long resCode;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &resCode);
     if (resCode != CURLEASYGETINFO) {

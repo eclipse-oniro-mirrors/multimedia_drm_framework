@@ -52,6 +52,7 @@ using namespace OHOS;
 using namespace DrmStandard;
 const int32_t MEMMAXSIZE = 128;
 const int32_t OFFRESPONSELEN = 50;
+const int32_t DATAMAXSIZE = 12288;
 namespace OHOS {
 namespace DrmStandard {
 Drm_ErrCode TestsessionEventCallBack(DRM_EventType eventType, unsigned char *info, int32_t infoLen, char *extra)
@@ -215,6 +216,11 @@ bool FuzzMediaKeysessionNdk(uint8_t *data, size_t size)
 extern "C" int LLVMFuzzerTestOneInput(uint8_t *data, size_t size)
 {
     /* Run your code on data */
-    OHOS::FuzzMediaKeysessionNdk(data, size);
+    uint8_t rawData[DATAMAXSIZE] = { 0 };
+    int32_t ret = memcpy_s(rawData, DATAMAXSIZE, data, size);
+    if (ret != 0) {
+        return -1;
+    }
+    OHOS::FuzzMediaKeysessionNdk(rawData, size);
     return 0;
 }

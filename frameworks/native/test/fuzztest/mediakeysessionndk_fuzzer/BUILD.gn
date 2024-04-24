@@ -13,7 +13,6 @@
 
 import("//build/ohos.gni")
 import("//build/test.gni")
-
 module_output_path = "drm_framework/drm_framework_fuzztest"
 
 config("drm_framework_capi_fuzztest_session_config") {
@@ -34,8 +33,9 @@ config("drm_framework_capi_fuzztest_session_config") {
   cflags_cc = [ "-fno-rtti" ]
 
   if (use_libfuzzer) {
-    cflags += [ "-fsanitize-coverage=inline-8bit-counters" ]
-    cflags_cc += [ "-fsanitize-coverage=inline-8bit-counters" ]
+    defines = [ "SUPPORT_FUZZ" ]
+    cflags += [ "-fno-sanitize-coverage=inline-8bit-counters" ]
+    cflags_cc += [ "-fno-sanitize-coverage=inline-8bit-counters" ]
   }
 }
 

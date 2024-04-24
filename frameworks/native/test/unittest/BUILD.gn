@@ -25,6 +25,7 @@ config("drm_framework_capi_unittest_v1_0_config") {
     "../../../../interfaces/inner_api/native/drm",
     "../../../../services/utils/include",
   ]
+
   cflags = [
     "-fno-exceptions",
     "-Wall",
@@ -67,6 +68,41 @@ ohos_unittest("drm_framework_capi_unittest_v1_0") {
 
   external_deps = [
     "c_utils:utils",
+    "hilog:libhilog",
+    "hitrace:hitrace_meter",
+    "ipc:ipc_core",
+  ]
+  subsystem_name = "multimedia"
+  part_name = "drm_framework"
+}
+
+ohos_unittest("play_framework_capi_unittest_v1_0") {
+  module_out_path = module_output_path
+  configs = [ ":drm_framework_capi_unittest_v1_0_config" ]
+
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = true
+  }
+
+  sources = [
+    "../../../../frameworks/native/test/common/src/http.cpp",
+    "../../../../frameworks/native/test/unittest/src/av_play_unittest.cpp",
+  ]
+
+  deps = [
+    "../../../../frameworks/native:drm_framework",
+    "../../../../interfaces/kits/c/drm_capi:native_drm",
+    "../../../../interfaces/kits/js/drm_napi:drm_napi",
+    "../../../../services/drm_service:drm_service",
+    "//third_party/curl:curl_shared",
+    "//third_party/googletest:gmock_main",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "graphic_surface:surface",
     "hilog:libhilog",
     "hitrace:hitrace_meter",
     "ipc:ipc_core",
