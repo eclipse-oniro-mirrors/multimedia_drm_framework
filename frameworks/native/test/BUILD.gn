@@ -16,6 +16,5 @@ group("drmframeworktest") {
   deps = [
     "./fuzztest:drm_framework_capi_fuzztest_v1_0",
     "./unittest:drm_framework_capi_unittest_v1_0",
-    "./unittest:play_framework_capi_unittest_v1_0",
   ]
 }

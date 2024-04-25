@@ -24,7 +24,7 @@
 #include "native_drm_object.h"
 #include "native_mediakeysession.h"
 #include "native_mediakeysystem.h"
-#include "av_play_unittest.h"
+#include "drm_framework_unittest.h"
 #include "http.h"
 
 #define DRM_SAMPLE_CHECK_AND_RETURN_RET_LOG(cond, ret, fmt, ...) \
@@ -71,33 +71,7 @@ using namespace std;
 namespace OHOS {
 namespace DrmStandard {
 
-bool g_isWisePlay = false;
-
-void PlayFrameworkUnitTest::SetUpTestCase(void) {}
-
-void PlayFrameworkUnitTest::TearDownTestCase(void) {}
-
-static const char *GetUuid()
-{
-    if (OH_MediaKeySystem_IsSupported("com.clearplay.drm")) {
-        return "com.clearplay.drm";
-    } else if (OH_MediaKeySystem_IsSupported("com.wiseplay.drm")) {
-        return "com.wiseplay.drm";
-    } else {
-        return "ERROR";
-    }
-}
-
-void PlayFrameworkUnitTest::SetUp()
-{
-    if (strcmp(GetUuid(), "com.wiseplay.drm") == 0) {
-        g_isWisePlay = true;
-    }
-}
-
-void PlayFrameworkUnitTest::TearDown() {}
-
-HWTEST_F(PlayFrameworkUnitTest, Drm_Unittest_GetMediaKeySystems, TestSize.Level0)
+HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_GetMediaKeySystems, TestSize.Level0)
 {
     uint32_t count = 10;
     DRM_MediaKeySystemDescription infos[10];
@@ -106,14 +80,14 @@ HWTEST_F(PlayFrameworkUnitTest, Drm_Unittest_GetMediaKeySystems, TestSize.Level0
     EXPECT_EQ(errNo, 0);
 }
 
-HWTEST_F(PlayFrameworkUnitTest, Drm_Unittest_GetMediaKeySystemsAbnorm, TestSize.Level0)
+HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_GetMediaKeySystemsAbnorm, TestSize.Level0)
 {
     uint32_t count = 10;
     Drm_ErrCode errNo = OH_MediaKeySystem_GetMediaKeySystems(nullptr, &count);
     EXPECT_NE(errNo, 0);
 }
 
-HWTEST_F(PlayFrameworkUnitTest, Drm_Unittest_GetMediaKeySystemsAbnorm1, TestSize.Level0)
+HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_GetMediaKeySystemsAbnorm1, TestSize.Level0)
 {
     DRM_MediaKeySystemDescription infos[10];
     memset_s(infos, sizeof(infos), 0, sizeof(infos));
@@ -121,7 +95,7 @@ HWTEST_F(PlayFrameworkUnitTest, Drm_Unittest_GetMediaKeySystemsAbnorm1, TestSize
     EXPECT_NE(errNo, 0);
 }
 
-HWTEST_F(PlayFrameworkUnitTest, Drm_Unittest_GetMediaKeySystemsAbnorm2, TestSize.Level0)
+HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_GetMediaKeySystemsAbnorm2, TestSize.Level0)
 {
     uint32_t count = 0;
     DRM_MediaKeySystemDescription infos[10];
