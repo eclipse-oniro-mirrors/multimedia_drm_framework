@@ -54,6 +54,8 @@ struct Message {
     Message(Type t, std::string id, ExtraInfo info) : type(t), uuid(id), extraInfo(info) {}
 };
 
+#define OEM_CERTIFICATE_PATH "/system/lib64/oem_certificate_service"
+
 typedef void (*MediaKeySystemCallBack)(std::string &, ExtraInfo);
 typedef int32_t (*QueryMediaKeySystemNameFuncType)(std::string &);
 typedef int32_t (*SetMediaKeySystemFuncType)(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> &);
@@ -86,13 +88,14 @@ public:
     int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, int32_t securityLevel,
         bool *isSurpported);
     int32_t CreateMediaKeySystem(std::string &uuid, sptr<IMediaKeySystem> &hdiMediaKeySystem);
+    int32_t GetMediaKeySystemName(std::map<std::string, std::string> &mediaKeySystemNames);
+private:
     static void UnLoadOEMCertifaicateService(std::string &uuid, ExtraInfo info);
     void StopServiceThread();
     void ProcessMessage();
     void ServiceThreadMain();
+    void GetOemLibraryPath(std::vector<std::string> &libsToLoad);
     void OemCertificateManager();
-    int32_t GetMediaKeySystemName(std::map<std::string, std::string> &mediaKeySystemNames);
-private:
     int32_t GetSevices(std::string &uuid, bool *isSurpported);
     void ReleaseHandleAndKeySystemMap(void *handle);
     std::mutex mutex_;
@@ -106,7 +109,6 @@ private:
     std::thread serviceThread;
     bool serviceThreadRunning = false;
     std::vector<void *> loadedLibs;
-    std::vector<std::string> libsToLoad;
     static std::queue<Message> messageQueue;
     static std::mutex queueMutex;
     static std::mutex libMutex;

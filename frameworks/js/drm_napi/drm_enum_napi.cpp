@@ -120,16 +120,16 @@ napi_value DrmEnumNapi::JsEnumIntInit(napi_env env, napi_value exports)
     for (auto it = g_intEnumClassMap.begin(); it != g_intEnumClassMap.end(); it++) {
         auto &enumClassName = it->first;
         auto &enumItemVec = it->second;
-        int32_t vecSize = enumItemVec.size();
+        uint32_t vecSize = enumItemVec.size();
         std::vector<napi_value> value;
         value.resize(vecSize);
-        for (int32_t index = 0; index < vecSize; ++index) {
+        for (uint32_t index = 0; index < vecSize; ++index) {
             napi_create_int32(env, enumItemVec[index].enumInt, &value[index]);
         }
 
         std::vector<napi_property_descriptor> property;
         property.resize(vecSize);
-        for (int32_t index = 0; index < vecSize; ++index) {
+        for (uint32_t index = 0; index < vecSize; ++index) {
             property[index] =
                 napi_property_descriptor DECLARE_NAPI_STATIC_PROPERTY(enumItemVec[index].enumName.data(), value[index]);
         }
@@ -156,16 +156,16 @@ napi_value DrmEnumNapi::JsEnumStringInit(napi_env env, napi_value exports)
     for (auto it = g_stringEnumClassMap.begin(); it != g_stringEnumClassMap.end(); it++) {
         auto &enumClassName = it->first;
         auto &enumItemVec = it->second;
-        int32_t vecSize = enumItemVec.size();
+        uint32_t vecSize = enumItemVec.size();
         std::vector<napi_value> value;
         value.resize(vecSize);
-        for (int32_t index = 0; index < vecSize; ++index) {
+        for (uint32_t index = 0; index < vecSize; ++index) {
             napi_create_string_utf8(env, enumItemVec[index].enumString.data(), NAPI_AUTO_LENGTH, &value[index]);
         }
 
         std::vector<napi_property_descriptor> property;
         property.resize(vecSize);
-        for (int32_t index = 0; index < vecSize; ++index) {
+        for (uint32_t index = 0; index < vecSize; ++index) {
             property[index] =
                 napi_property_descriptor DECLARE_NAPI_STATIC_PROPERTY(enumItemVec[index].enumName.data(), value[index]);
         }

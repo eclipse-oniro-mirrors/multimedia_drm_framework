@@ -68,7 +68,7 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
 {
     DRM_INFO_LOG("OnRemoteRequest, cmd = %{public}u", code);
     if (data.ReadInterfaceToken() != GetDescriptor()) {
-        DRM_ERR_LOG("MediaDecryptModuleServiceStub: ReadInterfaceToken failed");
+        DRM_ERR_LOG("MediaDecryptModuleServiceStub: ReadInterfaceToken failed.");
         return -1;
     }
     switch (code) {
@@ -83,7 +83,7 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
             if (keyIdSize != 0) {
                 const uint8_t *keyIdBuf = static_cast<const uint8_t *>(data.ReadBuffer(keyIdSize));
                 if (keyIdBuf == nullptr) {
-                    DRM_ERR_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_DECRYPT_DATA read keyId failed");
+                    DRM_ERR_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_DECRYPT_DATA read keyId failed.");
                     return IPC_STUB_WRITE_PARCEL_ERR;
                 }
                 cryptInfo.keyId.assign(keyIdBuf, keyIdBuf + keyIdSize);
@@ -93,7 +93,7 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
             if (ivSize != 0) {
                 const uint8_t *ivBuf = static_cast<const uint8_t *>(data.ReadBuffer(ivSize));
                 if (ivBuf == nullptr) {
-                    DRM_ERR_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_DECRYPT_DATA read ivSize failed");
+                    DRM_ERR_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_DECRYPT_DATA read ivSize failed.");
                     return IPC_STUB_WRITE_PARCEL_ERR;
                 }
                 cryptInfo.iv.assign(ivBuf, ivBuf + ivSize);

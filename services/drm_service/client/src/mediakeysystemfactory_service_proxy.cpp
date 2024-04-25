@@ -53,17 +53,17 @@ int32_t MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported(std::string
 
     if (!data.WriteInterfaceToken(GetDescriptor())) {
         DRM_ERR_LOG(
-            "MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported one param Write interface token failed");
+            "MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported one param Write interface token failed.");
         return IPC_PROXY_ERR;
     }
 
     if (!data.WriteInt32(ARGS_NUM_ONE)) {
-        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported one param Write paramNum failed");
+        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported one param Write paramNum failed.");
         return IPC_PROXY_ERR;
     }
 
     if (!data.WriteString(uuid)) {
-        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported Write uuid failed");
+        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported Write uuid failed.");
         return IPC_PROXY_ERR;
     }
 
@@ -89,22 +89,22 @@ int32_t MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported(std::string
 
     if (!data.WriteInterfaceToken(GetDescriptor())) {
         DRM_ERR_LOG(
-            "MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported two params Write interface token failed");
+            "MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported two params Write interface token failed.");
         return IPC_PROXY_ERR;
     }
 
     if (!data.WriteInt32(ARGS_NUM_TWO)) {
-        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported two params Write paramNum failed");
+        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported two params Write paramNum failed.");
         return IPC_PROXY_ERR;
     }
 
     if (!data.WriteString(uuid)) {
-        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported two params Write uuid failed");
+        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported two params Write uuid failed.");
         return IPC_PROXY_ERR;
     }
 
     if (!data.WriteString(mimeType)) {
-        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported two params Write mimeType failed");
+        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported two params Write mimeType failed.");
         return IPC_PROXY_ERR;
     }
 
@@ -129,28 +129,28 @@ int32_t MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported(std::string
 
     if (!data.WriteInterfaceToken(GetDescriptor())) {
         DRM_ERR_LOG(
-            "MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported three params Write interface token failed");
+            "MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported three params Write interface token failed.");
         return IPC_PROXY_ERR;
     }
 
     if (!data.WriteInt32(ARGS_NUM_THREE)) {
-        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported three params Write paramNum failed");
+        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported three params Write paramNum failed.");
         return IPC_PROXY_ERR;
     }
 
     if (!data.WriteString(uuid)) {
-        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported three params Write uuid failed");
+        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported three params Write uuid failed.");
         return IPC_PROXY_ERR;
     }
 
     if (!data.WriteString(mimeType)) {
-        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported three params Write mimeType failed");
+        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported three params Write mimeType failed.");
         return IPC_PROXY_ERR;
     }
 
     if (!data.WriteInt32(securityLevel)) {
         DRM_ERR_LOG(
-            "MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported three params Write securityLevel failed");
+            "MediaKeySystemFactoryServiceProxy IsMediaKeySystemSupported three params Write securityLevel failed.");
         return IPC_PROXY_ERR;
     }
 
@@ -174,7 +174,7 @@ int32_t MediaKeySystemFactoryServiceProxy::GetMediaKeySystemName(std::map<std::s
     MessageOption option;
 
     if (!data.WriteInterfaceToken(MediaKeySystemFactoryServiceProxy::GetDescriptor())) {
-        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy::GetMediaKeySystemName Write interface token failed");
+        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy::GetMediaKeySystemName Write interface token failed.");
         return IPC_PROXY_ERR;
     }
     int32_t ret =
@@ -202,12 +202,12 @@ int32_t MediaKeySystemFactoryServiceProxy::CreateMediaKeySystem(std::string &uui
     MessageParcel reply;
     MessageOption option;
     if (!data.WriteInterfaceToken(GetDescriptor())) {
-        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy CreateMediaKeySystem Write interface token failed");
+        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy CreateMediaKeySystem Write interface token failed.");
         return IPC_PROXY_ERR;
     }
 
     if (!data.WriteString(uuid)) {
-        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy CreateMediaKeySystem Write format failed");
+        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy CreateMediaKeySystem Write format failed.");
         return IPC_PROXY_ERR;
     }
 

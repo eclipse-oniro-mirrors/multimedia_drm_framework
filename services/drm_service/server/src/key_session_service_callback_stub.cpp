@@ -51,7 +51,7 @@ int32_t MediaKeySessionServiceCallbackStub::HandleSendEvent(MessageParcel &data)
     if (dataSize != 0) {
         const uint8_t *dataBuf = static_cast<const uint8_t *>(data.ReadBuffer(dataSize));
         if (dataBuf == nullptr) {
-            DRM_ERR_LOG("MediaKeySessionServiceCallbackStub::HandleSendEvent read data failed");
+            DRM_ERR_LOG("MediaKeySessionServiceCallbackStub::HandleSendEvent read data failed.");
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
         customizedData.assign(dataBuf, dataBuf + dataSize);
@@ -72,7 +72,7 @@ int32_t MediaKeySessionServiceCallbackStub::HandleSendEventKeyChanged(MessagePar
         if (idSize != 0) {
             const uint8_t *idBuf = static_cast<const uint8_t *>(data.ReadBuffer(idSize));
             if (idBuf == nullptr) {
-                DRM_ERR_LOG("MediaKeySessionServiceCallbackStub::HandleSendEventKeyChanged read data failed");
+                DRM_ERR_LOG("MediaKeySessionServiceCallbackStub::HandleSendEventKeyChanged read data failed.");
                 return IPC_STUB_WRITE_PARCEL_ERR;
             }
             item.assign(idBuf, idBuf + idSize);

@@ -26,13 +26,13 @@ namespace DrmStandard {
 class IMediaDecryptModuleService : public IRemoteBroker {
 public:
     struct SubSample {
-        int32_t clearHeaderLen;
-        int32_t payLoadLen;
+        uint32_t clearHeaderLen;
+        uint32_t payLoadLen;
     };
 
     struct Pattern {
-        int32_t encryptBlocks;
-        int32_t skipBlocks;
+        uint32_t encryptBlocks;
+        uint32_t skipBlocks;
     };
 
     enum CryptAlgorithmType {

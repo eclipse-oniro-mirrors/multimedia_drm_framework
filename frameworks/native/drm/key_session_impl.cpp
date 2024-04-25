@@ -296,7 +296,7 @@ int32_t MediaKeySessionImpl::SetCallback(const sptr<MediaKeySessionImplCallback>
     int32_t errCode = DRM_ERROR;
     keySessionServiceCallback_ = new (std::nothrow) MediaKeySessionServiceCallback(this);
     if (keySessionServiceCallback_ == nullptr) {
-        DRM_ERR_LOG("MediaKeySessionImpl:: MediaKeySessionServiceCallback alloc failed");
+        DRM_ERR_LOG("MediaKeySessionImpl:: MediaKeySessionServiceCallback alloc failed.");
         return errCode;
     }
 
@@ -346,7 +346,7 @@ int32_t MediaKeySessionServiceCallback::SendEvent(DrmEventType event, int32_t ex
             return DRM_OK;
         }
     }
-    DRM_ERR_LOG("MediaKeySessionServiceCallback:: SendEvent failed");
+    DRM_ERR_LOG("MediaKeySessionServiceCallback:: SendEvent failed.");
     return DRM_ERROR;
 }
 
@@ -361,7 +361,7 @@ int32_t MediaKeySessionServiceCallback::SendEventKeyChanged(
             return DRM_OK;
         }
     }
-    DRM_ERR_LOG("MediaKeySessionServiceCallback:: SendEventKeyChanged failed");
+    DRM_ERR_LOG("MediaKeySessionServiceCallback:: SendEventKeyChanged failed.");
     return DRM_ERROR;
 }
 } // DrmStandard

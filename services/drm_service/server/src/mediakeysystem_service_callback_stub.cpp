@@ -46,6 +46,8 @@ int32_t MeidaKeySystemServiceCallbackStub::HandleSendEvent(MessageParcel &data)
     int32_t event = data.ReadInt32();
     int32_t extra = data.ReadInt32();
     uint32_t dataSize = data.ReadUint32();
+    DRM_CHECK_AND_RETURN_RET_LOG(dataSize < DATA_MAX_LEN, DRM_MEMORY_ERROR,
+        "The size of event data is too large.");
     std::vector<uint8_t> customizedData;
     for (uint32_t i = 0; i < dataSize; i++) {
         customizedData.emplace_back(data.ReadUint8());

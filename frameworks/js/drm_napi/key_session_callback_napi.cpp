@@ -62,10 +62,10 @@ void MediaKeySessionCallbackNapi::WorkCallbackInterruptDone(uv_work_t *work, int
     DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(scope != nullptr, "scope is nullptr");
     DRM_DEBUG_LOG("JsCallBack %{public}s, uv_queue_work_with_qos start", request.c_str());
     do {
-        DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(status != UV_ECANCELED, "%{public}s cancelled", request.c_str());
+        DRM_NAPI_CHECK_AND_CLOSE_RETURN_VOID_LOG(status != UV_ECANCELED, "%{public}s cancelled", request.c_str());
         napi_value jsCallback = nullptr;
         napi_status nstatus = napi_get_reference_value(env, callback, &jsCallback);
-        DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(nstatus == napi_ok && jsCallback != nullptr,
+        DRM_NAPI_CHECK_AND_CLOSE_RETURN_VOID_LOG(nstatus == napi_ok && jsCallback != nullptr,
             "%{public}s get reference value fail", request.c_str());
 
         // Call back function
@@ -74,21 +74,21 @@ void MediaKeySessionCallbackNapi::WorkCallbackInterruptDone(uv_work_t *work, int
             napi_value hasNewGoodLicense;
             nstatus = NapiParamUtils::SetDrmKeysChangeEventInfo(env, event->keysChangeParame,
                 statusTable, hasNewGoodLicense);
-            DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(nstatus == napi_ok,
+            DRM_NAPI_CHECK_AND_CLOSE_RETURN_VOID_LOG(nstatus == napi_ok,
                 "%{public}s fail to create keysession keyschange callback", request.c_str());
             napi_value args[ARGS_TWO] = { statusTable, hasNewGoodLicense };
             napi_value result = nullptr;
             nstatus = napi_call_function(env, nullptr, jsCallback, ARGS_TWO, args, &result);
-            DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(nstatus == napi_ok, "%{public}s fail to call Interrupt callback",
+            DRM_NAPI_CHECK_AND_CLOSE_RETURN_VOID_LOG(nstatus == napi_ok, "%{public}s fail to call Interrupt callback",
                 request.c_str());
         } else {
             napi_value args[ARGS_ONE] = { nullptr };
             nstatus = NapiParamUtils::SetDrmEventInfo(env, event->eventParame, args[PARAM0]);
-            DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(nstatus == napi_ok && args[PARAM0] != nullptr,
+            DRM_NAPI_CHECK_AND_CLOSE_RETURN_VOID_LOG(nstatus == napi_ok && args[PARAM0] != nullptr,
                 "%{public}s fail to create keysession callback", request.c_str());
             napi_value result = nullptr;
             nstatus = napi_call_function(env, nullptr, jsCallback, ARGS_ONE, args, &result);
-            DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(nstatus == napi_ok, "%{public}s fail to call Interrupt callback",
+            DRM_NAPI_CHECK_AND_CLOSE_RETURN_VOID_LOG(nstatus == napi_ok, "%{public}s fail to call Interrupt callback",
                 request.c_str());
         }
     } while (0);

@@ -177,6 +177,15 @@ T *ObjectRefMap<T>::GetPtr()
         }                                             \
     } while (0)
 
+#define DRM_NAPI_CHECK_AND_CLOSE_RETURN_VOID_LOG(cond, fmt, ...) \
+    do {                                              \
+        if (!(cond)) {                                \
+            DRM_ERR_LOG(fmt, ##__VA_ARGS__);          \
+            napi_close_handle_scope(env, scope);      \
+            return;                                   \
+        }                                             \
+    } while (0)
+
 #define DRM_NAPI_CHECK_AND_RETURN_LOG(cond, status, fmt, ...) \
     do {                                              \
         if (!(cond)) {                                \

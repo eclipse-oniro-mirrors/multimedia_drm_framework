@@ -27,14 +27,14 @@ napi_value NapiParamUtils::GetUndefinedValue(napi_env env)
 napi_status NapiParamUtils::GetValueInt32(const napi_env &env, int32_t &value, napi_value in)
 {
     napi_status status = napi_get_value_int32(env, in, &value);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "GetValueInt32 napi_get_value_int32 failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "GetValueInt32 napi_get_value_int32 failed.");
     return status;
 }
 
 napi_status NapiParamUtils::SetValueInt32(const napi_env &env, const int32_t &value, napi_value &result)
 {
     napi_status status = napi_create_int32(env, value, &result);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetValueInt32 napi_create_int32 failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetValueInt32 napi_create_int32 failed.");
     return status;
 }
 
@@ -43,9 +43,9 @@ napi_status NapiParamUtils::GetValueInt32(const napi_env &env, const std::string
 {
     napi_value jsValue = nullptr;
     napi_status status = napi_get_named_property(env, in, fieldStr.c_str(), &jsValue);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "GetValueInt32 napi_get_named_property failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "GetValueInt32 napi_get_named_property failed.");
     status = GetValueInt32(env, value, jsValue);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "GetValueInt32 napi_get_value_int32 failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "GetValueInt32 napi_get_value_int32 failed.");
     return status;
 }
 
@@ -54,9 +54,9 @@ napi_status NapiParamUtils::SetValueInt32(const napi_env &env, const std::string
 {
     napi_value jsValue = nullptr;
     napi_status status = SetValueInt32(env, value, jsValue);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetValueInt32 napi_create_int32 failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetValueInt32 napi_create_int32 failed.");
     status = napi_set_named_property(env, result, fieldStr.c_str(), jsValue);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetValueInt32 napi_create_int32 failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetValueInt32 napi_create_int32 failed.");
     return status;
 }
 
@@ -79,7 +79,7 @@ std::string NapiParamUtils::GetStringArgument(napi_env env, napi_value value)
 napi_status NapiParamUtils::SetValueString(const napi_env &env, const std::string &stringValue, napi_value &result)
 {
     napi_status status = napi_create_string_utf8(env, stringValue.c_str(), NAPI_AUTO_LENGTH, &result);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetValueString napi_create_string_utf8 failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetValueString napi_create_string_utf8 failed.");
     return status;
 }
 
@@ -88,9 +88,9 @@ napi_status NapiParamUtils::SetValueString(const napi_env &env, const std::strin
 {
     napi_value value = nullptr;
     napi_status status = SetValueString(env, stringValue.c_str(), value);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetValueString failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetValueString failed.");
     status = napi_set_named_property(env, result, fieldStr.c_str(), value);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetValueString napi_set_named_property failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetValueString napi_set_named_property failed.");
     return status;
 }
 
@@ -98,7 +98,7 @@ napi_status NapiParamUtils::SetValueUint8Array(const napi_env &env, const std::v
     napi_value &result)
 {
     napi_status status = napi_create_array(env, &result);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetValueUint8Array napi_create_array failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetValueUint8Array napi_create_array failed.");
     for (size_t i = 0; i < value.size(); i++) {
         napi_value item;
         napi_create_int32(env, value[i], &item);
@@ -112,9 +112,9 @@ napi_status NapiParamUtils::SetValueUint8Array(const napi_env &env, const std::s
 {
     napi_value jsValue = nullptr;
     napi_status status = SetValueUint8Array(env, value, jsValue);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetValueUint8Array failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetValueUint8Array failed.");
     status = napi_set_named_property(env, result, fieldStr.c_str(), jsValue);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "napi_set_named_property failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "napi_set_named_property failed.");
     return status;
 }
 
@@ -126,7 +126,7 @@ napi_status NapiParamUtils::GetValueUint8Array(const napi_env &env, std::vector<
     napi_value arraybuffer = nullptr;
     napi_typedarray_type type;
     napi_status status = napi_get_typedarray_info(env, in, &type, &reponseDataLen, &reponseData, &arraybuffer, &offset);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "napi_get_typedarray_info failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "napi_get_typedarray_info failed.");
     uint8_t *reponseDataPtr = reinterpret_cast<uint8_t *>(reponseData);
     std::vector<uint8_t> initDataStr(reponseDataPtr, reponseDataPtr + reponseDataLen);
     value.assign(initDataStr.begin(), initDataStr.end());
@@ -136,7 +136,7 @@ napi_status NapiParamUtils::GetValueUint8Array(const napi_env &env, std::vector<
 napi_status NapiParamUtils::SetValueBoolean(const napi_env &env, const bool boolValue, napi_value &result)
 {
     napi_status status = napi_get_boolean(env, boolValue, &result);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetValueBoolean napi_get_boolean failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetValueBoolean napi_get_boolean failed.");
     return status;
 }
 
@@ -237,10 +237,10 @@ napi_status NapiParamUtils::SetProvisionRequest(const napi_env &env, const NapiP
     napi_value &result)
 {
     napi_status status = napi_create_object(env, &result);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetProvisionRequest napi_create_object failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetProvisionRequest napi_create_object failed.");
     status = SetValueString(env, "defaultURL", provisionRequest.defaultURL, result);
     status = SetValueUint8Array(env, "data", provisionRequest.data, result);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetProvisionRequest SetValueUint8Array failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetProvisionRequest SetValueUint8Array failed.");
     return status;
 }
 
@@ -248,24 +248,24 @@ napi_status NapiParamUtils::SetMediaKeyRequest(const napi_env &env,
     const IMediaKeySessionService::MediaKeyRequest &mediaKeyRequest, napi_value &result)
 {
     napi_status status = napi_create_object(env, &result);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetMediaKeyRequest napi_create_object failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetMediaKeyRequest napi_create_object failed.");
     status = SetValueInt32(env, "mediaKeyRequestType", mediaKeyRequest.requestType, result);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetMediaKeyRequest SetValueInt32 failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetMediaKeyRequest SetValueInt32 failed.");
     status = SetValueUint8Array(env, "data", mediaKeyRequest.mData, result);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetMediaKeyRequest SetValueUint8Array failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetMediaKeyRequest SetValueUint8Array failed.");
     status = SetValueString(env, "defaultURL", mediaKeyRequest.mDefaultURL, result);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetMediaKeyRequest SetValueString failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetMediaKeyRequest SetValueString failed.");
     return status;
 }
 
 napi_status NapiParamUtils::SetDrmEventInfo(const napi_env &env, DrmEventParame &eventParame, napi_value &result)
 {
     napi_status status = napi_create_object(env, &result);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetDrmEventInfo napi_create_object failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetDrmEventInfo napi_create_object failed.");
     status = SetValueUint8Array(env, "info", eventParame.data, result);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetDrmEventInfo SetValueUint8Array failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetDrmEventInfo SetValueUint8Array failed.");
     status = SetValueString(env, "extraInfo", std::to_string(eventParame.extra), result);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetDrmEventInfo SetValueString failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetDrmEventInfo SetValueString failed.");
     return status;
 }
 
@@ -273,9 +273,9 @@ napi_status NapiParamUtils::SetDrmKeysChangeEventInfo(const napi_env &env, DrmKe
     napi_value &statusTable, napi_value &hasNewGoodLicense)
 {
     napi_status status = SetValueMap(env, eventParame.statusTable, statusTable);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetDrmKeysChangeEventInfo SetValueMap failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetDrmKeysChangeEventInfo SetValueMap failed.");
     status = SetValueBoolean(env, eventParame.hasNewGoodLicense, hasNewGoodLicense);
-    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetDrmKeysChangeEventInfo SetValueBoolean failed");
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetDrmKeysChangeEventInfo SetValueBoolean failed.");
     return napi_ok;
 }
 } // namespace DrmStandard

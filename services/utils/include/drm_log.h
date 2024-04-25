@@ -27,14 +27,14 @@
 #define LOG_TAG "DRM"
 #define MAX_STRING_SIZE 256
 
-#define __DRM_FILE_NAME__ (__builtin_strrchr(__FILE__, '/') ? __builtin_strrchr(__FILE__, '/') + 1 : __FILE__)
+#define DRM_FILE_NAME (__builtin_strrchr(__FILE__, '/') ? __builtin_strrchr(__FILE__, '/') + 1 : __FILE__)
 
 #define POINTER_MASK 0x00FFFFFF
 #define FAKE_POINTER(addr) (POINTER_MASK & reinterpret_cast<uintptr_t>(addr))
 
 #define DECORATOR_HILOG(op, fmt, args...)                                                                            \
     do {                                                                                                             \
-        op(LOG_CORE, "{%{public}s()-%{public}s:%{public}d}" fmt, __FUNCTION__, __DRM_FILE_NAME__, __LINE__, ##args); \
+        op(LOG_CORE, "{%{public}s()-%{public}s:%{public}d}" fmt, __FUNCTION__, DRM_FILE_NAME, __LINE__, ##args); \
     } while (0)
 
 #define DRM_DEBUG_LOG(fmt, ...) DECORATOR_HILOG(HILOG_DEBUG, fmt, ##__VA_ARGS__)
@@ -59,6 +59,17 @@
         if (!(cond)) {                           \
             DRM_ERR_LOG(fmt, ##__VA_ARGS__);     \
             return;                              \
+        }                                        \
+    } while (0)
+#endif
+
+#ifndef DRM_CHECK_AND_CONTINUE_LOG
+#define DRM_CHECK_AND_CONTINUE_LOG(cond, fmt, ...) \
+    do {                                         \
+        if (!(cond)) {                           \
+            ReleaseHandleAndKeySystemMap(handle); \
+            DRM_ERR_LOG(fmt, ##__VA_ARGS__);     \
+            continue;;                              \
         }                                        \
     } while (0)
 #endif

@@ -385,7 +385,7 @@ int32_t MediaKeySystemImpl::SetCallback(const sptr<MediaKeySystemImplCallback> &
     int32_t ret = DRM_ERROR;
     serviceCallback_ = new (std::nothrow) MediaKeySystemCallback(this);
     if (serviceCallback_ == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemImpl:: MediaKeySystemCallback alloc failed");
+        DRM_ERR_LOG("MediaKeySystemImpl:: MediaKeySystemCallback alloc failed.");
         return ret;
     }
 
@@ -443,7 +443,7 @@ int32_t MediaKeySystemCallback::SendEvent(DrmEventType event, int32_t extra, con
             return DRM_OK;
         }
     }
-    DRM_ERR_LOG("MediaKeySystemCallback:: SendEvent failed");
+    DRM_ERR_LOG("MediaKeySystemCallback:: SendEvent failed.");
     return DRM_ERROR;
 }
 } // namespace DrmStandard

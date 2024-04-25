@@ -29,24 +29,24 @@ int32_t MediaKeySystemServiceCallbackProxy::SendEvent(DrmEventType event, int32_
     MessageOption option;
     DRM_INFO_LOG("MediaKeySystemServiceCallbackProxy SendEvent called, event:%{public}d", event);
     if (!parcelData.WriteInterfaceToken(GetDescriptor())) {
-        DRM_ERR_LOG("MediaKeySystemServiceCallbackProxy SendEvent Write interface token failed");
+        DRM_ERR_LOG("MediaKeySystemServiceCallbackProxy SendEvent Write interface token failed.");
         return IPC_PROXY_ERR;
     }
     if (!parcelData.WriteInt32(event)) {
-        DRM_ERR_LOG("MediaKeySystemServiceCallbackProxy SendEvent Write event failed");
+        DRM_ERR_LOG("MediaKeySystemServiceCallbackProxy SendEvent Write event failed.");
         return IPC_PROXY_ERR;
     }
     if (!parcelData.WriteInt32(extra)) {
-        DRM_ERR_LOG("MediaKeySystemServiceCallbackProxy SendEvent Write extra failed");
+        DRM_ERR_LOG("MediaKeySystemServiceCallbackProxy SendEvent Write extra failed.");
         return IPC_PROXY_ERR;
     }
     if (!parcelData.WriteUint32(data.size())) {
-        DRM_ERR_LOG("MediaKeySystemServiceCallbackProxy SendEvent Write data size failed");
+        DRM_ERR_LOG("MediaKeySystemServiceCallbackProxy SendEvent Write data size failed.");
         return IPC_PROXY_ERR;
     }
     for (auto item : data) {
         if (!parcelData.WriteUint8(item)) {
-            DRM_ERR_LOG("MediaKeySystemServiceCallbackProxy SendEvent Write data failed");
+            DRM_ERR_LOG("MediaKeySystemServiceCallbackProxy SendEvent Write data failed.");
             return IPC_PROXY_ERR;
         }
     }
