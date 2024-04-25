@@ -21,6 +21,10 @@
 #include "drm_log.h"
 #include "mediakeysystemfactory_service_stub.h"
 
+namespace {
+constexpr uint32_t MAX_LISTNER_NUM = 64;
+}
+
 namespace OHOS {
 namespace DrmStandard {
 MediaKeySystemFactoryServiceStub::MediaKeySystemFactoryServiceStub()
@@ -59,7 +63,8 @@ int32_t MediaKeySystemFactoryServiceStub::SetListenerObject(const sptr<IRemoteOb
         deathRecipientMap_.erase(pid);
         clientListenerMap_.erase(pid);
     }
-
+    DRM_CHECK_AND_RETURN_RET_LOG(clientListenerMap_.size() < MAX_LISTNER_NUM,
+        DRM_OPERATION_NOT_ALLOWED, "the number of listeners exceeds MAX_LISTNER_NUM: 64");
     DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_MEMORY_ERROR, "set listener object is nullptr");
     sptr<IDrmListener> clientListener = iface_cast<IDrmListener>(object);
     DRM_CHECK_AND_RETURN_RET_LOG(
