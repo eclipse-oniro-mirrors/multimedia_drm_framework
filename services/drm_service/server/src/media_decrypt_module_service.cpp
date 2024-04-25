@@ -57,7 +57,7 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
 {
     DRM_INFO_LOG("MediaDecryptModuleService::DecryptMediaData enter.");
     int32_t ret = DRM_OK;
-    int32_t bufLen = 0;
+    uint32_t bufLen = 0;
     OHOS::HDI::Drm::V1_0::CryptoInfo cryptInfoTmp;
     cryptInfoTmp.type = (OHOS::HDI::Drm::V1_0::CryptoAlgorithmType)cryptInfo.type;
     cryptInfoTmp.keyId.assign(cryptInfo.keyId.begin(), cryptInfo.keyId.end());
@@ -95,7 +95,7 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
     if (ret != DRM_OK) {
         (void)::close(srcBuffer.fd);
         (void)::close(dstBuffer.fd);
-        DRM_ERR_LOG("MediaDecryptModuleService::DecryptMediaData failed");
+        DRM_ERR_LOG("MediaDecryptModuleService::DecryptMediaData failed.");
         return ret;
     }
     (void)::close(srcBuffer.fd);

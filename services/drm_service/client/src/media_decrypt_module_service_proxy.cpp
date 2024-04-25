@@ -33,7 +33,7 @@ int32_t MediaDecryptModuleServiceProxy::Release()
     MessageOption option;
 
     if (!data.WriteInterfaceToken(GetDescriptor())) {
-        DRM_ERR_LOG("MediaDecryptModuleServiceProxy Release Write interface token failed");
+        DRM_ERR_LOG("MediaDecryptModuleServiceProxy Release Write interface token failed.");
         return IPC_PROXY_ERR;
     }
 
@@ -69,34 +69,34 @@ int32_t MediaDecryptModuleServiceProxy::ProcessDrmBuffer(MessageParcel &data,
     IMediaDecryptModuleService::DrmBuffer &srcBuffer, IMediaDecryptModuleService::DrmBuffer &dstBuffer)
 {
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(srcBuffer.bufferType), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write srcBuffer.bufferType failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write srcBuffer.bufferType failed.");
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteFileDescriptor(srcBuffer.fd), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write srcBuffer.fd failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write srcBuffer.fd failed.");
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(srcBuffer.bufferLen), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write srcBuffer.bufferLen failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write srcBuffer.bufferLen failed.");
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(srcBuffer.allocLen), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write srcBuffer.allocLen failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write srcBuffer.allocLen failed.");
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(srcBuffer.filledLen), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write srcBuffer.filledLen failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write srcBuffer.filledLen failed.");
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(srcBuffer.offset), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write srcBuffer.offset failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write srcBuffer.offset failed.");
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(srcBuffer.sharedMemType), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write srcBuffer.sharedMemType failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write srcBuffer.sharedMemType failed.");
 
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(dstBuffer.bufferType), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write dstBuffer.bufferType failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write dstBuffer.bufferType failed.");
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteFileDescriptor(dstBuffer.fd), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write dstBuffer.fd failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write dstBuffer.fd failed.");
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(dstBuffer.bufferLen), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write dstBuffer.bufferLen failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write dstBuffer.bufferLen failed.");
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(dstBuffer.allocLen), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write dstBuffer.allocLen failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write dstBuffer.allocLen failed.");
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(dstBuffer.filledLen), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write dstBuffer.filledLen failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write dstBuffer.filledLen failed.");
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(dstBuffer.offset), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write dstBuffer.offset failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write dstBuffer.offset failed.");
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(dstBuffer.sharedMemType), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write dstBuffer.sharedMemType failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write dstBuffer.sharedMemType failed.");
     return DRM_OK;
 }
 
@@ -110,46 +110,46 @@ int32_t MediaDecryptModuleServiceProxy::DecryptMediaData(bool secureDecodrtState
     MessageOption option;
 
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteInterfaceToken(GetDescriptor()), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write interface token failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write interface token failed.");
 
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteBool(secureDecodrtState), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write secureDecodrtState failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write secureDecodrtState failed.");
 
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.type), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.type failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.type failed.");
 
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.keyId.size()), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.keyId size failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.keyId size failed.");
     DRM_CHECK_AND_RETURN_RET_LOG(cryptInfo.keyId.size() < KEYID_MAX_LEN, DRM_MEMORY_ERROR,
         "The size of keyId is too large.");
     if (cryptInfo.keyId.size() != 0) {
         DRM_CHECK_AND_RETURN_RET_LOG(data.WriteBuffer(cryptInfo.keyId.data(), cryptInfo.keyId.size()), IPC_PROXY_ERR,
-            "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.keyId failed");
+            "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.keyId failed.");
     }
 
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.iv.size()), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.iv size failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.iv size failed.");
     DRM_CHECK_AND_RETURN_RET_LOG(cryptInfo.iv.size() < IV_MAX_LEN, DRM_MEMORY_ERROR, "The size of iv is too large.");
 
     if (cryptInfo.iv.size() != 0) {
         DRM_CHECK_AND_RETURN_RET_LOG(data.WriteBuffer(cryptInfo.iv.data(), cryptInfo.iv.size()), IPC_PROXY_ERR,
-            "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.iv failed");
+            "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.iv failed.");
     }
 
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.pattern.encryptBlocks), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.pattern.encryptBlocks failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.pattern.encryptBlocks failed.");
 
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.pattern.skipBlocks), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.pattern.skipBlocks failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.pattern.skipBlocks failed.");
 
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.subSample.size()), IPC_PROXY_ERR,
-        "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.subSample size failed");
+        "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.subSample size failed.");
     for (size_t i = 0; i < cryptInfo.subSample.size(); i++) {
         DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.subSample[i].clearHeaderLen), IPC_PROXY_ERR,
-            "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.subSample.clearHeaderLen failed");
+            "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.subSample.clearHeaderLen failed.");
 
         DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.subSample[i].payLoadLen), IPC_PROXY_ERR,
-            "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.subSample.payLoadLen failed");
+            "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.subSample.payLoadLen failed.");
     }
     int32_t ret = ProcessDrmBuffer(data, srcBuffer, dstBuffer);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, IPC_PROXY_ERR,

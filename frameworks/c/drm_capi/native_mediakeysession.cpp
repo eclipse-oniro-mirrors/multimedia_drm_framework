@@ -33,7 +33,7 @@ static Drm_ErrCode DealMediaKeyRequest(IMediaKeySessionService::MediaKeyRequest 
 {
     memset_s(mediaKeyRequest, sizeof(DRM_MediaKeyRequest), 0, sizeof(DRM_MediaKeyRequest));
     mediaKeyRequest->type = (DRM_MediaKeyRequestType)(licenseRequest.requestType);
-    mediaKeyRequest->dataLen = licenseRequest.mData.size();
+    mediaKeyRequest->dataLen = (int32_t)licenseRequest.mData.size();
     int ret = memcpy_s(mediaKeyRequest->data, licenseRequest.mData.size(), licenseRequest.mData.data(),
         licenseRequest.mData.size());
     if (ret != 0) {
@@ -57,7 +57,7 @@ Drm_ErrCode OH_MediaKeySession_GenerateMediaKeyRequest(MediaKeySession *mediaKey
 {
     DRM_INFO_LOG("OH_MediaKeySession_GenerateMediaKeyRequest enter");
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySession != nullptr) && (info != nullptr) && (mediaKeyRequest != nullptr)),
-        DRM_ERR_INVALID_VAL, "parameter is error");
+        DRM_ERR_INVALID_VAL, "parameter is error.");
     IMediaKeySessionService::MediaKeyRequestInfo licenseRequestInfo;
     IMediaKeySessionService::MediaKeyRequest licenseRequest;
     licenseRequest.requestType = OHOS::DrmStandard::IMediaKeySessionService::REQUEST_TYPE_RELEASE;
@@ -173,7 +173,7 @@ Drm_ErrCode OH_MediaKeySession_GenerateOfflineReleaseRequest(MediaKeySession *me
 
     MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySessoin);
 
-    uint32_t result = sessionObject->sessionImpl_->GenerateOfflineReleaseRequest(licenseIdVec, ReleaseRequest);
+    int32_t result = sessionObject->sessionImpl_->GenerateOfflineReleaseRequest(licenseIdVec, ReleaseRequest);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_GenerateOfflineReleaseRequest GenerateOfflineReleaseRequest faild!");
     if (ReleaseRequest.size() == 0) {

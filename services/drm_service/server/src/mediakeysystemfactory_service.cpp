@@ -100,7 +100,7 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &uuid,
     }
     mediaKeySystemService = new (std::nothrow) MediaKeySystemService(hdiMediaKeySystem);
     if (mediaKeySystemService == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemFactoryService::CreateMediaKeySystem allocation failed");
+        DRM_ERR_LOG("MediaKeySystemFactoryService::CreateMediaKeySystem allocation failed.");
         return DRM_ALLOC_ERROR;
     }
     mediaKeySystemService->SetMediaKeySystemServiceOperatorsCallback(this);
@@ -138,7 +138,7 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &uui
     DRM_INFO_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported one parameters enter");
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(uuid, isSurpported);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported failed");
+        DRM_ERR_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported failed.");
         return ret;
     }
     DRM_INFO_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported one parameters exit");
@@ -151,7 +151,7 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &uui
     DRM_INFO_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported two parameters enter");
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(uuid, mimeType, isSurpported);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported failed");
+        DRM_ERR_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported failed.");
         return ret;
     }
     DRM_INFO_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported two parameters exit");
@@ -164,7 +164,7 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &uui
     DRM_INFO_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported three parameters enter");
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(uuid, mimeType, securityLevel, isSurpported);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported failed");
+        DRM_ERR_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported failed.");
         return ret;
     }
     DRM_INFO_LOG("MediaKeySystemFactoryService enter IsMediaKeySystemSupported  three parameters exit");
@@ -176,7 +176,7 @@ int32_t MediaKeySystemFactoryService::GetMediaKeySystemName(std::map<std::string
     DRM_INFO_LOG("MediaKeySystemFactoryService::GetMediaKeySystemName three parameters enter");
     int32_t ret = drmHostManager_->GetMediaKeySystemName(mediaKeySystemNames);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemFactoryService::GetMediaKeySystemName failed");
+        DRM_ERR_LOG("MediaKeySystemFactoryService::GetMediaKeySystemName failed.");
         return ret;
     }
     DRM_INFO_LOG("MediaKeySystemFactoryService::GetMediaKeySystemName exit");

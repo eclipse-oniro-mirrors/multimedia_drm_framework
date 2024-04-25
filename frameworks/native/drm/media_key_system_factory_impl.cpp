@@ -77,7 +77,7 @@ void MediaKeySystemFactoryImpl::Init()
     }
     object = samgr->GetSystemAbility(MEDIA_KEY_SYSTEM_SERVICE_ID);
     if (object == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemFactoryImpl::GetSystemAbility() is failed");
+        DRM_ERR_LOG("MediaKeySystemFactoryImpl::GetSystemAbility() is failed.");
         return;
     }
     serviceProxy_ = iface_cast<IMediaKeySystemFactoryService>(object);

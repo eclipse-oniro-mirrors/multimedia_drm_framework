@@ -130,25 +130,31 @@ void DrmHostManager::ReleaseHandleAndKeySystemMap(void *handle)
     }
 }
 
-void DrmHostManager::ServiceThreadMain()
+void DrmHostManager::GetOemLibraryPath(std::vector<std::string> &libsToLoad)
 {
-    DRM_INFO_LOG("DrmHostManager::ServiceThreadMain enter.");
     DIR *dir = nullptr;
     struct dirent *entry = nullptr;
-    if ((dir = opendir("/system/lib64/oem_certificate_service")) != nullptr) {
+    if ((dir = opendir(OEM_CERTIFICATE_PATH)) != nullptr) {
         while ((entry = readdir(dir)) != nullptr) {
             std::string fileName = entry->d_name;
             DRM_DEBUG_LOG("DrmHostManager::ServiceThreadMain fileName:%{public}s.", fileName.c_str());
             if (fileName.find(".so") == std::string::npos) {
                 continue;
             }
-            std::string fullPath = "/system/lib64/oem_certificate_service/" + fileName;
+            std::string fullPath = OEM_CERTIFICATE_PATH + fileName;
             DRM_DEBUG_LOG("DrmHostManager::ServiceThreadMain fullPath:%{public}s.", fullPath.c_str());
             libsToLoad.push_back(fullPath);
         }
         closedir(dir);
         dir = nullptr;
     }
+}
+
+void DrmHostManager::ServiceThreadMain()
+{
+    DRM_INFO_LOG("DrmHostManager::ServiceThreadMain enter.");
+    std::vector<std::string> libsToLoad;
+    GetOemLibraryPath(libsToLoad);
     for (const auto &libpath : libsToLoad) {
         std::lock_guard<std::mutex> lockLib(libMutex);
         void *handle = dlopen(libpath.c_str(), RTLD_LAZY);
@@ -163,40 +169,20 @@ void DrmHostManager::ServiceThreadMain()
             if (QueryMediaKeySystemName && SetMediaKeySystem && ThreadExitNotify && StartThread && StopThread) {
                 std::string uuid;
                 int32_t ret = QueryMediaKeySystemName(uuid);
-                if (ret != DRM_OK) {
-                    ReleaseHandleAndKeySystemMap(handle);
-                    DRM_ERR_LOG("DrmHostManager::QueryMediaKeySystemName error!");
-                    continue;
-                }
+                DRM_CHECK_AND_CONTINUE_LOG(ret == DRM_OK, "DrmHostManager::QueryMediaKeySystemName error!");
                 ret = CreateMediaKeySystem(uuid, hdiMediaKeySystem);
-                if (ret != DRM_OK) {
-                    ReleaseHandleAndKeySystemMap(handle);
-                    DRM_ERR_LOG("DrmHostManager::CreateMediaKeySystem error!");
-                    continue;
-                }
+                DRM_CHECK_AND_CONTINUE_LOG(ret == DRM_OK, "DrmHostManager::CreateMediaKeySystem error!");
                 std::lock_guard<std::recursive_mutex> lockHandle(handleAndKeySystemMapMutex);
                 handleAndKeySystemMap.insert(std::make_pair(handle, hdiMediaKeySystem));
                 ret = SetMediaKeySystem(hdiMediaKeySystem);
-                if (ret != DRM_OK) {
-                    ReleaseHandleAndKeySystemMap(handle);
-                    DRM_ERR_LOG("DrmHostManager::SetMediaKeySystem error!");
-                    continue;
-                }
+                DRM_CHECK_AND_CONTINUE_LOG(ret == DRM_OK, "DrmHostManager::SetMediaKeySystem error!");
                 if (IsProvisionRequired()) {
                     std::lock_guard<std::mutex> lockLibMap(libMapMutex);
                     libMap[uuid] = handle;
                     ret = ThreadExitNotify(DrmHostManager::UnLoadOEMCertifaicateService);
-                    if (ret != DRM_OK) {
-                        ReleaseHandleAndKeySystemMap(handle);
-                        DRM_ERR_LOG("DrmHostManager::ThreadExitNotify error!");
-                        continue;
-                    }
+                    DRM_CHECK_AND_CONTINUE_LOG(ret == DRM_OK, "DrmHostManager::ThreadExitNotify error!");
                     ret = StartThread();
-                    if (ret != DRM_OK) {
-                        ReleaseHandleAndKeySystemMap(handle);
-                        DRM_ERR_LOG("DrmHostManager::StartThread error!");
-                        continue;
-                    }
+                    DRM_CHECK_AND_CONTINUE_LOG(ret == DRM_OK, "DrmHostManager::StartThread error!");
                 } else {
                     loadedLibs.pop_back();
                     ReleaseHandleAndKeySystemMap(handle);

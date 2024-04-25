@@ -320,7 +320,7 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
         int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->CreateMediaKeySession(
             (IMediaKeySessionService::ContentProtectionLevel)securityLevel, &keySessionImpl);
         if (ret != DRM_OK) {
-            NapiDrmError::ThrowError(env, "CreateMediaKeySession failed", ret);
+            NapiDrmError::ThrowError(env, "CreateMediaKeySession failed.", ret);
             DRM_ERR_LOG("MediaKeySystemNapi::CreateMediaKeySession get failed!!!");
             return nullptr;
         }
@@ -641,7 +641,7 @@ napi_value MediaKeySystemNapi::ProcessKeySystemResponse(napi_env env, napi_callb
     auto inputParser = [env, context](size_t argc, napi_value *argv) {
         NAPI_CHECK_ARGS_RETURN_VOID(context, argc == ARGS_ONE, "invalid arguments", DRM_INVALID_PARAM);
         context->status = NapiParamUtils::GetValueUint8Array(env, context->response, argv[PARAM0]);
-        NAPI_CHECK_STATUS_RETURN_VOID(context, "ProcessKeySystemResponse failed", DRM_INVALID_PARAM);
+        NAPI_CHECK_STATUS_RETURN_VOID(context, "ProcessKeySystemResponse failed.", DRM_INVALID_PARAM);
     };
 
     context->GetCbInfo(env, info, inputParser);
@@ -961,7 +961,7 @@ void MediaKeySystemNapi::SaveEventCallbackReferrence(const std::string eventType
     if (mediaKeySystemCallbackNapi_ != nullptr) {
         mediaKeySystemCallbackNapi_->SetCallbackReference(eventType, callbackPair);
     } else {
-        DRM_ERR_LOG("MediaKeySystemNapi::SaveEventCallbackReferrence failed");
+        DRM_ERR_LOG("MediaKeySystemNapi::SaveEventCallbackReferrence failed.");
     }
 }
 
@@ -971,7 +971,7 @@ void MediaKeySystemNapi::ClearEventCallbackReferrence(const std::string eventTyp
     if (mediaKeySystemCallbackNapi_ != nullptr) {
         mediaKeySystemCallbackNapi_->ClearCallbackReference(eventType);
     } else {
-        DRM_ERR_LOG("MediaKeySystemNapi::ClearEventCallbackReference failed");
+        DRM_ERR_LOG("MediaKeySystemNapi::ClearEventCallbackReference failed.");
     }
 }
 

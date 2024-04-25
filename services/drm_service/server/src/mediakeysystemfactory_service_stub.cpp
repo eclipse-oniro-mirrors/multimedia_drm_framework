@@ -90,7 +90,7 @@ static int32_t ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServic
         int32_t ret = stub->IsMediaKeySystemSupported(uuid, &isSurpported);
         DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "IsMediaKeySystemSupported faild, errCode:%{public}d", ret);
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteBool(isSurpported), IPC_STUB_WRITE_PARCEL_ERR,
-            "MediaKeySystemFactoryServiceStub Write isSurpported failed");
+            "MediaKeySystemFactoryServiceStub Write isSurpported failed.");
         return ret;
     }
     std::string mimeType = data.ReadString();
@@ -98,7 +98,7 @@ static int32_t ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServic
         int32_t ret = stub->IsMediaKeySystemSupported(uuid, mimeType, &isSurpported);
         DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "IsMediaKeySystemSupported faild, errCode:%{public}d", ret);
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteBool(isSurpported), IPC_STUB_WRITE_PARCEL_ERR,
-            "MediaKeySystemFactoryServiceStub Write isSurpported failed");
+            "MediaKeySystemFactoryServiceStub Write isSurpported failed.");
         return ret;
     }
 
@@ -107,7 +107,7 @@ static int32_t ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServic
         int32_t ret = stub->IsMediaKeySystemSupported(uuid, mimeType, securityLevel, &isSurpported);
         DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "IsMediaKeySystemSupported faild, errCode:%{public}d", ret);
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteBool(isSurpported), IPC_STUB_WRITE_PARCEL_ERR,
-            "MediaKeySystemFactoryServiceStub Write isSurpported failed");
+            "MediaKeySystemFactoryServiceStub Write isSurpported failed.");
         return ret;
     }
     return DRM_OK;
@@ -136,9 +136,9 @@ static int32_t ProcessGetMediaKeySystemName(MediaKeySystemFactoryServiceStub *st
     reply.WriteInt32(mediaKeySystemNames.size());
     for (auto mediaKeySystemName : mediaKeySystemNames) {
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteString(mediaKeySystemName.first), IPC_STUB_WRITE_PARCEL_ERR,
-            "MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystemName failed");
+            "MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystemName failed.");
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteString(mediaKeySystemName.second), IPC_STUB_WRITE_PARCEL_ERR,
-            "MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystemName failed");
+            "MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystemName failed.");
     }
     DRM_INFO_LOG("MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystemName exit.");
     return DRM_OK;
@@ -148,7 +148,7 @@ int32_t MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, Message
     MessageOption &option)
 {
     if (data.ReadInterfaceToken() != GetDescriptor()) {
-        DRM_DEBUG_LOG("MediaKeySystemFactoryServiceStub: ReadInterfaceToken failed");
+        DRM_DEBUG_LOG("MediaKeySystemFactoryServiceStub: ReadInterfaceToken failed.");
         return -1;
     }
 
@@ -169,7 +169,7 @@ int32_t MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, Message
                 return errCode;
             }
             if (!reply.WriteRemoteObject(mediaKeysystemProxy->AsObject())) {
-                DRM_ERR_LOG("MediaKeySystemFactoryServiceStub CreateMediaKeySystem Write MediaKeySession obj failed");
+                DRM_ERR_LOG("MediaKeySystemFactoryServiceStub CreateMediaKeySystem Write MediaKeySession obj failed.");
                 return IPC_STUB_WRITE_PARCEL_ERR;
             }
             DRM_INFO_LOG("MediaKeySystemFactoryServiceStub CREATE_MEDIA_KEYSYSTEM exit.");
