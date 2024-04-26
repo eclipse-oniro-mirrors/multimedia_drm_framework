@@ -316,10 +316,10 @@ extern "C" int LLVMFuzzerTestOneInput(uint8_t *data, size_t size)
 {
     /* Run your code on data */
     uint8_t rawData[DATAMAXSIZE] = { 0 };
-    int32_t ret = memcpy_s(rawData, DATAMAXSIZE, data, size);
+    int32_t ret = memcpy_s(rawData, DATAMAXSIZE - 1, data, size);
     if (ret != 0) {
         return -1;
     }
-    OHOS::FuzzMediaKeysessionNdk(data, size);
+    OHOS::FuzzMediaKeysessionNdk(rawData, size);
     return 0;
 }
