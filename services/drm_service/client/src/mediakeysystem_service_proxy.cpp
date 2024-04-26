@@ -398,10 +398,6 @@ int32_t MediaKeySystemServiceProxy::GetOfflineMediaKeyIds(std::vector<std::vecto
         return ret;
     }
     int32_t licenseIdsSize = reply.ReadInt32();
-    if (licenseIdsSize == 0) {
-        DRM_DEBUG_LOG("MediaKeySystemServiceProxy::GetOfflineMediaKeyIds exit. licenseIds is empty.");
-        return IPC_PROXY_ERR;
-    }
     for (int32_t i = 0; i < licenseIdsSize; i++) {
         int32_t licenseIdSize = reply.ReadInt32();
         if (licenseIdSize == 0 || licenseIdSize > LICENSEID_MAX_LEN) {
