@@ -20,6 +20,7 @@
 #include "iservice_registry.h"
 #include "access_token.h"
 #include "drm_log.h"
+#include "drm_trace.h"
 #include "key_session_service.h"
 #include "mediakeysystem_service.h"
 
@@ -91,6 +92,7 @@ int32_t MediaKeySystemService::SetMediaKeySystemServiceOperatorsCallback(
 
 int32_t MediaKeySystemService::GenerateKeySystemRequest(std::vector<uint8_t> &request, std::string &defaultUrl)
 {
+    DrmTrace trace("MediaKeySystemService::GenerateKeySystemRequest");
     int32_t ret = DRM_OK;
     ret = hdiKeySystem_->GenerateKeySystemRequest(defaultUrl, request);
     if (ret != DRM_OK) {
@@ -103,6 +105,7 @@ int32_t MediaKeySystemService::GenerateKeySystemRequest(std::vector<uint8_t> &re
 
 int32_t MediaKeySystemService::ProcessKeySystemResponse(const std::vector<uint8_t> &response)
 {
+    DrmTrace trace("MediaKeySystemService::ProcessKeySystemResponse");
     int32_t ret = DRM_OK;
     ret = hdiKeySystem_->ProcessKeySystemResponse(response);
     if (ret != DRM_OK) {
@@ -174,6 +177,7 @@ int32_t MediaKeySystemService::GetConfigurationByteArray(std::string &configName
 int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::ContentProtectionLevel securityLevel,
     sptr<IMediaKeySessionService> &keySessionProxy)
 {
+    DrmTrace trace("MediaKeySystemService::CreateMediaKeySession");
     DRM_INFO_LOG("MediaKeySystemService::CreateMediaKeySession enter, securityLevel:%{public}d.", securityLevel);
     int32_t ret = DRM_OK;
     std::lock_guard<std::mutex> lock(mutex_);

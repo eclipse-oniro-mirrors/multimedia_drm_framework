@@ -20,6 +20,7 @@
 #include <refbase.h>
 #include <securec.h>
 #include "drm_log.h"
+#include "drm_trace.h"
 #include "native_drm_common.h"
 #include "native_drm_base.h"
 #include "native_drm_object.h"
@@ -124,6 +125,7 @@ Drm_ErrCode OH_MediaKeySystem_GetMediaKeySystems(DRM_MediaKeySystemDescription *
 
 Drm_ErrCode OH_MediaKeySystem_Create(const char *name, MediaKeySystem **mediaKeySystem)
 {
+    DrmTrace trace("OH_MediaKeySystem_Create");
     std::map<int32_t, Drm_ErrCode> maps = {
         {401, DRM_ERR_INVALID_VAL},
         {24700201, DRM_ERR_SERVICE_DIED},
@@ -347,6 +349,7 @@ Drm_ErrCode OH_MediaKeySystem_GetMaxContentProtectionLevel(MediaKeySystem *media
 Drm_ErrCode OH_MediaKeySystem_GenerateKeySystemRequest(MediaKeySystem *mediaKeySystem, uint8_t *request,
     int32_t *requestLen, char *defaultUrl, int32_t defaultUrlLen)
 {
+    DrmTrace trace("OH_MediaKeySystem_GenerateKeySystemRequest");
     DRM_INFO_LOG("OH_MediaKeySystem_GenerateKeySystemRequest enter");
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySystem != nullptr) && (request != nullptr) && (requestLen != nullptr) &&
         (defaultUrl != nullptr) && (defaultUrlLen > 0)),
@@ -386,6 +389,7 @@ Drm_ErrCode OH_MediaKeySystem_GenerateKeySystemRequest(MediaKeySystem *mediaKeyS
 Drm_ErrCode OH_MediaKeySystem_ProcessKeySystemResponse(MediaKeySystem *mediaKeySystem,
     uint8_t *response, int32_t responseLen)
 {
+    DrmTrace trace("OH_MediaKeySystem_ProcessKeySystemResponse");
     DRM_INFO_LOG("OH_ProcessKeySystemResponse enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySystem != nullptr) && (response != nullptr) && (responseLen > 0)),
         DRM_ERR_INVALID_VAL, "OH_ProcessKeySystemResponse parameter is error!");
@@ -438,6 +442,7 @@ Drm_ErrCode OH_MediaKeySystem_SetMediaKeySystemCallback(MediaKeySystem *mediaKey
 Drm_ErrCode OH_MediaKeySystem_CreateMediaKeySession(MediaKeySystem *mediaKeySystem, DRM_ContentProtectionLevel *level,
     MediaKeySession **mediaKeySession)
 {
+    DrmTrace trace("OH_MediaKeySystem_CreateMediaKeySession");
     std::map<int32_t, Drm_ErrCode> maps = {
         {24700201, DRM_ERR_SERVICE_DIED},
         {24700104, DRM_ERR_MAX_SESSION_NUM_REACHED},

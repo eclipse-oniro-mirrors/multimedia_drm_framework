@@ -16,6 +16,7 @@
 #include "media_key_system_impl.h"
 #include "i_mediakeysystem_service.h"
 #include "drm_error_code.h"
+#include "drm_trace.h"
 #include "napi_param_utils.h"
 
 namespace OHOS {
@@ -94,6 +95,7 @@ int32_t MediaKeySystemImpl::Release()
 
 int32_t MediaKeySystemImpl::GenerateKeySystemRequest(std::vector<uint8_t> &request, std::string &defaultUrl)
 {
+    DrmTrace trace("MediaKeySystemImpl::GenerateKeySystemRequest");
     DRM_INFO_LOG("MediaKeySystemImpl::GenerateKeySystemRequest enter.");
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = DRM_OK;
@@ -113,6 +115,7 @@ int32_t MediaKeySystemImpl::GenerateKeySystemRequest(std::vector<uint8_t> &reque
 
 int32_t MediaKeySystemImpl::ProcessKeySystemResponse(const std::vector<uint8_t> &response)
 {
+    DrmTrace trace("MediaKeySystemImpl::ProcessKeySystemResponse");
     DRM_INFO_LOG("MediaKeySystemImpl::ProcessKeySystemResponse enter.");
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = DRM_OK;
@@ -211,6 +214,7 @@ int32_t MediaKeySystemImpl::GetConfigurationByteArray(std::string &configName, s
 int32_t MediaKeySystemImpl::CreateMediaKeySession(IMediaKeySessionService::ContentProtectionLevel securityLevel,
     sptr<MediaKeySessionImpl> *keySessionImpl)
 {
+    DrmTrace trace("MediaKeySystemImpl::CreateMediaKeySession");
     DRM_INFO_LOG("MediaKeySystemImpl::CreateMediaKeySession enter.");
     sptr<IMediaKeySessionService> keySessionProxy = nullptr;
     sptr<MediaKeySessionImpl> localMediaKeySessionImpl = nullptr;
