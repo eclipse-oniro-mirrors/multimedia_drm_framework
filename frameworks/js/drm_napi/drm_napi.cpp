@@ -44,7 +44,7 @@ napi_value DrmNapi::Init(napi_env env, napi_value exports)
     napi_property_descriptor drm_static_properties[] = {
         DECLARE_NAPI_STATIC_FUNCTION("createMediaKeySystem", CreateMediaKeySystemInstance),
         DECLARE_NAPI_STATIC_FUNCTION("isMediaKeySystemSupported", IsMediaKeySystemSupported),
-        DECLARE_NAPI_STATIC_FUNCTION("getMediaKeySystemName", GetMediaKeySystemName)
+        DECLARE_NAPI_STATIC_FUNCTION("getMediaKeySystems", GetMediaKeySystemName)
     };
     DRM_DEBUG_LOG("DrmNapi enter napi_define_class");
     napi_value constructor = nullptr;
