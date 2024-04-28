@@ -14,6 +14,8 @@
  */
 
 #include "key_session_service.h"
+#include "drm_dfx_utils.h"
+#include "drm_host_manager.h"
 #include "drm_log.h"
 #include "drm_trace.h"
 #include "ipc_skeleton.h"
@@ -27,6 +29,15 @@ MediaKeySessionService::MediaKeySessionService(sptr<OHOS::HDI::Drm::V1_0::IMedia
     DRM_DEBUG_LOG("MediaKeySessionService::MediaKeySessionService.");
     sessionOperatorsCallback_ = nullptr;
     hdiMediaKeySession_ = hdiMediaKeySession;
+}
+
+MediaKeySessionService::MediaKeySessionService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySession> hdiMediaKeySession,
+    StatisticsInfo statisticsInfo)
+{
+    DRM_INFO_LOG("MediaKeySessionService::MediaKeySessionService with statisticsInfo enter.");
+    sessionOperatorsCallback_ = nullptr;
+    hdiMediaKeySession_ = hdiMediaKeySession;
+    statisticsInfo_ = statisticsInfo;
 }
 
 MediaKeySessionService::~MediaKeySessionService()
@@ -90,6 +101,9 @@ int32_t MediaKeySessionService::GenerateMediaKeyRequest(
 {
     DrmTrace trace("MediaKeySessionService::GenerateMediaKeyRequest");
     DRM_INFO_LOG("MediaKeySessionService::GenerateMediaKeyRequest enter.");
+    DRM_DEBUG_LOG("pluginName:%{public}s, pluginUuid:%{public}s\nbundleName:%{public}s,\nvendor:%{public}s,\n"
+        "version:%{public}s,\n", statisticsInfo_.pluginName.c_str(), statisticsInfo_.pluginUuid.c_str(),
+        statisticsInfo_.bundleName.c_str(), statisticsInfo_.vendorName.c_str(), statisticsInfo_.versionName.c_str());
     int32_t ret = DRM_OK;
     OHOS::HDI::Drm::V1_0::MediaKeyRequestInfo hdiMediaKeyRequestInfo;
 
@@ -99,6 +113,9 @@ int32_t MediaKeySessionService::GenerateMediaKeyRequest(
     for (std::map<std::string, std::string>::iterator it = licenseRequestInfo.optionalData.begin();
         it != licenseRequestInfo.optionalData.end(); ++it) {
         hdiMediaKeyRequestInfo.optionalData.insert(std::make_pair(it->first, it->second));
+    }
+    for (size_t i = 0; i < hdiMediaKeyRequestInfo.initData.size(); i++) {
+        DRM_DEBUG_LOG("hdiMediaKeyRequestInfo.initData : %{public}d\n", hdiMediaKeyRequestInfo.initData[i]);
     }
     OHOS::HDI::Drm::V1_0::MediaKeyRequest hdiMediaKeyRequest;
     ret = hdiMediaKeySession_->GenerateMediaKeyRequest(hdiMediaKeyRequestInfo, hdiMediaKeyRequest);
@@ -118,6 +135,9 @@ int32_t MediaKeySessionService::ProcessMediaKeyResponse(std::vector<uint8_t> &li
 {
     DrmTrace trace("MediaKeySessionService::ProcessMediaKeyResponse");
     DRM_INFO_LOG("MediaKeySessionService::ProcessMediaKeyResponse enter.");
+    DRM_DEBUG_LOG("pluginName:%{public}s, pluginUuid:%{public}s\nbundleName:%{public}s,\nvendor:%{public}s,\n"
+        "version:%{public}s,\n", statisticsInfo_.pluginName.c_str(), statisticsInfo_.pluginUuid.c_str(),
+        statisticsInfo_.bundleName.c_str(), statisticsInfo_.vendorName.c_str(), statisticsInfo_.versionName.c_str());
     int32_t ret = DRM_OK;
     ret = hdiMediaKeySession_->ProcessMediaKeyResponse(licenseResponse, licenseId);
     if (ret != DRM_OK) {
@@ -183,6 +203,9 @@ int32_t MediaKeySessionService::CheckMediaKeyStatus(std::map<std::string, std::s
 int32_t MediaKeySessionService::RestoreOfflineMediaKeys(std::vector<uint8_t> &licenseId)
 {
     DRM_INFO_LOG("MediaKeySessionService::RestoreOfflineMediaKeys enter.");
+    DRM_DEBUG_LOG("pluginName:%{public}s, pluginUuid:%{public}s\nbundleName:%{public}s,\nvendor:%{public}s,\n"
+        "version:%{public}s,\n", statisticsInfo_.pluginName.c_str(), statisticsInfo_.pluginUuid.c_str(),
+        statisticsInfo_.bundleName.c_str(), statisticsInfo_.vendorName.c_str(), statisticsInfo_.versionName.c_str());
     int32_t ret = DRM_OK;
     ret = hdiMediaKeySession_->RestoreOfflineMediaKeys(licenseId);
     if (ret != DRM_OK) {

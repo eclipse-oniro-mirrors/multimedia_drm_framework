@@ -19,6 +19,8 @@
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "access_token.h"
+#include "drm_dfx_utils.h"
+#include "drm_host_manager.h"
 #include "drm_log.h"
 #include "drm_trace.h"
 #include "key_session_service.h"
@@ -28,9 +30,18 @@ namespace OHOS {
 namespace DrmStandard {
 MediaKeySystemService::MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem)
 {
-    DRM_DEBUG_LOG("~MediaKeySystemService");
+    DRM_DEBUG_LOG("MediaKeySystemService::MediaKeySystemService enter.");
     keySystemOperatoersCallback_ = nullptr;
     hdiKeySystem_ = hdiKeySystem;
+}
+
+MediaKeySystemService::MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem,
+    StatisticsInfo statisticsInfo)
+{
+    DRM_DEBUG_LOG("MediaKeySystemService::MediaKeySystemService with statisticsInfo enter.");
+    keySystemOperatoersCallback_ = nullptr;
+    hdiKeySystem_ = hdiKeySystem;
+    statisticsInfo_ = statisticsInfo;
 }
 
 MediaKeySystemService::~MediaKeySystemService()
@@ -70,6 +81,9 @@ int32_t MediaKeySystemService::CloseMediaKeySystemServiceByCallback()
 int32_t MediaKeySystemService::Release()
 {
     DRM_INFO_LOG("MediaKeySystemService::Release enter.");
+    DRM_DEBUG_LOG("pluginName:%{public}s, pluginUuid:%{public}s\nbundleName:%{public}s,\nvendor:%{public}s,\n"
+        "version:%{public}s,\n", statisticsInfo_.pluginName.c_str(), statisticsInfo_.pluginUuid.c_str(),
+        statisticsInfo_.bundleName.c_str(), statisticsInfo_.vendorName.c_str(), statisticsInfo_.versionName.c_str());
     int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemService GetCallingPID: %{public}d", currentPid);
     if (keySystemOperatoersCallback_ != nullptr) {
@@ -93,6 +107,10 @@ int32_t MediaKeySystemService::SetMediaKeySystemServiceOperatorsCallback(
 int32_t MediaKeySystemService::GenerateKeySystemRequest(std::vector<uint8_t> &request, std::string &defaultUrl)
 {
     DrmTrace trace("MediaKeySystemService::GenerateKeySystemRequest");
+    DRM_INFO_LOG("MediaKeySystemService::GenerateKeySystemRequest enter.");
+    DRM_DEBUG_LOG("pluginName:%{public}s, pluginUuid:%{public}s\nbundleName:%{public}s,\nvendor:%{public}s,\n"
+        "version:%{public}s,\n", statisticsInfo_.pluginName.c_str(), statisticsInfo_.pluginUuid.c_str(),
+        statisticsInfo_.bundleName.c_str(), statisticsInfo_.vendorName.c_str(), statisticsInfo_.versionName.c_str());
     int32_t ret = DRM_OK;
     ret = hdiKeySystem_->GenerateKeySystemRequest(defaultUrl, request);
     if (ret != DRM_OK) {
@@ -106,6 +124,10 @@ int32_t MediaKeySystemService::GenerateKeySystemRequest(std::vector<uint8_t> &re
 int32_t MediaKeySystemService::ProcessKeySystemResponse(const std::vector<uint8_t> &response)
 {
     DrmTrace trace("MediaKeySystemService::ProcessKeySystemResponse");
+    DRM_INFO_LOG("MediaKeySystemService::ProcessKeySystemResponse enter.");
+    DRM_DEBUG_LOG("pluginName:%{public}s, pluginUuid:%{public}s\nbundleName:%{public}s,\nvendor:%{public}s,\n"
+        "version:%{public}s,\n", statisticsInfo_.pluginName.c_str(), statisticsInfo_.pluginUuid.c_str(),
+        statisticsInfo_.bundleName.c_str(), statisticsInfo_.vendorName.c_str(), statisticsInfo_.versionName.c_str());
     int32_t ret = DRM_OK;
     ret = hdiKeySystem_->ProcessKeySystemResponse(response);
     if (ret != DRM_OK) {
@@ -179,6 +201,9 @@ int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::Co
 {
     DrmTrace trace("MediaKeySystemService::CreateMediaKeySession");
     DRM_INFO_LOG("MediaKeySystemService::CreateMediaKeySession enter, securityLevel:%{public}d.", securityLevel);
+    DRM_DEBUG_LOG("pluginName:%{public}s, pluginUuid:%{public}s\nbundleName:%{public}s,\nvendor:%{public}s,\n"
+        "version:%{public}s,\n", statisticsInfo_.pluginName.c_str(), statisticsInfo_.pluginUuid.c_str(),
+        statisticsInfo_.bundleName.c_str(), statisticsInfo_.vendorName.c_str(), statisticsInfo_.versionName.c_str());
     int32_t ret = DRM_OK;
     std::lock_guard<std::mutex> lock(mutex_);
     sptr<MediaKeySessionService> keySessionService = nullptr;
@@ -189,7 +214,7 @@ int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::Co
         DRM_ERR_LOG("hdiKeySystem_ CreateMediaKeySession failed.");
         return DRM_SERVICE_ERROR;
     }
-    keySessionService = new (std::nothrow) MediaKeySessionService(hdiMediaKeySession);
+    keySessionService = new (std::nothrow) MediaKeySessionService(hdiMediaKeySession, statisticsInfo_);
     if (keySessionService == nullptr) {
         DRM_ERR_LOG("MediaKeySystemService::CreateMediaKeySession allocation failed.");
         return DRM_ALLOC_ERROR;

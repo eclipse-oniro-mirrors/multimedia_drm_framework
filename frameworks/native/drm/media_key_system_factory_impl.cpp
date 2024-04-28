@@ -226,6 +226,7 @@ int32_t MediaKeySystemFactoryImpl::CreateMediaKeySystem(std::string &uuid, sptr<
         return DRM_SERVICE_FATAL_ERROR;
     }
     *mediaKeySystemImpl = localMediaKeySystemImpl;
+    DRM_DEBUG_LOG("current keySystemNumber: %{public}d.", keySystemNumber);
     DRM_INFO_LOG("MediaKeySystemFactoryImpl:: CreateMediaKeySystem exit.");
     return DRM_OK;
 }

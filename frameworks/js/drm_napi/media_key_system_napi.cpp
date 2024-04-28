@@ -957,6 +957,7 @@ napi_value MediaKeySystemNapi::Destroy(napi_env env, napi_callback_info info)
         DRM_ERR_LOG("mediaKeySystemNapi Destroy Failed!");
         return nullptr;
     }
+    DRM_DEBUG_LOG("current keySystemNumber: %{public}d.", MediaKeySystemFactoryImpl::GetInstance()->keySystemNumber);
     DRM_INFO_LOG("MediaKeySystemNapi::Release exit.");
     return result;
 }

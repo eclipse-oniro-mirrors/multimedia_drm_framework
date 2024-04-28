@@ -99,6 +99,16 @@
                   "native_module_ohos_drm.h"
                 ]
               }
+            },
+            {
+              "type": "none",
+              "name": "//foundation/multimedia/drm_framework/services/utils:drm_service_utils",
+              "header": {
+                "header_files": [
+                  "drm_dfx_utils.h"
+                ],
+                "header_base": "//foundation/multimedia/drm_framework/services/utils/include"
+              }
             }
           ],
           "test": [

@@ -29,6 +29,7 @@ ohos_shared_library("drm_service") {
   ]
 
   sources = [
+    "./../utils/drm_dfx_utils.cpp",
     "./../utils/drm_trace.cpp",
     "./client/src/drm_listener_proxy.cpp",
     "./client/src/key_session_service_callback_proxy.cpp",

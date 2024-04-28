@@ -18,6 +18,7 @@
 
 #include <iostream>
 #include <refbase.h>
+#include "drm_dfx_utils.h"
 #include "drm_log.h"
 #include "drm_host_manager.h"
 #include "key_session_service_stub.h"
@@ -38,6 +39,8 @@ class IMediaKeySessionServiceOperatorsCallback;
 class MediaKeySessionService : public MediaKeySessionServiceStub, public IMediaKeySessionCallback {
 public:
     explicit MediaKeySessionService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySession> hdiMediaKeySession);
+    explicit MediaKeySessionService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySession> hdiMediaKeySession,
+        StatisticsInfo statisticsInfo);
     ~MediaKeySessionService();
     int32_t Release() override;
     int32_t CreateMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule) override;
@@ -69,6 +72,7 @@ private:
     sptr<IMediaKeySessionServiceCallback> callback_;
     wptr<IMediaKeySessionServiceOperatorsCallback> sessionOperatorsCallback_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySession> hdiMediaKeySession_;
+    StatisticsInfo statisticsInfo_;
 };
 
 class IMediaKeySessionServiceOperatorsCallback : public virtual RefBase {
