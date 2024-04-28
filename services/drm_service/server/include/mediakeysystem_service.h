@@ -86,6 +86,9 @@ private:
     std::set<sptr<MediaKeySessionService>> sessionsSet_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem_;
     StatisticsInfo statisticsInfo_;
+    HiviewDFX::HiTraceId traceId_;
+    std::string generationResult_;
+    uint32_t generationDuration_;
 };
 
 class IMediaKeySystemServiceOperatorsCallback : public virtual RefBase {

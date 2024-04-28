@@ -21,16 +21,26 @@
 #include "iservice_registry.h"
 #include "drm_dfx_utils.h"
 #include "drm_log.h"
+#include "drm_dfx.h"
+#include "dump_usage.h"
+#include "hitrace/tracechain.h"
+#include "iservice_registry.h"
 #include "mediakeysystem_service.h"
 #include "mediakeysystemfactory_service.h"
 
 namespace OHOS {
 namespace DrmStandard {
+using namespace OHOS::HiviewDFX;
+HiviewDFX::HiTraceId traceId;
+
 REGISTER_SYSTEM_ABILITY_BY_ID(MediaKeySystemFactoryService, MEDIA_KEY_SYSTEM_SERVICE_ID, true)
 
 MediaKeySystemFactoryService::MediaKeySystemFactoryService(int32_t systemAbilityId, bool runOnCreate)
     : SystemAbility(systemAbilityId, runOnCreate), drmHostManager_(nullptr)
-{}
+{
+    traceId = HiTraceChain::Begin("hiPlayerImpl", HITRACE_FLAG_DEFAULT);
+    HiTraceChain::SetId(traceId);
+}
 
 MediaKeySystemFactoryService::~MediaKeySystemFactoryService()
 {
@@ -53,6 +63,12 @@ void MediaKeySystemFactoryService::OnStart()
     if (res) {
         DRM_INFO_LOG("MediaKeySystemFactoryService OnStart res=%{public}d", res);
     }
+    OHOS::HiviewDFX::DumpUsage dumpUse;
+    uint32_t memoryUsage = dumpUse.GetPss(getpid());
+    auto now = std::chrono::system_clock::now();
+    auto currentTime = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
+    HISYSEVENT_BEHAVIOR("DRM_SERVICE_INFO", "MODULE", "DRM_SERVICE", "TIME", currentTime, "SERVICE_NAME", "DRM_SERVICE",
+        "ACTION", "start", "MEMORY", memoryUsage);
 }
 
 void MediaKeySystemFactoryService::OnDump()
@@ -69,6 +85,13 @@ void MediaKeySystemFactoryService::OnStop()
         delete drmHostManager_;
         drmHostManager_ = nullptr;
     }
+
+    OHOS::HiviewDFX::DumpUsage dumpUse;
+    uint32_t memoryUsage = dumpUse.GetPss(getpid());
+    auto now = std::chrono::system_clock::now();
+    auto currentTime = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
+    HISYSEVENT_BEHAVIOR("DRM_SERVICE_INFO", "MODULE", "DRM_SERVICE", "TIME", currentTime,
+        "SERVICE_NAME", "DRM_SERVICE", "ACTION", "end", "MEMORY", memoryUsage);
 }
 
 void MediaKeySystemFactoryService::DistroyForClientDied(pid_t pid)
@@ -97,6 +120,9 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &uuid,
     int32_t ret = drmHostManager_->CreateMediaKeySystem(uuid, hdiMediaKeySystem);
     if (hdiMediaKeySystem == nullptr || ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemFactoryService:: drmHostManager_ return hdiMediaKeySystem nullptr");
+        HISYSEVENT_FAULT("DRM_COMMON_FAILURE", "APP_NAME", GetClientBundleName(IPCSkeleton::GetCallingUid()),
+            "INSTANCE_ID", std::to_string(HiTraceChain::GetId().GetChainId()), "ERROR_CODE", DRM_SERVICE_ERROR,
+            "ERROR_MESG", "CreateMediaKeySystem failed", "EXTRA_MESG", "CreateMediaKeySystem failed");
         return DRM_SERVICE_ERROR;
     }
     StatisticsInfo statisticsInfo;

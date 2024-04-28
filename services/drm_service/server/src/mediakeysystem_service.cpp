@@ -25,6 +25,7 @@
 #include "drm_trace.h"
 #include "key_session_service.h"
 #include "mediakeysystem_service.h"
+#include "hitrace/tracechain.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -33,12 +34,13 @@ MediaKeySystemService::MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKe
     DRM_DEBUG_LOG("MediaKeySystemService::MediaKeySystemService enter.");
     keySystemOperatoersCallback_ = nullptr;
     hdiKeySystem_ = hdiKeySystem;
+    traceId_ = HiTraceChain::Begin("hiPlayerImpl", HITRACE_FLAG_DEFAULT);
 }
 
 MediaKeySystemService::MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem,
     StatisticsInfo statisticsInfo)
 {
-    DRM_DEBUG_LOG("MediaKeySystemService::MediaKeySystemService with statisticsInfo enter.");
+    DRM_DEBUG_LOG("MediaKeySystemService::MediaKeySystemService with statisticsInfo_ enter.");
     keySystemOperatoersCallback_ = nullptr;
     hdiKeySystem_ = hdiKeySystem;
     statisticsInfo_ = statisticsInfo;
@@ -52,6 +54,7 @@ MediaKeySystemService::~MediaKeySystemService()
     if (hdiKeySystem_ != nullptr) {
         DRM_ERR_LOG("hdiKeySystem != nullptr");
     }
+    HiTraceChain::End(traceId_);
 }
 
 int32_t MediaKeySystemService::CloseMediaKeySystemServiceByCallback()
@@ -112,11 +115,28 @@ int32_t MediaKeySystemService::GenerateKeySystemRequest(std::vector<uint8_t> &re
         "version:%{public}s,\n", statisticsInfo_.pluginName.c_str(), statisticsInfo_.pluginUuid.c_str(),
         statisticsInfo_.bundleName.c_str(), statisticsInfo_.vendorName.c_str(), statisticsInfo_.versionName.c_str());
     int32_t ret = DRM_OK;
+    auto timeBefore = std::chrono::system_clock::now();
+    auto timeAfter = std::chrono::system_clock::now();
+    auto duration = timeAfter - timeBefore;
+    generationDuration_ = duration.count();
+    HiTraceChain::SetId(traceId_);
     ret = hdiKeySystem_->GenerateKeySystemRequest(defaultUrl, request);
     if (ret != DRM_OK) {
+        generationResult_ = "failed";
         DRM_ERR_LOG("MediaKeySystemService::GenerateKeySystemRequest failed.");
+        HISYSEVENT_FAULT("DRM_COMMON_FAILURE", "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID",
+            std::to_string(HiTraceChain::GetId().GetChainId()), "ERROR_CODE", DRM_SERVICE_ERROR,
+            "ERROR_MESG", "CreateMediaKeySystem failed", "EXTRA_MESG", "CreateMediaKeySystem failed");
+        auto callTime = std::chrono::duration_cast<std::chrono::microseconds>(timeBefore.time_since_epoch()).count();
+        HISYSEVENT_BEHAVIOR("DRM_CERTIFICATE_DOWNLOAD_INFO", "MODULE", "DRM_SERVICE", "TIME", callTime,
+            "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID", std::to_string(HiTraceChain::GetId().GetChainId()),
+            "DRM_name", statisticsInfo_.pluginName, "DRM_uuid", statisticsInfo_.pluginUuid, "CLIENT_VERSION",
+            statisticsInfo_.versionName.c_str(), "GENERATION_DURATION", generationDuration_, "GENERATION_RESULT",
+            generationResult_, "PROCESS_DURATION", generationDuration_, "PROCESS_RESULT", "res", "CALL_SERVER_TIME", 1,
+            "SERVER_COST_DURATION", 1, "SERVER_RESULT", "res");
         return ret;
     }
+    generationResult_ = "seccess";
     DRM_INFO_LOG("MediaKeySystemService::GenerateKeySystemRequest exit.");
     return ret;
 }
@@ -129,12 +149,33 @@ int32_t MediaKeySystemService::ProcessKeySystemResponse(const std::vector<uint8_
         "version:%{public}s,\n", statisticsInfo_.pluginName.c_str(), statisticsInfo_.pluginUuid.c_str(),
         statisticsInfo_.bundleName.c_str(), statisticsInfo_.vendorName.c_str(), statisticsInfo_.versionName.c_str());
     int32_t ret = DRM_OK;
+    auto timeBefore = std::chrono::system_clock::now();
     ret = hdiKeySystem_->ProcessKeySystemResponse(response);
+    auto timeAfter = std::chrono::system_clock::now();
+    auto callTime = std::chrono::duration_cast<std::chrono::microseconds>(timeBefore.time_since_epoch()).count();
+    auto duration = timeAfter - timeBefore;
+    auto processDuration = duration.count();
+    HiTraceChain::SetId(traceId_);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemService::ProcessKeySystemResponse failed.");
+        HISYSEVENT_FAULT("DRM_COMMON_FAILURE", "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID",
+            std::to_string(HiTraceChain::GetId().GetChainId()), "ERROR_CODE", DRM_SERVICE_ERROR,
+            "ERROR_MESG", "CreateMediaKeySystem failed", "EXTRA_MESG", "CreateMediaKeySystem failed");
+        HISYSEVENT_BEHAVIOR("DRM_CERTIFICATE_DOWNLOAD_INFO", "MODULE", "DRM_SERVICE", "TIME", callTime,
+            "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID", std::to_string(HiTraceChain::GetId().GetChainId()),
+            "DRM_name", statisticsInfo_.pluginName, "DRM_uuid", statisticsInfo_.pluginUuid,
+            "CLIENT_VERSION", statisticsInfo_.versionName.c_str(), "GENERATION_DURATION", generationDuration_,
+            "GENERATION_RESULT", generationResult_, "PROCESS_DURATION", processDuration, "PROCESS_RESULT", "res",
+            "CALL_SERVER_TIME", 1, "SERVER_COST_DURATION", 1, "SERVER_RESULT", "res");
         return ret;
     }
     DRM_INFO_LOG("MediaKeySystemService::ProcessKeySystemResponse exit.");
+    HISYSEVENT_BEHAVIOR("DRM_CERTIFICATE_DOWNLOAD_INFO", "MODULE", "DRM_SERVICE", "TIME", callTime,
+        "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID", std::to_string(HiTraceChain::GetId().GetChainId()),
+        "DRM_name", statisticsInfo_.pluginName, "DRM_uuid", statisticsInfo_.pluginUuid, "CLIENT_VERSION",
+        statisticsInfo_.versionName.c_str(), "GENERATION_DURATION", generationDuration_,
+        "GENERATION_RESULT", generationResult_, "PROCESS_DURATION", processDuration, "PROCESS_RESULT", "res",
+        "CALL_SERVER_TIME", 1, "SERVER_COST_DURATION", 1, "SERVER_RESULT", "res");
     return ret;
 }
 
@@ -199,6 +240,7 @@ int32_t MediaKeySystemService::GetConfigurationByteArray(std::string &configName
 int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::ContentProtectionLevel securityLevel,
     sptr<IMediaKeySessionService> &keySessionProxy)
 {
+    HiTraceChain::SetId(traceId_);
     DrmTrace trace("MediaKeySystemService::CreateMediaKeySession");
     DRM_INFO_LOG("MediaKeySystemService::CreateMediaKeySession enter, securityLevel:%{public}d.", securityLevel);
     DRM_DEBUG_LOG("pluginName:%{public}s, pluginUuid:%{public}s\nbundleName:%{public}s,\nvendor:%{public}s,\n"
@@ -212,11 +254,17 @@ int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::Co
         hdiMediaKeySession);
     if (hdiMediaKeySession == nullptr) {
         DRM_ERR_LOG("hdiKeySystem_ CreateMediaKeySession failed.");
+        HISYSEVENT_FAULT("DRM_COMMON_FAILURE", "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID",
+            std::to_string(HiTraceChain::GetId().GetChainId()), "ERROR_CODE", DRM_SERVICE_ERROR,
+            "ERROR_MESG", "CreateMediaKeySession failed", "EXTRA_MESG", "CreateMediaKeySystem failed");
         return DRM_SERVICE_ERROR;
     }
     keySessionService = new (std::nothrow) MediaKeySessionService(hdiMediaKeySession, statisticsInfo_);
     if (keySessionService == nullptr) {
         DRM_ERR_LOG("MediaKeySystemService::CreateMediaKeySession allocation failed.");
+        HISYSEVENT_FAULT("DRM_COMMON_FAILURE", "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID",
+            std::to_string(HiTraceChain::GetId().GetChainId()), "ERROR_CODE", DRM_ALLOC_ERROR,
+            "ERROR_MESG", "CreateMediaKeySession failed", "EXTRA_MESG", "CreateMediaKeySystem failed");
         return DRM_ALLOC_ERROR;
     }
     keySessionService->SetMediaKeySessionServiceOperatorsCallback(this);

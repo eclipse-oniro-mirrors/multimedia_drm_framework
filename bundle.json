@@ -30,12 +30,15 @@
               "hisysevent",
               "c_utils",
               "hilog",
+              "hidumper",
               "access_token",
               "hicollie",
               "hdf_core",
               "eventhandler",
               "bundle_framework",
-              "drivers_interface_drm"
+              "drivers_interface_drm",
+              "media_foundation",
+              "json"
             ]
         },
         "build": {
@@ -106,6 +109,16 @@
               "header": {
                 "header_files": [
                   "drm_dfx_utils.h"
+                ],
+                "header_base": "//foundation/multimedia/drm_framework/services/utils/include"
+              }
+            },
+            {
+              "type": "none",
+              "name": "//foundation/multimedia/drm_framework/services/utils:drm_service_utils",
+              "header": {
+                "header_files": [
+                  "drm_dfx.h"
                 ],
                 "header_base": "//foundation/multimedia/drm_framework/services/utils/include"
               }

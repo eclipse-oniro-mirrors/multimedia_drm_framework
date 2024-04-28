@@ -17,9 +17,13 @@
 #include <unistd.h>
 #include <securec.h>
 #include "ashmem.h"
+#include "drm_dfx.h"
 #include "drm_trace.h"
+#include "drm_dfx_utils.h"
+#include "hitrace/tracechain.h"
 #include "ipc_skeleton.h"
 #include "media_decrypt_module_service.h"
+#include "meta/meta.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -79,32 +83,48 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
     OHOS::HDI::Drm::V1_0::DrmBuffer drmDstBuffer;
     memset_s(&drmSrcBuffer, sizeof(drmSrcBuffer), 0, sizeof(drmSrcBuffer));
     memset_s(&drmDstBuffer, sizeof(drmSrcBuffer), 0, sizeof(drmDstBuffer));
-    drmSrcBuffer.bufferType = srcBuffer.bufferType;
-    drmSrcBuffer.fd = srcBuffer.fd;
-    drmSrcBuffer.bufferLen = bufLen;
-    drmSrcBuffer.allocLen = srcBuffer.allocLen;
-    drmSrcBuffer.filledLen = srcBuffer.filledLen;
-    drmSrcBuffer.offset = srcBuffer.offset;
-    drmSrcBuffer.fd = srcBuffer.fd;
-
-    drmDstBuffer.bufferType = dstBuffer.bufferType;
-    drmDstBuffer.fd = dstBuffer.fd;
-    drmDstBuffer.bufferLen = bufLen;
-    drmDstBuffer.allocLen = dstBuffer.allocLen;
-    drmDstBuffer.filledLen = dstBuffer.filledLen;
-    drmDstBuffer.offset = dstBuffer.offset;
-    drmDstBuffer.sharedMemType = dstBuffer.sharedMemType;
+    SetDrmBufferInfo(&drmSrcBuffer, &drmDstBuffer, srcBuffer, dstBuffer, bufLen);
     ret = hdiMediaDecryptModule_->DecryptMediaData(secureDecodrtState, cryptInfoTmp, drmSrcBuffer, drmDstBuffer);
     if (ret != DRM_OK) {
         (void)::close(srcBuffer.fd);
         (void)::close(dstBuffer.fd);
         DRM_ERR_LOG("MediaDecryptModuleService::DecryptMediaData failed.");
+        std::string decryptKeyId;
+        decryptKeyId.assign(cryptInfoTmp.keyId.begin(), cryptInfoTmp.keyId.end());
+        std::string decryptKeyIv;
+        decryptKeyIv.assign(cryptInfoTmp.iv.begin(), cryptInfoTmp.iv.end());
+        HISYSEVENT_FAULT("DRM_DECRYPTION_FAILURE", "APP_NAME", GetClientBundleName(IPCSkeleton::GetCallingUid()),
+            "INSTANCE_ID", std::to_string(HiTraceChain::GetId().GetChainId()), "ERROR_CODE", DRM_SERVICE_ERROR,
+            "ERROR_MESG", "decrypt failed", "DECRYPT_ALGO", std::to_string(static_cast<int32_t>(cryptInfoTmp.type)),
+            "DECRYPT_KEYID", decryptKeyId, "DECRYPT_IV", decryptKeyIv);
         return ret;
     }
     (void)::close(srcBuffer.fd);
     (void)::close(dstBuffer.fd);
     DRM_INFO_LOG("MediaDecryptModuleService::DecryptMediaData exit.");
     return ret;
+}
+
+void MediaDecryptModuleService::SetDrmBufferInfo(OHOS::HDI::Drm::V1_0::DrmBuffer* drmSrcBuffer,
+    OHOS::HDI::Drm::V1_0::DrmBuffer* drmDstBuffer, IMediaDecryptModuleService::DrmBuffer &srcBuffer,
+    IMediaDecryptModuleService::DrmBuffer &dstBuffer, uint32_t bufLen)
+{
+    DRM_INFO_LOG("MediaDecryptModuleService::SetDrmBufferInfo");
+    drmSrcBuffer->bufferType = srcBuffer.bufferType;
+    drmSrcBuffer->fd = srcBuffer.fd;
+    drmSrcBuffer->bufferLen = bufLen;
+    drmSrcBuffer->allocLen = srcBuffer.allocLen;
+    drmSrcBuffer->filledLen = srcBuffer.filledLen;
+    drmSrcBuffer->offset = srcBuffer.offset;
+    drmSrcBuffer->fd = srcBuffer.fd;
+
+    drmDstBuffer->bufferType = dstBuffer.bufferType;
+    drmDstBuffer->fd = dstBuffer.fd;
+    drmDstBuffer->bufferLen = bufLen;
+    drmDstBuffer->allocLen = dstBuffer.allocLen;
+    drmDstBuffer->filledLen = dstBuffer.filledLen;
+    drmDstBuffer->offset = dstBuffer.offset;
+    drmDstBuffer->sharedMemType = dstBuffer.sharedMemType;
 }
 } // DrmStandard
 } // OHOS

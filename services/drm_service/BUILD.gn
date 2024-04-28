@@ -45,6 +45,8 @@ ohos_shared_library("drm_service") {
     "./server/src/mediakeysystemfactory_service_stub.cpp",
   ]
 
+  deps = [ "../utils:drm_service_utils" ]
+
   external_deps = [
     "ability_base:want",
     "ability_runtime:abilitykit_native",
@@ -60,11 +62,14 @@ ohos_shared_library("drm_service") {
     "hdf_core:libhdf_utils",
     "hdf_core:libhdi",
     "hicollie:libhicollie",
+    "hidumper:lib_dump_usage",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:hitrace_meter",
+    "hitrace:libhitracechain",
     "ipc:ipc_core",
     "ipc:ipc_single",
+    "media_foundation:media_foundation",
     "napi:ace_napi",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
@@ -74,6 +79,7 @@ ohos_shared_library("drm_service") {
     "-Wall",
     "-fPIC",
   ]
+  cflags += [ "-DENABLE_DRM_SYSEVENT_CONTROL" ]
   if (target_cpu == "arm") {
     cflags += [ "-DBINDER_IPC_32BIT" ]
   }
