@@ -26,6 +26,7 @@
 #include <refbase.h>
 #include "mediakeysystem_service_stub.h"
 #include "key_session_service.h"
+#include "drm_dfx_utils.h"
 #include "drm_host_manager.h"
 #include "drm_log.h"
 #include "drm_error_code.h"
@@ -48,6 +49,8 @@ class MediaKeySystemService : public MediaKeySystemServiceStub,
     public IMediaKeySystemCallback {
 public:
     explicit MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem);
+    explicit MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem,
+        StatisticsInfo statisticsInfo);
     ~MediaKeySystemService() override;
     int32_t Release() override;
     int32_t SetMediaKeySystemServiceOperatorsCallback(wptr<IMediaKeySystemServiceOperatorsCallback> callback);
@@ -78,11 +81,11 @@ public:
 
 private:
     std::mutex mutex_;
-    sptr<DrmHostManager> drmHostManager_;
     sptr<IMeidaKeySystemServiceCallback> callback_;
     wptr<IMediaKeySystemServiceOperatorsCallback> keySystemOperatoersCallback_;
     std::set<sptr<MediaKeySessionService>> sessionsSet_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem_;
+    StatisticsInfo statisticsInfo_;
 };
 
 class IMediaKeySystemServiceOperatorsCallback : public virtual RefBase {

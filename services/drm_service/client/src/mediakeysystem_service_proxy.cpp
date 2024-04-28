@@ -98,6 +98,7 @@ int32_t MediaKeySystemServiceProxy::GenerateKeySystemRequest(std::vector<uint8_t
 
 int32_t MediaKeySystemServiceProxy::ProcessKeySystemResponse(const std::vector<uint8_t> &response)
 {
+    DRM_INFO_LOG("MediaKeySystemServiceProxy::ProcessKeySystemResponse enter.");
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;

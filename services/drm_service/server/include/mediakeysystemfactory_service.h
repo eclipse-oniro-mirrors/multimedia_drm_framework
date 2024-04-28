@@ -63,6 +63,7 @@ public:
     int32_t CloseMediaKeySystemService(sptr<MediaKeySystemService> mediaKeySystemService) override;
     void DistroyForClientDied(pid_t pid) override;
     int32_t GetMediaKeySystemName(std::map<std::string, std::string> &mediaKeySystemNames) override;
+    void InitStatisticsInfo(sptr<IMediaKeySystem> hdiMediaKeySystem, StatisticsInfo &statisticsInfo);
 private:
     std::mutex mutex_;
     sptr<DrmHostManager> drmHostManager_;

@@ -19,6 +19,7 @@
 #include "ipc_skeleton.h"
 #include "access_token.h"
 #include "iservice_registry.h"
+#include "drm_dfx_utils.h"
 #include "drm_log.h"
 #include "mediakeysystem_service.h"
 #include "mediakeysystemfactory_service.h"
@@ -98,7 +99,9 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &uuid,
         DRM_ERR_LOG("MediaKeySystemFactoryService:: drmHostManager_ return hdiMediaKeySystem nullptr");
         return DRM_SERVICE_ERROR;
     }
-    mediaKeySystemService = new (std::nothrow) MediaKeySystemService(hdiMediaKeySystem);
+    StatisticsInfo statisticsInfo;
+    InitStatisticsInfo(hdiMediaKeySystem, statisticsInfo);
+    mediaKeySystemService = new (std::nothrow) MediaKeySystemService(hdiMediaKeySystem, statisticsInfo);
     if (mediaKeySystemService == nullptr) {
         DRM_ERR_LOG("MediaKeySystemFactoryService::CreateMediaKeySystem allocation failed.");
         return DRM_ALLOC_ERROR;
@@ -181,6 +184,36 @@ int32_t MediaKeySystemFactoryService::GetMediaKeySystemName(std::map<std::string
     }
     DRM_INFO_LOG("MediaKeySystemFactoryService::GetMediaKeySystemName exit");
     return ret;
+}
+
+void MediaKeySystemFactoryService::InitStatisticsInfo(sptr<IMediaKeySystem> hdiMediaKeySystem,
+    StatisticsInfo &statisticsInfo)
+{
+    std::string pluginUuid;
+    std::string pluginName;
+    std::string vendorName;
+    std::string versionName;
+    std::map<std::string, std::string> mediaKeySystemNames;
+    std::map<std::string, std::string> statistics;
+    int32_t ret = GetMediaKeySystemName(mediaKeySystemNames);
+    if (ret == DRM_OK) {
+        auto it = mediaKeySystemNames.begin();
+        pluginUuid = it->first;
+        pluginName = it->second;
+    }
+    ret = hdiMediaKeySystem->GetStatistics(statistics);
+    if (ret == DRM_OK) {
+        vendorName = statistics[vendor];
+        versionName = statistics[version];
+    }
+    std::string bundleName = GetClientBundleName(IPCSkeleton::GetCallingUid());
+    statisticsInfo = {
+        pluginUuid,
+        pluginName,
+        vendorName,
+        versionName,
+        bundleName,
+    };
 }
 } // DrmStandard
 } // OHOS

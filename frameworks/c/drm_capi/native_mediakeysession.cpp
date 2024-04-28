@@ -33,6 +33,7 @@ static Drm_ErrCode DealMediaKeyRequest(IMediaKeySessionService::MediaKeyRequest 
     DRM_MediaKeyRequest *mediaKeyRequest)
 {
     DrmTrace trace("DealMediaKeyRequest");
+    DRM_INFO_LOG("DealMediaKeyRequest enter.");
     memset_s(mediaKeyRequest, sizeof(DRM_MediaKeyRequest), 0, sizeof(DRM_MediaKeyRequest));
     mediaKeyRequest->type = (DRM_MediaKeyRequestType)(licenseRequest.requestType);
     mediaKeyRequest->dataLen = (int32_t)licenseRequest.mData.size();
@@ -51,6 +52,7 @@ static Drm_ErrCode DealMediaKeyRequest(IMediaKeySessionService::MediaKeyRequest 
         DRM_DEBUG_LOG("licenseRequest.mDefaultURL.data() is nullptr!");
         return DRM_ERR_NO_MEMORY;
     }
+    DRM_INFO_LOG("DealMediaKeyRequest exit.");
     return DRM_ERR_OK;
 }
 
@@ -86,6 +88,7 @@ Drm_ErrCode OH_MediaKeySession_ProcessMediaKeyResponse(MediaKeySession *mediaKey
     int32_t responseLen, uint8_t *offlineMediaKeyId, int32_t *offlineMediaKeyIdLen)
 {
     DrmTrace trace("OH_MediaKeySession_ProcessMediaKeyResponse");
+    DRM_INFO_LOG("OH_MediaKeySession_ProcessMediaKeyResponse enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(
         ((mediaKeySession != nullptr) && (response != nullptr) && (responseLen > 0) &&
         (offlineMediaKeyId != nullptr) && (offlineMediaKeyIdLen != nullptr)), DRM_ERR_INVALID_VAL,
@@ -105,11 +108,13 @@ Drm_ErrCode OH_MediaKeySession_ProcessMediaKeyResponse(MediaKeySession *mediaKey
         return DRM_ERR_NO_MEMORY;
     }
     *offlineMediaKeyIdLen = keyIdVec.size();
+    DRM_INFO_LOG("OH_MediaKeySession_ProcessMediaKeyResponse exit.");
     return DRM_ERR_OK;
 }
 
 static Drm_ErrCode MapToClist(std::map<std::string, std::string> licenseStatus, DRM_MediaKeyStatus *mediaKeyStatus)
 {
+    DRM_INFO_LOG("MapToClist enter.");
     memset_s(mediaKeyStatus, sizeof(DRM_MediaKeyStatus), 0, sizeof(DRM_MediaKeyStatus));
     mediaKeyStatus->statusCount = licenseStatus.size();
     auto it = licenseStatus.begin();
@@ -282,6 +287,7 @@ Drm_ErrCode OH_MediaKeySession_SetMediaKeySessionCallback(MediaKeySession *media
         "mediaKeySessoin is nullptr!");
     MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySessoin);
     sessionObject->sessionCallback_->SetCallbackReference(*callback);
+    DRM_INFO_LOG("OH_MediaKeySession_SetMediaKeySessionCallback exit.");
     return DRM_ERR_OK;
 }
 

@@ -126,6 +126,7 @@ Drm_ErrCode OH_MediaKeySystem_GetMediaKeySystems(DRM_MediaKeySystemDescription *
 Drm_ErrCode OH_MediaKeySystem_Create(const char *name, MediaKeySystem **mediaKeySystem)
 {
     DrmTrace trace("OH_MediaKeySystem_Create");
+    DRM_INFO_LOG("OH_MediaKeySystem_Create enter.");
     std::map<int32_t, Drm_ErrCode> maps = {
         {401, DRM_ERR_INVALID_VAL},
         {24700201, DRM_ERR_SERVICE_DIED},
@@ -156,6 +157,7 @@ Drm_ErrCode OH_MediaKeySystem_Create(const char *name, MediaKeySystem **mediaKey
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_UNKNOWN, "system set callback failed!");
 
     *mediaKeySystem = object;
+    DRM_INFO_LOG("OH_MediaKeySystem_Create exit.");
     return DRM_ERR_OK;
 }
 
@@ -383,6 +385,7 @@ Drm_ErrCode OH_MediaKeySystem_GenerateKeySystemRequest(MediaKeySystem *mediaKeyS
             return DRM_ERR_INVALID_VAL;
         }
     }
+    DRM_INFO_LOG("OH_MediaKeySystem_GenerateKeySystemRequest exit.");
     return DRM_ERR_OK;
 }
 
@@ -443,6 +446,7 @@ Drm_ErrCode OH_MediaKeySystem_CreateMediaKeySession(MediaKeySystem *mediaKeySyst
     MediaKeySession **mediaKeySession)
 {
     DrmTrace trace("OH_MediaKeySystem_CreateMediaKeySession");
+    DRM_INFO_LOG("OH_MediaKeySystem_CreateMediaKeySession enter.");
     std::map<int32_t, Drm_ErrCode> maps = {
         {24700201, DRM_ERR_SERVICE_DIED},
         {24700104, DRM_ERR_MAX_SESSION_NUM_REACHED},
@@ -477,12 +481,14 @@ Drm_ErrCode OH_MediaKeySystem_CreateMediaKeySession(MediaKeySystem *mediaKeySyst
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_INVALID_VAL, "session set callback failed!");
 
     *mediaKeySession = static_cast<MediaKeySession *>(sessionObject);
+    DRM_INFO_LOG("OH_MediaKeySystem_CreateMediaKeySession exit.");
     return DRM_ERR_OK;
 }
 
 static Drm_ErrCode vectorToC2DArray(std::vector<std::vector<uint8_t>> licenseIds,
     DRM_OfflineMediakeyIdArray *offlineMediaKeyIds)
 {
+    DRM_INFO_LOG("vectorToC2DArray enter.");
     if (licenseIds.size() >= MAX_OFFLINE_MEDIA_KEY_ID_COUNT) {
         DRM_ERR_LOG("licenseIds size too large!");
         return DRM_ERR_NO_MEMORY;
@@ -582,6 +588,7 @@ Drm_ErrCode OH_MediaKeySystem_ClearOfflineMediaKeys(MediaKeySystem *mediaKeySyst
 
 Drm_ErrCode OH_MediaKeySystem_Destroy(MediaKeySystem *mediaKeySystem)
 {
+    DRM_INFO_LOG("OH_MediaKeySystem_Destroy enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystem != nullptr, DRM_ERR_INVALID_VAL, "mediaKeySystem is nullptr!");
 
     struct MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
@@ -590,6 +597,8 @@ Drm_ErrCode OH_MediaKeySystem_Destroy(MediaKeySystem *mediaKeySystem)
     int32_t ret = systemObject->systemImpl_->Release();
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_INVALID_VAL, "call media key system release failed!");
     MediaKeySystemFactoryImpl::GetInstance()->keySystemNumber--;
+    DRM_DEBUG_LOG("current keySystemNumber: %{public}d.", MediaKeySystemFactoryImpl::GetInstance()->keySystemNumber);
     delete mediaKeySystem;
+    DRM_INFO_LOG("OH_MediaKeySystem_Destroy exit.");
     return DRM_ERR_OK;
 }

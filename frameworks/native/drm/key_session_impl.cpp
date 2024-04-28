@@ -63,6 +63,8 @@ MediaKeySessionImpl::~MediaKeySessionImpl()
     DRM_INFO_LOG("MediaKeySessionImpl::~MediaKeySessionImpl enter.");
     keySessionServiceProxy_ = nullptr;
     keySessionServiceCallback_ = nullptr;
+    DRM_DEBUG_LOG("MediaKeySessionImpl: 0x%{public}06" PRIXPTR "MediaKeySessionImpl Instances release",
+        FAKE_POINTER(this));
 }
 
 void MediaKeySessionImpl::MediaKeySessionServerDied(pid_t pid)
@@ -280,7 +282,7 @@ sptr<IMediaKeySessionService> MediaKeySessionImpl::GetMediaKeySessionServiceProx
     if (keySessionServiceProxy_ != nullptr) {
         DRM_DEBUG_LOG("MediaKeySessionImpl MediaKeySessionServiceProxy is not nullptr");
     }
-    DRM_INFO_LOG("MediaKeySessionImpl::GetMediaKeySessionServiceProxy enter.");
+    DRM_INFO_LOG("MediaKeySessionImpl::GetMediaKeySessionServiceProxy exit.");
     return keySessionServiceProxy_;
 }
 
