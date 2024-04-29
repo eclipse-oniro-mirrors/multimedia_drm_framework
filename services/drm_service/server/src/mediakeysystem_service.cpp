@@ -383,5 +383,10 @@ int32_t MediaKeySystemService::SendEvent(OHOS::HDI::Drm::V1_0::EventType eventTy
     DRM_INFO_LOG("MediaKeySystemService:: SendEvent failed because callback is nullptr");
     return DRM_OPERATION_NOT_ALLOWED;
 }
+
+std::string MediaKeySystemService::GetPluginName()
+{
+    return statisticsInfo_.pluginName;
+}
 } // DrmStandard
 } // OHOS
