@@ -60,6 +60,7 @@ ohos_shared_library("drm_service") {
     "hdf_core:libhdf_utils",
     "hdf_core:libhdi",
     "hicollie:libhicollie",
+    "hidumper:lib_dump_usage",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:hitrace_meter",

@@ -74,7 +74,8 @@ public:
     int32_t CloseMediaKeySessionService(sptr<MediaKeySessionService> sessionService) override;
     int32_t GetStatistics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics) override;
     int32_t SetCallback(sptr<IMeidaKeySystemServiceCallback> &callback) override;
-
+    std::string GetPluginName();
+    
     // for hdi callback
     int32_t SendEvent(OHOS::HDI::Drm::V1_0::EventType eventType, int32_t extra,
         const std::vector<uint8_t> &data) override;

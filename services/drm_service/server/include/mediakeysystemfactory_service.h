@@ -55,6 +55,7 @@ public:
     void OnDump() override;
     void OnStart() override;
     void OnStop() override;
+    int32_t Dump(int32_t fd, const std::vector<std::u16string>& args) override;
     int32_t IsMediaKeySystemSupported(std::string &uuid, bool *isSurpported) override;
     int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, bool *isSurpported) override;
     int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, int32_t securityLevel,
@@ -64,10 +65,14 @@ public:
     void DistroyForClientDied(pid_t pid) override;
     int32_t GetMediaKeySystemName(std::map<std::string, std::string> &mediaKeySystemNames) override;
     void InitStatisticsInfo(sptr<IMediaKeySystem> hdiMediaKeySystem, StatisticsInfo &statisticsInfo);
+    int32_t WriteDumpInfo(int32_t fd, std::string &dumpString);
+    int32_t DumpMetricsInfo(std::string &dumpString, std::vector<IMediaKeySystemService::MetircKeyValue> metrics);
+
 private:
     std::mutex mutex_;
     sptr<DrmHostManager> drmHostManager_;
     std::map<int32_t, std::set<sptr<MediaKeySystemService>>> mediaKeySystemForPid_;
+    std::map<std::string, int32_t> CurrentMediaKeySystemNum_;
 };
 } // DrmStandard
 } // OHOS
