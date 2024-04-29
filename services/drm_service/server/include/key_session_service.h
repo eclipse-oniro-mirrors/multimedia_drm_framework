@@ -19,6 +19,7 @@
 #include <iostream>
 #include <refbase.h>
 #include "drm_dfx_utils.h"
+#include "drm_dfx.h"
 #include "drm_log.h"
 #include "drm_host_manager.h"
 #include "key_session_service_stub.h"
@@ -73,6 +74,10 @@ private:
     wptr<IMediaKeySessionServiceOperatorsCallback> sessionOperatorsCallback_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySession> hdiMediaKeySession_;
     StatisticsInfo statisticsInfo_;
+    HiviewDFX::HiTraceId traceId_;
+    std::string generationResult_;
+    std::string mediaKeyType_;
+    uint32_t generationDuration_;
 };
 
 class IMediaKeySessionServiceOperatorsCallback : public virtual RefBase {

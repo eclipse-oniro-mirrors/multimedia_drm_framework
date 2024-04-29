@@ -21,14 +21,17 @@
 #include "iservmgr_hdi.h"
 #include "ipc_skeleton.h"
 #include "servmgr_hdi.h"
+#include "drm_dfx.h"
 #include "drm_dfx_utils.h"
 #include "drm_log.h"
 #include "drm_error_code.h"
+#include "dump_usage.h"
 #include "napi_param_utils.h"
 #include "drm_host_manager.h"
 
 namespace OHOS {
 namespace DrmStandard {
+using namespace OHOS::HiviewDFX;
 using OHOS::HDI::ServiceManager::V1_0::IServiceManager;
 std::queue<Message> DrmHostManager::messageQueue;
 std::mutex DrmHostManager::queueMutex;
@@ -83,6 +86,13 @@ void DrmHostManager::StopServiceThread()
         ReleaseHandleAndKeySystemMap(libHandle);
     }
     loadedLibs.clear();
+
+    OHOS::HiviewDFX::DumpUsage dumpUse;
+    uint32_t memoryUsage = dumpUse.GetPss(getpid());
+    auto now = std::chrono::system_clock::now();
+    auto currentTime = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
+    HISYSEVENT_BEHAVIOR("DRM_SERVICE_INFO", "MODULE", "DRM_SERVICE", "TIME", currentTime, "SERVICE_NAME",
+        "DRM_OEM_SERVICE", "ACTION", "start", "MEMORY", memoryUsage);
     DRM_INFO_LOG("DrmHostManager::StopServiceThread exit.");
 }
 
@@ -193,6 +203,12 @@ void DrmHostManager::ServiceThreadMain()
             }
         }
     }
+    OHOS::HiviewDFX::DumpUsage dumpUse;
+    uint32_t memoryUsage = dumpUse.GetPss(getpid());
+    auto now = std::chrono::system_clock::now();
+    auto currentTime = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
+    HISYSEVENT_BEHAVIOR("DRM_SERVICE_INFO", "MODULE", "DRM_SERVICE", "TIME", currentTime, "SERVICE_NAME",
+        "DRM_OEM_SERVICE", "ACTION", "start", "MEMORY", memoryUsage);
     DRM_INFO_LOG("DrmHostManager::ServiceThreadMain exit.");
 }
 
