@@ -66,6 +66,8 @@ int32_t MediaKeySessionServiceCallbackStub::HandleSendEventKeyChanged(MessagePar
     DRM_INFO_LOG("MediaKeySessionServiceCallbackStub HandleSendEventKeyChanged enter.");
     std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> statusTable;
     uint32_t mapSize = data.ReadUint32();
+    DRM_CHECK_AND_RETURN_RET_LOG(mapSize < DATA_MAX_LEN, DRM_MEMORY_ERROR,
+        "The size of event data is too large.");
     for (uint32_t index = 0; index < mapSize; index++) {
         std::vector<uint8_t> item;
         uint32_t idSize = data.ReadUint32();
