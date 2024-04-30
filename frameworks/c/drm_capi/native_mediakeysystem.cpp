@@ -106,10 +106,11 @@ Drm_ErrCode OH_MediaKeySystem_GetMediaKeySystems(DRM_MediaKeySystemDescription *
             }
         }
         if (it->second.size() != 0) {
-            ret = memcpy_s(description[times].uuid, it->second.size(), it->second.c_str(), it->second.size());
-            if (ret != 0) {
-                DRM_ERR_LOG("OH_MediaKeySystem_GetMediaKeySystems memcpy_s faild!");
-                return DRM_ERR_NO_MEMORY;
+            for (int i = 0; i < sizeof(description[times].uuid) * BASE_CONVERSION_OPERATOR;
+                i += BASE_CONVERSION_OPERATOR) {
+                std::string byteStr = it->second.substr(i, BASE_CONVERSION_OPERATOR);
+                uint8_t byte = static_cast<u_int8_t>(std::stoi(byteStr, nullptr, HEXADECIMAL));
+                description[times].uuid[i/BASE_CONVERSION_OPERATOR] = byte;
             }
         }
         times++;
