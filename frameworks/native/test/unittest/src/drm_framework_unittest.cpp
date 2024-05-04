@@ -4705,6 +4705,5 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_KillDrmServiceAbNormal, TestSize.Lev
     EXPECT_NE(errNo, DRM_ERR_OK);
     sleep(5);
 }
-
 } // DrmStandard
 } // OHOS

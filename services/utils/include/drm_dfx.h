@@ -22,6 +22,7 @@
 #include <string>
 #include <refbase.h>
 #include "nocopyable.h"
+#include "nlohmann/json.hpp"
 #include "meta/meta.h"
 #include "hisysevent.h"
 #include "hitrace/tracechain.h"
@@ -32,16 +33,7 @@ namespace OHOS {
 namespace DrmStandard {
 using namespace OHOS::HiviewDFX;
 
-#define EXPORT __attribute__ ((visibility ("default")))
 #ifdef ENABLE_DRM_SYSEVENT_CONTROL
-
-
-static std::chrono::system_clock::time_point currentTime_ = std::chrono::system_clock::now();
-static std::map<uint64_t, int32_t> idMap_;
-static std::map<int32_t, std::list<std::pair<uint64_t, std::shared_ptr<Media::Meta>>>> mediaInfoMap;
-static std::list<u_int64_t> invalidInstanceIdList_;
-static std::mutex mux_;
-
 class DrmEvent {
 public:
     static DrmEvent& GetInstance();
@@ -59,13 +51,24 @@ public:
         return HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName,
             OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR, keyValues...);
     }
+
+    void DrmStatisicsEventWrite(OHOS::HiviewDFX::HiSysEvent::EventType type,
+        const std::map<int32_t, std::list<std::pair<uint64_t, std::shared_ptr<Media::Meta>>>>& infoMap);
+    void StatisicsHiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::EventType type,
+        const std::vector<std::string>& infoArr);
+    void ParseOneEvent(const std::pair<uint64_t, std::shared_ptr<OHOS::Media::Meta>> &listPair,
+        nlohmann::json& metaInfoJson);
+    void CollectReportMediaInfo(uint64_t instanceId);
+    int32_t AppendMediaInfo(const std::shared_ptr<Media::Meta>& meta);
+    int32_t CreateMediaInfo(int32_t uid);
+    int32_t ReportMediaInfo();
+    int32_t StatisticsEventReport();
 };
 #endif
 
 #ifdef ENABLE_DRM_SYSEVENT_CONTROL
 #define HISYSEVENT_FAULT(eventName, ...) ((void)DrmEvent::HiSysWriteFault(eventName, __VA_ARGS__))
 #define HISYSEVENT_BEHAVIOR(eventName, ...) ((void)DrmEvent::HiSysWriteBehavior(eventName, __VA_ARGS__))
-
 #else
 #define HISYSEVENT_FAULT(...)
 #define HISYSEVENT_BEHAVIOR(...)

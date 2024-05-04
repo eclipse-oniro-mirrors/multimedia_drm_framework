@@ -23,12 +23,14 @@ ohos_shared_library("drm_service") {
     "./ipc",
     "./../../interfaces/inner_api/native",
     "./../../interfaces/inner_api/native/drm",
+    "./../../interfaces/kits/c/drm_capi/common",
     "./../utils",
     "./../utils/include",
     "//foundation//arkui/napi/interfaces/kits",
   ]
 
   sources = [
+    "./../utils/drm_dfx.cpp",
     "./../utils/drm_dfx_utils.cpp",
     "./../utils/drm_trace.cpp",
     "./client/src/drm_listener_proxy.cpp",
@@ -44,8 +46,6 @@ ohos_shared_library("drm_service") {
     "./server/src/mediakeysystemfactory_service.cpp",
     "./server/src/mediakeysystemfactory_service_stub.cpp",
   ]
-
-  deps = [ "../utils:drm_service_utils" ]
 
   external_deps = [
     "ability_base:want",

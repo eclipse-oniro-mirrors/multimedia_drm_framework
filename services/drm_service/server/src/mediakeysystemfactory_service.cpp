@@ -247,8 +247,8 @@ void MediaKeySystemFactoryService::InitStatisticsInfo(sptr<IMediaKeySystem> hdiM
     int32_t ret = GetMediaKeySystemName(mediaKeySystemNames);
     if (ret == DRM_OK) {
         auto it = mediaKeySystemNames.begin();
-        pluginUuid = it->first;
-        pluginName = it->second;
+        pluginName = it->first;
+        pluginUuid = it->second;
     }
     ret = hdiMediaKeySystem->GetStatistics(statistics);
     if (ret == DRM_OK) {
@@ -275,10 +275,10 @@ int32_t MediaKeySystemFactoryService::WriteDumpInfo(int32_t fd, std::string &dum
     std::map<std::string, std::string> mediaKeySystemInfo;
     drmHostManager_->GetMediaKeySystemName(mediaKeySystemInfo);
     for (auto &iter : mediaKeySystemInfo) {
-        dumpString += "-----uuid:" + iter.first + " name:" + iter.second + "\n";
+        dumpString += "-----pluginName:" + iter.first + " uuid:" + iter.second + "\n";
     }
     for (auto &iter : CurrentMediaKeySystemNum_) {
-        dumpString += "-----uuid:" + iter.first + " mediaKeySystemNum:" + std::to_string(iter.second) + "\n";
+        dumpString += "-----" + iter.first + " mediaKeySystemNum:" + std::to_string(iter.second) + "\n";
     }
     for (auto &pidIter : mediaKeySystemForPid_) {
         dumpString += "-----pid:" + std::to_string(pidIter.first) + "\n";
