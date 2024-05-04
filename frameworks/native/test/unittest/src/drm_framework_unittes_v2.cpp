@@ -16,10 +16,12 @@
 #include <string>
 #include "cstdio"
 #include "cstdlib"
+#include "drm_dfx.h"
 #include <securec.h>
 #include "native_drm_common.h"
 #include "native_drm_err.h"
 #include "gmock/gmock.h"
+#include "meta/meta.h"
 #include "native_drm_base.h"
 #include "native_drm_object.h"
 #include "native_mediakeysession.h"
@@ -104,5 +106,45 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_GetMediaKeySystemsAbnorm2, TestSize.
     EXPECT_NE(errNo, 0);
 }
 
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_HiSysWriteFault, TestSize.Level0)
+{
+    int32_t errNo = DRM_ERR_UNKNOWN;
+    errNo = DrmEvent::HiSysWriteFault("DRM_COMMON_FAILURE", "APP_NAME", "bundleName", "INSTANCE_ID",
+            "GetChainId", "ERROR_CODE", 0, "ERROR_MESG", "GenerateMediaKeyRequest failed",
+            "EXTRA_MESG", "GenerateMediaKeyRequest failed");
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_HiSysWriteBehavior, TestSize.Level0)
+{
+    int32_t errNo = DRM_ERR_UNKNOWN;
+    errNo = DrmEvent::HiSysWriteBehavior("DRM_SERVICE_INFO", "MODULE", "DRM_SERVICE", "TIME", 1, "SERVICE_NAME",
+        "DRM_OEM_SERVICE", "ACTION", "start", "MEMORY", 1);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_HiSysWriteStatistic, TestSize.Level0)
+{
+    int32_t errNo = DRM_ERR_UNKNOWN;
+    int32_t uid = 324442;
+    errNo = DrmEvent::GetInstance().CreateMediaInfo(uid);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    std::shared_ptr<OHOS::Media::Meta> meta = std::make_shared<Media::Meta>();
+    meta->SetData(Media::Tag::DRM_ERROR_MESG, "errMessage");
+    errNo = DrmEvent::GetInstance().AppendMediaInfo(meta);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = DrmEvent::GetInstance().ReportMediaInfo();
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_HiSysWriteStatisticAbNormal, TestSize.Level0)
+{
+    int32_t errNo = DRM_ERR_UNKNOWN;
+    int32_t uid = 324442;
+    DrmEvent::GetInstance().CreateMediaInfo(uid);
+    std::shared_ptr<OHOS::Media::Meta> meta = std::make_shared<Media::Meta>();
+    errNo = DrmEvent::GetInstance().AppendMediaInfo(meta);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+}
 } // DrmStandard
 } // OHOS

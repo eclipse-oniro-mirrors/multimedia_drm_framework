@@ -92,7 +92,7 @@ void DrmHostManager::StopServiceThread()
     auto now = std::chrono::system_clock::now();
     auto currentTime = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
     HISYSEVENT_BEHAVIOR("DRM_SERVICE_INFO", "MODULE", "DRM_SERVICE", "TIME", currentTime, "SERVICE_NAME",
-        "DRM_OEM_SERVICE", "ACTION", "start", "MEMORY", memoryUsage);
+        "DRM_OEM_SERVICE", "ACTION", "end", "MEMORY", memoryUsage);
     DRM_INFO_LOG("DrmHostManager::StopServiceThread exit.");
 }
 

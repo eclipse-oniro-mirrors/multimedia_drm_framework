@@ -20,6 +20,7 @@
 #include "drm_dfx.h"
 #include "drm_trace.h"
 #include "drm_dfx_utils.h"
+#include "drm_error_code.h"
 #include "hitrace/tracechain.h"
 #include "ipc_skeleton.h"
 #include "media_decrypt_module_service.h"
@@ -32,6 +33,8 @@ MediaDecryptModuleService::MediaDecryptModuleService(
 {
     DRM_DEBUG_LOG("MediaDecryptModuleService::MediaDecryptModuleService");
     hdiMediaDecryptModule_ = hdiMediaDecryptModule;
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    DrmEvent::GetInstance().CreateMediaInfo(uid);
 }
 
 MediaDecryptModuleService::~MediaDecryptModuleService()
@@ -41,6 +44,19 @@ MediaDecryptModuleService::~MediaDecryptModuleService()
     if (hdiMediaDecryptModule_ != nullptr) {
         Release();
     }
+    std::shared_ptr<Media::Meta> meta = std::make_shared<Media::Meta>();
+    meta->SetData(Media::Tag::DRM_APP_NAME, GetClientBundleName(IPCSkeleton::GetCallingUid()));
+    meta->SetData(Media::Tag::DRM_INSTANCE_ID, std::to_string(HiTraceChain::GetId().GetChainId()));
+    meta->SetData(Media::Tag::DRM_ERROR_CODE, errCode_);
+    meta->SetData(Media::Tag::DRM_ERROR_MESG, errMessage_);
+    meta->SetData(Media::Tag::DRM_DECRYPT_TIMES, decryptStatustics_.decryptTimes);
+    meta->SetData(Media::Tag::DRM_DECRYPT_AVG_SIZE, decryptStatustics_.decryptSumSize/decryptStatustics_.decryptTimes);
+    meta->SetData(Media::Tag::DRM_DECRYPT_AVG_DURATION,
+        decryptStatustics_.decryptSumDuration/decryptStatustics_.decryptTimes);
+    meta->SetData(Media::Tag::DRM_DECRYPT_MAX_SIZE, decryptStatustics_.decryptMaxSize);
+    meta->SetData(Media::Tag::DRM_DECRYPT_MAX_DURATION, decryptStatustics_.decryptMaxDuration);
+    DrmEvent::GetInstance().AppendMediaInfo(meta);
+    DrmEvent::GetInstance().ReportMediaInfo();
     DRM_INFO_LOG("MediaDecryptModuleService::~MediaDecryptModuleService exit.");
 }
 
@@ -65,7 +81,60 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
     DRM_INFO_LOG("MediaDecryptModuleService::DecryptMediaData enter.");
     int32_t ret = DRM_OK;
     uint32_t bufLen = 0;
+    auto timeBefore = std::chrono::system_clock::now();
     OHOS::HDI::Drm::V1_0::CryptoInfo cryptInfoTmp;
+    SetCryptInfo(cryptInfoTmp, cryptInfo, bufLen);
+    decryptStatustics_.decryptTimes++;
+    decryptStatustics_.decryptSumSize += bufLen;
+    if (decryptStatustics_.decryptMaxSize < bufLen) {
+        decryptStatustics_.decryptMaxSize = bufLen;
+    }
+    OHOS::HDI::Drm::V1_0::DrmBuffer drmSrcBuffer;
+    OHOS::HDI::Drm::V1_0::DrmBuffer drmDstBuffer;
+    memset_s(&drmSrcBuffer, sizeof(drmSrcBuffer), 0, sizeof(drmSrcBuffer));
+    memset_s(&drmDstBuffer, sizeof(drmSrcBuffer), 0, sizeof(drmDstBuffer));
+    SetDrmBufferInfo(&drmSrcBuffer, &drmDstBuffer, srcBuffer, dstBuffer, bufLen);
+    ret = hdiMediaDecryptModule_->DecryptMediaData(secureDecodrtState, cryptInfoTmp, drmSrcBuffer, drmDstBuffer);
+    auto timeAfter = std::chrono::system_clock::now();
+    uint32_t durationAsInt = CalculateTimeDiff(timeBefore, timeAfter);
+    errCode_ = ret;
+    decryptStatustics_.decryptSumDuration += durationAsInt;
+    if (decryptStatustics_.decryptMaxDuration < durationAsInt) {
+        decryptStatustics_.decryptMaxDuration = durationAsInt;
+    }
+    if (ret != DRM_OK) {
+        (void)::close(srcBuffer.fd);
+        (void)::close(dstBuffer.fd);
+        DRM_ERR_LOG("MediaDecryptModuleService::DecryptMediaData failed.");
+        std::string decryptKeyId;
+        decryptKeyId.assign(cryptInfoTmp.keyId.begin(), cryptInfoTmp.keyId.end());
+        std::string decryptKeyIv;
+        decryptKeyIv.assign(cryptInfoTmp.iv.begin(), cryptInfoTmp.iv.end());
+        HISYSEVENT_FAULT("DRM_DECRYPTION_FAILURE", "APP_NAME", GetClientBundleName(IPCSkeleton::GetCallingUid()),
+            "INSTANCE_ID", std::to_string(HiTraceChain::GetId().GetChainId()), "ERROR_CODE", ret,
+            "ERROR_MESG", "decrypt failed", "DECRYPT_ALGO", std::to_string(static_cast<int32_t>(cryptInfoTmp.type)),
+            "DECRYPT_KEYID", decryptKeyId, "DECRYPT_IV", decryptKeyIv);
+        errMessage_ = "DecryptMediaData error";
+        return ret;
+    }
+    (void)::close(srcBuffer.fd);
+    (void)::close(dstBuffer.fd);
+    errMessage_ = "no error";
+    DRM_INFO_LOG("MediaDecryptModuleService::DecryptMediaData exit.");
+    return ret;
+}
+
+uint32_t MediaDecryptModuleService::CalculateTimeDiff(std::chrono::system_clock::time_point timeBefore,
+    std::chrono::system_clock::time_point timeAfter)
+{
+    auto duration = timeAfter - timeBefore;
+    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+    return static_cast<uint32_t>(milliseconds.count());
+}
+
+void MediaDecryptModuleService::SetCryptInfo(OHOS::HDI::Drm::V1_0::CryptoInfo &cryptInfoTmp,
+    IMediaDecryptModuleService::CryptInfo &cryptInfo, uint32_t &bufLen)
+{
     cryptInfoTmp.type = (OHOS::HDI::Drm::V1_0::CryptoAlgorithmType)cryptInfo.type;
     cryptInfoTmp.keyId.assign(cryptInfo.keyId.begin(), cryptInfo.keyId.end());
     cryptInfoTmp.iv.assign(cryptInfo.iv.begin(), cryptInfo.iv.end());
@@ -78,31 +147,6 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
         cryptInfoTmp.subSamples[i].payLoadLen = cryptInfo.subSample[i].payLoadLen;
         bufLen += cryptInfoTmp.subSamples[i].payLoadLen;
     }
-
-    OHOS::HDI::Drm::V1_0::DrmBuffer drmSrcBuffer;
-    OHOS::HDI::Drm::V1_0::DrmBuffer drmDstBuffer;
-    memset_s(&drmSrcBuffer, sizeof(drmSrcBuffer), 0, sizeof(drmSrcBuffer));
-    memset_s(&drmDstBuffer, sizeof(drmSrcBuffer), 0, sizeof(drmDstBuffer));
-    SetDrmBufferInfo(&drmSrcBuffer, &drmDstBuffer, srcBuffer, dstBuffer, bufLen);
-    ret = hdiMediaDecryptModule_->DecryptMediaData(secureDecodrtState, cryptInfoTmp, drmSrcBuffer, drmDstBuffer);
-    if (ret != DRM_OK) {
-        (void)::close(srcBuffer.fd);
-        (void)::close(dstBuffer.fd);
-        DRM_ERR_LOG("MediaDecryptModuleService::DecryptMediaData failed.");
-        std::string decryptKeyId;
-        decryptKeyId.assign(cryptInfoTmp.keyId.begin(), cryptInfoTmp.keyId.end());
-        std::string decryptKeyIv;
-        decryptKeyIv.assign(cryptInfoTmp.iv.begin(), cryptInfoTmp.iv.end());
-        HISYSEVENT_FAULT("DRM_DECRYPTION_FAILURE", "APP_NAME", GetClientBundleName(IPCSkeleton::GetCallingUid()),
-            "INSTANCE_ID", std::to_string(HiTraceChain::GetId().GetChainId()), "ERROR_CODE", DRM_SERVICE_ERROR,
-            "ERROR_MESG", "decrypt failed", "DECRYPT_ALGO", std::to_string(static_cast<int32_t>(cryptInfoTmp.type)),
-            "DECRYPT_KEYID", decryptKeyId, "DECRYPT_IV", decryptKeyIv);
-        return ret;
-    }
-    (void)::close(srcBuffer.fd);
-    (void)::close(dstBuffer.fd);
-    DRM_INFO_LOG("MediaDecryptModuleService::DecryptMediaData exit.");
-    return ret;
 }
 
 void MediaDecryptModuleService::SetDrmBufferInfo(OHOS::HDI::Drm::V1_0::DrmBuffer* drmSrcBuffer,
