@@ -74,7 +74,6 @@ private:
     wptr<IMediaKeySessionServiceOperatorsCallback> sessionOperatorsCallback_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySession> hdiMediaKeySession_;
     StatisticsInfo statisticsInfo_;
-    HiviewDFX::HiTraceId traceId_;
     std::string generationResult_;
     std::string mediaKeyType_;
     uint32_t generationDuration_;
