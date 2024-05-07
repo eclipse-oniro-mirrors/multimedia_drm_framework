@@ -20,17 +20,24 @@
 
 namespace OHOS {
 namespace DrmStandard {
+using namespace OHOS::HiviewDFX;
 sptr<MediaKeySystemFactoryImpl> MediaKeySystemFactoryImpl::mediaKeySystemFactoryImpl_;
 MediaKeySystemFactoryImpl::MediaKeySystemFactoryImpl()
 {
     DRM_DEBUG_LOG("MediaKeySystemFactoryImpl:0x%{public}06" PRIXPTR "MediaKeySystemFactoryImpl Instances create",
         FAKE_POINTER(this));
+    #ifdef ENABLE_DRM_SYSEVENT_CONTROL
+    traceId_ = HiTraceChain::Begin("MediaKeySystemFactory", HITRACE_FLAG_DEFAULT);
+    #endif
     Init();
 }
 
 MediaKeySystemFactoryImpl::~MediaKeySystemFactoryImpl()
 {
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::~MediaKeySystemFactoryImpl enter.");
+    #ifdef ENABLE_DRM_SYSEVENT_CONTROL
+    HiTraceChain::End(traceId_);
+    #endif
     serviceProxy_ = nullptr;
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::~MediaKeySystemFactoryImpl exit.");
     deathRecipient_ = nullptr;
@@ -94,7 +101,9 @@ void MediaKeySystemFactoryImpl::Init()
     if (!result) {
         DRM_ERR_LOG("failed to add deathRecipient");
     }
-
+    #ifdef ENABLE_DRM_SYSEVENT_CONTROL
+    HiTraceChain::SetId(traceId_);
+    #endif
     CreateListenerObject();
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::Init exit.");
 }

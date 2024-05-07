@@ -58,6 +58,7 @@ ohos_shared_library("drm_framework") {
     "-fPIC",
     "-Wall",
   ]
+  cflags += [ "-DENABLE_DRM_SYSEVENT_CONTROL" ]
 
   if (target_cpu == "arm") {
     cflags += [ "-DBINDER_IPC_32BIT" ]
@@ -89,6 +90,7 @@ ohos_shared_library("drm_framework") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:hitrace_meter",
+    "hitrace:libhitracechain",
     "ipc:ipc_core",
     "napi:ace_napi",
     "safwk:system_ability_fwk",

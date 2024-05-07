@@ -50,9 +50,15 @@ MediaDecryptModuleService::~MediaDecryptModuleService()
     meta->SetData(Media::Tag::DRM_ERROR_CODE, errCode_);
     meta->SetData(Media::Tag::DRM_ERROR_MESG, errMessage_);
     meta->SetData(Media::Tag::DRM_DECRYPT_TIMES, decryptStatustics_.decryptTimes);
-    meta->SetData(Media::Tag::DRM_DECRYPT_AVG_SIZE, decryptStatustics_.decryptSumSize/decryptStatustics_.decryptTimes);
-    meta->SetData(Media::Tag::DRM_DECRYPT_AVG_DURATION,
-        decryptStatustics_.decryptSumDuration/decryptStatustics_.decryptTimes);
+    if (decryptStatustics_.decryptTimes != 0) {
+        meta->SetData(Media::Tag::DRM_DECRYPT_AVG_SIZE,
+            decryptStatustics_.decryptSumSize/decryptStatustics_.decryptTimes);
+        meta->SetData(Media::Tag::DRM_DECRYPT_AVG_DURATION,
+            decryptStatustics_.decryptSumDuration/decryptStatustics_.decryptTimes);
+    } else {
+        meta->SetData(Media::Tag::DRM_DECRYPT_AVG_SIZE, 0);
+        meta->SetData(Media::Tag::DRM_DECRYPT_AVG_DURATION, 0);
+    }
     meta->SetData(Media::Tag::DRM_DECRYPT_MAX_SIZE, decryptStatustics_.decryptMaxSize);
     meta->SetData(Media::Tag::DRM_DECRYPT_MAX_DURATION, decryptStatustics_.decryptMaxDuration);
     DrmEvent::GetInstance().AppendMediaInfo(meta);

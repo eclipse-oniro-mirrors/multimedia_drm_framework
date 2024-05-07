@@ -33,15 +33,12 @@
 namespace OHOS {
 namespace DrmStandard {
 using namespace OHOS::HiviewDFX;
-HiviewDFX::HiTraceId traceId;
 
 REGISTER_SYSTEM_ABILITY_BY_ID(MediaKeySystemFactoryService, MEDIA_KEY_SYSTEM_SERVICE_ID, true)
 
 MediaKeySystemFactoryService::MediaKeySystemFactoryService(int32_t systemAbilityId, bool runOnCreate)
     : SystemAbility(systemAbilityId, runOnCreate), drmHostManager_(nullptr)
 {
-    traceId = HiTraceChain::Begin("hiPlayerImpl", HITRACE_FLAG_DEFAULT);
-    HiTraceChain::SetId(traceId);
 }
 
 MediaKeySystemFactoryService::~MediaKeySystemFactoryService()
@@ -136,7 +133,7 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &uuid,
         DRM_ERR_LOG("MediaKeySystemFactoryService:: drmHostManager_ return hdiMediaKeySystem nullptr");
         HISYSEVENT_FAULT("DRM_COMMON_FAILURE", "APP_NAME", GetClientBundleName(IPCSkeleton::GetCallingUid()),
             "INSTANCE_ID", std::to_string(HiTraceChain::GetId().GetChainId()), "ERROR_CODE", DRM_SERVICE_ERROR,
-            "ERROR_MESG", "CreateMediaKeySystem failed", "EXTRA_MESG", "CreateMediaKeySystem failed");
+            "ERROR_MESG", "CreateMediaKeySystem failed", "EXTRA_MESG", "");
         return DRM_SERVICE_ERROR;
     }
     StatisticsInfo statisticsInfo;
@@ -288,6 +285,7 @@ int32_t MediaKeySystemFactoryService::WriteDumpInfo(int32_t fd, std::string &dum
             iter->GetStatistics(metrics);
             DumpMetricsInfo(dumpString, metrics);
             dumpString += "\n";
+            metrics.clear();
         }
     }
     if (fd != -1) {
@@ -304,7 +302,7 @@ int32_t MediaKeySystemFactoryService::DumpMetricsInfo(std::string &dumpString,
     std::vector<IMediaKeySystemService::MetircKeyValue> metrics)
 {
     for (auto &iter : metrics) {
-        if (iter.name == currentSessionNum || iter.name == decryptNumber || iter.name == errorDecryptNumber) {
+        if (iter.name == currentSessionNum || iter.name == decryptTimes || iter.name == errorDecryptNumber) {
             dumpString += iter.name + ":" + iter.value + " ";
         }
     }
