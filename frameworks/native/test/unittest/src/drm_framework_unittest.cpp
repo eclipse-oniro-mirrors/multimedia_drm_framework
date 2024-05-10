@@ -123,6 +123,13 @@
 using namespace testing::ext;
 using namespace std;
 
+namespace {
+const int32_t STEP_ONE = 1;
+const int32_t STEP_TWO = 2;
+const int32_t STEP_THREE = 3;
+const int32_t STEP_FOUR = 4;
+}
+
 namespace OHOS {
 namespace DrmStandard {
 
@@ -179,6 +186,59 @@ Drm_ErrCode TestSessoinEventCallBack(DRM_EventType eventType, unsigned char *inf
 Drm_ErrCode TestSessoinKeyChangeCallBack(DRM_KeysInfo *keysInfo, bool hasNewGoodKeys)
 {
     DRM_SAMPLE_INFO_LOG("TestSessoinKeyChangeCallBack ok");
+    return DRM_ERR_OK;
+}
+
+Drm_ErrCode TestSystemEventCallBackWithObj(MediaKeySystem *mediaKeySystem, DRM_EventType eventType,
+    uint8_t *info, int32_t infoLen, char *extra)
+{
+    DRM_SAMPLE_INFO_LOG("TestSystemEventCallBackWithObj ok");
+    DRM_SAMPLE_INFO_LOG("Event: the mediaKeySystem object is: %x", FAKE_POINTER(mediaKeySystem));
+    DRM_SAMPLE_INFO_LOG("Event: event type: %d", eventType);
+    DRM_SAMPLE_INFO_LOG("Event: the info body is: ");
+    if (info != nullptr) {
+        for (int32_t i = 0; i < infoLen; i++) {
+            DRM_SAMPLE_INFO_LOG("%x", info[i]);
+        }
+    }
+    if (extra != nullptr) {
+        DRM_SAMPLE_INFO_LOG("Event: the extra is: %s", extra);
+    }
+    return DRM_ERR_OK;
+}
+
+Drm_ErrCode TestSessoinEventCallBackWithObj(MediaKeySession *mediaKeySessoin, DRM_EventType eventType,
+    uint8_t *info, int32_t infoLen, char *extra)
+{
+    DRM_SAMPLE_INFO_LOG("TestSessoinEventCallBackWithObj ok");
+    DRM_SAMPLE_INFO_LOG("Event: the mediaKeySession object is: %x", FAKE_POINTER(mediaKeySessoin));
+    DRM_SAMPLE_INFO_LOG("Event: the event type: %d", eventType);
+    DRM_SAMPLE_INFO_LOG("Event: the info body is: ");
+    if (info != nullptr) {
+        for (int32_t i = 0; i < infoLen; i++) {
+            DRM_SAMPLE_INFO_LOG("%x", info[i]);
+        }
+    }
+    if (extra != nullptr) {
+        DRM_SAMPLE_INFO_LOG("Event: the extra is: %s", extra);
+    }
+    return DRM_ERR_OK;
+}
+
+Drm_ErrCode TestSessoinKeyChangeCallBackWithObj(MediaKeySession *mediaKeySessoin, DRM_KeysInfo *keysInfo,
+    bool hasNewGoodKeys)
+{
+    DRM_SAMPLE_INFO_LOG("TestSessoinKeyChangeCallBackWithObj ok");
+    DRM_SAMPLE_INFO_LOG("KeyChangedEvent: the mediaKeySession object is: %x", FAKE_POINTER(mediaKeySessoin));
+    for (uint32_t i = 0; i < keysInfo->keysInfoCount; i++) {
+        for (uint32_t j = 0; j < MAX_KEY_ID_LEN; j += STEP_FOUR) {
+            DRM_SAMPLE_INFO_LOG("KeyChangedEvent: keyid is: ");
+            DRM_SAMPLE_INFO_LOG("%x %x %x %x",
+                keysInfo->keyId[i][j], keysInfo->keyId[i][j + STEP_ONE],
+                keysInfo->keyId[i][j + STEP_TWO], keysInfo->keyId[i][j + STEP_THREE]);
+        }
+        DRM_SAMPLE_INFO_LOG("KeyChangedEvent: statusValue %s", keysInfo->statusValue[i]);
+    }
     return DRM_ERR_OK;
 }
 
@@ -4542,6 +4602,61 @@ static void killclearplay2(MediaKeySystem *mediaKeySystem, MediaKeySession *medi
     DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_UNKNOWN;
     errNo = OH_MediaKeySystem_GetMaxContentProtectionLevel(mediaKeySystem, &contentProtectionLevel);
     EXPECT_NE(errNo, DRM_ERR_OK);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_SetCallbackWithObject_084, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    MediaKeySession *mediaKeySession = nullptr;
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    errNo = OH_MediaKeySystem_SetMediaKeySystemCallback(mediaKeySystem, &TestSystemEventCallBack);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_SetCallback(mediaKeySystem, &TestSystemEventCallBackWithObj);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char request[8192] = { 0 }; // 8192:request len
+    int32_t requestLen = 8192; // 8192:request len
+    char defaultUrl[2048] = { 0 }; // 2048:url len
+    int32_t defaultUrlLen = 2048; // 2048:url len
+    errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
+        defaultUrlLen);
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        KeySystemResponseLen = 50;
+    }
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    MediaKeySession_Callback callback = { &TestSessoinEventCallBack, &TestSessoinKeyChangeCallBack };
+    errNo = OH_MediaKeySession_SetMediaKeySessionCallback(mediaKeySession, &callback);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    OH_MediaKeySession_Callback sessionCallback = { &TestSessoinEventCallBackWithObj,
+        &TestSessoinKeyChangeCallBackWithObj };
+    errNo = OH_MediaKeySession_SetCallback(mediaKeySession, &sessionCallback);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    DRM_MediaKeyRequest mediaKeyRequest;
+    DRM_MediaKeyRequestInfo info;
+    filldata(&info);
+    errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char onlineMediaKeyId[64] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[2] = {0x07, 0x22};
+    int32_t onlineMediaKeyIdLen = 64; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)(sizeof(testKeySessionResponse)), onlineMediaKeyId, &onlineMediaKeyIdLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
 }
 
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_KillClearPlayHostAbNormal1, TestSize.Level0)
