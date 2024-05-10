@@ -30,7 +30,6 @@
 #include "iservice_registry.h"
 #include "mediakeysystem_service.h"
 #include "mediakeysystemfactory_service.h"
-#include "dump_usage.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -64,15 +63,10 @@ void MediaKeySystemFactoryService::OnStart()
     if (res) {
         DRM_INFO_LOG("MediaKeySystemFactoryService OnStart res=%{public}d", res);
     }
-    OHOS::HiviewDFX::DumpUsage dumpUse;
     int pid = getpid();
     /* 3012 is the saId of drm_service */
     Memory::MemMgrClient::GetInstance().NotifyProcessStatus(pid, 1, 1, 3012);
-    uint32_t memoryUsage = dumpUse.GetPss(pid);
-    auto now = std::chrono::system_clock::now();
-    auto currentTime = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
-    HISYSEVENT_BEHAVIOR("DRM_SERVICE_INFO", "MODULE", "DRM_SERVICE", "TIME", currentTime, "SERVICE_NAME", "DRM_SERVICE",
-        "ACTION", "start", "MEMORY", memoryUsage);
+    ReportServiceBehaviorEvent("DRM_SERVICE", "start");
 }
 
 void MediaKeySystemFactoryService::OnDump()
@@ -94,11 +88,7 @@ void MediaKeySystemFactoryService::OnStop()
     int pid = getpid();
     /* 3012 is the saId of drm_service */
     Memory::MemMgrClient::GetInstance().NotifyProcessStatus(pid, 1, 0, 3012);
-    uint32_t memoryUsage = dumpUse.GetPss(pid);
-    auto now = std::chrono::system_clock::now();
-    auto currentTime = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
-    HISYSEVENT_BEHAVIOR("DRM_SERVICE_INFO", "MODULE", "DRM_SERVICE", "TIME", currentTime,
-        "SERVICE_NAME", "DRM_SERVICE", "ACTION", "end", "MEMORY", memoryUsage);
+    ReportServiceBehaviorEvent("DRM_SERVICE", "end");
 }
 
 int32_t MediaKeySystemFactoryService::Dump(int32_t fd, const std::vector<std::u16string>& args)
@@ -139,9 +129,7 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
     int32_t ret = drmHostManager_->CreateMediaKeySystem(name, hdiMediaKeySystem);
     if (hdiMediaKeySystem == nullptr || ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemFactoryService:: drmHostManager_ return hdiMediaKeySystem nullptr");
-        HISYSEVENT_FAULT("DRM_COMMON_FAILURE", "APP_NAME", GetClientBundleName(IPCSkeleton::GetCallingUid()),
-            "INSTANCE_ID", std::to_string(HiTraceChain::GetId().GetChainId()), "ERROR_CODE", DRM_SERVICE_ERROR,
-            "ERROR_MESG", "CreateMediaKeySystem failed", "EXTRA_MESG", "");
+        ReportFaultEvent(DRM_SERVICE_ERROR, "CreateMediaKeySystem failed", "");
         return DRM_SERVICE_ERROR;
     }
     StatisticsInfo statisticsInfo;
@@ -149,6 +137,7 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
     mediaKeySystemService = new (std::nothrow) MediaKeySystemService(hdiMediaKeySystem, statisticsInfo);
     if (mediaKeySystemService == nullptr) {
         DRM_ERR_LOG("MediaKeySystemFactoryService::CreateMediaKeySystem allocation failed.");
+        ReportFaultEvent(DRM_ALLOC_ERROR, "CreateMediaKeySystem failed", "");
         return DRM_ALLOC_ERROR;
     }
     mediaKeySystemService->SetMediaKeySystemServiceOperatorsCallback(this);
