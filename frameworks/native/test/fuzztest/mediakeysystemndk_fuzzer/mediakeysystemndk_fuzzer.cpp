@@ -59,6 +59,24 @@ Drm_ErrCode TestSystemEventCallBack(DRM_EventType eventType, unsigned char *info
     return DRM_ERR_OK;
 }
 
+Drm_ErrCode TestSystemEventCallBackWithObj(MediaKeySystem *mediaKeySystem, DRM_EventType eventType,
+    uint8_t *info, int32_t infoLen, char *extra)
+{
+    DRM_INFO_LOG("TestSystemEventCallBackWithObj ok");
+    DRM_INFO_LOG("Event: the mediaKeySystem object is: %x", FAKE_POINTER(mediaKeySystem));
+    DRM_INFO_LOG("Event: event type: %d", eventType);
+    DRM_INFO_LOG("Event: the info body is: ");
+    if (info != nullptr) {
+        for (int32_t i = 0; i < infoLen; i++) {
+            DRM_INFO_LOG("%x", info[i]);
+        }
+    }
+    if (extra != nullptr) {
+        DRM_INFO_LOG("Event: the extra is: %s", extra);
+    }
+    return DRM_ERR_OK;
+}
+
 MediaKeySystemNdkFuzzer::MediaKeySystemNdkFuzzer() {}
 
 MediaKeySystemNdkFuzzer::~MediaKeySystemNdkFuzzer() {}
@@ -255,6 +273,10 @@ bool MediaKeySystemNdkFuzzer::FuzzTestMediaKeySystemCertificateOperationNdk(uint
 
     OH_MediaKeySystem_SetMediaKeySystemCallback(tmpSystem, &TestSystemEventCallBack);
     OH_MediaKeySystem_SetMediaKeySystemCallback(mediaKeySystem, &TestSystemEventCallBack);
+
+    OH_MediaKeySystem_SetCallback(tmpSystem, &TestSystemEventCallBackWithObj);
+    OH_MediaKeySystem_SetCallback(mediaKeySystem, &TestSystemEventCallBackWithObj);
+
     MediaKeySession *session = nullptr;
     OH_MediaKeySystem_CreateMediaKeySession(tmpSystem, contentProtectionLevel, &session);
 
