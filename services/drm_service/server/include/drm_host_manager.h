@@ -122,7 +122,7 @@ private:
     std::map<std::string, sptr<IMediaKeySystemFactory>> drmHostServieProxyMap;
     std::shared_mutex lazyLoadPluginInfoMapMtx;
     std::map<std::string, std::string> lazyLoadPluginInfoMap;
-    std::map<std::string, int32_t> pluginCountMap;    
+    std::map<std::string, int32_t> pluginCountMap; 
 };
 } // DrmStandard
 } // OHOS
