@@ -52,7 +52,7 @@ struct MediaKeySessionObject : public MediaKeySession {
 
 class MediaKeySystemCallbackCapi : public MediaKeySystemImplCallback {
 public:
-    MediaKeySystemCallbackCapi()
+    MediaKeySystemCallbackCapi() : system_(nullptr), callback_(nullptr), systemCallback_(nullptr)
     {
         DRM_INFO_LOG("MediaKeySystemCallbackCapi.");
         InitEventMap();
@@ -76,18 +76,30 @@ public:
         callback_ = callback;
     }
 
+    void SetCallbackReference(MediaKeySystem *system, OH_MediaKeySystem_Callback systemCallback)
+    {
+        DRM_INFO_LOG("MediaKeySystemCallbackCapi SetCallbackReference.");
+        std::lock_guard<std::mutex> lock(mutex_);
+        system_ = system;
+        systemCallback_ = systemCallback;
+    }
+
     void ClearCallbackReference()
     {
         DRM_INFO_LOG("MediaKeySystemCallbackCapi ClearCallbackReference.");
         std::lock_guard<std::mutex> lock(mutex_);
+        system_ = nullptr;
         callback_ = nullptr;
+        systemCallback_ = nullptr;
     }
 
     void SendEvent(const std::string &event, int32_t extra, const std::vector<uint8_t> &data) override
     {
         DRM_INFO_LOG("MediaKeySystemCallbackCapi SendEvent.");
         std::lock_guard<std::mutex> lock(mutex_);
-        DRM_CHECK_AND_RETURN_LOG(callback_ != nullptr, "hasn't register the callback of this event");
+        DRM_CHECK_AND_RETURN_LOG((callback_ != nullptr) || (systemCallback_ != nullptr),
+            "hasn't register any callback of %{public}s event", event.c_str());
+
         if (eventMap_.find(event) == eventMap_.end()) {
             DRM_ERR_LOG("MediaKeySystemCallbackCapi SendEvent failed, not find this event type.");
             return;
@@ -101,7 +113,13 @@ public:
             DRM_CHECK_AND_RETURN_LOG(ret == EOK, "memcpy_s faild!");
         }
 
-        callback_(eventMap_[event], dataInfo, data.size(), std::to_string(extra).data());
+        if (callback_ != nullptr) {
+            callback_(eventMap_[event], dataInfo, data.size(), std::to_string(extra).data());
+        }
+        if (systemCallback_ != nullptr) {
+            systemCallback_(system_, eventMap_[event], dataInfo, data.size(), std::to_string(extra).data());
+        }
+
         if (dataInfo != nullptr) {
             free(dataInfo);
             dataInfo = nullptr;
@@ -109,14 +127,16 @@ public:
     }
 
 private:
+    MediaKeySystem *system_ = nullptr;
     MediaKeySystem_Callback callback_ = nullptr;
+    OH_MediaKeySystem_Callback systemCallback_ = nullptr;
     std::mutex mutex_;
     std::unordered_map<std::string, DRM_EventType> eventMap_;
 };
 
 class MediaKeySessionCallbackCapi : public MediaKeySessionImplCallback {
 public:
-    MediaKeySessionCallbackCapi()
+    MediaKeySessionCallbackCapi() : session_(nullptr), callback_({}), sessionCallback_({})
     {
         DRM_INFO_LOG("MediaKeySessionCallbackCapi.");
         InitEventMap();
@@ -146,18 +166,29 @@ public:
         callback_ = callback;
     }
 
+    void SetCallbackReference(MediaKeySession *session, OH_MediaKeySession_Callback sessionCallback)
+    {
+        DRM_INFO_LOG("MediaKeySessionCallbackCapi SetCallbackReference.");
+        std::lock_guard<std::mutex> lock(mutex_);
+        session_ = session;
+        sessionCallback_ = sessionCallback;
+    }
+
     void ClearCallbackReference()
     {
         DRM_INFO_LOG("MediaKeySessionCallbackCapi ClearCallbackReference.");
         std::lock_guard<std::mutex> lock(mutex_);
+        session_ = nullptr;
         callback_ = {};
+        sessionCallback_ = {};
     }
 
     void SendEvent(const std::string &event, int32_t extra, const std::vector<uint8_t> &data) override
     {
         DRM_INFO_LOG("MediaKeySessionCallbackCapi SendEvent.");
         std::lock_guard<std::mutex> lock(mutex_);
-        DRM_CHECK_AND_RETURN_LOG(callback_.eventCallback != nullptr, "hasn't register the callback of this event");
+        DRM_CHECK_AND_RETURN_LOG((callback_.eventCallback != nullptr) || (sessionCallback_.eventCallback != nullptr),
+            "hasn't register any callback of %{public}s event", event.c_str());
         if (eventMap_.find(event) == eventMap_.end()) {
             DRM_ERR_LOG("MediaKeySystemCallbackCapi SendEvent failed, not find this event type.");
             return;
@@ -171,7 +202,14 @@ public:
             DRM_CHECK_AND_RETURN_LOG(ret == EOK, "memcpy_s faild!");
         }
 
-        callback_.eventCallback(eventMap_[event], dataInfo, data.size(), std::to_string(extra).data());
+        if (callback_.eventCallback != nullptr) {
+            callback_.eventCallback(eventMap_[event], dataInfo, data.size(), std::to_string(extra).data());
+        }
+        if (sessionCallback_.eventCallback != nullptr) {
+            sessionCallback_.eventCallback(
+                session_, eventMap_[event], dataInfo, data.size(), std::to_string(extra).data());
+        }
+
         if (dataInfo != nullptr) {
             free(dataInfo);
             dataInfo = nullptr;
@@ -182,6 +220,10 @@ public:
         bool hasNewGoodLicense) override
     {
         DRM_INFO_LOG("MediaKeySessionCallbackCapi SendEventKeyChanged.");
+        std::lock_guard<std::mutex> lock(mutex_);
+        DRM_CHECK_AND_RETURN_LOG((callback_.keyChangeCallback != nullptr) ||
+            (sessionCallback_.keyChangeCallback != nullptr), "hasn't register any callback of KeyChanged event!");
+
         static std::unordered_map<MediaKeySessionKeyStatus, std::string> KeyStatusStringMap {
             {MediaKeySessionKeyStatus::MEDIA_KEY_SESSION_KEY_STATUS_USABLE, "USABLE"},
             {MediaKeySessionKeyStatus::MEDIA_KEY_SESSION_KEY_STATUS_EXPIRED, "EXPIRED"},
@@ -216,12 +258,18 @@ public:
 
             index++;
         }
-        std::lock_guard<std::mutex> lock(mutex_);
-        DRM_CHECK_AND_RETURN_LOG(callback_.keyChangeCallback != nullptr, "keyChangeCallback is nullptr");
-        callback_.keyChangeCallback(&info, hasNewGoodLicense);
+        if (callback_.keyChangeCallback != nullptr) {
+            callback_.keyChangeCallback(&info, hasNewGoodLicense);
+        }
+        if (sessionCallback_.keyChangeCallback != nullptr) {
+            sessionCallback_.keyChangeCallback(session_, &info, hasNewGoodLicense);
+        }
     }
+
 private:
+    struct MediaKeySession *session_ = nullptr;
     struct MediaKeySession_Callback callback_ = {};
+    struct OH_MediaKeySession_Callback sessionCallback_ = {};
     std::mutex mutex_;
     std::unordered_map<std::string, DRM_EventType> eventMap_;
 };
