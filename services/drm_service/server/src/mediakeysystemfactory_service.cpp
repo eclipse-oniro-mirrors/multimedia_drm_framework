@@ -66,6 +66,7 @@ void MediaKeySystemFactoryService::OnStart()
     }
     OHOS::HiviewDFX::DumpUsage dumpUse;
     int pid = getpid();
+    /* 3012 is the saId of drm_service */
     Memory::MemMgrClient::GetInstance().NotifyProcessStatus(pid, 1, 1, 3012);
     uint32_t memoryUsage = dumpUse.GetPss(pid);
     auto now = std::chrono::system_clock::now();
@@ -91,6 +92,7 @@ void MediaKeySystemFactoryService::OnStop()
 
     OHOS::HiviewDFX::DumpUsage dumpUse;
     int pid = getpid();
+    /* 3012 is the saId of drm_service */
     Memory::MemMgrClient::GetInstance().NotifyProcessStatus(pid, 1, 0, 3012);
     uint32_t memoryUsage = dumpUse.GetPss(pid);
     auto now = std::chrono::system_clock::now();
