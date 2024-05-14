@@ -20,6 +20,7 @@
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <shared_mutex>
 #include <string>
 #include <vector>
 #include <queue>
@@ -49,12 +50,13 @@ struct Message {
         UnLoadOEMCertifaicateService
     };
     Type type;
-    std::string uuid;
+    std::string name;
     ExtraInfo extraInfo;
-    Message(Type t, std::string id, ExtraInfo info) : type(t), uuid(id), extraInfo(info) {}
+    Message(Type t, std::string pluginName, ExtraInfo info) : type(t), name(pluginName), extraInfo(info) {}
 };
 
 #define OEM_CERTIFICATE_PATH "/system/lib64/oem_certificate_service"
+#define PLUGIN_LAZYLOAD_CONFIG_PATH "/etc/drm/drm_plugin_lazyloding.cfg"
 
 typedef void (*MediaKeySystemCallBack)(std::string &, ExtraInfo);
 typedef int32_t (*QueryMediaKeySystemNameFuncType)(std::string &);
@@ -83,38 +85,44 @@ public:
     int32_t Init(void);
     void DeInit(void);
     void OnReceive(const HDI::ServiceManager::V1_0::ServiceStatus &status) override;
-    int32_t IsMediaKeySystemSupported(std::string &uuid, bool *isSurpported);
-    int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, bool *isSurpported);
-    int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, int32_t securityLevel,
+    int32_t IsMediaKeySystemSupported(std::string &name, bool *isSurpported);
+    int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, bool *isSurpported);
+    int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, int32_t securityLevel,
         bool *isSurpported);
-    int32_t CreateMediaKeySystem(std::string &uuid, sptr<IMediaKeySystem> &hdiMediaKeySystem);
-    int32_t GetMediaKeySystemName(std::map<std::string, std::string> &mediaKeySystemNames);
+    int32_t CreateMediaKeySystem(std::string &name, sptr<IMediaKeySystem> &hdiMediaKeySystem);
+    int32_t GetMediaKeySystems(std::map<std::string, std::string> &mediaKeySystemDescription);
+    int32_t GetMediaKeySystemUuid(std::string &name, std::string &uuid);
+    void ReleaseMediaKeySystem(std::string &name);
 private:
-    static void UnLoadOEMCertifaicateService(std::string &uuid, ExtraInfo info);
+    static void UnLoadOEMCertifaicateService(std::string &name, ExtraInfo info);
     void StopServiceThread();
     void ProcessMessage();
     void ServiceThreadMain();
     void GetOemLibraryPath(std::vector<std::string> &libsToLoad);
     void OemCertificateManager();
-    int32_t GetSevices(std::string &uuid, bool *isSurpported);
+    int32_t GetSevices(std::string &name, bool *isSurpported);
     void ReleaseHandleAndKeySystemMap(void *handle);
-    std::mutex mutex_;
+    void loadPluginInfo(const std::string& filePath);
+    void ReleaseSevices(std::string &name);
     StatusCallback *statusCallback_;
     std::string service_name_ = "drm_interface_service";
-    std::map<std::string, sptr<IMediaKeySystemFactory>> drmHostServieProxyMap;
     sptr<DrmHostDeathRecipient> drmHostDeathRecipient_ = nullptr;
     sptr<IMediaKeySystem> hdiMediaKeySystem;
-    static std::recursive_mutex handleAndKeySystemMapMutex;
-    static std::map<void *, sptr<IMediaKeySystem>> handleAndKeySystemMap;
+    std::recursive_mutex handleAndKeySystemMapMutex;
+    std::map<void *, sptr<IMediaKeySystem>> handleAndKeySystemMap;
     std::thread serviceThread;
     bool serviceThreadRunning = false;
     std::vector<void *> loadedLibs;
-    static std::queue<Message> messageQueue;
     static std::mutex queueMutex;
-    static std::mutex libMutex;
+    static std::queue<Message> messageQueue;
     static std::condition_variable cv;
-    static std::mutex libMapMutex;
-    static std::map<std::string, void *> libMap;
+    std::mutex libMutex;
+    std::map<std::string, void *> libMap;
+    std::shared_mutex drmHostServieProxyMapMtx;
+    std::map<std::string, sptr<IMediaKeySystemFactory>> drmHostServieProxyMap;
+    std::shared_mutex lazyLoadPluginInfoMapMtx;
+    std::map<std::string, std::string> lazyLoadPluginInfoMap;
+    std::map<std::string, int32_t> pluginCountMap;    
 };
 } // DrmStandard
 } // OHOS

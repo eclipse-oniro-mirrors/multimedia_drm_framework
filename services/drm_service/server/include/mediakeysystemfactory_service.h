@@ -56,14 +56,15 @@ public:
     void OnStart() override;
     void OnStop() override;
     int32_t Dump(int32_t fd, const std::vector<std::u16string>& args) override;
-    int32_t IsMediaKeySystemSupported(std::string &uuid, bool *isSurpported) override;
-    int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, bool *isSurpported) override;
-    int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, int32_t securityLevel,
+    int32_t IsMediaKeySystemSupported(std::string &name, bool *isSurpported) override;
+    int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, bool *isSurpported) override;
+    int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, int32_t securityLevel,
         bool *isSurpported) override;
-    int32_t CreateMediaKeySystem(std::string &uuid, sptr<IMediaKeySystemService> &mediaKeySystemProxy) override;
+    int32_t CreateMediaKeySystem(std::string &name, sptr<IMediaKeySystemService> &mediaKeySystemProxy) override;
     int32_t CloseMediaKeySystemService(sptr<MediaKeySystemService> mediaKeySystemService) override;
     void DistroyForClientDied(pid_t pid) override;
-    int32_t GetMediaKeySystemName(std::map<std::string, std::string> &mediaKeySystemNames) override;
+    int32_t GetMediaKeySystems(std::map<std::string, std::string> &mediaKeySystemNames) override;
+    int32_t GetMediaKeySystemUuid(std::string &name, std::string &uuid) override;
     void InitStatisticsInfo(sptr<IMediaKeySystem> hdiMediaKeySystem, StatisticsInfo &statisticsInfo);
     int32_t WriteDumpInfo(int32_t fd, std::string &dumpString);
     int32_t DumpMetricsInfo(std::string &dumpString, std::vector<IMediaKeySystemService::MetircKeyValue> metrics);

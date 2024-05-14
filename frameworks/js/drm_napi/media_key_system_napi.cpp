@@ -145,7 +145,7 @@ napi_value MediaKeySystemNapi::CreateMediaKeySystemInstance(napi_env env, napi_c
         status = napi_get_value_string_utf8(env, argv[PARAM0], nameBuffer, PATH_MAX, &nameBufferLen);
         if (status != napi_ok) {
             NapiDrmError::ThrowError(env, "the param name is missing or too long.", DRM_INVALID_PARAM);
-            DRM_ERR_LOG("Could not able to read uuid argument!");
+            DRM_ERR_LOG("Could not able to read drm plugin name argument!");
             return nullptr;
         }
         drmSchemaName = std::string(nameBuffer);
@@ -192,13 +192,13 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
     char buffer[PATH_MAX];
     size_t length = 0;
     if (napi_get_value_string_utf8(env, argv[PARAM0], buffer, PATH_MAX, &length) != napi_ok) {
-        DRM_ERR_LOG("Could not able to read uuid argument!");
+        DRM_ERR_LOG("Could not able to read drm plugin name argument!");
         return nullptr;
     }
-    std::string uuid = std::string(buffer);
-    if (uuid.length() == 0 || uuid.length() > MAX_STRING_SIZE) {
-        NapiDrmError::ThrowError(env, "uuid length exceeds reasonable range!", DRM_INVALID_PARAM);
-        DRM_ERR_LOG("uuid lenth is not able to zero or more 256!");
+    std::string pluginName = std::string(buffer);
+    if (pluginName.length() == 0 || pluginName.length() > MAX_STRING_SIZE) {
+        NapiDrmError::ThrowError(env, "drm plugin name length exceeds reasonable range!", DRM_INVALID_PARAM);
+        DRM_ERR_LOG("drm plugin name lenth is not able to zero or more 256!");
         return nullptr;
     }
     if (MediaKeySystemFactoryImpl::GetInstance() == nullptr) {
@@ -206,7 +206,7 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
         return nullptr;
     }
     if (argc == ARGS_ONE) {
-        bool isSurpportted = MediaKeySystemFactoryImpl::GetInstance()->IsMediaKeySystemSupported(uuid);
+        bool isSurpportted = MediaKeySystemFactoryImpl::GetInstance()->IsMediaKeySystemSupported(pluginName);
         napi_get_boolean(env, isSurpportted, &result);
         return result;
     }
@@ -218,7 +218,7 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
     }
     std::string mimeType = std::string(buffer);
     if (argc == ARGS_TWO && mimeType.length() != 0) {
-        bool isSurpportted = MediaKeySystemFactoryImpl::GetInstance()->IsMediaKeySystemSupported(uuid, mimeType);
+        bool isSurpportted = MediaKeySystemFactoryImpl::GetInstance()->IsMediaKeySystemSupported(pluginName, mimeType);
         napi_get_boolean(env, isSurpportted, &result);
         return result;
     }
@@ -240,7 +240,7 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
 
     if (argc == ARGS_THREE) {
         bool isSurpportted =
-            MediaKeySystemFactoryImpl::GetInstance()->IsMediaKeySystemSupported(uuid, mimeType, securityLevel);
+            MediaKeySystemFactoryImpl::GetInstance()->IsMediaKeySystemSupported(pluginName, mimeType, securityLevel);
         napi_get_boolean(env, isSurpportted, &result);
         DRM_INFO_LOG("MediaKeySystemNapi::IsMediaKeySystemSupported exit.");
         return result;
@@ -271,22 +271,51 @@ static napi_value mapToJsArray(napi_env env, std::map<std::string, std::string> 
     return jsArray;
 }
 
-napi_value MediaKeySystemNapi::GetMediaKeySystemName(napi_env env, napi_callback_info info)
+napi_value MediaKeySystemNapi::GetMediaKeySystems(napi_env env, napi_callback_info info)
 {
-    DRM_INFO_LOG("MediaKeySystemNapi::GetMediaKeySystemName enter");
+    DRM_INFO_LOG("MediaKeySystemNapi::GetMediaKeySystems enter");
     napi_value result = nullptr;
     std::map<std::string, std::string> keySystemNames;
 
-    int32_t ret = MediaKeySystemFactoryImpl::GetInstance()->GetMediaKeySystemName(keySystemNames);
-    DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr, "MediaKeySystemNapi GetMediaKeySystemName call Failed!");
+    int32_t ret = MediaKeySystemFactoryImpl::GetInstance()->GetMediaKeySystems(keySystemNames);
+    DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr, "MediaKeySystemNapi::GetMediaKeySystems call Failed!");
     if (keySystemNames.size() == 0) {
         DRM_ERR_LOG("plugin not exist.");
-        NapiDrmError::ThrowError(env, "MediaKeySystemNapi GetMediaKeySystemName call Failed!",
+        NapiDrmError::ThrowError(env, "MediaKeySystemNapi::GetMediaKeySystems call Failed!",
             DRM_SERVICE_FATAL_ERROR);
         return nullptr;
     }
     result = mapToJsArray(env, keySystemNames);
-    DRM_INFO_LOG("MediaKeySystemNapi::GetMediaKeySystemName exit.");
+    DRM_INFO_LOG("MediaKeySystemNapi::GetMediaKeySystems exit.");
+    return result;
+}
+
+napi_value MediaKeySystemNapi::GetMediaKeySystemUuid(napi_env env, napi_callback_info info)
+{
+    DRM_INFO_LOG("MediaKeySystemNapi::GetMediaKeySystemUuid enter");
+    napi_value result = nullptr;
+    size_t argc = ARGS_ONE;
+    napi_value argv[ARGS_ONE] = {0};
+    napi_value thisVar = nullptr;
+    napi_status status;
+    char nameStr[PATH_MAX];
+    size_t nameStrLength = 0;
+    std::string uuid;
+
+    DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
+    NAPI_ASSERT(env, argc <= ARGS_ONE, "requires 1 parameters maximum");
+
+    status = napi_get_value_string_utf8(env, argv[PARAM0], nameStr, PATH_MAX, &nameStrLength);
+    if (status != napi_ok) {
+        NapiDrmError::ThrowError(env, "the param configName is missing or too long.", DRM_INVALID_PARAM);
+        return nullptr;
+    }
+    std::string name = std::string(nameStr);
+    int32_t ret = MediaKeySystemFactoryImpl::GetInstance()->GetMediaKeySystemUuid(name, uuid);
+    DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr, "MediaKeySystemNapi::GetMediaKeySystemUuid call Failed!");
+
+    napi_create_string_utf8(env, uuid.c_str(), NAPI_AUTO_LENGTH, &result);
+    DRM_INFO_LOG("MediaKeySystemNapi::GetMediaKeySystemUuid exit");
     return result;
 }
 
@@ -397,8 +426,8 @@ napi_value MediaKeySystemNapi::GetConfigurationString(napi_env env, napi_callbac
 {
     DRM_INFO_LOG("MediaKeySystemNapi::GetConfiguration enter");
     napi_value result = nullptr;
-    size_t argc = ARGS_TWO;
-    napi_value argv[ARGS_TWO] = {0};
+    size_t argc = ARGS_ONE;
+    napi_value argv[ARGS_ONE] = {0};
     napi_value thisVar = nullptr;
     napi_status status;
     char nameStr[PATH_MAX];
@@ -407,7 +436,7 @@ napi_value MediaKeySystemNapi::GetConfigurationString(napi_env env, napi_callbac
     MediaKeySystemNapi *mediaKeySystemNapi = nullptr;
 
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
-    NAPI_ASSERT(env, argc <= ARGS_TWO, "requires 2 parameters maximum");
+    NAPI_ASSERT(env, argc <= ARGS_ONE, "requires 1 parameters maximum");
 
     status = napi_get_value_string_utf8(env, argv[PARAM0], nameStr, PATH_MAX, &nameStrLength);
     if (status != napi_ok) {

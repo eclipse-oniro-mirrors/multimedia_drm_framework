@@ -36,12 +36,13 @@ public:
     ~MediaKeySystemFactoryImpl();
     void Init();
     static sptr<MediaKeySystemFactoryImpl> &GetInstance();
-    bool IsMediaKeySystemSupported(std::string &uuid);
-    bool IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType);
-    bool IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType,
+    bool IsMediaKeySystemSupported(std::string &name);
+    bool IsMediaKeySystemSupported(std::string &name, std::string &mimeType);
+    bool IsMediaKeySystemSupported(std::string &name, std::string &mimeType,
         IMediaKeySessionService::ContentProtectionLevel securityLevel);
-    int32_t GetMediaKeySystemName(std::map<std::string, std::string> &keySystemNames);
-    int32_t CreateMediaKeySystem(std::string &uuid, sptr<MediaKeySystemImpl> *mediaKeySystemImpl);
+    int32_t GetMediaKeySystems(std::map<std::string, std::string> &keySystemNames);
+    int32_t GetMediaKeySystemUuid(std::string &name, std::string &uuid);
+    int32_t CreateMediaKeySystem(std::string &name, sptr<MediaKeySystemImpl> *mediaKeySystemImpl);
     int32_t keySystemNumber = 0;
 
 private:

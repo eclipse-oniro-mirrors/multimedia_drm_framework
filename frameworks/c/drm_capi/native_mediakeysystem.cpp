@@ -91,12 +91,12 @@ Drm_ErrCode OH_MediaKeySystem_GetMediaKeySystems(DRM_MediaKeySystemDescription *
     DRM_CHECK_AND_RETURN_RET_LOG((count != nullptr), DRM_ERR_INVALID_VAL, "count is nullptr");
     std::map<std::string, std::string> keySystemNames;
     OHOS::sptr<MediaKeySystemFactoryImpl> fatory = MediaKeySystemFactoryImpl::GetInstance();
-    int32_t ret = fatory->GetMediaKeySystemName(keySystemNames);
+    int32_t ret = fatory->GetMediaKeySystems(keySystemNames);
     DRM_CHECK_AND_RETURN_RET_LOG((*count >= keySystemNames.size()), DRM_ERR_INVALID_VAL,
-        "MediaKeySystemNapi GetMediaKeySystemName call Failed!");
+        "MediaKeySystemNapi GetMediaKeySystems call Failed!");
     int32_t times = 0;
     DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_ERR_OK), DRM_ERR_INVALID_VAL,
-        "MediaKeySystemNapi GetMediaKeySystemName call Failed!");
+        "MediaKeySystemNapi GetMediaKeySystems call Failed!");
     for (auto it = keySystemNames.begin(); it != keySystemNames.end(); it++) {
         if (it->first.size() != 0) {
             ret = memcpy_s(description[times].name, it->first.size(), it->first.c_str(), it->first.size());
@@ -106,7 +106,7 @@ Drm_ErrCode OH_MediaKeySystem_GetMediaKeySystems(DRM_MediaKeySystemDescription *
             }
         }
         if (it->second.size() != 0) {
-            for (int i = 0; i < sizeof(description[times].uuid) * BASE_CONVERSION_OPERATOR;
+            for (size_t i = 0; i < sizeof(description[times].uuid) * BASE_CONVERSION_OPERATOR;
                 i += BASE_CONVERSION_OPERATOR) {
                 std::string byteStr = it->second.substr(i, BASE_CONVERSION_OPERATOR);
                 uint8_t byte = static_cast<u_int8_t>(std::stoi(byteStr, nullptr, HEXADECIMAL));

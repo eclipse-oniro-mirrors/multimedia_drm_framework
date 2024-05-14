@@ -17,6 +17,8 @@
 #include <unistd.h>
 #include <unordered_set>
 #include "system_ability_definition.h"
+#include "mem_mgr_client.h"
+#include "mem_mgr_proxy.h"
 #include "ipc_skeleton.h"
 #include "access_token.h"
 #include "iservice_registry.h"
@@ -63,7 +65,9 @@ void MediaKeySystemFactoryService::OnStart()
         DRM_INFO_LOG("MediaKeySystemFactoryService OnStart res=%{public}d", res);
     }
     OHOS::HiviewDFX::DumpUsage dumpUse;
-    uint32_t memoryUsage = dumpUse.GetPss(getpid());
+    int pid = getpid();
+    Memory::MemMgrClient::GetInstance().NotifyProcessStatus(pid, 1, 1, 3012);
+    uint32_t memoryUsage = dumpUse.GetPss(pid);
     auto now = std::chrono::system_clock::now();
     auto currentTime = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
     HISYSEVENT_BEHAVIOR("DRM_SERVICE_INFO", "MODULE", "DRM_SERVICE", "TIME", currentTime, "SERVICE_NAME", "DRM_SERVICE",
@@ -86,7 +90,9 @@ void MediaKeySystemFactoryService::OnStop()
     }
 
     OHOS::HiviewDFX::DumpUsage dumpUse;
-    uint32_t memoryUsage = dumpUse.GetPss(getpid());
+    int pid = getpid();
+    Memory::MemMgrClient::GetInstance().NotifyProcessStatus(pid, 1, 0, 3012);
+    uint32_t memoryUsage = dumpUse.GetPss(pid);
     auto now = std::chrono::system_clock::now();
     auto currentTime = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
     HISYSEVENT_BEHAVIOR("DRM_SERVICE_INFO", "MODULE", "DRM_SERVICE", "TIME", currentTime,
@@ -121,14 +127,14 @@ void MediaKeySystemFactoryService::DistroyForClientDied(pid_t pid)
     }
 }
 
-int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &uuid,
+int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
     sptr<IMediaKeySystemService> &mediaKeySystemProxy)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryService CreateMediaKeySystem enter.");
     std::lock_guard<std::mutex> lock(mutex_);
     sptr<MediaKeySystemService> mediaKeySystemService = nullptr;
     sptr<IMediaKeySystem> hdiMediaKeySystem = nullptr;
-    int32_t ret = drmHostManager_->CreateMediaKeySystem(uuid, hdiMediaKeySystem);
+    int32_t ret = drmHostManager_->CreateMediaKeySystem(name, hdiMediaKeySystem);
     if (hdiMediaKeySystem == nullptr || ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemFactoryService:: drmHostManager_ return hdiMediaKeySystem nullptr");
         HISYSEVENT_FAULT("DRM_COMMON_FAILURE", "APP_NAME", GetClientBundleName(IPCSkeleton::GetCallingUid()),
@@ -150,10 +156,10 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &uuid,
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " is Current mediaKeySystemService",
         FAKE_POINTER(mediaKeySystemService.GetRefPtr()));
     mediaKeySystemProxy = mediaKeySystemService;
-    if (CurrentMediaKeySystemNum_.find(uuid) != CurrentMediaKeySystemNum_.end()) {
-        CurrentMediaKeySystemNum_[uuid]++;
+    if (CurrentMediaKeySystemNum_.find(name) != CurrentMediaKeySystemNum_.end()) {
+        CurrentMediaKeySystemNum_[name]++;
     } else {
-        CurrentMediaKeySystemNum_[uuid] = 1;
+        CurrentMediaKeySystemNum_[name] = 1;
     }
     DRM_INFO_LOG("MediaKeySystemFactoryService CreateMediaKeySystem exit.");
     return ret;
@@ -178,14 +184,15 @@ int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySy
         CurrentMediaKeySystemNum_[pluginName]--;
     }
     mediaKeySystemService = nullptr;
+    drmHostManager_->ReleaseMediaKeySystem(pluginName);
     DRM_INFO_LOG("MediaKeySystemFactoryService CloseMediaKeySystemService exit.");
     return errCode;
 }
 
-int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &uuid, bool *isSurpported)
+int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &name, bool *isSurpported)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported one parameters enter");
-    int32_t ret = drmHostManager_->IsMediaKeySystemSupported(uuid, isSurpported);
+    int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, isSurpported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported failed.");
         return ret;
@@ -194,11 +201,11 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &uui
     return ret;
 }
 
-int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType,
+int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &name, std::string &mimeType,
     bool *isSurpported)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported two parameters enter");
-    int32_t ret = drmHostManager_->IsMediaKeySystemSupported(uuid, mimeType, isSurpported);
+    int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, mimeType, isSurpported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported failed.");
         return ret;
@@ -207,11 +214,11 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &uui
     return ret;
 }
 
-int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType,
+int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &name, std::string &mimeType,
     int32_t securityLevel, bool *isSurpported)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported three parameters enter");
-    int32_t ret = drmHostManager_->IsMediaKeySystemSupported(uuid, mimeType, securityLevel, isSurpported);
+    int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, mimeType, securityLevel, isSurpported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemFactoryService::IsMediaKeySystemSupported failed.");
         return ret;
@@ -220,15 +227,27 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &uui
     return ret;
 }
 
-int32_t MediaKeySystemFactoryService::GetMediaKeySystemName(std::map<std::string, std::string> &mediaKeySystemNames)
+int32_t MediaKeySystemFactoryService::GetMediaKeySystems(std::map<std::string, std::string> &mediaKeySystemNames)
 {
-    DRM_INFO_LOG("MediaKeySystemFactoryService::GetMediaKeySystemName three parameters enter");
-    int32_t ret = drmHostManager_->GetMediaKeySystemName(mediaKeySystemNames);
+    DRM_INFO_LOG("MediaKeySystemFactoryService::GetMediaKeySystems three parameters enter");
+    int32_t ret = drmHostManager_->GetMediaKeySystems(mediaKeySystemNames);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemFactoryService::GetMediaKeySystemName failed.");
+        DRM_ERR_LOG("MediaKeySystemFactoryService::GetMediaKeySystems failed.");
         return ret;
     }
-    DRM_INFO_LOG("MediaKeySystemFactoryService::GetMediaKeySystemName exit");
+    DRM_INFO_LOG("MediaKeySystemFactoryService::GetMediaKeySystems exit");
+    return ret;
+}
+
+int32_t MediaKeySystemFactoryService::GetMediaKeySystemUuid(std::string &name, std::string &uuid)
+{
+    DRM_INFO_LOG("MediaKeySystemFactoryService::GetMediaKeySystemUuid three parameters enter");
+    int32_t ret = drmHostManager_->GetMediaKeySystemUuid(name, uuid);
+    if (ret != DRM_OK) {
+        DRM_ERR_LOG("MediaKeySystemService::GetMediaKeySystemUuid failed.");
+        return ret;
+    }
+    DRM_INFO_LOG("MediaKeySystemFactoryService::GetMediaKeySystemUuid exit");
     return ret;
 }
 
@@ -241,7 +260,7 @@ void MediaKeySystemFactoryService::InitStatisticsInfo(sptr<IMediaKeySystem> hdiM
     std::string versionName;
     std::map<std::string, std::string> mediaKeySystemNames;
     std::map<std::string, std::string> statistics;
-    int32_t ret = GetMediaKeySystemName(mediaKeySystemNames);
+    int32_t ret = GetMediaKeySystems(mediaKeySystemNames);
     if (ret == DRM_OK) {
         auto it = mediaKeySystemNames.begin();
         pluginName = it->first;
@@ -270,7 +289,7 @@ int32_t MediaKeySystemFactoryService::WriteDumpInfo(int32_t fd, std::string &dum
     std::vector<IMediaKeySystemService::MetircKeyValue> metrics;
     dumpString += "-----mediaKeySystem memoryUsage = " + std::to_string(memoryUsageInfo) + "\n";
     std::map<std::string, std::string> mediaKeySystemInfo;
-    drmHostManager_->GetMediaKeySystemName(mediaKeySystemInfo);
+    drmHostManager_->GetMediaKeySystems(mediaKeySystemInfo);
     for (auto &iter : mediaKeySystemInfo) {
         dumpString += "-----pluginName:" + iter.first + " uuid:" + iter.second + "\n";
     }
