@@ -39,6 +39,7 @@
               "bundle_framework",
               "drivers_interface_drm",
               "media_foundation",
+              "memmgr",
               "json"
             ]
         },

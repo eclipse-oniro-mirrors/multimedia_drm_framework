@@ -90,9 +90,9 @@ static int32_t ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServic
 
     DRM_CHECK_AND_RETURN_RET_LOG((paramNum <= (int32_t)ARGS_NUM_THREE) && (paramNum >= (int32_t)ARGS_NUM_ONE),
         IPC_STUB_WRITE_PARCEL_ERR, "MediaKeySystemFactoryServiceStub paramNum is invalid");
-    std::string uuid = data.ReadString();
+    std::string name = data.ReadString();
     if (paramNum == ARGS_NUM_ONE) {
-        int32_t ret = stub->IsMediaKeySystemSupported(uuid, &isSurpported);
+        int32_t ret = stub->IsMediaKeySystemSupported(name, &isSurpported);
         DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "IsMediaKeySystemSupported faild, errCode:%{public}d", ret);
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteBool(isSurpported), IPC_STUB_WRITE_PARCEL_ERR,
             "MediaKeySystemFactoryServiceStub Write isSurpported failed.");
@@ -100,7 +100,7 @@ static int32_t ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServic
     }
     std::string mimeType = data.ReadString();
     if (paramNum == ARGS_NUM_TWO) {
-        int32_t ret = stub->IsMediaKeySystemSupported(uuid, mimeType, &isSurpported);
+        int32_t ret = stub->IsMediaKeySystemSupported(name, mimeType, &isSurpported);
         DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "IsMediaKeySystemSupported faild, errCode:%{public}d", ret);
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteBool(isSurpported), IPC_STUB_WRITE_PARCEL_ERR,
             "MediaKeySystemFactoryServiceStub Write isSurpported failed.");
@@ -109,7 +109,7 @@ static int32_t ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServic
 
     int32_t securityLevel = data.ReadInt32();
     if (paramNum == ARGS_NUM_THREE) {
-        int32_t ret = stub->IsMediaKeySystemSupported(uuid, mimeType, securityLevel, &isSurpported);
+        int32_t ret = stub->IsMediaKeySystemSupported(name, mimeType, securityLevel, &isSurpported);
         DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "IsMediaKeySystemSupported faild, errCode:%{public}d", ret);
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteBool(isSurpported), IPC_STUB_WRITE_PARCEL_ERR,
             "MediaKeySystemFactoryServiceStub Write isSurpported failed.");
@@ -131,21 +131,37 @@ static int32_t ProcessSetListenerObject(MediaKeySystemFactoryServiceStub *stub, 
     return errCode;
 }
 
-static int32_t ProcessGetMediaKeySystemName(MediaKeySystemFactoryServiceStub *stub, MessageParcel &data,
+static int32_t ProcessGetMediaKeySystems(MediaKeySystemFactoryServiceStub *stub, MessageParcel &data,
     MessageParcel &reply, MessageOption &option)
 {
-    DRM_INFO_LOG("MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystemName enter.");
+    DRM_INFO_LOG("MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystems enter.");
     std::map<std::string, std::string> mediaKeySystemNames;
-    int32_t ret = stub->GetMediaKeySystemName(mediaKeySystemNames);
-    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "GetMediaKeySystemName faild, errCode:%{public}d", ret);
+    int32_t ret = stub->GetMediaKeySystems(mediaKeySystemNames);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "GetMediaKeySystems faild, errCode:%{public}d", ret);
     reply.WriteInt32(mediaKeySystemNames.size());
     for (auto mediaKeySystemName : mediaKeySystemNames) {
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteString(mediaKeySystemName.first), IPC_STUB_WRITE_PARCEL_ERR,
-            "MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystemName failed.");
+            "MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystems failed.");
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteString(mediaKeySystemName.second), IPC_STUB_WRITE_PARCEL_ERR,
-            "MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystemName failed.");
+            "MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystems failed.");
     }
-    DRM_INFO_LOG("MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystemName exit.");
+    DRM_INFO_LOG("MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystems exit.");
+    return DRM_OK;
+}
+
+static int32_t ProcessGetMediaKeySystemUuid(MediaKeySystemFactoryServiceStub *stub, MessageParcel &data,
+    MessageParcel &reply, MessageOption &option)
+{
+    DRM_INFO_LOG("MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystemUuid enter.");
+    std::string name = data.ReadString();
+    std::string uuid;
+    int32_t ret = stub->GetMediaKeySystemUuid(name, uuid);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessGetMediaKeySystemUuid faild, errCode:%{public}d", ret);
+    if (!reply.WriteString(uuid)) {
+        DRM_ERR_LOG("MediaKeySystemServiceStub ProcessGetMediaKeySystemUuid write value failed.");
+        return IPC_STUB_WRITE_PARCEL_ERR;
+    }
+    DRM_INFO_LOG("MediaKeySystemFactoryServiceStub ProcessGetMediaKeySystemUuid exit.");
     return DRM_OK;
 }
 
@@ -167,8 +183,8 @@ int32_t MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, Message
         case MEDIA_KEY_SYSTEM_FACTORY_CREATE_MEDIA_KEYSYSTEM: {
             DRM_INFO_LOG("MediaKeySystemFactoryServiceStub CREATE_MEDIA_KEYSYSTEM enter.");
             sptr<IMediaKeySystemService> mediaKeysystemProxy = nullptr;
-            std::string uuid = data.ReadString();
-            int32_t errCode = CreateMediaKeySystem(uuid, mediaKeysystemProxy);
+            std::string name = data.ReadString();
+            int32_t errCode = CreateMediaKeySystem(name, mediaKeysystemProxy);
             if (errCode != ERR_NONE) {
                 DRM_ERR_LOG("MediaKeySystemFactoryServiceStub CreateMediaKeySystem failed : %{public}d", errCode);
                 return errCode;
@@ -188,8 +204,14 @@ int32_t MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, Message
         }
         case MEDIA_KEY_SYSTEM_FACTORY_GET_MEDIA_KEYSYSTEM_NAME: {
             DRM_INFO_LOG("MediaKeySystemFactoryServiceStub MEDIA_KEY_SYSTEM_FACTORY_GST_MEDIA_KEYSYSTEM_NAME enter.");
-            int32_t ret = ProcessGetMediaKeySystemName(this, data, reply, option);
+            int32_t ret = ProcessGetMediaKeySystems(this, data, reply, option);
             DRM_INFO_LOG("MediaKeySystemFactoryServiceStub MEDIA_KEY_SYSTEM_FACTORY_GST_MEDIA_KEYSYSTEM_NAME exit.");
+            return ret;
+        }
+        case MEDIA_KEY_SYSTEM_FACTORY_GET_MEDIA_KEYSYSTEM_UUID: {
+            DRM_INFO_LOG("MediaKeySystemFactoryServiceStub MEDIA_KEY_SYSTEM_FACTORY_GET_MEDIA_KEYSYSTEM_UUID enter.");
+            int32_t ret = ProcessGetMediaKeySystemUuid(this, data, reply, option);
+            DRM_INFO_LOG("MediaKeySystemFactoryServiceStub MEDIA_KEY_SYSTEM_FACTORY_GET_MEDIA_KEYSYSTEM_UUID exit.");
             return ret;
         }
     }

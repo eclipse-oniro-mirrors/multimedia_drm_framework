@@ -20,11 +20,11 @@
 namespace OHOS {
 namespace DrmStandard {
     struct StatisticsInfo {
-    std::string pluginUuid;
-    std::string pluginName;
-    std::string vendorName;
-    std::string versionName;
-    std::string bundleName;
+        std::string pluginUuid;
+        std::string pluginName;
+        std::string vendorName;
+        std::string versionName;
+        std::string bundleName;
     };
     std::string __attribute__((visibility("default"))) GetClientBundleName(int32_t uid);
     const std::string currentSessionNum = "currentSessionNum";

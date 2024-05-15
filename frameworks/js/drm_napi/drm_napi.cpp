@@ -44,7 +44,8 @@ napi_value DrmNapi::Init(napi_env env, napi_value exports)
     napi_property_descriptor drm_static_properties[] = {
         DECLARE_NAPI_STATIC_FUNCTION("createMediaKeySystem", CreateMediaKeySystemInstance),
         DECLARE_NAPI_STATIC_FUNCTION("isMediaKeySystemSupported", IsMediaKeySystemSupported),
-        DECLARE_NAPI_STATIC_FUNCTION("getMediaKeySystems", GetMediaKeySystemName)
+        DECLARE_NAPI_STATIC_FUNCTION("getMediaKeySystems", GetMediaKeySystems),
+        DECLARE_NAPI_STATIC_FUNCTION("getMediaKeySystemUuid", GetMediaKeySystemUuid)
     };
     DRM_DEBUG_LOG("DrmNapi enter napi_define_class");
     napi_value constructor = nullptr;
@@ -115,12 +116,21 @@ napi_value DrmNapi::IsMediaKeySystemSupported(napi_env env, napi_callback_info i
     return result;
 }
 
-napi_value DrmNapi::GetMediaKeySystemName(napi_env env, napi_callback_info info)
+napi_value DrmNapi::GetMediaKeySystems(napi_env env, napi_callback_info info)
 {
-    DRM_INFO_LOG("DrmNapi GetMediaKeySystemName enter.");
+    DRM_INFO_LOG("DrmNapi GetMediaKeySystems enter.");
     napi_value result = nullptr;
-    result = MediaKeySystemNapi::GetMediaKeySystemName(env, info);
-    DRM_INFO_LOG("DrmNapi GetMediaKeySystemName exit.");
+    result = MediaKeySystemNapi::GetMediaKeySystems(env, info);
+    DRM_INFO_LOG("DrmNapi GetMediaKeySystems exit.");
+    return result;
+}
+
+napi_value DrmNapi::GetMediaKeySystemUuid(napi_env env, napi_callback_info info)
+{
+    DRM_INFO_LOG("DrmNapi GetMediaKeySystemUuid enter.");
+    napi_value result = nullptr;
+    result = MediaKeySystemNapi::GetMediaKeySystemUuid(env, info);
+    DRM_INFO_LOG("DrmNapi GetMediaKeySystemUuid exit.");
     return result;
 }
 

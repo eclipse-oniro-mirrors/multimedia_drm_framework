@@ -46,7 +46,7 @@ ohos_shared_library("drm_service") {
     "./server/src/mediakeysystemfactory_service.cpp",
     "./server/src/mediakeysystemfactory_service_stub.cpp",
   ]
-
+  deps = [ ":drm_plugin_lazyloding" ]
   external_deps = [
     "ability_base:want",
     "ability_runtime:abilitykit_native",
@@ -70,6 +70,7 @@ ohos_shared_library("drm_service") {
     "ipc:ipc_core",
     "ipc:ipc_single",
     "media_foundation:media_foundation",
+    "memmgr:memmgrclient",
     "napi:ace_napi",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
@@ -104,4 +105,11 @@ ohos_shared_library("drm_service") {
 
   subsystem_name = "multimedia"
   part_name = "drm_framework"
+}
+
+ohos_prebuilt_etc("drm_plugin_lazyloding") {
+  source = "../etc/drm_plugin_lazyloding.cfg"
+  relative_install_dir = "drm"
+  part_name = "drm_framework"
+  subsystem_name = "multimedia"
 }
