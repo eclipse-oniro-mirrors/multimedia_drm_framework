@@ -33,7 +33,7 @@ using namespace OHOS::HDI::Drm::V1_0;
 using namespace OHOS::HDI;
 struct DecryptStatustics {
     uint32_t decryptTimes = 0;
-    uint32_t decryptSumSize = 0;
+    uint64_t decryptSumSize = 0;
     uint32_t decryptSumDuration = 0;
     uint32_t decryptMaxSize = 0;
     uint32_t decryptMaxDuration = 0;
@@ -51,6 +51,7 @@ public:
     void SetDrmBufferInfo(OHOS::HDI::Drm::V1_0::DrmBuffer* drmSrcBuffer, OHOS::HDI::Drm::V1_0::DrmBuffer* drmDstBuffer,
         IMediaDecryptModuleService::DrmBuffer &srcBuffer, IMediaDecryptModuleService::DrmBuffer &dstBuffer,
         uint32_t bufLen);
+    void ReportDecryptionStatisticEvent();
     uint32_t CalculateTimeDiff(std::chrono::system_clock::time_point timeBefore,
         std::chrono::system_clock::time_point timeAfter);
 private:
@@ -59,6 +60,7 @@ private:
     DecryptStatustics decryptStatustics_;
     int32_t errCode_;
     std::string errMessage_;
+    uint64_t instanceId_;
 };
 } // DrmStandard
 } // OHOS

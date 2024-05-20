@@ -127,19 +127,12 @@ int32_t MediaKeySessionService::GenerateMediaKeyRequest(
     auto timeAfter = std::chrono::system_clock::now();
     auto duration = timeAfter - timeBefore;
     generationDuration_ = duration.count();
-    auto callTime = std::chrono::duration_cast<std::chrono::microseconds>(timeBefore.time_since_epoch()).count();
     if (ret != DRM_OK) {
         generationResult_ = "failed";
         DRM_ERR_LOG("MediaKeySessionService::GenerateMediaKeyRequest failed.");
-        HISYSEVENT_FAULT("DRM_COMMON_FAILURE", "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID",
-            std::to_string(HiTraceChain::GetId().GetChainId()), "ERROR_CODE", ret,
-            "ERROR_MESG", "GenerateMediaKeyRequest failed", "EXTRA_MESG", "");
-        HISYSEVENT_BEHAVIOR("DRM_LICENSE_DOWNLOAD_INFO", "MODULE", "DRM_SERVICE", "TIME", callTime,
-            "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID", std::to_string(HiTraceChain::GetId().GetChainId()),
-            "DRM_name", statisticsInfo_.pluginName, "DRM_uuid", statisticsInfo_.pluginUuid,
-            "CLIENT_VERSION", statisticsInfo_.versionName, "LICENSE_TYPE", mediaKeyType_,
-            "GENERATION_DURATION", generationDuration_, "GENERATION_RESULT", generationResult_,
-            "PROCESS_DURATION", 0, "PROCESS_RESULT", "generation failed");
+        ReportFaultEvent(ret, "GenerateMediaKeyRequest failed", "");
+        ReportLicenseBehaviorEvent(statisticsInfo_, mediaKeyType_, generationDuration_, generationResult_, 0,
+            "GenerateMediaKeyRequest failed");
         return ret;
     }
     generationResult_ = "success";
@@ -162,31 +155,20 @@ int32_t MediaKeySessionService::ProcessMediaKeyResponse(std::vector<uint8_t> &li
     auto timeBefore = std::chrono::system_clock::now();
     ret = hdiMediaKeySession_->ProcessMediaKeyResponse(licenseResponse, licenseId);
     auto timeAfter = std::chrono::system_clock::now();
-    auto callTime = std::chrono::duration_cast<std::chrono::microseconds>(timeBefore.time_since_epoch()).count();
     auto duration = timeAfter - timeBefore;
     auto processDuration = duration.count();
     if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySessionService::ProcessMediaKeyResponse failed.");
         std::string responseString = std::string(reinterpret_cast<const char*>(licenseResponse.data()),
             licenseResponse.size());
-        HISYSEVENT_FAULT("DRM_COMMON_FAILURE", "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID",
-            std::to_string(HiTraceChain::GetId().GetChainId()), "ERROR_CODE", ret,
-            "ERROR_MESG", "ProcessMediaKeyResponse failed", "EXTRA_MESG", responseString);
 
-        HISYSEVENT_BEHAVIOR("DRM_LICENSE_DOWNLOAD_INFO", "MODULE", "DRM_SERVICE", "TIME", callTime,
-            "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID", std::to_string(HiTraceChain::GetId().GetChainId()),
-            "DRM_name", statisticsInfo_.pluginName, "DRM_uuid", statisticsInfo_.pluginUuid, "CLIENT_VERSION",
-            statisticsInfo_.versionName, "LICENSE_TYPE", mediaKeyType_,
-            "GENERATION_DURATION", generationDuration_, "GENERATION_RESULT", generationResult_, "PROCESS_DURATION",
-            processDuration, "PROCESS_RESULT", "failed");
+        ReportFaultEvent(ret, "ProcessMediaKeyResponse failed", responseString);
+        ReportLicenseBehaviorEvent(statisticsInfo_, mediaKeyType_, generationDuration_, generationResult_,
+            processDuration, "failed");
         return ret;
     }
-    HISYSEVENT_BEHAVIOR("DRM_LICENSE_DOWNLOAD_INFO", "MODULE", "DRM_SERVICE", "TIME", callTime,
-        "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID", std::to_string(HiTraceChain::GetId().GetChainId()),
-        "DRM_name", statisticsInfo_.pluginName, "DRM_uuid", statisticsInfo_.pluginUuid, "CLIENT_VERSION",
-        statisticsInfo_.versionName, "LICENSE_TYPE", mediaKeyType_,
-        "GENERATION_DURATION", generationDuration_, "GENERATION_RESULT", generationResult_, "PROCESS_DURATION",
-        processDuration, "PROCESS_RESULT", "success");
+    ReportLicenseBehaviorEvent(statisticsInfo_, mediaKeyType_, generationDuration_, generationResult_,
+        processDuration, "success");
     DRM_INFO_LOG("MediaKeySessionService::ProcessMediaKeyResponse exit.");
     return ret;
 }

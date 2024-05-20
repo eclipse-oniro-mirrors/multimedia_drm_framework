@@ -37,7 +37,8 @@ MediaDecryptModuleService::MediaDecryptModuleService(
     DRM_DEBUG_LOG("MediaDecryptModuleService::MediaDecryptModuleService");
     hdiMediaDecryptModule_ = hdiMediaDecryptModule;
     int32_t uid = IPCSkeleton::GetCallingUid();
-    DrmEvent::GetInstance().CreateMediaInfo(uid);
+    instanceId_ = HiTraceChain::GetId().GetChainId();
+    DrmEvent::GetInstance().CreateMediaInfo(uid, instanceId_);
 }
 
 MediaDecryptModuleService::~MediaDecryptModuleService()
@@ -47,25 +48,7 @@ MediaDecryptModuleService::~MediaDecryptModuleService()
     if (hdiMediaDecryptModule_ != nullptr) {
         Release();
     }
-    std::shared_ptr<Media::Meta> meta = std::make_shared<Media::Meta>();
-    meta->SetData(Media::Tag::DRM_APP_NAME, GetClientBundleName(IPCSkeleton::GetCallingUid()));
-    meta->SetData(Media::Tag::DRM_INSTANCE_ID, std::to_string(HiTraceChain::GetId().GetChainId()));
-    meta->SetData(Media::Tag::DRM_ERROR_CODE, errCode_);
-    meta->SetData(Media::Tag::DRM_ERROR_MESG, errMessage_);
-    meta->SetData(Media::Tag::DRM_DECRYPT_TIMES, decryptStatustics_.decryptTimes);
-    if (decryptStatustics_.decryptTimes != 0) {
-        meta->SetData(Media::Tag::DRM_DECRYPT_AVG_SIZE,
-            decryptStatustics_.decryptSumSize/decryptStatustics_.decryptTimes);
-        meta->SetData(Media::Tag::DRM_DECRYPT_AVG_DURATION,
-            decryptStatustics_.decryptSumDuration/decryptStatustics_.decryptTimes);
-    } else {
-        meta->SetData(Media::Tag::DRM_DECRYPT_AVG_SIZE, 0);
-        meta->SetData(Media::Tag::DRM_DECRYPT_AVG_DURATION, 0);
-    }
-    meta->SetData(Media::Tag::DRM_DECRYPT_MAX_SIZE, decryptStatustics_.decryptMaxSize);
-    meta->SetData(Media::Tag::DRM_DECRYPT_MAX_DURATION, decryptStatustics_.decryptMaxDuration);
-    DrmEvent::GetInstance().AppendMediaInfo(meta);
-    DrmEvent::GetInstance().ReportMediaInfo();
+    ReportDecryptionStatisticEvent();
     DRM_INFO_LOG("MediaDecryptModuleService::~MediaDecryptModuleService exit.");
 }
 
@@ -119,11 +102,8 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
         decryptKeyId.assign(cryptInfoTmp.keyId.begin(), cryptInfoTmp.keyId.end());
         std::string decryptKeyIv;
         decryptKeyIv.assign(cryptInfoTmp.iv.begin(), cryptInfoTmp.iv.end());
-        HISYSEVENT_FAULT("DRM_DECRYPTION_FAILURE", "APP_NAME", GetClientBundleName(IPCSkeleton::GetCallingUid()),
-            "INSTANCE_ID", std::to_string(HiTraceChain::GetId().GetChainId()), "ERROR_CODE", ret,
-            "ERROR_MESG", "decrypt failed", "DECRYPT_ALGO", std::to_string(static_cast<int32_t>(cryptInfoTmp.type)),
-            "DECRYPT_KEYID", decryptKeyId, "DECRYPT_IV", decryptKeyIv);
-        errMessage_ = "DecryptMediaData error";
+        ReportDecryptionFaultEvent(ret, "DecryptMediaData failed",
+            std::to_string(static_cast<int32_t>(cryptInfoTmp.type)), decryptKeyId, decryptKeyIv);
         return ret;
     }
     (void)::close(srcBuffer.fd);
@@ -178,6 +158,29 @@ void MediaDecryptModuleService::SetDrmBufferInfo(OHOS::HDI::Drm::V1_0::DrmBuffer
     drmDstBuffer->filledLen = dstBuffer.filledLen;
     drmDstBuffer->offset = dstBuffer.offset;
     drmDstBuffer->sharedMemType = dstBuffer.sharedMemType;
+}
+
+void MediaDecryptModuleService::ReportDecryptionStatisticEvent()
+{
+    std::shared_ptr<Media::Meta> meta = std::make_shared<Media::Meta>();
+    meta->SetData(Media::Tag::DRM_APP_NAME, GetClientBundleName(IPCSkeleton::GetCallingUid()));
+    meta->SetData(Media::Tag::DRM_INSTANCE_ID, std::to_string(instanceId_));
+    meta->SetData(Media::Tag::DRM_ERROR_CODE, errCode_);
+    meta->SetData(Media::Tag::DRM_ERROR_MESG, errMessage_);
+    meta->SetData(Media::Tag::DRM_DECRYPT_TIMES, decryptStatustics_.decryptTimes);
+    if (decryptStatustics_.decryptTimes != 0) {
+        meta->SetData(Media::Tag::DRM_DECRYPT_AVG_SIZE,
+            static_cast<uint32_t>(decryptStatustics_.decryptSumSize/decryptStatustics_.decryptTimes));
+        meta->SetData(Media::Tag::DRM_DECRYPT_AVG_DURATION,
+            decryptStatustics_.decryptSumDuration/decryptStatustics_.decryptTimes);
+    } else {
+        meta->SetData(Media::Tag::DRM_DECRYPT_AVG_SIZE, 0);
+        meta->SetData(Media::Tag::DRM_DECRYPT_AVG_DURATION, 0);
+    }
+    meta->SetData(Media::Tag::DRM_DECRYPT_MAX_SIZE, decryptStatustics_.decryptMaxSize);
+    meta->SetData(Media::Tag::DRM_DECRYPT_MAX_DURATION, decryptStatustics_.decryptMaxDuration);
+    DrmEvent::GetInstance().AppendMediaInfo(meta, instanceId_);
+    DrmEvent::GetInstance().ReportMediaInfo(instanceId_);
 }
 } // DrmStandard
 } // OHOS

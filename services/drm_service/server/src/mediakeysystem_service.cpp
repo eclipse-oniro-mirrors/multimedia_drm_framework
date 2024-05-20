@@ -120,18 +120,11 @@ int32_t MediaKeySystemService::GenerateKeySystemRequest(std::vector<uint8_t> &re
     auto duration = timeAfter - timeBefore;
     generationDuration_ = duration.count();
     if (ret != DRM_OK) {
-        generationResult_ = "failed";
         DRM_ERR_LOG("MediaKeySystemService::GenerateKeySystemRequest failed.");
-        HISYSEVENT_FAULT("DRM_COMMON_FAILURE", "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID",
-            std::to_string(HiTraceChain::GetId().GetChainId()), "ERROR_CODE", ret,
-            "ERROR_MESG", "CreateMediaKeySystem failed", "EXTRA_MESG", "");
-        auto callTime = std::chrono::duration_cast<std::chrono::microseconds>(timeBefore.time_since_epoch()).count();
-        HISYSEVENT_BEHAVIOR("DRM_CERTIFICATE_DOWNLOAD_INFO", "MODULE", "DRM_SERVICE", "TIME", callTime,
-            "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID", std::to_string(HiTraceChain::GetId().GetChainId()),
-            "DRM_name", statisticsInfo_.pluginName, "DRM_uuid", statisticsInfo_.pluginUuid, "CLIENT_VERSION",
-            statisticsInfo_.versionName, "GENERATION_DURATION", generationDuration_, "GENERATION_RESULT",
-            generationResult_, "PROCESS_DURATION", 0, "PROCESS_RESULT", "genration failed", "CALL_SERVER_TIME", 0,
-            "SERVER_COST_DURATION", 0, "SERVER_RESULT", "");
+        ReportFaultEvent(ret, "GenerateKeySystemRequest failed", "");
+        generationResult_ = "failed";
+        ReportCertificateBehaviorEvent(statisticsInfo_, generationDuration_, generationResult_, 0,
+            "GenerateKeySystemRequest failed", 0, 0, "");
         return ret;
     }
     generationResult_ = "success";
@@ -150,30 +143,19 @@ int32_t MediaKeySystemService::ProcessKeySystemResponse(const std::vector<uint8_
     auto timeBefore = std::chrono::system_clock::now();
     ret = hdiKeySystem_->ProcessKeySystemResponse(response);
     auto timeAfter = std::chrono::system_clock::now();
-    auto callTime = std::chrono::duration_cast<std::chrono::microseconds>(timeBefore.time_since_epoch()).count();
     auto duration = timeAfter - timeBefore;
     auto processDuration = duration.count();
     if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemService::ProcessKeySystemResponse failed.");
         std::string responseString = std::string(reinterpret_cast<const char*>(response.data()), response.size());
-        HISYSEVENT_FAULT("DRM_COMMON_FAILURE", "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID",
-            std::to_string(HiTraceChain::GetId().GetChainId()), "ERROR_CODE", ret,
-            "ERROR_MESG", "ProcessKeySystemResponse failed", "EXTRA_MESG", responseString);
-        HISYSEVENT_BEHAVIOR("DRM_CERTIFICATE_DOWNLOAD_INFO", "MODULE", "DRM_SERVICE", "TIME", callTime,
-            "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID", std::to_string(HiTraceChain::GetId().GetChainId()),
-            "DRM_name", statisticsInfo_.pluginName, "DRM_uuid", statisticsInfo_.pluginUuid,
-            "CLIENT_VERSION", statisticsInfo_.versionName, "GENERATION_DURATION", generationDuration_,
-            "GENERATION_RESULT", generationResult_, "PROCESS_DURATION", processDuration, "PROCESS_RESULT", "failed",
-            "CALL_SERVER_TIME", 0, "SERVER_COST_DURATION", 0, "SERVER_RESULT", "");
+        ReportFaultEvent(ret, "ProcessKeySystemResponse failed", responseString);
+        ReportCertificateBehaviorEvent(statisticsInfo_, generationDuration_, generationResult_, processDuration,
+            "failed", 0, 0, "");
         return ret;
     }
     DRM_INFO_LOG("MediaKeySystemService::ProcessKeySystemResponse exit.");
-    HISYSEVENT_BEHAVIOR("DRM_CERTIFICATE_DOWNLOAD_INFO", "MODULE", "DRM_SERVICE", "TIME", callTime,
-        "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID", std::to_string(HiTraceChain::GetId().GetChainId()),
-        "DRM_name", statisticsInfo_.pluginName, "DRM_uuid", statisticsInfo_.pluginUuid, "CLIENT_VERSION",
-        statisticsInfo_.versionName.c_str(), "GENERATION_DURATION", generationDuration_,
-        "GENERATION_RESULT", generationResult_, "PROCESS_DURATION", processDuration, "PROCESS_RESULT", "success",
-        "CALL_SERVER_TIME", 0, "SERVER_COST_DURATION", 0, "SERVER_RESULT", "");
+    ReportCertificateBehaviorEvent(statisticsInfo_, generationDuration_, generationResult_, processDuration,
+        "success", 0, 0, "");
     return ret;
 }
 
@@ -251,17 +233,13 @@ int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::Co
         hdiMediaKeySession);
     if (hdiMediaKeySession == nullptr) {
         DRM_ERR_LOG("hdiKeySystem_ CreateMediaKeySession failed.");
-        HISYSEVENT_FAULT("DRM_COMMON_FAILURE", "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID",
-            std::to_string(HiTraceChain::GetId().GetChainId()), "ERROR_CODE", DRM_SERVICE_ERROR,
-            "ERROR_MESG", "CreateMediaKeySession failed", "EXTRA_MESG", "");
+        ReportFaultEvent(DRM_SERVICE_ERROR, "CreateMediaKeySession failed", "");
         return DRM_SERVICE_ERROR;
     }
     keySessionService = new (std::nothrow) MediaKeySessionService(hdiMediaKeySession, statisticsInfo_);
     if (keySessionService == nullptr) {
         DRM_ERR_LOG("MediaKeySystemService::CreateMediaKeySession allocation failed.");
-        HISYSEVENT_FAULT("DRM_COMMON_FAILURE", "APP_NAME", statisticsInfo_.bundleName, "INSTANCE_ID",
-            std::to_string(HiTraceChain::GetId().GetChainId()), "ERROR_CODE", DRM_ALLOC_ERROR,
-            "ERROR_MESG", "CreateMediaKeySession failed", "EXTRA_MESG", "");
+        ReportFaultEvent(DRM_ALLOC_ERROR, "CreateMediaKeySession failed", "");
         return DRM_ALLOC_ERROR;
     }
     keySessionService->SetMediaKeySessionServiceOperatorsCallback(this);
