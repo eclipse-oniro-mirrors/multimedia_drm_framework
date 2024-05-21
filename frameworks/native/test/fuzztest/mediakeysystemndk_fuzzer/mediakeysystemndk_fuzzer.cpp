@@ -63,7 +63,8 @@ Drm_ErrCode TestSystemEventCallBackWithObj(MediaKeySystem *mediaKeySystem, DRM_E
     uint8_t *info, int32_t infoLen, char *extra)
 {
     DRM_INFO_LOG("TestSystemEventCallBackWithObj ok");
-    DRM_INFO_LOG("Event: the mediaKeySystem object is: %x", FAKE_POINTER(mediaKeySystem));
+    DRM_INFO_LOG("Event: the mediaKeySystem object is: 0x%{public}06" PRIXPTR,
+        FAKE_POINTER(mediaKeySystem));
     DRM_INFO_LOG("Event: event type: %d", eventType);
     DRM_INFO_LOG("Event: the info body is: ");
     if (info != nullptr) {
