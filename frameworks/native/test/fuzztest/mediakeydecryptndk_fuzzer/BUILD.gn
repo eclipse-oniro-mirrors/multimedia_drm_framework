@@ -13,7 +13,7 @@
 
 import("//build/ohos.gni")
 import("//build/test.gni")
-module_output_path = "drm_framework/drm_framework_fuzztest"
+module_output_path = "drm_framework/drm_framework"
 
 config("drm_framework_capi_fuzztest_decrypt_config") {
   include_dirs = [
