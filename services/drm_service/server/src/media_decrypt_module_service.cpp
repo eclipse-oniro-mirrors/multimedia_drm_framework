@@ -172,7 +172,7 @@ void MediaDecryptModuleService::ReportDecryptionStatisticEvent()
         meta->SetData(Media::Tag::DRM_DECRYPT_AVG_SIZE,
             static_cast<uint32_t>(decryptStatustics_.decryptSumSize/decryptStatustics_.decryptTimes));
         meta->SetData(Media::Tag::DRM_DECRYPT_AVG_DURATION,
-            decryptStatustics_.decryptSumDuration/decryptStatustics_.decryptTimes);
+            static_cast<uint32_t>(decryptStatustics_.decryptSumDuration/decryptStatustics_.decryptTimes));
     } else {
         meta->SetData(Media::Tag::DRM_DECRYPT_AVG_SIZE, 0);
         meta->SetData(Media::Tag::DRM_DECRYPT_AVG_DURATION, 0);

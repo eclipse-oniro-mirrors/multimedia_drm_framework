@@ -34,7 +34,7 @@ using namespace OHOS::HDI;
 struct DecryptStatustics {
     uint32_t decryptTimes = 0;
     uint64_t decryptSumSize = 0;
-    uint32_t decryptSumDuration = 0;
+    uint64_t decryptSumDuration = 0;
     uint32_t decryptMaxSize = 0;
     uint32_t decryptMaxDuration = 0;
 };
