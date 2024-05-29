@@ -116,9 +116,7 @@ int32_t MediaKeySystemService::GenerateKeySystemRequest(std::vector<uint8_t> &re
     int32_t ret = DRM_OK;
     auto timeBefore = std::chrono::system_clock::now();
     ret = hdiKeySystem_->GenerateKeySystemRequest(defaultUrl, request);
-    auto timeAfter = std::chrono::system_clock::now();
-    auto duration = timeAfter - timeBefore;
-    generationDuration_ = duration.count();
+    generationDuration_ = CalculateTimeDiff(timeBefore, std::chrono::system_clock::now());
     if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemService::GenerateKeySystemRequest failed.");
         ReportFaultEvent(ret, "GenerateKeySystemRequest failed", "");
@@ -142,9 +140,7 @@ int32_t MediaKeySystemService::ProcessKeySystemResponse(const std::vector<uint8_
     int32_t ret = DRM_OK;
     auto timeBefore = std::chrono::system_clock::now();
     ret = hdiKeySystem_->ProcessKeySystemResponse(response);
-    auto timeAfter = std::chrono::system_clock::now();
-    auto duration = timeAfter - timeBefore;
-    auto processDuration = duration.count();
+    uint32_t processDuration = CalculateTimeDiff(timeBefore, std::chrono::system_clock::now());
     if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemService::ProcessKeySystemResponse failed.");
         std::string responseString = std::string(reinterpret_cast<const char*>(response.data()), response.size());

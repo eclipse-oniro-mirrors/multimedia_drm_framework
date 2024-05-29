@@ -27,6 +27,8 @@ namespace DrmStandard {
         std::string bundleName;
     };
     std::string __attribute__((visibility("default"))) GetClientBundleName(int32_t uid);
+    uint32_t __attribute__((visibility("default"))) CalculateTimeDiff(std::chrono::system_clock::time_point timeBefore,
+        std::chrono::system_clock::time_point timeAfter);
     const std::string currentSessionNum = "currentSessionNum";
     const std::string version = "version";
     const std::string errorDecryptNumber = "errorDecryptNumber";

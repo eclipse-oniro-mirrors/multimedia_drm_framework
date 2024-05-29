@@ -37,7 +37,6 @@ using namespace OHOS::HiviewDFX;
 #ifdef ENABLE_DRM_SYSEVENT_CONTROL
 struct DrmServiveInfo {
     std::string module;
-    uint32_t currentTime;
     std::string serviceName;
     std::string action;
     uint32_t memoryUsage;
@@ -45,7 +44,6 @@ struct DrmServiveInfo {
 
 struct DrmLicenseInfo {
     std::string module;
-    uint32_t currentTime;
     std::string appName;
     std::string instanceId;
     std::string drmName;
@@ -60,7 +58,6 @@ struct DrmLicenseInfo {
 
 struct DrmCertificateInfo {
     std::string module;
-    uint32_t currentTime;
     std::string appName;
     std::string instanceId;
     std::string drmName;

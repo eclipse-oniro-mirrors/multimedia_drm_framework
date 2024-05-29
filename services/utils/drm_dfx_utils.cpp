@@ -17,6 +17,7 @@
 #include "drm_log.h"
 #include "iservice_registry.h"
 #include "bundle_mgr_interface.h"
+#include "bundle_mgr_proxy.h"
 #include "system_ability_definition.h"
 
 namespace OHOS {
@@ -51,6 +52,14 @@ std::string __attribute__((visibility("default"))) GetClientBundleName(int32_t u
     DRM_INFO_LOG("BundleName:%{public}s", bundleName.c_str());
 
     return bundleName;
+}
+
+uint32_t __attribute__((visibility("default"))) CalculateTimeDiff(std::chrono::system_clock::time_point timeBefore,
+    std::chrono::system_clock::time_point timeAfter)
+{
+    auto duration = timeAfter - timeBefore;
+    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+    return static_cast<uint32_t>(milliseconds.count());
 }
 }  // namespace DrmStandard
 }  // namespace OHOS

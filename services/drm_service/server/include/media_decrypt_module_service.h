@@ -52,8 +52,7 @@ public:
         IMediaDecryptModuleService::DrmBuffer &srcBuffer, IMediaDecryptModuleService::DrmBuffer &dstBuffer,
         uint32_t bufLen);
     void ReportDecryptionStatisticEvent();
-    uint32_t CalculateTimeDiff(std::chrono::system_clock::time_point timeBefore,
-        std::chrono::system_clock::time_point timeAfter);
+
 private:
     std::mutex moduleLock_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaDecryptModule> hdiMediaDecryptModule_;

@@ -87,12 +87,11 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
     memset_s(&drmDstBuffer, sizeof(drmSrcBuffer), 0, sizeof(drmDstBuffer));
     SetDrmBufferInfo(&drmSrcBuffer, &drmDstBuffer, srcBuffer, dstBuffer, bufLen);
     ret = hdiMediaDecryptModule_->DecryptMediaData(secureDecodrtState, cryptInfoTmp, drmSrcBuffer, drmDstBuffer);
-    auto timeAfter = std::chrono::system_clock::now();
-    uint32_t durationAsInt = CalculateTimeDiff(timeBefore, timeAfter);
+    uint32_t decryptDuration = CalculateTimeDiff(timeBefore, std::chrono::system_clock::now());
     errCode_ = ret;
-    decryptStatustics_.decryptSumDuration += durationAsInt;
-    if (decryptStatustics_.decryptMaxDuration < durationAsInt) {
-        decryptStatustics_.decryptMaxDuration = durationAsInt;
+    decryptStatustics_.decryptSumDuration += decryptDuration;
+    if (decryptStatustics_.decryptMaxDuration < decryptDuration) {
+        decryptStatustics_.decryptMaxDuration = decryptDuration;
     }
     if (ret != DRM_OK) {
         (void)::close(srcBuffer.fd);
@@ -111,14 +110,6 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
     errMessage_ = "no error";
     DRM_INFO_LOG("MediaDecryptModuleService::DecryptMediaData exit.");
     return ret;
-}
-
-uint32_t MediaDecryptModuleService::CalculateTimeDiff(std::chrono::system_clock::time_point timeBefore,
-    std::chrono::system_clock::time_point timeAfter)
-{
-    auto duration = timeAfter - timeBefore;
-    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-    return static_cast<uint32_t>(milliseconds.count());
 }
 
 void MediaDecryptModuleService::SetCryptInfo(OHOS::HDI::Drm::V1_0::CryptoInfo &cryptInfoTmp,
