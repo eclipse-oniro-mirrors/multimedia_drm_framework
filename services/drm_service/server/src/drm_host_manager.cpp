@@ -311,9 +311,12 @@ int32_t DrmHostManager::GetSevices(std::string &name, bool *isSurpported)
     std::vector<std::string> serviceName;
     /* The plugin service corresponding to name has been started, no need to reload, just mark the count. */
     if (drmHostServieProxyMap[name] != nullptr) {
-        pluginCountMap[name]++;
-        DRM_DEBUG_LOG("DrmHostManager::GetSevices, the plugin service has been pulled up.");
-        return DRM_OK;
+        ret = drmHostServieProxyMap[name]->IsMediaKeySystemSupported(name, "", SECURE_UNKNOWN, *isSurpported);
+        if (ret == DRM_OK) {
+            pluginCountMap[name]++;
+            DRM_DEBUG_LOG("DrmHostManager::GetSevices, the plugin service has been pulled up.");
+            return DRM_OK;
+        }
     }
     auto servmgr = IServiceManager::Get();
     ret = servmgr->ListServiceByInterfaceDesc(serviceName, "ohos.hdi.drm.v1_0.IMediaKeySystemFactory");
@@ -321,15 +324,15 @@ int32_t DrmHostManager::GetSevices(std::string &name, bool *isSurpported)
         DRM_ERR_LOG("ListServiceByInterfaceDesc faild, return Code:%{public}d", ret);
         return ret;
     }
+    /*
+     * If the plugin is configured with lazy loading, read the service name from the configuration file.
+     * If lazy loading is not configured, traverse the service bound by the interface descriptor, and obtain
+     * the plugin service instance through the uuid and issuport interfaces
+    */
+    loadPluginInfo(PLUGIN_LAZYLOAD_CONFIG_PATH);
     if (lazyLoadPluginInfoMap.count(name) > 0) {
         auto it = std::find(serviceName.begin(), serviceName.end(), lazyLoadPluginInfoMap[name]);
         if (it == serviceName.end()) {
-            /*
-             * If the plugin is configured with lazy loading, read the service name from the configuration file.
-             * If lazy loading is not configured, traverse the service bound by the interface descriptor, and obtain
-             * the plugin service instance through the uuid and issuport interfaces
-            */
-            loadPluginInfo(PLUGIN_LAZYLOAD_CONFIG_PATH);
             sptr<IDeviceManager> deviceMgr = IDeviceManager::Get();
             if (deviceMgr == nullptr) {
                 DRM_ERR_LOG("DrmHostManager:GetSevices deviceMgr == nullptr");
@@ -379,7 +382,6 @@ int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &name, bool *isSur
         ReleaseSevices(name);
         return DRM_SERVICE_ERROR;
     }
-    *isSurpported = true;
     drmHostServieProxyMap[name] = nullptr;
     ReleaseSevices(name);
     DRM_INFO_LOG("DrmHostManager::IsMediaKeySystemSupported one parameters exit, isSurpported:%{public}d.",
@@ -463,7 +465,7 @@ int32_t DrmHostManager::CreateMediaKeySystem(std::string &name, sptr<IMediaKeySy
     std::unique_lock<std::shared_mutex> lock(lazyLoadPluginInfoMapMtx);
     int32_t ret = GetSevices(name, &isSurpported);
     if (ret != DRM_OK || drmHostServieProxyMap[name] == nullptr) {
-        DRM_INFO_LOG("DrmHostManager::CreateMediaKeySystem faild.");
+        DRM_ERR_LOG("DrmHostManager::CreateMediaKeySystem faild.");
         return ret;
     }
     drmHostDeathRecipient_ = new DrmHostDeathRecipient();

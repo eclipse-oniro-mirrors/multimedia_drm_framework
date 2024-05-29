@@ -126,7 +126,7 @@ int32_t MediaKeySessionService::GenerateMediaKeyRequest(
     ret = hdiMediaKeySession_->GenerateMediaKeyRequest(hdiMediaKeyRequestInfo, hdiMediaKeyRequest);
     auto timeAfter = std::chrono::system_clock::now();
     auto duration = timeAfter - timeBefore;
-    generationDuration_ = duration.count();
+    generationDuration_ = (uint32_t)duration.count();
     if (ret != DRM_OK) {
         generationResult_ = "failed";
         DRM_ERR_LOG("MediaKeySessionService::GenerateMediaKeyRequest failed.");

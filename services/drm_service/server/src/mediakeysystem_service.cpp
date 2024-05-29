@@ -118,7 +118,7 @@ int32_t MediaKeySystemService::GenerateKeySystemRequest(std::vector<uint8_t> &re
     ret = hdiKeySystem_->GenerateKeySystemRequest(defaultUrl, request);
     auto timeAfter = std::chrono::system_clock::now();
     auto duration = timeAfter - timeBefore;
-    generationDuration_ = duration.count();
+    generationDuration_ = (uint32_t)duration.count();
     if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemService::GenerateKeySystemRequest failed.");
         ReportFaultEvent(ret, "GenerateKeySystemRequest failed", "");
