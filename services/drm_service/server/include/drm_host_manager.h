@@ -55,7 +55,7 @@ struct Message {
     Message(Type t, std::string pluginName, ExtraInfo info) : type(t), name(pluginName), extraInfo(info) {}
 };
 
-#define OEM_CERTIFICATE_PATH "/system/lib64/oem_certificate_service"
+#define OEM_CERTIFICATE_PATH "/system/lib64/oem_certificate_service/"
 #define PLUGIN_LAZYLOAD_CONFIG_PATH "/etc/drm/drm_plugin_lazyloding.cfg"
 
 typedef void (*MediaKeySystemCallBack)(std::string &, ExtraInfo);
