@@ -76,7 +76,7 @@ private:
     StatisticsInfo statisticsInfo_;
     std::string generationResult_;
     std::string mediaKeyType_;
-    uint32_t generationDuration_;
+    uint32_t generationDuration_ = 0;
 };
 
 class IMediaKeySessionServiceOperatorsCallback : public virtual RefBase {
