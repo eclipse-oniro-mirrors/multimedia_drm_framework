@@ -97,10 +97,8 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
         (void)::close(srcBuffer.fd);
         (void)::close(dstBuffer.fd);
         DRM_ERR_LOG("MediaDecryptModuleService::DecryptMediaData failed.");
-        std::string decryptKeyId;
-        decryptKeyId.assign(cryptInfoTmp.keyId.begin(), cryptInfoTmp.keyId.end());
-        std::string decryptKeyIv;
-        decryptKeyIv.assign(cryptInfoTmp.iv.begin(), cryptInfoTmp.iv.end());
+        std::string decryptKeyId = CastToHexString(cryptInfoTmp.keyId);
+        std::string decryptKeyIv = CastToHexString(cryptInfoTmp.iv);
         ReportDecryptionFaultEvent(ret, "DecryptMediaData failed",
             std::to_string(static_cast<int32_t>(cryptInfoTmp.type)), decryptKeyId, decryptKeyIv);
         return ret;

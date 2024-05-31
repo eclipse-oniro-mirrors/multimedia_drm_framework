@@ -254,6 +254,7 @@ void DrmEvent::WriteServiceEvent(std::string eventName, OHOS::HiviewDFX::HiSysEv
     int32_t res = DRM_ERR_OK;
     res = HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName, type,
         "MODULE", info.module,
+        "TIME", info.currentTime,
         "SERVICE_NAME", info.serviceName,
         "ACTION", info.action,
         "MEMORY", info.memoryUsage);
@@ -270,6 +271,7 @@ void DrmEvent::WriteLicenseEvent(std::string eventName, OHOS::HiviewDFX::HiSysEv
     int32_t res = DRM_ERR_OK;
     res = HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName, type,
         "MODULE", info.module,
+        "TIME", info.currentTime,
         "APP_NAME", info.appName,
         "INSTANCE_ID", info.instanceId,
         "DRM_NAME", info.drmName,
@@ -293,6 +295,7 @@ void DrmEvent::WriteCertificateEvent(std::string eventName, OHOS::HiviewDFX::HiS
     int32_t res = DRM_ERR_OK;
     res = HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName, type,
         "MODULE", info.module,
+        "TIME", info.currentTime,
         "APP_NAME", info.appName,
         "INSTANCE_ID", info.instanceId,
         "DRM_NAME", info.drmName,
@@ -357,6 +360,7 @@ void ReportServiceBehaviorEvent(std::string serviceName, std::string action)
     uint32_t memoryUsage = dumpUse.GetPss(getpid());
     struct DrmServiveInfo drmServiveInfo = {
         "DRM_SERVICE",
+        0,
         serviceName,
         action,
         memoryUsage,
@@ -370,6 +374,7 @@ void ReportLicenseBehaviorEvent(StatisticsInfo statisticsInfo, std::string licen
     DrmEvent event;
     struct DrmLicenseInfo drmLicenseInfo = {
         "DRM_SERVICE",
+        0,
         GetClientBundleName(IPCSkeleton::GetCallingUid()),
         std::to_string(HiTraceChain::GetId().GetChainId()),
         statisticsInfo.pluginName,
@@ -392,6 +397,7 @@ void ReportCertificateBehaviorEvent(StatisticsInfo statisticsInfo, uint32_t gene
     DrmEvent event;
     struct DrmCertificateInfo DrmCertificateInfo = {
         "DRM_SERVICE",
+        0,
         GetClientBundleName(IPCSkeleton::GetCallingUid()),
         std::to_string(HiTraceChain::GetId().GetChainId()),
         statisticsInfo.pluginName,
