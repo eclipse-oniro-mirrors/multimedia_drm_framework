@@ -17,6 +17,7 @@
 #include "cstdio"
 #include "cstdlib"
 #include "drm_dfx.h"
+#include "drm_dfx_utils.h"
 #include <securec.h>
 #include "native_drm_common.h"
 #include "native_drm_err.h"
@@ -106,34 +107,82 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_GetMediaKeySystemsAbnorm2, TestSize.
     EXPECT_NE(errNo, 0);
 }
 
-HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_HiSysWriteFault, TestSize.Level0)
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportFaultEvent, TestSize.Level0)
 {
-    int32_t errNo = DRM_ERR_UNKNOWN;
-    errNo = DrmEvent::HiSysWriteFault("DRM_COMMON_FAILURE", "APP_NAME", "bundleName", "INSTANCE_ID",
-            "GetChainId", "ERROR_CODE", 0, "ERROR_MESG", "GenerateMediaKeyRequest failed",
-            "EXTRA_MESG", "GenerateMediaKeyRequest failed");
-    EXPECT_EQ(errNo, DRM_ERR_OK);
+    uint32_t errorCode = 0;
+    std::string errorMesg = "GenerateMediaKeyRequest failed";
+    std::string extraMesg = "";
+    ReportFaultEvent(errorCode, errorMesg, extraMesg);
 }
 
-HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_HiSysWriteBehavior, TestSize.Level0)
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportDecryptionFaultEvent, TestSize.Level0)
 {
-    int32_t errNo = DRM_ERR_UNKNOWN;
-    errNo = DrmEvent::HiSysWriteBehavior("DRM_SERVICE_INFO", "MODULE", "DRM_SERVICE", "TIME", 1, "SERVICE_NAME",
-        "DRM_OEM_SERVICE", "ACTION", "start", "MEMORY", 1);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
+    uint32_t errorCode = 0;
+    std::string errorMesg = "Decryption failed";
+    std::string decryptAlgo = "decryptAlgo";
+    std::string decryptKeyid = "decryptKeyid";
+    std::string decryptIv = "decryptIv";
+    ReportDecryptionFaultEvent(errorCode, errorMesg, decryptAlgo, decryptKeyid, decryptIv);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportServiceBehaviorEvent, TestSize.Level0)
+{
+    std::string serviceName = "DRM_OEM_SERVICE";
+    std::string action = "start";
+    ReportServiceBehaviorEvent(serviceName, action);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportLicenseBehaviorEvent, TestSize.Level0)
+{
+    std::string mediaKeyType = "keytype";
+    std::string generationResult = "success";
+    std::string processResult = "success";
+    uint32_t generationDuration = 10;
+    uint32_t processDuration = 1;
+    struct StatisticsInfo statisticsInfo = {
+        "123123",
+        "clearplay",
+        "vendor",
+        "clearplay_v1",
+        "bundleName",
+    };
+    ReportLicenseBehaviorEvent(statisticsInfo, mediaKeyType, generationDuration, generationResult,
+    processDuration, processResult);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportCertificateBehaviorEvent, TestSize.Level0)
+{
+    std::string mediaKeyType = "keytype";
+    std::string generationResult = "success";
+    std::string processResult = "success";
+    uint32_t generationDuration = 10;
+    uint32_t processDuration = 1;
+    uint32_t callServerTime = 1;
+    uint32_t serverCostDuration = 19;
+    std::string serverResult = "serverResult";
+    struct StatisticsInfo statisticsInfo = {
+        "123123",
+        "clearplay",
+        "vendor",
+        "clearplay_v1",
+        "bundleName",
+    };
+    ReportCertificateBehaviorEvent(statisticsInfo, generationDuration, generationResult, processDuration,
+        "GenerateKeySystemRequest failed", callServerTime, serverCostDuration, serverResult);
 }
 
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_HiSysWriteStatistic, TestSize.Level0)
 {
     int32_t errNo = DRM_ERR_UNKNOWN;
     int32_t uid = 324442;
-    errNo = DrmEvent::GetInstance().CreateMediaInfo(uid);
+    int32_t instanceId = 324442;
+    errNo = DrmEvent::GetInstance().CreateMediaInfo(uid, instanceId);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     std::shared_ptr<OHOS::Media::Meta> meta = std::make_shared<Media::Meta>();
     meta->SetData(Media::Tag::DRM_ERROR_MESG, "errMessage");
-    errNo = DrmEvent::GetInstance().AppendMediaInfo(meta);
+    errNo = DrmEvent::GetInstance().AppendMediaInfo(meta, instanceId);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = DrmEvent::GetInstance().ReportMediaInfo();
+    errNo = DrmEvent::GetInstance().ReportMediaInfo(instanceId);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 }
 
@@ -141,9 +190,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_HiSysWriteStatisticAbNormal, TestSiz
 {
     int32_t errNo = DRM_ERR_UNKNOWN;
     int32_t uid = 324442;
-    DrmEvent::GetInstance().CreateMediaInfo(uid);
+    int32_t instanceId = 324442;
+    DrmEvent::GetInstance().CreateMediaInfo(uid, instanceId);
     std::shared_ptr<OHOS::Media::Meta> meta = std::make_shared<Media::Meta>();
-    errNo = DrmEvent::GetInstance().AppendMediaInfo(meta);
+    errNo = DrmEvent::GetInstance().AppendMediaInfo(meta, instanceId);
     EXPECT_NE(errNo, DRM_ERR_OK);
 }
 } // DrmStandard
