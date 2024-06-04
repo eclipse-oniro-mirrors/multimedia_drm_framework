@@ -87,6 +87,48 @@ typedef struct MediaKeySession_Callback {
 } MediaKeySession_Callback;
 
 /**
+ * @brief Call back will be invoked when event triggers.
+ * @param mediaKeySessoin MediaKeySession instance.
+ * @param eventType Event type.
+ * @param info Event info gotten from media key session.
+ * @param infoLen Event info len.
+ * @param extra Extra info gotten from media key session.
+ * @return Drm_ErrCode.
+ * @since 12
+ * @version 1.0
+ */
+typedef Drm_ErrCode (*OH_MediaKeySession_EventCallback)(MediaKeySession *mediaKeySessoin, DRM_EventType eventType,
+    uint8_t *info, int32_t infoLen, char *extra);
+
+/**
+ * @brief Call back will be invoked when key changes.
+ * @param mediaKeySessoin MediaKeySession instance.
+ * @param keysInfo Key info gotten from media key system.
+ * @param newKeysAvailable Whether new keys available.
+ * @return DRM_ERR_INVALID_VAL when the params checked failure, return DRM_ERR_OK when function called successfully.
+ * @since 12
+ * @version 1.0
+ */
+typedef Drm_ErrCode (*OH_MediaKeySession_KeyChangeCallback)(MediaKeySession *mediaKeySessoin, DRM_KeysInfo *keysInfo,
+    bool newKeysAvailable);
+
+/**
+ * @brief MediaKeySession_Callback struct, used to listen event like key expired and key change etc..
+ * @since 12
+ * @version 1.0
+ */
+typedef struct OH_MediaKeySession_Callback {
+    /**
+     * Normal event callback like key expired etc..
+     */
+    OH_MediaKeySession_EventCallback eventCallback;
+    /**
+     * Key change callback for keys change event.
+     */
+    OH_MediaKeySession_KeyChangeCallback keyChangeCallback;
+} OH_MediaKeySession_Callback;
+
+/**
  * @brief Generate media key request.
  * @param mediaKeySession Media key session instance.
  * @param info Media key request info.
@@ -207,6 +249,17 @@ Drm_ErrCode OH_MediaKeySession_RequireSecureDecoderModule(MediaKeySession *media
  */
 Drm_ErrCode OH_MediaKeySession_SetMediaKeySessionCallback(MediaKeySession *mediaKeySessoin,
     MediaKeySession_Callback *callback);
+
+/**
+ * @brief Set media key session event callback.
+ * @param mediaKeySession Media key session instance.
+ * @param callback Callback to be set to the media key session.
+ * @return DRM_ERR_INVALID_VAL when the params checked failure, return DRM_ERR_OK when function called successfully.
+ * @since 12
+ * @version 1.0
+ */
+Drm_ErrCode OH_MediaKeySession_SetCallback(MediaKeySession *mediaKeySessoin,
+    OH_MediaKeySession_Callback *callback);
 
 /**
  * @brief Release the resource before the session gonna be unused.

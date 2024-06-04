@@ -52,13 +52,15 @@ using namespace DrmStandard;
 const int32_t MEMMAXSIZE = 128;
 const int32_t OFFRESPONSELEN = 50;
 const int32_t DATAMAXSIZE = 12288;
+
+namespace {
+const int32_t STEP_ONE = 1;
+const int32_t STEP_TWO = 2;
+const int32_t STEP_THREE = 3;
+const int32_t STEP_FOUR = 4;
+}
 namespace OHOS {
 namespace DrmStandard {
-Drm_ErrCode TestsessionEventCallBack(DRM_EventType eventType, unsigned char *info, int32_t infoLen, char *extra)
-{
-    DRM_INFO_LOG("TestsessionEventCallBack ok");
-    return DRM_ERR_OK;
-}
 
 Drm_ErrCode TestSessoinEventCallBack(DRM_EventType eventType, unsigned char *info, int32_t infoLen, char *extra)
 {
@@ -69,6 +71,41 @@ Drm_ErrCode TestSessoinEventCallBack(DRM_EventType eventType, unsigned char *inf
 Drm_ErrCode TestSessoinKeyChangeCallBack(DRM_KeysInfo *keysInfo, bool hasNewGoodKeys)
 {
     DRM_INFO_LOG("TestSessoinKeyChangeCallBack ok");
+    return DRM_ERR_OK;
+}
+
+Drm_ErrCode TestSessoinEventCallBackWithObj(MediaKeySession *mediaKeySessoin, DRM_EventType eventType,
+    uint8_t *info, int32_t infoLen, char *extra)
+{
+    DRM_INFO_LOG("TestSessoinEventCallBackWithObj ok");
+    DRM_INFO_LOG("Event: the mediaKeySession object is: %x", FAKE_POINTER(mediaKeySessoin));
+    DRM_INFO_LOG("Event: the event type: %d", eventType);
+    DRM_INFO_LOG("Event: the info body is: ");
+    if (info != nullptr) {
+        for (int32_t i = 0; i < infoLen; i++) {
+            DRM_INFO_LOG("%x", info[i]);
+        }
+    }
+    if (extra != nullptr) {
+        DRM_INFO_LOG("Event: the extra is: %s", extra);
+    }
+    return DRM_ERR_OK;
+}
+
+Drm_ErrCode TestSessoinKeyChangeCallBackWithObj(MediaKeySession *mediaKeySessoin, DRM_KeysInfo *keysInfo,
+    bool hasNewGoodKeys)
+{
+    DRM_INFO_LOG("TestSessoinKeyChangeCallBackWithObj ok");
+    DRM_INFO_LOG("KeyChangedEvent: the mediaKeySession object is: %x", FAKE_POINTER(mediaKeySessoin));
+    for (uint32_t i = 0; i < keysInfo->keysInfoCount; i++) {
+        for (uint32_t j = 0; j < MAX_KEY_ID_LEN; j += STEP_FOUR) {
+            DRM_INFO_LOG("KeyChangedEvent: keyid is: ");
+            DRM_INFO_LOG("%x %x %x %x",
+                keysInfo->keyId[i][j], keysInfo->keyId[i][j + STEP_ONE],
+                keysInfo->keyId[i][j + STEP_TWO], keysInfo->keyId[i][j + STEP_THREE]);
+        }
+        DRM_INFO_LOG("KeyChangedEvent: statusValue %s", keysInfo->statusValue[i]);
+    }
     return DRM_ERR_OK;
 }
 
@@ -278,6 +315,11 @@ bool MediaKeysessionNdkFuzzer::FuzzTestMediaKeySessionsSetUpLicenseNdk(uint8_t *
     OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &ContentProtectionLevel, &mediaKeySession);
     MediaKeySession_Callback sessionCallback = { &TestSessoinEventCallBack, &TestSessoinKeyChangeCallBack };
     OH_MediaKeySession_SetMediaKeySessionCallback(mediaKeySession, &sessionCallback);
+
+    OH_MediaKeySession_Callback sessionCallbackObj = { &TestSessoinEventCallBackWithObj,
+        &TestSessoinKeyChangeCallBackWithObj };
+    OH_MediaKeySession_SetCallback(mediaKeySession, &sessionCallbackObj);
+
     GenerateLicense();
     char *mimeType = reinterpret_cast<char *>(rawData);
     DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_UNKNOWN;
