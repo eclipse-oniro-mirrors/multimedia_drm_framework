@@ -17,6 +17,7 @@
 #include "drm_dfx_utils.h"
 #include <unistd.h>
 #include "drm_log.h"
+#include "dump_usage.h"
 #include "nlohmann/json.hpp"
 #include "native_drm_err.h"
 #include "securec.h"
@@ -117,14 +118,13 @@ void DrmEvent::StatisicsHiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::EventType t
                     "EVENTS", infoArr);
 }
 
-int32_t DrmEvent::AppendMediaInfo(const std::shared_ptr<Media::Meta>& meta)
+int32_t DrmEvent::AppendMediaInfo(const std::shared_ptr<Media::Meta>& meta, uint64_t instanceId)
 {
     DRM_INFO_LOG("AppendMediaInfo.");
     if (meta == nullptr || meta->Empty()) {
         DRM_INFO_LOG("Insert meta is empty.");
         return DRM_ERR_INVALID_STATE;
     }
-    uint64_t instanceId = HiTraceChain::GetId().GetChainId();
 
     std::lock_guard<std::mutex> lock(collectMut_);
     auto idMapIt = idMap_.find(instanceId);
@@ -152,11 +152,10 @@ int32_t DrmEvent::AppendMediaInfo(const std::shared_ptr<Media::Meta>& meta)
     return DRM_ERR_OK;
 }
 
-int32_t DrmEvent::CreateMediaInfo(int32_t uid)
+int32_t DrmEvent::CreateMediaInfo(int32_t uid, uint64_t instanceId)
 {
     DRM_INFO_LOG("CreateMediaInfo.");
     std::lock_guard<std::mutex> lock(collectMut_);
-    uint64_t instanceId = HiTraceChain::GetId().GetChainId();
     DRM_INFO_LOG("CreateMediaInfo uid is: %{public}" PRId32 " instanceId is: %{public}." PRIu64, uid, instanceId);
     auto instanceIdMap = idMap_.find(instanceId);
     if (instanceIdMap != idMap_.end()) {
@@ -177,9 +176,8 @@ int32_t DrmEvent::CreateMediaInfo(int32_t uid)
     return DRM_ERR_OK;
 }
 
-int32_t DrmEvent::ReportMediaInfo()
+int32_t DrmEvent::ReportMediaInfo(uint64_t instanceId)
 {
-    uint64_t instanceId = HiTraceChain::GetId().GetChainId();
     auto currentTime = std::chrono::system_clock::now();
     auto diff = currentTime - currentTime_;
     auto hour = std::chrono::duration_cast<std::chrono::hours>(diff).count();
@@ -248,6 +246,211 @@ int32_t DrmEvent::StatisticsEventReport()
     currentTime_ = currentTime;
     reportMediaInfoMap_.clear();
     return DRM_ERR_OK;
+}
+
+void DrmEvent::WriteServiceEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
+    DrmServiveInfo &info)
+{
+    int32_t res = DRM_ERR_OK;
+    res = HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName, type,
+        "MODULE", info.module,
+        "TIME", info.currentTime,
+        "SERVICE_NAME", info.serviceName,
+        "ACTION", info.action,
+        "MEMORY", info.memoryUsage);
+    if (res != DRM_ERR_OK) {
+        DRM_ERR_LOG("EventWrite failed, res = %d", res);
+    } else {
+        DRM_INFO_LOG("EventWrite success");
+    }
+}
+
+void DrmEvent::WriteLicenseEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
+    DrmLicenseInfo &info)
+{
+    int32_t res = DRM_ERR_OK;
+    res = HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName, type,
+        "MODULE", info.module,
+        "TIME", info.currentTime,
+        "APP_NAME", info.appName,
+        "INSTANCE_ID", info.instanceId,
+        "DRM_NAME", info.drmName,
+        "DRM_UUID", info.drmUuid,
+        "CLIENT_VERSION", info.clientVersion,
+        "LICENSE_TYPE", info.licenseType,
+        "GENERATION_DURATION", info.generationDuration,
+        "GENERATION_RESULT", info.generationResult,
+        "PROCESS_DURATION", info.processDuration,
+        "PROCESS_RESULT", info.processResult);
+    if (res != DRM_ERR_OK) {
+        DRM_ERR_LOG("EventWrite failed, res = %d", res);
+    } else {
+        DRM_INFO_LOG("EventWrite success");
+    }
+}
+
+void DrmEvent::WriteCertificateEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
+    DrmCertificateInfo &info)
+{
+    int32_t res = DRM_ERR_OK;
+    res = HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName, type,
+        "MODULE", info.module,
+        "TIME", info.currentTime,
+        "APP_NAME", info.appName,
+        "INSTANCE_ID", info.instanceId,
+        "DRM_NAME", info.drmName,
+        "DRM_UUID", info.drmUuid,
+        "CLIENT_VERSION", info.clientVersion,
+        "GENERATION_DURATION", info.generationDuration,
+        "GENERATION_RESULT", info.generationResult,
+        "PROCESS_DURATION", info.processDuration,
+        "PROCESS_RESULT", info.processResult,
+        "CALL_SERVER_TIME", info.callServerTime,
+        "SERVER_COST_DURATION", info.serverCostDuration,
+        "SERVER_RESULT", info.serverResult);
+    if (res != DRM_ERR_OK) {
+        DRM_ERR_LOG("EventWrite failed, res = %d", res);
+    } else {
+        DRM_INFO_LOG("EventWrite success");
+    }
+}
+
+void DrmEvent::WriteFaultEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type, DrmFaultInfo &info)
+{
+    int32_t res = DRM_ERR_OK;
+    res = HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName, type,
+        "MODULE", info.module,
+        "APP_NAME", info.appName,
+        "INSTANCE_ID", info.instanceId,
+        "ERROR_CODE", info.errorCode,
+        "ERROR_MESG", info.errorMesg,
+        "EXTRA_MESG", info.extraMesg);
+    if (res != DRM_ERR_OK) {
+        DRM_ERR_LOG("EventWrite failed, res = %d", res);
+    } else {
+        DRM_INFO_LOG("EventWrite success");
+    }
+}
+
+void DrmEvent::WriteDecryptionEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
+    DrmDecryptionInfo &info)
+{
+    int32_t res = DRM_ERR_OK;
+
+    res = HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName, type,
+        "MODULE", info.module,
+        "APP_NAME", info.appName,
+        "INSTANCE_ID", info.instanceId,
+        "ERROR_CODE", info.errorCode,
+        "ERROR_MESG", info.errorMesg,
+        "DECRYPT_ALGO", info.decryptAlgo,
+        "DECRYPT_KEYID", info.decryptKeyid,
+        "DECRYPT_IV", info.decryptIv);
+    if (res != DRM_ERR_OK) {
+        DRM_ERR_LOG("EventWrite failed, res = %d", res);
+    } else {
+        DRM_INFO_LOG("EventWrite success");
+    }
+}
+
+void ReportServiceBehaviorEvent(std::string serviceName, std::string action)
+{
+    DrmEvent event;
+    OHOS::HiviewDFX::DumpUsage dumpUse;
+    uint32_t memoryUsage = dumpUse.GetPss(getpid());
+    auto now = std::chrono::system_clock::now();
+    auto currentTime = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
+    struct DrmServiveInfo drmServiveInfo = {
+        "DRM_SERVICE",
+        currentTime,
+        serviceName,
+        action,
+        memoryUsage,
+    };
+    event.WriteServiceEvent("DRM_SERVICE_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR, drmServiveInfo);
+}
+
+void ReportLicenseBehaviorEvent(StatisticsInfo statisticsInfo, std::string licenseType, uint32_t generationDuration,
+    std::string generationResult, uint32_t processDuration, std::string processResult)
+{
+    DrmEvent event;
+    auto now = std::chrono::system_clock::now();
+    auto currentTime = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
+    struct DrmLicenseInfo drmLicenseInfo = {
+        "DRM_SERVICE",
+        currentTime,
+        GetClientBundleName(IPCSkeleton::GetCallingUid()),
+        std::to_string(HiTraceChain::GetId().GetChainId()),
+        statisticsInfo.pluginName,
+        statisticsInfo.pluginUuid,
+        statisticsInfo.versionName,
+        licenseType,
+        generationDuration,
+        generationResult,
+        processDuration,
+        processResult,
+    };
+    event.WriteLicenseEvent("DRM_LICENSE_DOWNLOAD_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+        drmLicenseInfo);
+}
+
+void ReportCertificateBehaviorEvent(StatisticsInfo statisticsInfo, uint32_t generationDuration,
+    std::string generationResult, uint32_t processDuration, std::string processResult, uint32_t callServerTime,
+    uint32_t serverCostDuration, std::string serverResult)
+{
+    DrmEvent event;
+    auto now = std::chrono::system_clock::now();
+    auto currentTime = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
+    struct DrmCertificateInfo DrmCertificateInfo = {
+        "DRM_SERVICE",
+        currentTime,
+        GetClientBundleName(IPCSkeleton::GetCallingUid()),
+        std::to_string(HiTraceChain::GetId().GetChainId()),
+        statisticsInfo.pluginName,
+        statisticsInfo.pluginUuid,
+        statisticsInfo.versionName,
+        generationDuration,
+        generationResult,
+        processDuration,
+        processResult,
+        callServerTime,
+        serverCostDuration,
+        serverResult,
+    };
+    event.WriteCertificateEvent("DRM_CERTIFICATE_DOWNLOWD_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+        DrmCertificateInfo);
+}
+
+void ReportFaultEvent(uint32_t errorCode, std::string errorMesg, std::string extraMesg)
+{
+    DrmEvent event;
+    struct DrmFaultInfo drmFaultInfo = {
+        "DRM_SERVICE",
+        GetClientBundleName(IPCSkeleton::GetCallingUid()),
+        std::to_string(HiTraceChain::GetId().GetChainId()),
+        errorCode,
+        errorMesg,
+        extraMesg,
+    };
+    event.WriteFaultEvent("DRM_COMMON_FAILURE", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT, drmFaultInfo);
+}
+
+void ReportDecryptionFaultEvent(int32_t errorCode, std::string errorMesg, std::string decryptAlgo,
+    std::string decryptKeyid, std::string decryptIv)
+{
+    DrmEvent event;
+    struct DrmDecryptionInfo drmDecryptionInfo = {
+        "DRM_SERVICE",
+        GetClientBundleName(IPCSkeleton::GetCallingUid()),
+        std::to_string(HiTraceChain::GetId().GetChainId()),
+        errorCode,
+        errorMesg,
+        decryptAlgo,
+        decryptKeyid,
+        decryptIv,
+    };
+    event.WriteDecryptionEvent("DRM_DECRYPTION_FAILURE", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+        drmDecryptionInfo);
 }
 #endif
 } // namespace DrmStandard

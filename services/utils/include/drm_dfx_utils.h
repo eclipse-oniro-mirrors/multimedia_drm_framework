@@ -29,7 +29,6 @@ namespace DrmStandard {
     std::string __attribute__((visibility("default"))) GetClientBundleName(int32_t uid);
     const std::string currentSessionNum = "currentSessionNum";
     const std::string version = "version";
-    const std::string decryptNumber = "decryptNumber";
     const std::string errorDecryptNumber = "errorDecryptNumber";
     const std::string decryptTimes = "decryptTimes";
     const std::string vendor = "vendor";

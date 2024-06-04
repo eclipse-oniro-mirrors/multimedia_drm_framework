@@ -56,7 +56,7 @@ ohos_unittest("drm_framework_capi_unittest_v1_0") {
   cflags += [ "-DENABLE_DRM_SYSEVENT_CONTROL" ]
   sources = [
     "../../../../frameworks/native/test/common/src/http.cpp",
-    "../../../../frameworks/native/test/unittest/src/drm_framework_unittes_v2.cpp",
+    "../../../../frameworks/native/test/unittest/src/drm_framework_dfx_unittest.cpp",
     "../../../../frameworks/native/test/unittest/src/drm_framework_unittest.cpp",
     "../../../../services/utils/drm_dfx.cpp",
   ]
@@ -72,6 +72,7 @@ ohos_unittest("drm_framework_capi_unittest_v1_0") {
 
   external_deps = [
     "c_utils:utils",
+    "hidumper:lib_dump_usage",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:hitrace_meter",
