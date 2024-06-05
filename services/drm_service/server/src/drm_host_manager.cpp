@@ -252,7 +252,8 @@ std::string DrmHostManager::trim(const std::string& str) {
     return str.substr(first, (last - first + 1));
 }
 
-void DrmHostManager::parseLazyLoadService(std::ifstream& file, std::map<std::string, std::string>& lazyLoadPluginInfoMap) {
+void DrmHostManager::parseLazyLoadService(std::ifstream& file,
+    std::map<std::string, std::string>& lazyLoadPluginInfoMap) {
     std::string line;
     while (getline(file, line)) {
         line = trim(line);
