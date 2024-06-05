@@ -102,7 +102,9 @@ private:
     void OemCertificateManager();
     int32_t GetSevices(std::string &name, bool *isSurpported);
     void ReleaseHandleAndKeySystemMap(void *handle);
-    void loadPluginInfo(const std::string& filePath);
+    std::string trim(const std::string& str);
+    void parseLazyLoadService(std::ifstream& file, std::map<std::string, std::string>& lazyLoadPluginInfoMap);
+    int32_t loadPluginInfo(const std::string& filePath);
     void ReleaseSevices(std::string &name);
     StatusCallback *statusCallback_;
     std::string service_name_ = "drm_interface_service";

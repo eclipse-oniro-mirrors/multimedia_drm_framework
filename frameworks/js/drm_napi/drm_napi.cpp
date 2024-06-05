@@ -16,6 +16,7 @@
 #include "ipc_skeleton.h"
 #include "napi_param_utils.h"
 #include "drm_napi.h"
+#include "drm_api_operation.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -112,6 +113,7 @@ napi_value DrmNapi::IsMediaKeySystemSupported(napi_env env, napi_callback_info i
     DRM_INFO_LOG("DrmNapi IsMediaKeySystemSupported enter.");
     napi_value result = nullptr;
     result = MediaKeySystemNapi::IsMediaKeySystemSupported(env, info);
+    WriteEndEvent(0, 0, std::string("isMediaKeySystemSupported"));
     DRM_INFO_LOG("DrmNapi IsMediaKeySystemSupported exit.");
     return result;
 }
@@ -121,6 +123,7 @@ napi_value DrmNapi::GetMediaKeySystems(napi_env env, napi_callback_info info)
     DRM_INFO_LOG("DrmNapi GetMediaKeySystems enter.");
     napi_value result = nullptr;
     result = MediaKeySystemNapi::GetMediaKeySystems(env, info);
+    WriteEndEvent(0, 0, std::string("getMediaKeySystems"));
     DRM_INFO_LOG("DrmNapi GetMediaKeySystems exit.");
     return result;
 }
@@ -130,6 +133,7 @@ napi_value DrmNapi::GetMediaKeySystemUuid(napi_env env, napi_callback_info info)
     DRM_INFO_LOG("DrmNapi GetMediaKeySystemUuid enter.");
     napi_value result = nullptr;
     result = MediaKeySystemNapi::GetMediaKeySystemUuid(env, info);
+    WriteEndEvent(0, 0, std::string("getMediaKeySystemUuid"));
     DRM_INFO_LOG("DrmNapi GetMediaKeySystemUuid exit.");
     return result;
 }
@@ -139,6 +143,7 @@ napi_value DrmNapi::CreateMediaKeySystemInstance(napi_env env, napi_callback_inf
     DRM_INFO_LOG("DrmNapi CreateMediaKeySystemInstance enter.");
     napi_value result = nullptr;
     result = MediaKeySystemNapi::CreateMediaKeySystemInstance(env, info);
+    WriteEndEvent(0, 0, std::string("createMediaKeySystem"));
     DRM_INFO_LOG("DrmNapi CreateMediaKeySystemInstance exit.");
     return result;
 }

@@ -25,9 +25,9 @@
 #include "key_session_impl.h"
 #include "native_mediakeysession.h"
 #include "native_mediakeysystem.h"
+#include "drm_api_operation.h"
 
 using namespace OHOS::DrmStandard;
-
 
 static Drm_ErrCode DealMediaKeyRequest(IMediaKeySessionService::MediaKeyRequest &licenseRequest,
     DRM_MediaKeyRequest *mediaKeyRequest)
@@ -80,6 +80,7 @@ Drm_ErrCode OH_MediaKeySession_GenerateMediaKeyRequest(MediaKeySession *mediaKey
     DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_ERR_OK), DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_GenerateMediaKeyRequest call Failed!");
     Drm_ErrCode result = DealMediaKeyRequest(licenseRequest, mediaKeyRequest);
+    WriteEndEvent(0, 0, std::string("OH_MediaKeySession_GenerateMediaKeyRequest"));
     DRM_INFO_LOG("OH_MediaKeySession_GenerateMediaKeyRequest exit");
     return result;
 }
@@ -108,6 +109,7 @@ Drm_ErrCode OH_MediaKeySession_ProcessMediaKeyResponse(MediaKeySession *mediaKey
         return DRM_ERR_NO_MEMORY;
     }
     *offlineMediaKeyIdLen = keyIdVec.size();
+    WriteEndEvent(0, 0, std::string("OH_MediaKeySession_ProcessMediaKeyResponse"));
     DRM_INFO_LOG("OH_MediaKeySession_ProcessMediaKeyResponse exit.");
     return DRM_ERR_OK;
 }
@@ -150,6 +152,7 @@ Drm_ErrCode OH_MediaKeySession_CheckMediaKeyStatus(MediaKeySession *mediaKeySess
         return DRM_ERR_INVALID_VAL;
     }
     Drm_ErrCode ret = MapToClist(licenseStatus, mediaKeyStatus);
+    WriteEndEvent(0, 0, std::string("OH_MediaKeySession_CheckMediaKeyStatus"));
     DRM_INFO_LOG("OH_MediaKeySession_CheckMediaKeyStatus exit.");
     return ret;
 }
@@ -166,6 +169,7 @@ Drm_ErrCode OH_MediaKeySession_ClearMediaKeys(MediaKeySession *mediaKeySessoin)
     result = sessionObject->sessionImpl_->ClearMediaKeys();
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_INVALID_VAL,
         "OH_SetConfigurationByteArray mediaKeySystemImpl::SetConfigurationByteArray faild!");
+    WriteEndEvent(0, 0, std::string("OH_MediaKeySession_ClearMediaKeys"));
     DRM_INFO_LOG("OH_MediaKeySession_ClearMediaKeys exit.");
     return DRM_ERR_OK;
 }
@@ -195,6 +199,7 @@ Drm_ErrCode OH_MediaKeySession_GenerateOfflineReleaseRequest(MediaKeySession *me
         return DRM_ERR_INVALID_VAL;
     }
     *releaseRequestLen = ReleaseRequest.size();
+    WriteEndEvent(0, 0, std::string("OH_MediaKeySession_GenerateOfflineReleaseRequest"));
     DRM_INFO_LOG("OH_MediaKeySession_GenerateOfflineReleaseRequest exit");
     return DRM_ERR_OK;
 }
@@ -213,6 +218,7 @@ Drm_ErrCode OH_MediaKeySession_ProcessOfflineReleaseResponse(MediaKeySession *me
     result = sessionObject->sessionImpl_->ProcessOfflineReleaseResponse(licenseIdVec, responseVec);
     DRM_CHECK_AND_RETURN_RET_LOG((result == DRM_ERR_OK), DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_ProcessOfflineReleaseResponse call Failed!");
+    WriteEndEvent(0, 0, std::string("OH_MediaKeySession_ProcessOfflineReleaseResponse"));
     DRM_INFO_LOG("OH_MediaKeySession_ProcessOfflineReleaseResponse exit.");
     return DRM_ERR_OK;
 }
@@ -230,6 +236,7 @@ Drm_ErrCode OH_MediaKeySession_RestoreOfflineMediaKeys(MediaKeySession *mediaKey
     result = sessionObject->sessionImpl_->RestoreOfflineMediaKeys(licenseIdVec);
     DRM_CHECK_AND_RETURN_RET_LOG((result == DRM_ERR_OK), DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_restoreOfflineMediaKey call Failed!");
+    WriteEndEvent(0, 0, std::string("OH_MediaKeySession_restoreOfflineMediaKey"));
     DRM_INFO_LOG("OH_MediaKeySession_restoreOfflineMediaKey exit.");
     return DRM_ERR_OK;
 }
@@ -253,6 +260,7 @@ Drm_ErrCode OH_MediaKeySession_GetContentProtectionLevel(MediaKeySession *mediaK
         DRM_ERR_LOG("OH_MediaKeySession_GetContentProtectionLevel faild!");
         return DRM_ERR_INVALID_VAL;
     }
+    WriteEndEvent(0, 0, std::string("OH_MediaKeySession_GetContentProtectionLevel"));
     DRM_INFO_LOG("OH_MediaKeySession_GetContentProtectionLevel exit");
     return DRM_ERR_OK;
 }
@@ -275,6 +283,7 @@ Drm_ErrCode OH_MediaKeySession_RequireSecureDecoderModule(MediaKeySession *media
         return DRM_ERR_INVALID_VAL;
     }
     *status = statusValue;
+    WriteEndEvent(0, 0, std::string("OH_MediaKeySession_RequireSecureDecoderModule"));
     DRM_INFO_LOG("OH_MediaKeySession_RequireSecureDecoderModule exit.");
     return DRM_ERR_OK;
 }
@@ -316,6 +325,7 @@ Drm_ErrCode OH_MediaKeySession_Destroy(MediaKeySession *keySession)
         return DRM_ERR_INVALID_STATE;
     }
     delete sessionObject;
+    WriteEndEvent(0, 0, std::string("OH_MediaKeySession_Destroy"));
     DRM_INFO_LOG("OH_MediaKeySession_Destroy exit.");
     return DRM_ERR_OK;
 }

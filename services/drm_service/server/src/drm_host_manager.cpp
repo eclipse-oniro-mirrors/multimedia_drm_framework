@@ -18,6 +18,8 @@
 #include <iostream>
 #include <algorithm>
 #include <fstream>
+#include <sys/file.h>
+#include <fcntl.h>
 #include "hdf_device_class.h"
 #include "iremote_broker.h"
 #include "iservmgr_hdi.h"
@@ -243,43 +245,75 @@ void DrmHostManager::DeInit(void)
 
 void DrmHostManager::OnReceive(const HDI::ServiceManager::V1_0::ServiceStatus &status) {}
 
-void DrmHostManager::loadPluginInfo(const std::string& filePath)
-{
-    std::ifstream file(filePath);
-    std::string line;
+std::string DrmHostManager::trim(const std::string& str) {
+    size_t first = str.find_first_not_of(" \t\n\r");
+    if (first == std::string::npos) return "";
+    size_t last = str.find_last_not_of(" \t\n\r");
+    return str.substr(first, (last - first + 1));
+}
 
+void DrmHostManager::parseLazyLoadService(std::ifstream& file, std::map<std::string, std::string>& lazyLoadPluginInfoMap) {
+    std::string line;
+    while (getline(file, line)) {
+        line = trim(line);
+        if (line == "]" || line == "],") {
+            break;
+        }
+        if (!line.empty() && line.front() == '"') {
+            /* Remove front quotation marks */
+            line = line.substr(1);
+            if (!line.empty() && (line.back() == '"' || line.back() == ',')) {
+                /* Remove trailing quotation marks or commas */
+                line.pop_back();
+            }
+        }
+        size_t colonPos = line.find(':');
+        if (colonPos != std::string::npos) {
+            std::string key = trim(line.substr(0, colonPos));
+            std::string value = trim(line.substr(colonPos + 1));
+            /* Further trim the value */
+            if (!value.empty() && value.back() == '"') {
+                /* Remove the last closing quotation mark of value */
+                value.pop_back();
+            }
+            lazyLoadPluginInfoMap[key] = value;
+        }
+    }
+}
+
+int32_t DrmHostManager::loadPluginInfo(const std::string& filePath)
+{
+    int fd = open(filePath.c_str(), O_RDONLY);
+    if (fd == -1) {
+        DRM_ERR_LOG("DrmHostManager::loadPluginInfo unable to open file:%{public}s.", filePath.c_str());
+        return DRM_HOST_ERROR;
+    }
+
+    std::ifstream file(filePath);
     if (!file.is_open()) {
         DRM_ERR_LOG("DrmHostManager::loadPluginInfo unable to open file:%{public}s.", filePath.c_str());
-        return;
+        close(fd);
+        return DRM_HOST_ERROR;
     }
 
+    std::string line;
     bool inPluginServices = false;
     while (getline(file, line)) {
-        /* Remove all whitespace characters */
-        line.erase(remove_if(line.begin(), line.end(), isspace), line.end());
-        if (line.empty()) continue;
-
-        if (line.find("\"plugin_services\":") != std::string::npos) {
+        line = trim(line);
+        if (line == "\"plugin_services\": {") {
             inPluginServices = true;
-            continue;
-        }
-
-        if (inPluginServices) {
-            if (line[0] == ']') {
-                inPluginServices = false; // End of plugin services block
-                continue;
-            }
-
-            size_t colonPos = line.find(':');
-            if (colonPos != std::string::npos) {
-                std::string key = line.substr(1, colonPos - 1);
-                std::string value = line.substr(colonPos + 1, line.find(',') - colonPos - 2);
-                lazyLoadPluginInfoMap[key] = value;
+        } else if (inPluginServices) {
+            if (line == "}") {
+                break;
+            } else if (line == "\"lazy_load_service\": [") {
+                parseLazyLoadService(file, lazyLoadPluginInfoMap);
+                break; // Exit after parsing lazy_load_service
             }
         }
     }
-
     file.close();
+    close(fd);
+    return DRM_OK;
 }
 
 void DrmHostManager::ReleaseSevices(std::string &name)
@@ -329,7 +363,11 @@ int32_t DrmHostManager::GetSevices(std::string &name, bool *isSurpported)
      * If lazy loading is not configured, traverse the service bound by the interface descriptor, and obtain
      * the plugin service instance through the uuid and issuport interfaces
     */
-    loadPluginInfo(PLUGIN_LAZYLOAD_CONFIG_PATH);
+    ret = loadPluginInfo(PLUGIN_LAZYLOAD_CONFIG_PATH);
+    if (ret != DRM_OK) {
+        DRM_ERR_LOG("loadPluginInfo faild, return Code:%{public}d", ret);
+        return ret;
+    }
     if (lazyLoadPluginInfoMap.count(name) > 0) {
         auto it = std::find(serviceName.begin(), serviceName.end(), lazyLoadPluginInfoMap[name]);
         if (it == serviceName.end()) {
@@ -340,7 +378,7 @@ int32_t DrmHostManager::GetSevices(std::string &name, bool *isSurpported)
             }
             ret = deviceMgr->LoadDevice(lazyLoadPluginInfoMap[name]);
             if (ret != DRM_OK) {
-                DRM_ERR_LOG("DrmHostManager LoadDevice return Code:%{public}d", ret);
+                DRM_ERR_LOG("DrmHostManager::GetSevices loadDevice return Code:%{public}d", ret);
                 return DRM_HOST_ERROR;
             }
             serviceName.push_back(lazyLoadPluginInfoMap[name]);
@@ -350,7 +388,7 @@ int32_t DrmHostManager::GetSevices(std::string &name, bool *isSurpported)
         sptr<IMediaKeySystemFactory> drmHostServieProxy =
             OHOS::HDI::Drm::V1_0::IMediaKeySystemFactory::Get(hdiServiceName, false);
         if (drmHostServieProxy == nullptr) {
-            DRM_ERR_LOG("Failed to GetSevices");
+            DRM_ERR_LOG("DrmHostManager::GetSevices failed.");
             continue;
         }
         ret = drmHostServieProxy->IsMediaKeySystemSupported(name, "", SECURE_UNKNOWN, *isSurpported);
@@ -360,7 +398,11 @@ int32_t DrmHostManager::GetSevices(std::string &name, bool *isSurpported)
         }
         drmHostServieProxyMap[name] = drmHostServieProxy;
     }
-
+    if (serviceName.empty()) {
+        DRM_INFO_LOG("DrmHostManager::GetSevices exit, No DRM driver service named:%{public}s configured.",
+            name.c_str());
+        return DRM_SERVICE_ERROR;
+    }
     if (pluginCountMap.empty()) {
         pluginCountMap[name] = 1;
     } else {
@@ -405,7 +447,7 @@ int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &name, std::string
     if (mimeType.length() == 0) {
         *isSurpported = false;
         ReleaseSevices(name);
-        DRM_ERR_LOG("mimeType is null!");
+        DRM_ERR_LOG("IsMediaKeySystemSupported mimeType is null!");
         return DRM_SERVICE_ERROR;
     }
     ret = drmHostServieProxyMap[name]->IsMediaKeySystemSupported(name, mimeType, SECURE_UNKNOWN, *isSurpported);
@@ -477,7 +519,6 @@ int32_t DrmHostManager::CreateMediaKeySystem(std::string &name, sptr<IMediaKeySy
             return DRM_HOST_ERROR;
         }
     }
-
     ret = drmHostServieProxyMap[name]->CreateMediaKeySystem(hdiMediaKeySystem);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("drmHostServieProxyMap CreateMediaKeySystem return Code:%{public}d", ret);
@@ -540,7 +581,7 @@ int32_t DrmHostManager::GetMediaKeySystems(std::map<std::string, std::string> &m
     loadPluginInfo(PLUGIN_LAZYLOAD_CONFIG_PATH);
     sptr<IDeviceManager> deviceMgr = IDeviceManager::Get();
     if (deviceMgr == nullptr) {
-        DRM_ERR_LOG("DrmHostManager:GetSevices deviceMgr == nullptr");
+        DRM_ERR_LOG("DrmHostManager:GetMediaKeySystems deviceMgr == nullptr");
     }
     for (auto pluginInfoIt = lazyLoadPluginInfoMap.begin(); pluginInfoIt != lazyLoadPluginInfoMap.end();
         pluginInfoIt++) {
@@ -558,7 +599,7 @@ int32_t DrmHostManager::GetMediaKeySystems(std::map<std::string, std::string> &m
     }
     for (uint32_t i = 0; i < lazyLoadServiceNames.size(); i++) {
         bool found = false;
-        for (uint32_t j = 0; i < pluginServiceNames.size(); j++) {
+        for (uint32_t j = 0; j < pluginServiceNames.size(); j++) {
             if (lazyLoadServiceNames[i] == pluginServiceNames[j]) {
                 found = true;
                 break;
