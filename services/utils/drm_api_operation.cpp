@@ -26,14 +26,18 @@
 namespace OHOS {
 namespace DrmStandard {
 static int64_t processorId = -1;
-std::string trim(const std::string& str) {
+std::string trim(const std::string& str)
+{
     size_t first = str.find_first_not_of(" \t\n\r");
-    if (first == std::string::npos) return "";
+    if (first == std::string::npos) {
+        return "";
+    }
     size_t last = str.find_last_not_of(" \t\n\r");
     return str.substr(first, (last - first + 1));
 }
 
-std::pair<std::string, std::string> parseKeyValue(const std::string& line) {
+std::pair<std::string, std::string> parseKeyValue(const std::string& line)
+{
     size_t colonPos = line.find(':');
     if (colonPos != std::string::npos) {
         std::string key = trim(line.substr(0, colonPos));
@@ -46,7 +50,8 @@ std::pair<std::string, std::string> parseKeyValue(const std::string& line) {
     return std::make_pair("", "");
 }
 
-void parseReportConfig(std::ifstream& file, ApiReportConfig& reportConfig) {
+void parseReportConfig(std::ifstream& file, ApiReportConfig& reportConfig)
+{
     std::string line;
     while (getline(file, line)) {
         line = trim(line);
@@ -75,7 +80,8 @@ void parseReportConfig(std::ifstream& file, ApiReportConfig& reportConfig) {
     }
 }
 
-void parseEvent(std::ifstream& file, ApiEventConfig& eventConfig) {
+void parseEvent(std::ifstream& file, ApiEventConfig& eventConfig)
+{
     std::string line;
     while (getline(file, line)) {
         line = trim(line);
@@ -98,7 +104,8 @@ void parseEvent(std::ifstream& file, ApiEventConfig& eventConfig) {
     }
 }
 
-void parseEventConfig(std::ifstream& file, ApiEventConfig& event) {
+void parseEventConfig(std::ifstream& file, ApiEventConfig& event)
+{
     std::string line;
     while (getline(file, line)) {
         line = trim(line);
@@ -108,7 +115,8 @@ void parseEventConfig(std::ifstream& file, ApiEventConfig& event) {
     }
 }
 
-void parseApiOperationManagement(std::ifstream& file, ApiReportConfig& reportConfig, ApiEventConfig& event) {
+void parseApiOperationManagement(std::ifstream& file, ApiReportConfig& reportConfig, ApiEventConfig& event)
+{
     std::string line;
     bool inApiOperationManagement = false;
     while (getline(file, line)) {
@@ -127,7 +135,8 @@ void parseApiOperationManagement(std::ifstream& file, ApiReportConfig& reportCon
     }
 }
 
-int32_t GetConfigurationParame(const std::string &configFile, ApiReportConfig &reportConfig, ApiEventConfig &event) {
+int32_t GetConfigurationParame(const std::string &configFile, ApiReportConfig &reportConfig, ApiEventConfig &event)
+{
     int fd = open(configFile.c_str(), O_RDONLY);
     if (fd == -1) {
         perror("Unable to open file");
@@ -148,7 +157,8 @@ int32_t GetConfigurationParame(const std::string &configFile, ApiReportConfig &r
     return 0;
 }
 
-int64_t AddProcessor() {
+int64_t AddProcessor()
+{
     ApiReportConfig reportConfig;
     ApiEventConfig apiEvent;
     GetConfigurationParame(DRM_API_OPERATION_CONFIG_PATH, reportConfig, apiEvent);
@@ -171,7 +181,8 @@ int64_t AddProcessor() {
     return processorId;
 }
 
-void WriteEndEvent(const int result, const int errCode, std::string apiName) {
+void WriteEndEvent(const int result, const int errCode, std::string apiName)
+{
     AddProcessor();
     std::string transId = std::string("traceId_") + std::to_string(std::rand());
     int64_t beginTime = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now())
