@@ -25,7 +25,7 @@
 
 namespace OHOS {
 namespace DrmStandard {
-static int64_t processorId = -1;
+static int64_t g_processorId = -1;
 std::string trim(const std::string& str)
 {
     size_t first = str.find_first_not_of(" \t\n\r");
@@ -43,6 +43,7 @@ std::pair<std::string, std::string> parseKeyValue(const std::string& line)
         std::string key = trim(line.substr(0, colonPos));
         std::string value = trim(line.substr(colonPos + 1));
         if (!value.empty() && value.front() == '"' && value.back() == '"') {
+            /* 2 represents removing the length of two quotation marks */
             value = value.substr(1, value.size() - 2);
         }
         return std::make_pair(key, value);
@@ -174,11 +175,11 @@ int64_t AddProcessor()
     event.name = apiEvent.name;
     event.isRealTime = apiEvent.isRealTime;
     config.eventConfigs.push_back(event);
-    if (processorId != -1) {
-        return processorId;
+    if (g_processorId != -1) {
+        return g_processorId;
     }
-    processorId = HiviewDFX::HiAppEvent::AppEventProcessorMgr::AddProcessor(config);
-    return processorId;
+    g_processorId = HiviewDFX::HiAppEvent::AppEventProcessorMgr::AddProcessor(config);
+    return g_processorId;
 }
 
 void WriteEndEvent(const int result, const int errCode, std::string apiName)
