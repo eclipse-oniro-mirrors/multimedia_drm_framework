@@ -128,7 +128,7 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
     sptr<IMediaKeySystem> hdiMediaKeySystem = nullptr;
     int32_t ret = drmHostManager_->CreateMediaKeySystem(name, hdiMediaKeySystem);
     if (hdiMediaKeySystem == nullptr || ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemFactoryService:: drmHostManager_ return hdiMediaKeySystem nullptr");
+        DRM_ERR_LOG("MediaKeySystemFactoryService::drmHostManager_ return hdiMediaKeySystem nullptr");
         ReportFaultEvent(DRM_SERVICE_ERROR, "CreateMediaKeySystem failed", "");
         return DRM_SERVICE_ERROR;
     }
@@ -220,7 +220,7 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &nam
 
 int32_t MediaKeySystemFactoryService::GetMediaKeySystems(std::map<std::string, std::string> &mediaKeySystemNames)
 {
-    DRM_INFO_LOG("MediaKeySystemFactoryService::GetMediaKeySystems three parameters enter");
+    DRM_INFO_LOG("MediaKeySystemFactoryService::GetMediaKeySystems enter");
     int32_t ret = drmHostManager_->GetMediaKeySystems(mediaKeySystemNames);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemFactoryService::GetMediaKeySystems failed.");
@@ -232,7 +232,7 @@ int32_t MediaKeySystemFactoryService::GetMediaKeySystems(std::map<std::string, s
 
 int32_t MediaKeySystemFactoryService::GetMediaKeySystemUuid(std::string &name, std::string &uuid)
 {
-    DRM_INFO_LOG("MediaKeySystemFactoryService::GetMediaKeySystemUuid three parameters enter");
+    DRM_INFO_LOG("MediaKeySystemFactoryService::GetMediaKeySystemUuid enter");
     int32_t ret = drmHostManager_->GetMediaKeySystemUuid(name, uuid);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemService::GetMediaKeySystemUuid failed.");

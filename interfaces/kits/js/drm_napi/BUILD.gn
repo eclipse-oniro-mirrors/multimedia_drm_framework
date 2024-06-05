@@ -53,13 +53,18 @@ ohos_shared_library("drm_napi") {
     "./../../../../frameworks/js/drm_napi/napi_async_work.cpp",
     "./../../../../frameworks/js/drm_napi/napi_param_utils.cpp",
     "./../../../../frameworks/js/drm_napi/native_module_ohos_drm.cpp",
+    "./../../../../services/utils/drm_api_operation.cpp",
   ]
-  deps = [ "./../../../../frameworks/native:drm_framework" ]
+  deps = [
+    ":drm_api_operation",
+    "./../../../../frameworks/native:drm_framework",
+  ]
   external_deps = [
     "ability_runtime:abilitykit_native",
     "ability_runtime:napi_base_context",
     "access_token:libtokenid_sdk",
     "c_utils:utils",
+    "hiappevent:hiappevent_innerapi",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:hitrace_meter",
@@ -75,6 +80,13 @@ ohos_shared_library("drm_napi") {
   cflags = [ "-fPIC" ]
   cflags_cc = cflags
   relative_install_dir = "module/multimedia"
+  part_name = "drm_framework"
+  subsystem_name = "multimedia"
+}
+
+ohos_prebuilt_etc("drm_api_operation") {
+  source = "../../../../services/etc/drm_api_operation.cfg"
+  relative_install_dir = "drm"
   part_name = "drm_framework"
   subsystem_name = "multimedia"
 }

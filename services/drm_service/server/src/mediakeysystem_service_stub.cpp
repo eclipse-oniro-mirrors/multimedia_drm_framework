@@ -69,7 +69,7 @@ static int32_t ProcessGetOfflineLMediaKeyIds(MediaKeySystemServiceStub *stub, Me
 static int32_t ProcessGetOfflineMediaKeyStatus(MediaKeySystemServiceStub *stub, MessageParcel &data,
     MessageParcel &reply, MessageOption &option);
 
-static int32_t ProcessRemoveOfflineLMediaKey(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessRemoveOfflineMediaKey(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
 static int32_t ProcessSetListenerObject(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
@@ -92,7 +92,7 @@ static struct ProcessRemoteRequestFuncArray g_mediaKeySystemServiceStubRequestPr
     {MEDIA_KEY_SYSTEM_GETCERTIFICATESTATUS, ProcessGetCertificateStatus},
     {MEDIA_KEY_SYSTEM_GET_OFFLINELICENSEIDS, ProcessGetOfflineLMediaKeyIds},
     {MEDIA_KEY_SYSTEM_GET_OFFLINEKEY_STATUS, ProcessGetOfflineMediaKeyStatus},
-    {MEDIA_KEY_SYSTEM_REMOVE_OFFLINELICENSE, ProcessRemoveOfflineLMediaKey},
+    {MEDIA_KEY_SYSTEM_REMOVE_OFFLINELICENSE, ProcessRemoveOfflineMediaKey},
     {MEDIA_KEY_SYSTEM_SET_LISTENER_OBJ, ProcessSetListenerObject},
     {MEDIA_KEY_SYSTEM_SETCALLBACK, ProcessSetCallabck},
 };
@@ -367,7 +367,7 @@ static int32_t ProcessGetOfflineMediaKeyStatus(MediaKeySystemServiceStub *stub, 
     return ret;
 }
 
-static int32_t ProcessRemoveOfflineLMediaKey(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessRemoveOfflineMediaKey(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
     DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_REMOVE_OFFLINELICENSE enter.");
@@ -378,13 +378,13 @@ static int32_t ProcessRemoveOfflineLMediaKey(MediaKeySystemServiceStub *stub, Me
     if (licenseIdSize != 0) {
         const uint8_t *licenseIdBuf = static_cast<const uint8_t *>(data.ReadBuffer(licenseIdSize));
         if (licenseIdBuf == nullptr) {
-            DRM_ERR_LOG("MediaKeySystemServiceStub::ProcessRemoveOfflineLMediaKey read licenseId failed.");
+            DRM_ERR_LOG("MediaKeySystemServiceStub::ProcessRemoveOfflineMediaKey read licenseId failed.");
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
         licenseId.assign(licenseIdBuf, licenseIdBuf + licenseIdSize);
     }
     int32_t ret = stub->ClearOfflineMediaKeys(licenseId);
-    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessRemoveOfflineLMediaKey faild, errCode:%{public}d", ret);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessRemoveOfflineMediaKey faild, errCode:%{public}d", ret);
     DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_REMOVE_OFFLINELICENSE exit.");
     return ret;
 }
