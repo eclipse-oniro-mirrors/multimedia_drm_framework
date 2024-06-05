@@ -245,7 +245,8 @@ void DrmHostManager::DeInit(void)
 
 void DrmHostManager::OnReceive(const HDI::ServiceManager::V1_0::ServiceStatus &status) {}
 
-std::string DrmHostManager::trim(const std::string& str) {
+std::string DrmHostManager::trim(const std::string& str)
+{
     size_t first = str.find_first_not_of(" \t\n\r");
     if (first == std::string::npos) return "";
     size_t last = str.find_last_not_of(" \t\n\r");
@@ -253,7 +254,8 @@ std::string DrmHostManager::trim(const std::string& str) {
 }
 
 void DrmHostManager::parseLazyLoadService(std::ifstream& file,
-    std::map<std::string, std::string>& lazyLoadPluginInfoMap) {
+    std::map<std::string, std::string>& lazyLoadPluginInfoMap)
+{
     std::string line;
     while (getline(file, line)) {
         line = trim(line);
