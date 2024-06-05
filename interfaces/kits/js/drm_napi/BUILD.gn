@@ -56,8 +56,8 @@ ohos_shared_library("drm_napi") {
     "./../../../../services/utils/drm_api_operation.cpp",
   ]
   deps = [
-    "./../../../../frameworks/native:drm_framework",
     ":drm_api_operation",
+    "./../../../../frameworks/native:drm_framework",
   ]
   external_deps = [
     "ability_runtime:abilitykit_native",
