@@ -1,0 +1,91 @@
+# Copyright (C) 2023 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("//build/test.gni")
+
+module_output_path = "drm_framework/drm_framework"
+
+config("drm_framework_capi_fuzztest_systenfactory_config") {
+  include_dirs = [
+    "../../../../../frameworks/native/test/fuzztest/Drmservice_fuzzer",
+    "../../../../../services/drm_service/server/include/v1_0",
+    "../../../../../services/drm_service/server/include",
+    "../../../../../services/drm_service/ipc",
+    "../../../../../services/utils/include",
+    "../../../../../services/drm_service/client/include",
+    "../../../../../interfaces/inner_api/native",
+    "../../../../../interfaces/inner_api/native/drm",
+    "../../../../../interfaces/kits/c/drm_capi/common",
+    "../../../../../services/utils",
+    "//foundation//arkui/napi/interfaces/kits",
+  ]
+  cflags = [
+    "-g",
+    "-O0",
+    "-Wno-unused-variable",
+    "-fno-omit-frame-pointer",
+  ]
+  cflags_cc = [ "-fno-rtti" ]
+}
+
+ohos_fuzztest("drmserviceFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file =
+      "../../../../../frameworks/native/test/fuzztest/drmservice_fuzzer"
+  resource_config_file =
+      "../../../../../frameworks/native/test/fuzztest/resource/ohos_test.xml"
+  configs = [ ":drm_framework_capi_fuzztest_systenfactory_config" ]
+
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    cfi_vcall_icall_only = true
+    debug = true
+  }
+
+  sources = [ "../../../../../frameworks/native/test/fuzztest/drmservice_fuzzer/drmservice_fuzzer.cpp" ]
+
+  deps = [ "../../../../../services/drm_service:drm_service" ]
+
+  external_deps = [
+    "ability_base:want",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:napi_base_context",
+    "access_token:libaccesstoken_sdk",
+    "access_token:libprivacy_sdk",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "drivers_interface_drm:libdrm_proxy_1.0",
+    "hdf_core:libhdf_host",
+    "hdf_core:libhdf_ipc_adapter",
+    "hdf_core:libhdf_utils",
+    "hdf_core:libhdi",
+    "hicollie:libhicollie",
+    "hidumper:lib_dump_usage",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "hitrace:hitrace_meter",
+    "hitrace:libhitracechain",
+    "ipc:ipc_core",
+    "ipc:ipc_single",
+    "media_foundation:media_foundation",
+    "memmgr:memmgrclient",
+    "napi:ace_napi",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
+  subsystem_name = "multimedia"
+  part_name = "drm_framework"
+}
