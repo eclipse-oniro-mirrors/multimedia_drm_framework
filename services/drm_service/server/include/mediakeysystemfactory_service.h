@@ -65,11 +65,11 @@ public:
     void DistroyForClientDied(pid_t pid) override;
     int32_t GetMediaKeySystems(std::map<std::string, std::string> &mediaKeySystemNames) override;
     int32_t GetMediaKeySystemUuid(std::string &name, std::string &uuid) override;
+
+private:
     void InitStatisticsInfo(sptr<IMediaKeySystem> hdiMediaKeySystem, StatisticsInfo &statisticsInfo);
     int32_t WriteDumpInfo(int32_t fd, std::string &dumpString);
     int32_t DumpMetricsInfo(std::string &dumpString, std::vector<IMediaKeySystemService::MetircKeyValue> metrics);
-
-private:
     std::mutex mutex_;
     sptr<DrmHostManager> drmHostManager_;
     std::map<int32_t, std::set<sptr<MediaKeySystemService>>> mediaKeySystemForPid_;
