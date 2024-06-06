@@ -15,6 +15,7 @@ group("drm_framework_capi_fuzztest_v1_0") {
   testonly = true
   deps = []
   deps += [
+    "drmservice_fuzzer:drmserviceFuzzTest",
     "mediakeydecryptndk_fuzzer:mediakeydecryptndkFuzzTest",
     "mediakeysessionndk_fuzzer:mediakeysessionndkFuzzTest",
     "mediakeysystemndk_fuzzer:mediakeysystemndkFuzzTest",
