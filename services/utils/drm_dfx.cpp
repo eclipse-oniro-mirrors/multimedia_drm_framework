@@ -358,11 +358,9 @@ void ReportServiceBehaviorEvent(std::string serviceName, std::string action)
     DrmEvent event;
     OHOS::HiviewDFX::DumpUsage dumpUse;
     uint32_t memoryUsage = dumpUse.GetPss(getpid());
-    auto now = std::chrono::system_clock::now();
-    auto currentTime = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
     struct DrmServiveInfo drmServiveInfo = {
         "DRM_SERVICE",
-        currentTime,
+        0,
         serviceName,
         action,
         memoryUsage,
@@ -374,11 +372,9 @@ void ReportLicenseBehaviorEvent(StatisticsInfo statisticsInfo, std::string licen
     std::string generationResult, uint32_t processDuration, std::string processResult)
 {
     DrmEvent event;
-    auto now = std::chrono::system_clock::now();
-    auto currentTime = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
     struct DrmLicenseInfo drmLicenseInfo = {
         "DRM_SERVICE",
-        currentTime,
+        0,
         GetClientBundleName(IPCSkeleton::GetCallingUid()),
         std::to_string(HiTraceChain::GetId().GetChainId()),
         statisticsInfo.pluginName,
@@ -399,11 +395,9 @@ void ReportCertificateBehaviorEvent(StatisticsInfo statisticsInfo, uint32_t gene
     uint32_t serverCostDuration, std::string serverResult)
 {
     DrmEvent event;
-    auto now = std::chrono::system_clock::now();
-    auto currentTime = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
     struct DrmCertificateInfo DrmCertificateInfo = {
         "DRM_SERVICE",
-        currentTime,
+        0,
         GetClientBundleName(IPCSkeleton::GetCallingUid()),
         std::to_string(HiTraceChain::GetId().GetChainId()),
         statisticsInfo.pluginName,

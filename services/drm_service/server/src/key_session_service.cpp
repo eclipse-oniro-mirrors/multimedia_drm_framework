@@ -124,9 +124,7 @@ int32_t MediaKeySessionService::GenerateMediaKeyRequest(
     mediaKeyType_ = std::to_string(static_cast<int32_t>(licenseRequestInfo.mediaKeyType));
     auto timeBefore = std::chrono::system_clock::now();
     ret = hdiMediaKeySession_->GenerateMediaKeyRequest(hdiMediaKeyRequestInfo, hdiMediaKeyRequest);
-    auto timeAfter = std::chrono::system_clock::now();
-    auto duration = timeAfter - timeBefore;
-    generationDuration_ = (uint32_t)duration.count();
+    generationDuration_ = CalculateTimeDiff(timeBefore, std::chrono::system_clock::now());
     if (ret != DRM_OK) {
         generationResult_ = "failed";
         DRM_ERR_LOG("MediaKeySessionService::GenerateMediaKeyRequest failed.");
@@ -154,9 +152,7 @@ int32_t MediaKeySessionService::ProcessMediaKeyResponse(std::vector<uint8_t> &li
     int32_t ret = DRM_OK;
     auto timeBefore = std::chrono::system_clock::now();
     ret = hdiMediaKeySession_->ProcessMediaKeyResponse(licenseResponse, licenseId);
-    auto timeAfter = std::chrono::system_clock::now();
-    auto duration = timeAfter - timeBefore;
-    auto processDuration = duration.count();
+    uint32_t processDuration = CalculateTimeDiff(timeBefore, std::chrono::system_clock::now());
     if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySessionService::ProcessMediaKeyResponse failed.");
         std::string responseString = std::string(reinterpret_cast<const char*>(licenseResponse.data()),

@@ -13,10 +13,14 @@
 * limitations under the License.
 */
 
+#include <cstdint>
+#include <iomanip>
+#include <sstream>
 #include "drm_dfx_utils.h"
 #include "drm_log.h"
 #include "iservice_registry.h"
 #include "bundle_mgr_interface.h"
+#include "bundle_mgr_proxy.h"
 #include "system_ability_definition.h"
 
 namespace OHOS {
@@ -51,6 +55,25 @@ std::string __attribute__((visibility("default"))) GetClientBundleName(int32_t u
     DRM_INFO_LOG("BundleName:%{public}s", bundleName.c_str());
 
     return bundleName;
+}
+
+std::string __attribute__((visibility("default"))) CastToHexString(std::vector<uint8_t> binaryData)
+{
+    std::string hexString;
+    for (uint8_t binary : binaryData) {
+        std::stringstream stream;
+        stream << std::hex << std::setw(minimumDigit) << std::setfill('0') << static_cast<int>(binary);
+        hexString += stream.str();
+    }
+    return hexString;
+}
+
+uint32_t __attribute__((visibility("default"))) CalculateTimeDiff(std::chrono::system_clock::time_point timeBefore,
+    std::chrono::system_clock::time_point timeAfter)
+{
+    auto duration = timeAfter - timeBefore;
+    auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+    return static_cast<uint32_t>(milliseconds.count());
 }
 }  // namespace DrmStandard
 }  // namespace OHOS

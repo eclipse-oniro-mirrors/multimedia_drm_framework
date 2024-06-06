@@ -16,6 +16,7 @@
 #ifndef DRM_DFX_UTILS_H
 #define DRM_DFX_UTILS_H
 #include <string>
+#include <vector>
 
 namespace OHOS {
 namespace DrmStandard {
@@ -27,6 +28,10 @@ namespace DrmStandard {
         std::string bundleName;
     };
     std::string __attribute__((visibility("default"))) GetClientBundleName(int32_t uid);
+    std::string __attribute__((visibility("default"))) CastToHexString(std::vector<uint8_t> binaryData);
+    uint32_t __attribute__((visibility("default"))) CalculateTimeDiff(std::chrono::system_clock::time_point timeBefore,
+        std::chrono::system_clock::time_point timeAfter);
+    const int minimumDigit = 2;
     const std::string currentSessionNum = "currentSessionNum";
     const std::string version = "version";
     const std::string errorDecryptNumber = "errorDecryptNumber";
