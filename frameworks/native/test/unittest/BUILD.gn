@@ -47,9 +47,6 @@ ohos_unittest("drm_framework_capi_unittest_v1_0") {
   configs = [ ":drm_framework_capi_unittest_v1_0_config" ]
 
   sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    cfi_vcall_icall_only = true
     debug = true
   }
   cflags = []
