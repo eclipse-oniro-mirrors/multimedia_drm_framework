@@ -49,7 +49,6 @@ ohos_unittest("drm_framework_capi_unittest_v1_0") {
   sanitize = {
     debug = true
   }
-
   cflags = []
   cflags += [ "-DENABLE_DRM_SYSEVENT_CONTROL" ]
   sources = [
