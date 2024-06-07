@@ -46,6 +46,10 @@ ohos_unittest("drm_framework_capi_unittest_v1_0") {
   module_out_path = module_output_path
   configs = [ ":drm_framework_capi_unittest_v1_0_config" ]
 
+  sanitize = {
+    debug = true
+  }
+
   cflags = []
   cflags += [ "-DENABLE_DRM_SYSEVENT_CONTROL" ]
   sources = [
