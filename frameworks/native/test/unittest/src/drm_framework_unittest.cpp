@@ -193,7 +193,9 @@ Drm_ErrCode TestSystemEventCallBackWithObj(MediaKeySystem *mediaKeySystem, DRM_E
     uint8_t *info, int32_t infoLen, char *extra)
 {
     DRM_SAMPLE_INFO_LOG("TestSystemEventCallBackWithObj ok");
-    DRM_SAMPLE_INFO_LOG("Event: the mediaKeySystem object is: %x", FAKE_POINTER(mediaKeySystem));
+    if (mediaKeySystem == nullptr) {
+        return DRM_ERR_UNKNOWN;
+    }
     DRM_SAMPLE_INFO_LOG("Event: event type: %d", eventType);
     DRM_SAMPLE_INFO_LOG("Event: the info body is: ");
     if (info != nullptr) {
@@ -211,7 +213,9 @@ Drm_ErrCode TestSessoinEventCallBackWithObj(MediaKeySession *mediaKeySessoin, DR
     uint8_t *info, int32_t infoLen, char *extra)
 {
     DRM_SAMPLE_INFO_LOG("TestSessoinEventCallBackWithObj ok");
-    DRM_SAMPLE_INFO_LOG("Event: the mediaKeySession object is: %x", FAKE_POINTER(mediaKeySessoin));
+    if (mediaKeySessoin == nullptr) {
+        return DRM_ERR_UNKNOWN;
+    }
     DRM_SAMPLE_INFO_LOG("Event: the event type: %d", eventType);
     DRM_SAMPLE_INFO_LOG("Event: the info body is: ");
     if (info != nullptr) {
@@ -229,7 +233,9 @@ Drm_ErrCode TestSessoinKeyChangeCallBackWithObj(MediaKeySession *mediaKeySessoin
     bool hasNewGoodKeys)
 {
     DRM_SAMPLE_INFO_LOG("TestSessoinKeyChangeCallBackWithObj ok");
-    DRM_SAMPLE_INFO_LOG("KeyChangedEvent: the mediaKeySession object is: %x", FAKE_POINTER(mediaKeySessoin));
+    if (mediaKeySessoin == nullptr) {
+        return DRM_ERR_UNKNOWN;
+    }
     for (uint32_t i = 0; i < keysInfo->keysInfoCount; i++) {
         for (uint32_t j = 0; j < MAX_KEY_ID_LEN; j += STEP_FOUR) {
             DRM_SAMPLE_INFO_LOG("KeyChangedEvent: keyid is: ");
