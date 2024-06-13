@@ -46,14 +46,14 @@ public:
     int32_t Release() override;
     int32_t DecryptMediaData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo,
         IMediaDecryptModuleService::DrmBuffer &srcBuffer, IMediaDecryptModuleService::DrmBuffer &dstBuffer) override;
+
+private:
     void SetCryptInfo(OHOS::HDI::Drm::V1_0::CryptoInfo &cryptInfoTmp,
         IMediaDecryptModuleService::CryptInfo &cryptInfo, uint32_t &bufLen);
     void SetDrmBufferInfo(OHOS::HDI::Drm::V1_0::DrmBuffer* drmSrcBuffer, OHOS::HDI::Drm::V1_0::DrmBuffer* drmDstBuffer,
         IMediaDecryptModuleService::DrmBuffer &srcBuffer, IMediaDecryptModuleService::DrmBuffer &dstBuffer,
         uint32_t bufLen);
     void ReportDecryptionStatisticEvent();
-
-private:
     std::mutex moduleLock_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaDecryptModule> hdiMediaDecryptModule_;
     DecryptStatustics decryptStatustics_;
