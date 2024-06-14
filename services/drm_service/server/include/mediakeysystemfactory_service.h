@@ -64,6 +64,7 @@ public:
     int32_t CloseMediaKeySystemService(sptr<MediaKeySystemService> mediaKeySystemService) override;
     void DistroyForClientDied(pid_t pid) override;
     int32_t GetMediaKeySystemName(std::map<std::string, std::string> &mediaKeySystemNames) override;
+    int32_t GetMediaKeySystemUuid(std::string &name, std::string &uuid) override;
     void InitStatisticsInfo(sptr<IMediaKeySystem> hdiMediaKeySystem, StatisticsInfo &statisticsInfo);
     int32_t WriteDumpInfo(int32_t fd, std::string &dumpString);
     int32_t DumpMetricsInfo(std::string &dumpString, std::vector<IMediaKeySystemService::MetircKeyValue> metrics);

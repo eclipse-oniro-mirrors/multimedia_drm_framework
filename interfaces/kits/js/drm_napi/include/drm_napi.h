@@ -31,6 +31,7 @@ public:
     static napi_value CreateMediaKeySystemInstance(napi_env env, napi_callback_info info);
     static napi_value IsMediaKeySystemSupported(napi_env env, napi_callback_info info);
     static napi_value GetMediaKeySystemName(napi_env env, napi_callback_info info);
+    static napi_value GetMediaKeySystemUuid(napi_env env, napi_callback_info info);
 
 private:
     static napi_value DrmNapiConstructor(napi_env env, napi_callback_info info);

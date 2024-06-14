@@ -290,6 +290,35 @@ napi_value MediaKeySystemNapi::GetMediaKeySystemName(napi_env env, napi_callback
     return result;
 }
 
+napi_value MediaKeySystemNapi::GetMediaKeySystemUuid(napi_env env, napi_callback_info info)
+{
+    DRM_INFO_LOG("MediaKeySystemNapi::GetMediaKeySystemUuid enter");
+    napi_value result = nullptr;
+    size_t argc = ARGS_ONE;
+    napi_value argv[ARGS_ONE] = {0};
+    napi_value thisVar = nullptr;
+    napi_status status;
+    char nameStr[PATH_MAX];
+    size_t nameStrLength = 0;
+    std::string uuid;
+
+    DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
+    NAPI_ASSERT(env, argc <= ARGS_ONE, "requires 1 parameters maximum");
+
+    status = napi_get_value_string_utf8(env, argv[PARAM0], nameStr, PATH_MAX, &nameStrLength);
+    if (status != napi_ok) {
+        NapiDrmError::ThrowError(env, "the param configName is missing or too long.", DRM_INVALID_PARAM);
+        return nullptr;
+    }
+    std::string name = std::string(nameStr);
+    int32_t ret = MediaKeySystemFactoryImpl::GetInstance()->GetMediaKeySystemUuid(name, uuid);
+    DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_OK), nullptr, "MediaKeySystemNapi::GetMediaKeySystemUuid call Failed!");
+
+    napi_create_string_utf8(env, uuid.c_str(), NAPI_AUTO_LENGTH, &result);
+    DRM_INFO_LOG("MediaKeySystemNapi::GetMediaKeySystemUuid exit");
+    return result;
+}
+
 napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback_info info)
 {
     DrmTrace trace("MediaKeySystemNapi::CreateMediaKeySession");

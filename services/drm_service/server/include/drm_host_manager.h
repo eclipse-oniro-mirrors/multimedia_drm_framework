@@ -54,7 +54,7 @@ struct Message {
     Message(Type t, std::string id, ExtraInfo info) : type(t), uuid(id), extraInfo(info) {}
 };
 
-#define OEM_CERTIFICATE_PATH "/system/lib64/oem_certificate_service"
+#define OEM_CERTIFICATE_PATH "/system/lib64/oem_certificate_service/"
 
 typedef void (*MediaKeySystemCallBack)(std::string &, ExtraInfo);
 typedef int32_t (*QueryMediaKeySystemNameFuncType)(std::string &);
@@ -89,6 +89,7 @@ public:
         bool *isSurpported);
     int32_t CreateMediaKeySystem(std::string &uuid, sptr<IMediaKeySystem> &hdiMediaKeySystem);
     int32_t GetMediaKeySystemName(std::map<std::string, std::string> &mediaKeySystemNames);
+    int32_t GetMediaKeySystemUuid(std::string &name, std::string &uuid);
 private:
     static void UnLoadOEMCertifaicateService(std::string &uuid, ExtraInfo info);
     void StopServiceThread();
