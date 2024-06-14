@@ -365,6 +365,34 @@ int32_t DrmHostManager::CreateMediaKeySystem(std::string &uuid, sptr<IMediaKeySy
     return DRM_OK;
 }
 
+int32_t DrmHostManager::GetMediaKeySystemUuid(std::string &name, std::string &uuid)
+{
+    DRM_INFO_LOG("DrmHostManager::GetMediaKeySystemUuid enter.");
+    bool isSurpported = false;
+    int32_t ret = GetSevices(name, &isSurpported);
+    if (ret != DRM_OK) {
+        DRM_INFO_LOG("DrmHostManager::GetMediaKeySystemUuid faild.");
+        return DRM_HOST_ERROR;
+    }
+    drmHostDeathRecipient_ = new DrmHostDeathRecipient();
+    const sptr<IRemoteObject> &remote = OHOS::HDI::hdi_objcast<IMediaKeySystemFactory>(drmHostServieProxyMap[name]);
+    if (remote != nullptr) {
+        bool result = remote->AddDeathRecipient(drmHostDeathRecipient_);
+        if (!result) {
+            DRM_ERR_LOG("AddDeathRecipient for drm Host failed.");
+            return DRM_HOST_ERROR;
+        }
+    }
+
+    ret = drmHostServieProxyMap[name]->GetMediaKeySystemDescription(name, uuid);
+    if (ret != DRM_OK) {
+        DRM_ERR_LOG("drmHostServieProxyMap GetMediaKeySystemUuid return Code:%{public}d", ret);
+        return DRM_HOST_ERROR;
+    }
+    DRM_INFO_LOG("DrmHostManager::GetMediaKeySystemUuid exit.");
+    return DRM_OK;
+}
+
 int32_t DrmHostManager::GetMediaKeySystemName(std::map<std::string, std::string> &mediaKeySystemNames)
 {
     DRM_ERR_LOG("DrmHostManager::GetMediaKeySystemName enter.");

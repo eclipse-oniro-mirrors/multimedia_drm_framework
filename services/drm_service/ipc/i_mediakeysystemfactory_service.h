@@ -41,6 +41,7 @@ public:
     virtual int32_t IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType, int32_t securityLevel,
         bool *isSurpported) = 0;
     virtual int32_t GetMediaKeySystemName(std::map<std::string, std::string> &keySystemNames) = 0;
+    virtual int32_t GetMediaKeySystemUuid(std::string &name, std::string &uuid) = 0;
     virtual int32_t CreateMediaKeySystem(std::string &uuid, sptr<IMediaKeySystemService> &mediaKeySystemProxy) = 0;
     virtual int32_t SetListenerObject(const sptr<IRemoteObject> &object) = 0;
 

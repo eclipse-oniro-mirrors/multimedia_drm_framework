@@ -220,6 +220,18 @@ int32_t MediaKeySystemFactoryService::GetMediaKeySystemName(std::map<std::string
     return ret;
 }
 
+int32_t MediaKeySystemFactoryService::GetMediaKeySystemUuid(std::string &name, std::string &uuid)
+{
+    DRM_INFO_LOG("MediaKeySystemFactoryService::GetMediaKeySystemUuid enter");
+    int32_t ret = drmHostManager_->GetMediaKeySystemUuid(name, uuid);
+    if (ret != DRM_OK) {
+        DRM_ERR_LOG("MediaKeySystemService::GetMediaKeySystemUuid failed.");
+        return ret;
+    }
+    DRM_INFO_LOG("MediaKeySystemFactoryService::GetMediaKeySystemUuid exit");
+    return ret;
+}
+
 void MediaKeySystemFactoryService::InitStatisticsInfo(sptr<IMediaKeySystem> hdiMediaKeySystem,
     StatisticsInfo &statisticsInfo)
 {

@@ -197,6 +197,23 @@ int32_t MediaKeySystemFactoryImpl::GetMediaKeySystemName(std::map<std::string, s
     return DRM_OK;
 }
 
+int32_t MediaKeySystemFactoryImpl::GetMediaKeySystemUuid(std::string &name, std::string &uuid)
+{
+    DRM_INFO_LOG("MediaKeySystemFactoryImpl::GetMediaKeySystemUuid enter.");
+    std::lock_guard<std::mutex> lock(mutex_);
+    int32_t ret = DRM_OK;
+    if (serviceProxy_ == nullptr) {
+        DRM_ERR_LOG("MediaKeySystemFactoryImpl::GetMediaKeySystemUuid serviceProxy_ is null");
+        return DRM_SERVICE_ERROR;
+    }
+    ret = serviceProxy_->GetMediaKeySystemUuid(name, uuid);
+    if (ret != DRM_OK) {
+        DRM_ERR_LOG("MediaKeySystemFactoryImpl::GetMediaKeySystemUuid failed, ret: %{public}d", ret);
+        return ret;
+    }
+    DRM_INFO_LOG("MediaKeySystemFactoryImpl::GetMediaKeySystemUuid exit.");
+    return DRM_OK;
+}
 int32_t MediaKeySystemFactoryImpl::CreateMediaKeySystem(std::string &uuid, sptr<MediaKeySystemImpl> *mediaKeySystemImpl)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryImpl:: CreateMediaKeySystem enter.");

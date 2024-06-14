@@ -88,7 +88,7 @@ private:
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem_;
     StatisticsInfo statisticsInfo_;
     std::string generationResult_;
-    uint32_t generationDuration_;
+    uint32_t generationDuration_ = 0;
 };
 
 class IMediaKeySystemServiceOperatorsCallback : public virtual RefBase {
