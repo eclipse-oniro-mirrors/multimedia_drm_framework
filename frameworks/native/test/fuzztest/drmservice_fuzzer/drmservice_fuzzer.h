@@ -30,7 +30,11 @@ public:
     DrmServiceNdkFuzzer();
     ~DrmServiceNdkFuzzer();
     /* KeySystemFactory */
-    bool DrmserviceIsMediaKeySystemSupportedTest(uint8_t *rawData, size_t size,
+    bool DrmserviceIsMediaKeySystemSupportedV1Test(uint8_t *rawData, size_t size,
+        std::shared_ptr<MediaKeySystemFactoryService> mediaKeySystemFactoryServicePtr);
+    bool DrmserviceIsMediaKeySystemSupportedV2Test(uint8_t *rawData, size_t size,
+        std::shared_ptr<MediaKeySystemFactoryService> mediaKeySystemFactoryServicePtr);
+    bool DrmserviceIsMediaKeySystemSupportedV3Test(uint8_t *rawData, size_t size,
         std::shared_ptr<MediaKeySystemFactoryService> mediaKeySystemFactoryServicePtr);
     bool DrmserviceCreateMediaKeySystemTest(uint8_t *rawData, size_t size,
         std::shared_ptr<MediaKeySystemFactoryService> mediaKeySystemFactoryServicePtr);
@@ -40,6 +44,8 @@ public:
         std::shared_ptr<MediaKeySystemFactoryService> mediaKeySystemFactoryServicePtr);
     /* KeySystem */
     bool DrmserviceCreateMediaKeySessionTest(uint8_t *rawData, size_t size,
+        std::shared_ptr<MediaKeySystemService> mediaKeySystemServicePtr);
+    bool DrmserviceCloseMediaKeySessionServiceTest(uint8_t *rawData, size_t size,
         std::shared_ptr<MediaKeySystemService> mediaKeySystemServicePtr);
     bool DrmserviceGenerateKeySystemRequestTest(uint8_t *rawData, size_t size,
         std::shared_ptr<MediaKeySystemService> mediaKeySystemServicePtr);
@@ -73,6 +79,8 @@ public:
     bool DrmserviceCreateMediaDecryptModuleTest(uint8_t *rawData, size_t size,
         std::shared_ptr<MediaKeySessionService> mediaKeySessionService);
     bool DrmserviceGenerateMediaKeyRequestTest(uint8_t *rawData, size_t size,
+        std::shared_ptr<MediaKeySessionService> mediaKeySessionService);
+    bool DrmserviceProcessMediaKeyResponseTest(uint8_t *rawData, size_t size,
         std::shared_ptr<MediaKeySessionService> mediaKeySessionService);
     bool DrmserviceGenerateOfflineReleaseRequestTest(uint8_t *rawData, size_t size,
         std::shared_ptr<MediaKeySessionService> mediaKeySessionService);
@@ -337,6 +345,7 @@ public:
 };
 } // namespace DrmStandard
 bool FuzzSystemFactoryNdk(uint8_t *data, size_t size);
+bool FuzzMediaKeySystemFactoryNdk(uint8_t *data, size_t size);
 } // namesapce OHOS
 
 #endif // DRM_MEDIAKEYSYSTEMNDKFACTORY_FUZZER_H
