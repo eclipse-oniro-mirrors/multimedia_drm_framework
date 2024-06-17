@@ -401,12 +401,12 @@ int32_t DrmHostManager::GetSevices(std::string &name, bool *isSurpported)
         }
         drmHostServieProxyMap[name] = drmHostServieProxy;
         if (*isSurpported == true) {
-            DRM_ERR_LOG("DrmHostManager::GetSevices exit, uuid:%{public}s.", uuid.c_str());
+            DRM_ERR_LOG("DrmHostManager::GetSevices exit, name:%{public}s.", name.c_str());
             return DRM_OK;
         }
     }
     if (*isSurpported == false) {
-        DRM_ERR_LOG("The drm for uuid is not support");
+        DRM_ERR_LOG("The name of drm is not support!");
         return DRM_HOST_ERROR;
     }
     if (serviceName.empty()) {
