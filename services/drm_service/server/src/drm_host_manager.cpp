@@ -400,6 +400,14 @@ int32_t DrmHostManager::GetSevices(std::string &name, bool *isSurpported)
             continue;
         }
         drmHostServieProxyMap[name] = drmHostServieProxy;
+        if (*isSurpported == true) {
+            DRM_ERR_LOG("DrmHostManager::GetSevices exit, uuid:%{public}s.", uuid.c_str());
+            return DRM_OK;
+        }
+    }
+    if (*isSurpported == false) {
+        DRM_ERR_LOG("The drm for uuid is not support");
+        return DRM_HOST_ERROR;
     }
     if (serviceName.empty()) {
         DRM_INFO_LOG("DrmHostManager::GetSevices exit, No DRM driver service named:%{public}s configured.",
