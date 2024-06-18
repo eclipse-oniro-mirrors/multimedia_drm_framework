@@ -38,12 +38,33 @@ const std::u16string MEDIA_KEY_SYSTEM_FACTORY_TOKEN = u"IMediaKeySystemSystemFac
 const std::u16string MEDIA_KEY_SYSTEM_TOKEN = u"IMediaKeySystemSystemService";
 const std::u16string MEDIA_KEY_SESSION_TOKEN = u"IMediaKeySessionService";
 const std::u16string MEDIA_DECRYPT_MODULE_TOKEN = u"IMediaDecryptModuleService";
+
+std::shared_ptr<MediaKeySystemFactoryService> g_mediaKeySystemFactoryServicePtr = nullptr;
+
 DrmServiceNdkFuzzer::DrmServiceNdkFuzzer() {}
 
 DrmServiceNdkFuzzer::~DrmServiceNdkFuzzer() {}
 
 
-bool DrmServiceNdkFuzzer::DrmserviceIsMediaKeySystemSupportedTest(uint8_t *rawData, size_t size,
+bool DrmServiceNdkFuzzer::DrmserviceIsMediaKeySystemSupportedV1Test(uint8_t *rawData, size_t size,
+    std::shared_ptr<MediaKeySystemFactoryService> mediaKeySystemFactoryServicePtr)
+{
+    if (rawData == nullptr || size < sizeof(int32_t)) {
+        return false;
+    }
+    MessageParcel reply;
+    MessageOption option;
+    MessageParcel data;
+    data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_FACTORY_TOKEN);
+    data.WriteInt32(ARGS_NUM_ONE);
+    std::string uuid(reinterpret_cast<const char *>(rawData), size);
+    data.WriteString(uuid);
+    mediaKeySystemFactoryServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED, data,
+        reply, option);
+    return true;
+}
+
+bool DrmServiceNdkFuzzer::DrmserviceIsMediaKeySystemSupportedV2Test(uint8_t *rawData, size_t size,
     std::shared_ptr<MediaKeySystemFactoryService> mediaKeySystemFactoryServicePtr)
 {
     if (rawData == nullptr || size < sizeof(int32_t)) {
@@ -58,6 +79,28 @@ bool DrmServiceNdkFuzzer::DrmserviceIsMediaKeySystemSupportedTest(uint8_t *rawDa
     std::string mimeType(reinterpret_cast<const char *>(rawData), size);
     data.WriteString(uuid);
     data.WriteString(mimeType);
+    mediaKeySystemFactoryServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED, data,
+        reply, option);
+    return true;
+}
+
+bool DrmServiceNdkFuzzer::DrmserviceIsMediaKeySystemSupportedV3Test(uint8_t *rawData, size_t size,
+    std::shared_ptr<MediaKeySystemFactoryService> mediaKeySystemFactoryServicePtr)
+{
+    if (rawData == nullptr || size < sizeof(int32_t)) {
+        return false;
+    }
+    MessageParcel reply;
+    MessageOption option;
+    MessageParcel data;
+    data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_FACTORY_TOKEN);
+    data.WriteInt32(ARGS_NUM_THREE);
+    std::string uuid(reinterpret_cast<const char *>(rawData), size);
+    std::string mimeType(reinterpret_cast<const char *>(rawData), size);
+    data.WriteString(uuid);
+    data.WriteString(mimeType);
+    int32_t securityLevel = *reinterpret_cast<const int32_t *>(rawData);
+    data.WriteInt32(securityLevel);
     mediaKeySystemFactoryServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED, data,
         reply, option);
     return true;
@@ -128,6 +171,19 @@ bool DrmServiceNdkFuzzer::DrmserviceCreateMediaKeySessionTest(uint8_t *rawData, 
     return true;
 }
 
+bool DrmServiceNdkFuzzer::DrmserviceCloseMediaKeySessionServiceTest(uint8_t *rawData, size_t size,
+    std::shared_ptr<MediaKeySystemService> mediaKeySystemServicePtr)
+{
+    if (rawData == nullptr || size < sizeof(int32_t)) {
+        return false;
+    }
+    sptr<IMediaKeySession> hdiMediaKeySession = new (std::nothrow) IMediaKeySessionMock();
+    sptr<MediaKeySessionService> mediaKeySessionService =
+        new (std::nothrow) MediaKeySessionService(hdiMediaKeySession);
+    mediaKeySystemServicePtr->CloseMediaKeySessionService(mediaKeySessionService);
+    return true;
+}
+
 bool DrmServiceNdkFuzzer::DrmserviceGenerateKeySystemRequestTest(uint8_t *rawData, size_t size,
     std::shared_ptr<MediaKeySystemService> mediaKeySystemServicePtr)
 {
@@ -151,11 +207,10 @@ bool DrmServiceNdkFuzzer::DrmserviceProcessKeySystemResponseTest(uint8_t *rawDat
     MessageParcel reply;
     MessageOption option;
     MessageParcel data;
-    int32_t responsesize = *reinterpret_cast<const int32_t *>(rawData);
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_TOKEN);
-    data.WriteInt32(responsesize);
+    data.WriteInt32(size);
     uint8_t *response = rawData;
-    data.WriteBuffer(response, responsesize);
+    data.WriteBuffer(response, size);
     mediaKeySystemServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_PROCESS_KEYSYSTEM_RESPONSE, data, reply, option);
     return true;
 }
@@ -324,9 +379,9 @@ bool DrmServiceNdkFuzzer::DrmserviceGetOfflineMediaKeyStatusTest(uint8_t *rawDat
     MessageParcel reply;
     MessageOption option;
     MessageParcel data;
+    data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_TOKEN);
     data.WriteInt32(size);
     data.WriteBuffer(rawData, size);
-    data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_TOKEN);
     mediaKeySystemServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_GET_OFFLINEKEY_STATUS, data, reply, option);
     return true;
 }
@@ -380,6 +435,22 @@ bool DrmServiceNdkFuzzer::DrmserviceGenerateMediaKeyRequestTest(uint8_t *rawData
     data.WriteInt32(size);
     data.WriteBuffer(rawData, size);
     mediaKeySessionService->OnRemoteRequest(MEDIA_KEY_SESSION_GENERATE_LICENSE_REQUEST, data, reply, option);
+    return true;
+}
+
+bool DrmServiceNdkFuzzer::DrmserviceProcessMediaKeyResponseTest(uint8_t *rawData, size_t size,
+    std::shared_ptr<MediaKeySessionService> mediaKeySessionService)
+{
+    if (rawData == nullptr || size < sizeof(int32_t)) {
+        return false;
+    }
+    MessageParcel reply;
+    MessageOption option;
+    MessageParcel data;
+    data.WriteInterfaceToken(MEDIA_KEY_SESSION_TOKEN);
+    data.WriteInt32(size);
+    data.WriteBuffer(rawData, size);
+    mediaKeySessionService->OnRemoteRequest(MEDIA_KEY_SESSION_PROCESS_LICENSE_RESPONSE, data, reply, option);
     return true;
 }
 
@@ -506,19 +577,42 @@ bool DrmServiceNdkFuzzer::DrmserviceDecryptMediaDataTest(uint8_t *rawData, size_
 }
 } // namespace DrmStandard
 
+bool FuzzMediaKeySystemFactoryNdk(uint8_t *data, size_t size)
+{
+    if (data == nullptr) {
+        return true;
+    }
+    DrmServiceNdkFuzzer testMediaKeySystemFactory;
+    /* KeySystemFactory */
+    if (g_mediaKeySystemFactoryServicePtr == nullptr) {
+        g_mediaKeySystemFactoryServicePtr =
+            std::make_shared<MediaKeySystemFactoryService>(MEDIA_KEY_SYSTEM_SERVICE_ID, true);
+    }
+    g_mediaKeySystemFactoryServicePtr->OnStart();
+    testMediaKeySystemFactory.DrmserviceIsMediaKeySystemSupportedV1Test(data, size, g_mediaKeySystemFactoryServicePtr);
+    testMediaKeySystemFactory.DrmserviceIsMediaKeySystemSupportedV2Test(data, size, g_mediaKeySystemFactoryServicePtr);
+    testMediaKeySystemFactory.DrmserviceIsMediaKeySystemSupportedV3Test(data, size, g_mediaKeySystemFactoryServicePtr);
+    testMediaKeySystemFactory.DrmserviceCreateMediaKeySystemTest(data, size, g_mediaKeySystemFactoryServicePtr);
+    testMediaKeySystemFactory.DrmserviceGetMediaKeySystemsTest(data, size, g_mediaKeySystemFactoryServicePtr);
+    testMediaKeySystemFactory.DrmserviceGetMediaKeySystemUuidTest(data, size, g_mediaKeySystemFactoryServicePtr);
+    g_mediaKeySystemFactoryServicePtr->OnStop();
+    return true;
+}
+
 bool FuzzSystemFactoryNdk(uint8_t *data, size_t size)
 {
     if (data == nullptr) {
         return true;
     }
     DrmServiceNdkFuzzer testMediaSystemFactory;
-    /* KeySystemFactory */
     /* KeySystem */
     sptr<IMediaKeySystem> hdiMediaKeySystem = new (std::nothrow) IMediaKeySystemMock();
     std::shared_ptr<MediaKeySystemService> mediaKeySystemServicePtr =
         std::make_shared<MediaKeySystemService>(hdiMediaKeySystem);
     testMediaSystemFactory.DrmserviceCreateMediaKeySessionTest(data, size, mediaKeySystemServicePtr);
+    testMediaSystemFactory.DrmserviceCloseMediaKeySessionServiceTest(data, size, mediaKeySystemServicePtr);
     testMediaSystemFactory.DrmserviceGenerateKeySystemRequestTest(data, size, mediaKeySystemServicePtr);
+    testMediaSystemFactory.DrmserviceProcessKeySystemResponseTest(data, size, mediaKeySystemServicePtr);
     testMediaSystemFactory.DrmserviceGenerateSetConfigurationStringTest(data, size, mediaKeySystemServicePtr);
     testMediaSystemFactory.DrmserviceSetConfigurationStringTest(data, size, mediaKeySystemServicePtr);
     testMediaSystemFactory.DrmserviceGetConfigurationStringTest(data, size, mediaKeySystemServicePtr);
@@ -537,6 +631,7 @@ bool FuzzSystemFactoryNdk(uint8_t *data, size_t size)
         std::make_shared<MediaKeySessionService>(hdiMediaKeySession);
     testMediaSystemFactory.DrmserviceCreateMediaDecryptModuleTest(data, size, mediaKeySessionService);
     testMediaSystemFactory.DrmserviceGenerateMediaKeyRequestTest(data, size, mediaKeySessionService);
+    testMediaSystemFactory.DrmserviceProcessMediaKeyResponseTest(data, size, mediaKeySessionService);
     testMediaSystemFactory.DrmserviceGenerateOfflineReleaseRequestTest(data, size, mediaKeySessionService);
     testMediaSystemFactory.DrmserviceProcessOfflineReleaseResponseTest(data, size, mediaKeySessionService);
     testMediaSystemFactory.DrmserviceCheckMediaKeyStatusTest(data, size, mediaKeySessionService);
@@ -563,5 +658,6 @@ extern "C" int LLVMFuzzerTestOneInput(uint8_t *data, size_t size)
         return -1;
     }
     OHOS::FuzzSystemFactoryNdk(rawData, size);
+    OHOS::FuzzMediaKeySystemFactoryNdk(rawData, size);
     return 0;
 }
