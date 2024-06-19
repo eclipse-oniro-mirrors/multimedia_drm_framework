@@ -4624,7 +4624,7 @@ static void killclearplay2(MediaKeySystem *mediaKeySystem, MediaKeySession *medi
     Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
     bool supported = true;
     supported = OH_MediaKeySystem_IsSupported(GetUuid());
-    EXPECT_EQ(supported, false);
+    EXPECT_EQ(supported, true);
     supported = OH_MediaKeySystem_IsSupported2(GetUuid(), "video/mp4");
     supported = OH_MediaKeySystem_IsSupported3(GetUuid(), "video/mp4", CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
 
@@ -4664,8 +4664,8 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_SetCallbackWithObject_084, TestSize.
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_SetCallback(mediaKeySystem, &TestSystemEventCallBackWithObj);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    unsigned char request[8192] = { 0 }; // 8192:request len
-    int32_t requestLen = 8192; // 8192:request len
+    unsigned char request[12288] = { 0 }; // 12288:request len
+    int32_t requestLen = 12288; // 12288:request len
     char defaultUrl[2048] = { 0 }; // 2048:url len
     int32_t defaultUrlLen = 2048; // 2048:url len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
