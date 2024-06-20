@@ -38,8 +38,13 @@ using namespace OHOS::HiviewDFX;
 REGISTER_SYSTEM_ABILITY_BY_ID(MediaKeySystemFactoryService, MEDIA_KEY_SYSTEM_SERVICE_ID, true)
 
 MediaKeySystemFactoryService::MediaKeySystemFactoryService(int32_t systemAbilityId, bool runOnCreate)
-    : SystemAbility(systemAbilityId, runOnCreate), drmHostManager_(nullptr)
+    : SystemAbility(systemAbilityId, runOnCreate)
 {
+    drmHostManager_ = new (std::nothrow) DrmHostManager(this);
+    if (drmHostManager_ == nullptr) {
+        DRM_ERR_LOG("MediaKeySystemFactoryService create drmHostManager_ failed");
+        return;
+    }
 }
 
 MediaKeySystemFactoryService::~MediaKeySystemFactoryService()
@@ -49,14 +54,7 @@ MediaKeySystemFactoryService::~MediaKeySystemFactoryService()
 
 void MediaKeySystemFactoryService::OnStart()
 {
-    if (drmHostManager_ == nullptr) {
-        drmHostManager_ = new (std::nothrow) DrmHostManager(this);
-        if (drmHostManager_ == nullptr) {
-            DRM_ERR_LOG("MediaKeySystemFactoryService OnStart failed to create drmHostManager_obj");
-            return;
-        }
-    }
-    if (drmHostManager_->Init() != DRM_OK) {
+    if (drmHostManager_ == nullptr || drmHostManager_->Init() != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemFactoryService OnStart failed to init drm host manager");
     }
     bool res = Publish(this);
