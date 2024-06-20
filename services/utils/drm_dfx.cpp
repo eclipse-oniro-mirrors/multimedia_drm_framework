@@ -42,8 +42,6 @@ namespace DrmStandard {
 using namespace OHOS::HiviewDFX;
 using json = nlohmann::json;
 
-#ifdef ENABLE_DRM_SYSEVENT_CONTROL
-
 DrmEvent& DrmEvent::GetInstance()
 {
     static DrmEvent instance;
@@ -368,8 +366,7 @@ void ReportServiceBehaviorEvent(std::string serviceName, std::string action)
     event.WriteServiceEvent("DRM_SERVICE_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR, drmServiveInfo);
 }
 
-void ReportLicenseBehaviorEvent(StatisticsInfo statisticsInfo, std::string licenseType, uint32_t generationDuration,
-    std::string generationResult, uint32_t processDuration, std::string processResult)
+void ReportLicenseBehaviorEvent(StatisticsInfo statisticsInfo, std::string licenseType, DownLoadInfo downLoadInfo)
 {
     DrmEvent event;
     struct DrmLicenseInfo drmLicenseInfo = {
@@ -381,21 +378,20 @@ void ReportLicenseBehaviorEvent(StatisticsInfo statisticsInfo, std::string licen
         statisticsInfo.pluginUuid,
         statisticsInfo.versionName,
         licenseType,
-        generationDuration,
-        generationResult,
-        processDuration,
-        processResult,
+        downLoadInfo.generationDuration,
+        downLoadInfo.generationResult,
+        downLoadInfo.processDuration,
+        downLoadInfo.processResult,
     };
     event.WriteLicenseEvent("DRM_LICENSE_DOWNLOAD_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
         drmLicenseInfo);
 }
 
-void ReportCertificateBehaviorEvent(StatisticsInfo statisticsInfo, uint32_t generationDuration,
-    std::string generationResult, uint32_t processDuration, std::string processResult, uint32_t callServerTime,
+void ReportCertificateBehaviorEvent(StatisticsInfo statisticsInfo, DownLoadInfo downLoadInfo, uint32_t callServerTime,
     uint32_t serverCostDuration, std::string serverResult)
 {
     DrmEvent event;
-    struct DrmCertificateInfo DrmCertificateInfo = {
+    struct DrmCertificateInfo drmCertificateInfo = {
         "DRM_SERVICE",
         0,
         GetClientBundleName(IPCSkeleton::GetCallingUid()),
@@ -403,16 +399,16 @@ void ReportCertificateBehaviorEvent(StatisticsInfo statisticsInfo, uint32_t gene
         statisticsInfo.pluginName,
         statisticsInfo.pluginUuid,
         statisticsInfo.versionName,
-        generationDuration,
-        generationResult,
-        processDuration,
-        processResult,
+        downLoadInfo.generationDuration,
+        downLoadInfo.generationResult,
+        downLoadInfo.processDuration,
+        downLoadInfo.processResult,
         callServerTime,
         serverCostDuration,
         serverResult,
     };
-    event.WriteCertificateEvent("DRM_CERTIFICATE_DOWNLOWD_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
-        DrmCertificateInfo);
+    event.WriteCertificateEvent("DRM_CERTIFICATE_DOWNLOAD_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+        drmCertificateInfo);
 }
 
 void ReportFaultEvent(uint32_t errorCode, std::string errorMesg, std::string extraMesg)
@@ -446,6 +442,17 @@ void ReportDecryptionFaultEvent(int32_t errorCode, std::string errorMesg, std::s
     event.WriteDecryptionEvent("DRM_DECRYPTION_FAILURE", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
         drmDecryptionInfo);
 }
-#endif
+
+DownLoadInfo InitDownLoadInfo(uint32_t generationDuration, std::string generationResult, uint32_t processDuration,
+    std::string processResult)
+{
+    struct DownLoadInfo downLoadInfo = {
+        generationDuration,
+        generationResult,
+        processDuration,
+        processResult,
+    };
+    return downLoadInfo;
+}
 } // namespace DrmStandard
 } // namespace OHOS

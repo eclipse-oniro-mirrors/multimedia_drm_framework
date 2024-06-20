@@ -16,8 +16,6 @@
 #ifndef DRM_DFX_H
 #define DRM_DFX_H
 
-#ifdef ENABLE_DRM_SYSEVENT_CONTROL
-
 #include <list>
 #include <string>
 #include <refbase.h>
@@ -28,13 +26,11 @@
 #include "hisysevent.h"
 #include "hitrace/tracechain.h"
 #include <chrono>
-#endif
 
 namespace OHOS {
 namespace DrmStandard {
 using namespace OHOS::HiviewDFX;
 
-#ifdef ENABLE_DRM_SYSEVENT_CONTROL
 struct DrmServiveInfo {
     std::string module;
     uint32_t currentTime;
@@ -95,6 +91,13 @@ struct DrmDecryptionInfo {
     std::string decryptIv;
 };
 
+struct DownLoadInfo {
+    uint32_t generationDuration;
+    std::string generationResult;
+    uint32_t processDuration;
+    std::string processResult;
+};
+
 class DrmEvent {
 public:
     static DrmEvent& GetInstance();
@@ -118,19 +121,18 @@ public:
     void WriteDecryptionEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
         DrmDecryptionInfo &info);
 };
-#endif
 
 __attribute__((visibility("default"))) void ReportServiceBehaviorEvent(std::string serviceName, std::string action);
 __attribute__((visibility("default"))) void ReportLicenseBehaviorEvent(StatisticsInfo statisticsInfo,
-    std::string licenseType, uint32_t generationDuration, std::string generationResult, uint32_t processDuration,
-    std::string processResult);
+    std::string licenseType, DownLoadInfo downLoadInfo);
 __attribute__((visibility("default"))) void ReportCertificateBehaviorEvent(StatisticsInfo statisticsInfo,
-    uint32_t generationDuration, std::string generationResult, uint32_t processDuration, std::string processResult,
-    uint32_t callServerTime, uint32_t serverCostDuration, std::string serverResult);
+    DownLoadInfo downLoadInfo, uint32_t callServerTime, uint32_t serverCostDuration, std::string serverResult);
 __attribute__((visibility("default"))) void ReportFaultEvent(uint32_t errorCode, std::string errorMesg,
     std::string extraMesg);
 __attribute__((visibility("default"))) void ReportDecryptionFaultEvent(int32_t errorCode, std::string errorMesg,
     std::string decryptAlgo, std::string decryptKeyid, std::string decryptIv);
+__attribute__((visibility("default"))) DownLoadInfo InitDownLoadInfo(uint32_t generationDuration,
+    std::string generationResult, uint32_t processDuration, std::string processResult);
 } // namespace DrmStandard
 } // namespace OHOS
 #endif // DRM_DFX_H
