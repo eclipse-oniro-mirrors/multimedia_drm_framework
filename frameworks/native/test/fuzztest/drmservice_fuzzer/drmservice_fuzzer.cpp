@@ -587,15 +587,16 @@ bool FuzzMediaKeySystemFactoryNdk(uint8_t *data, size_t size)
     if (g_mediaKeySystemFactoryServicePtr == nullptr) {
         g_mediaKeySystemFactoryServicePtr =
             std::make_shared<MediaKeySystemFactoryService>(MEDIA_KEY_SYSTEM_SERVICE_ID, true);
+        if (g_mediaKeySystemFactoryServicePtr == nullptr) {
+            return false;
+        }
     }
-    g_mediaKeySystemFactoryServicePtr->OnStart();
     testMediaKeySystemFactory.DrmserviceIsMediaKeySystemSupportedV1Test(data, size, g_mediaKeySystemFactoryServicePtr);
     testMediaKeySystemFactory.DrmserviceIsMediaKeySystemSupportedV2Test(data, size, g_mediaKeySystemFactoryServicePtr);
     testMediaKeySystemFactory.DrmserviceIsMediaKeySystemSupportedV3Test(data, size, g_mediaKeySystemFactoryServicePtr);
     testMediaKeySystemFactory.DrmserviceCreateMediaKeySystemTest(data, size, g_mediaKeySystemFactoryServicePtr);
     testMediaKeySystemFactory.DrmserviceGetMediaKeySystemsTest(data, size, g_mediaKeySystemFactoryServicePtr);
     testMediaKeySystemFactory.DrmserviceGetMediaKeySystemUuidTest(data, size, g_mediaKeySystemFactoryServicePtr);
-    g_mediaKeySystemFactoryServicePtr->OnStop();
     return true;
 }
 
