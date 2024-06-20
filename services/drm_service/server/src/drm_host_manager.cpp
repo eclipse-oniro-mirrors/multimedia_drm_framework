@@ -129,7 +129,6 @@ void DrmHostManager::ReleaseHandleAndKeySystemMap(void *handle)
         it->second->Destroy();
         it->second = nullptr;
         /* Release after the OEM service is started */
-        std::lock_guard<std::mutex> lockLib(libMutex);
         for (auto libMapIt = libMap.begin(); libMapIt != libMap.end(); libMapIt++) {
             if (libMapIt->second == handle) {
                 libMap.erase(libMapIt->first);
