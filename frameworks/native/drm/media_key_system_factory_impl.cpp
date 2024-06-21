@@ -21,7 +21,11 @@
 namespace OHOS {
 namespace DrmStandard {
 using namespace OHOS::HiviewDFX;
-sptr<MediaKeySystemFactoryImpl> MediaKeySystemFactoryImpl::mediaKeySystemFactoryImpl_;
+
+sptr<MediaKeySystemFactoryImpl> MediaKeySystemFactoryImpl::mediaKeySystemFactoryImpl_ = nullptr;
+constexpr int64_t SLEEP_TIME = 1;
+constexpr int32_t RETRY_TIMES = 3;
+
 MediaKeySystemFactoryImpl::MediaKeySystemFactoryImpl()
 {
     DRM_DEBUG_LOG("MediaKeySystemFactoryImpl:0x%{public}06" PRIXPTR "MediaKeySystemFactoryImpl Instances create",
@@ -38,9 +42,49 @@ MediaKeySystemFactoryImpl::~MediaKeySystemFactoryImpl()
     #ifdef ENABLE_DRM_SYSEVENT_CONTROL
     HiTraceChain::End(traceId_);
     #endif
-    serviceProxy_ = nullptr;
-    DRM_INFO_LOG("MediaKeySystemFactoryImpl::~MediaKeySystemFactoryImpl exit.");
     deathRecipient_ = nullptr;
+    DRM_INFO_LOG("MediaKeySystemFactoryImpl::~MediaKeySystemFactoryImpl exit.");
+}
+
+const sptr<IMediaKeySystemFactoryService> MediaKeySystemFactoryImpl::GetServiceProxy()
+{
+    std::lock_guard<std::mutex> lock(serviceProxyMutex_);
+    if (privateServiceProxy_ != nullptr) {
+        return privateServiceProxy_;
+    }
+
+    DRM_INFO_LOG("Connect media key system service.");
+    sptr<IRemoteObject> object = nullptr;
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    DRM_CHECK_AND_RETURN_RET_LOG(samgr != nullptr, nullptr,
+        "Failed to get System ability manager!");
+    object = samgr->GetSystemAbility(MEDIA_KEY_SYSTEM_SERVICE_ID);
+    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, nullptr,
+        "the object returned by GetSystemAbility is nullptr!");
+    sptr<IMediaKeySystemFactoryService> tmpProxy = iface_cast<IMediaKeySystemFactoryService>(object);
+    DRM_CHECK_AND_RETURN_RET_LOG(tmpProxy != nullptr, nullptr, "cast the object to privateServiceProxy_ failed!");
+
+    pid_t pid = 0;
+    sptr<DrmDeathRecipient> tmpDeathRecipient = new (std::nothrow) DrmDeathRecipient(pid);
+    DRM_CHECK_AND_RETURN_RET_LOG(tmpDeathRecipient != nullptr, nullptr,
+        "failed to new DrmDeathRecipient!");
+    tmpDeathRecipient->SetNotifyCb(
+        std::bind(&MediaKeySystemFactoryImpl::MediaKeySystemFactoryServerDied, this, std::placeholders::_1));
+    bool result = object->AddDeathRecipient(tmpDeathRecipient);
+    DRM_CHECK_AND_RETURN_RET_LOG(result, nullptr, "failed to new DrmDeathRecipient!");
+
+    DRM_INFO_LOG("Ready to create listener object");
+    sptr<DrmListenerStub> tmpListenerStub = new(std::nothrow) DrmListenerStub();
+    DRM_CHECK_AND_RETURN_RET_LOG(tmpListenerStub != nullptr, nullptr, "failed to new DrmListenerStub object");
+
+    sptr<IRemoteObject> listenerObject = tmpListenerStub->AsObject();
+    DRM_CHECK_AND_RETURN_RET_LOG(listenerObject != nullptr, nullptr, "listener object is nullptr.");
+    int32_t ret = tmpProxy->SetListenerObject(listenerObject);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, nullptr, "set listener failed.");
+    privateServiceProxy_ = tmpProxy;
+    deathRecipient_ = tmpDeathRecipient;
+    listenerStub_ = tmpListenerStub;
+    return privateServiceProxy_;
 }
 
 sptr<MediaKeySystemFactoryImpl> &MediaKeySystemFactoryImpl::GetInstance()
@@ -57,79 +101,51 @@ sptr<MediaKeySystemFactoryImpl> &MediaKeySystemFactoryImpl::GetInstance()
     return MediaKeySystemFactoryImpl::mediaKeySystemFactoryImpl_;
 }
 
-int32_t MediaKeySystemFactoryImpl::CreateListenerObject()
-{
-    DRM_INFO_LOG("MediaKeySystemFactoryImpl::CreateListenerObject");
-    listenerStub_ = new(std::nothrow) DrmListenerStub();
-    DRM_CHECK_AND_RETURN_RET_LOG(listenerStub_ != nullptr, DRM_MEMORY_ERROR,
-        "failed to new DrmListenerStub object");
-    DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy_ != nullptr, DRM_MEMORY_ERROR,
-        "Drm service does not exist.");
-
-    sptr<IRemoteObject> object = listenerStub_->AsObject();
-    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_MEMORY_ERROR, "listener object is nullptr.");
-
-    return serviceProxy_->SetListenerObject(object);
-}
-
 void MediaKeySystemFactoryImpl::Init()
 {
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::Init enter.");
-    sptr<IRemoteObject> object = nullptr;
-
-    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    if (samgr == nullptr) {
-        DRM_ERR_LOG("Failed to get System ability manager");
-        return;
-    }
-    object = samgr->GetSystemAbility(MEDIA_KEY_SYSTEM_SERVICE_ID);
-    if (object == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemFactoryImpl::GetSystemAbility() is failed.");
-        return;
-    }
-    serviceProxy_ = iface_cast<IMediaKeySystemFactoryService>(object);
-    if (serviceProxy_ == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemFactoryImpl::init serviceProxy_ is null.");
-        return;
-    }
-    pid_t pid = 0;
-    deathRecipient_ = new (std::nothrow) DrmDeathRecipient(pid);
-    DRM_CHECK_AND_RETURN_LOG(deathRecipient_ != nullptr, "failed to new DrmDeathRecipient!");
-    deathRecipient_->SetNotifyCb(
-        std::bind(&MediaKeySystemFactoryImpl::MediaKeySystemFactoryServerDied, this, std::placeholders::_1));
-    bool result = object->AddDeathRecipient(deathRecipient_);
-    if (!result) {
-        DRM_ERR_LOG("failed to add deathRecipient");
-    }
     #ifdef ENABLE_DRM_SYSEVENT_CONTROL
     HiTraceChain::SetId(traceId_);
     #endif
-    CreateListenerObject();
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::Init exit.");
 }
 
 void MediaKeySystemFactoryImpl::MediaKeySystemFactoryServerDied(pid_t pid)
 {
     DRM_ERR_LOG("MediaKeySystemFactoryServerDied has died, pid:%{public}d!", pid);
-    if (serviceProxy_ != nullptr && serviceProxy_->AsObject() != nullptr) {
-        (void)serviceProxy_->AsObject()->RemoveDeathRecipient(deathRecipient_);
-        serviceProxy_ = nullptr;
+    {
+        std::lock_guard<std::mutex> lock(serviceProxyMutex_);
+        if (privateServiceProxy_ != nullptr && privateServiceProxy_->AsObject() != nullptr) {
+            (void)privateServiceProxy_->AsObject()->RemoveDeathRecipient(deathRecipient_);
+            privateServiceProxy_ = nullptr;
+        }
     }
     listenerStub_ = nullptr;
     deathRecipient_ = nullptr;
+
+    int32_t retry = RETRY_TIMES;
+    sptr<IMediaKeySystemFactoryService> serviceProxy = nullptr;
+    while (retry--) {
+        // Sleep and wait for 1 second;
+        sleep(SLEEP_TIME);
+        serviceProxy = GetServiceProxy();
+        if (serviceProxy != nullptr) {
+            DRM_INFO_LOG("Reconnect media key system service success!");
+            break;
+        }
+    }
+
+    DRM_CHECK_AND_RETURN_LOG(serviceProxy != nullptr, "failed to reconnect service!");
 }
 
 bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &name)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::IsMediaKeySystemSupported enter.");
-    std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = DRM_OK;
     bool isSurpported = false;
-    if (serviceProxy_ == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemFactoryImpl::IsMediaKeySystemSupported serviceProxy_ is null");
-        return isSurpported;
-    }
-    ret = serviceProxy_->IsMediaKeySystemSupported(name, &isSurpported);
+    const sptr<IMediaKeySystemFactoryService> serviceProxy = GetServiceProxy();
+    DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy != nullptr, isSurpported, "service proxy is nullptr!");
+    ret = serviceProxy->IsMediaKeySystemSupported(name, &isSurpported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemFactoryImpl::IsMediaKeySystemSupported failed, ret: %{public}d", ret);
     }
@@ -141,15 +157,12 @@ bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &name)
 bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &name, std::string &mimeType)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::IsMediaKeySystemSupported enter.");
-    std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = DRM_OK;
     bool isSurpported = false;
 
-    if (serviceProxy_ == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemFactoryImpl::IsMediaKeySystemSupported serviceProxy_ is null");
-        return isSurpported;
-    }
-    ret = serviceProxy_->IsMediaKeySystemSupported(name, mimeType, &isSurpported);
+    const sptr<IMediaKeySystemFactoryService> serviceProxy = GetServiceProxy();
+    DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy != nullptr, isSurpported, "service proxy is nullptr!");
+    ret = serviceProxy->IsMediaKeySystemSupported(name, mimeType, &isSurpported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemFactoryImpl::IsMediaKeySystemSupported failed, ret: %{public}d", ret);
     }
@@ -162,15 +175,12 @@ bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &uuid, std
     IMediaKeySessionService::ContentProtectionLevel securityLevel)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::IsMediaKeySystemSupported enter.");
-    std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = DRM_OK;
     bool isSurpported = false;
 
-    if (serviceProxy_ == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemFactoryImpl::IsMediaKeySystemSupported serviceProxy_ is null");
-        return isSurpported;
-    }
-    ret = serviceProxy_->IsMediaKeySystemSupported(uuid, mimeType, securityLevel, &isSurpported);
+    const sptr<IMediaKeySystemFactoryService> serviceProxy = GetServiceProxy();
+    DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy != nullptr, isSurpported, "service proxy is nullptr!");
+    ret = serviceProxy->IsMediaKeySystemSupported(uuid, mimeType, securityLevel, &isSurpported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemFactoryImpl::IsMediaKeySystemSupported failed, ret: %{public}d", ret);
     }
@@ -182,13 +192,10 @@ bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &uuid, std
 int32_t MediaKeySystemFactoryImpl::GetMediaKeySystems(std::map<std::string, std::string> &keySystemNames)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::GetMediaKeySystems enter.");
-    std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = DRM_OK;
-    if (serviceProxy_ == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemFactoryImpl::GetMediaKeySystems serviceProxy_ is null");
-        return DRM_SERVICE_ERROR;
-    }
-    ret = serviceProxy_->GetMediaKeySystems(keySystemNames);
+    const sptr<IMediaKeySystemFactoryService> serviceProxy = GetServiceProxy();
+    DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy != nullptr, DRM_SERVICE_ERROR, "service proxy is nullptr!");
+    ret = serviceProxy->GetMediaKeySystems(keySystemNames);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemFactoryImpl::GetMediaKeySystems failed, ret: %{public}d", ret);
         return ret;
@@ -200,13 +207,10 @@ int32_t MediaKeySystemFactoryImpl::GetMediaKeySystems(std::map<std::string, std:
 int32_t MediaKeySystemFactoryImpl::GetMediaKeySystemUuid(std::string &name, std::string &uuid)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::GetMediaKeySystemUuid enter.");
-    std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = DRM_OK;
-    if (serviceProxy_ == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemFactoryImpl::GetMediaKeySystemUuid serviceProxy_ is null");
-        return DRM_SERVICE_ERROR;
-    }
-    ret = serviceProxy_->GetMediaKeySystemUuid(name, uuid);
+    const sptr<IMediaKeySystemFactoryService> serviceProxy = GetServiceProxy();
+    DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy != nullptr, DRM_SERVICE_ERROR, "service proxy is nullptr!");
+    ret = serviceProxy->GetMediaKeySystemUuid(name, uuid);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemFactoryImpl::GetMediaKeySystemUuid failed, ret: %{public}d", ret);
         return ret;
@@ -225,12 +229,10 @@ int32_t MediaKeySystemFactoryImpl::CreateMediaKeySystem(std::string &name, sptr<
         DRM_ERR_LOG("MediaKeySystemImpl:: mediaKeySystemImpl is nullptr");
         return DRM_INVALID_PARAM;
     }
-    if (serviceProxy_ == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemFactoryImpl:: serviceProxy_ == nullptr");
-        return DRM_SERVICE_FATAL_ERROR;
-    }
 
-    ret = serviceProxy_->CreateMediaKeySystem(name, mediaKeySystemProxy);
+    const sptr<IMediaKeySystemFactoryService> serviceProxy = GetServiceProxy();
+    DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy != nullptr, DRM_SERVICE_ERROR, "service proxy is nullptr!");
+    ret = serviceProxy->CreateMediaKeySystem(name, mediaKeySystemProxy);
     if (ret == DRM_OK) {
         if (mediaKeySystemProxy != nullptr) {
             localMediaKeySystemImpl = new (std::nothrow) MediaKeySystemImpl(mediaKeySystemProxy);
