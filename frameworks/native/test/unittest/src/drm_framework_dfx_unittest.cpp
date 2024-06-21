@@ -135,10 +135,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportServiceBehaviorEvent, TestSize
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportLicenseBehaviorEvent, TestSize.Level0)
 {
     std::string mediaKeyType = "keytype";
-    std::string generationResult = "success";
-    std::string processResult = "success";
-    uint32_t generationDuration = 10;
-    uint32_t processDuration = 1;
+    struct DownLoadInfo downLoadInfo = InitDownLoadInfo(10, "success", 1, "success");
     struct StatisticsInfo statisticsInfo = {
         "123123",
         "clearplay",
@@ -146,20 +143,16 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportLicenseBehaviorEvent, TestSize
         "clearplay_v1",
         "bundleName",
     };
-    ReportLicenseBehaviorEvent(statisticsInfo, mediaKeyType, generationDuration, generationResult,
-    processDuration, processResult);
+    ReportLicenseBehaviorEvent(statisticsInfo, mediaKeyType, downLoadInfo);
 }
 
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportCertificateBehaviorEvent, TestSize.Level0)
 {
     std::string mediaKeyType = "keytype";
-    std::string generationResult = "success";
-    std::string processResult = "success";
-    uint32_t generationDuration = 10;
-    uint32_t processDuration = 1;
     uint32_t callServerTime = 1;
     uint32_t serverCostDuration = 19;
     std::string serverResult = "serverResult";
+    struct DownLoadInfo downLoadInfo = InitDownLoadInfo(10, "success", 1, "success");
     struct StatisticsInfo statisticsInfo = {
         "123123",
         "clearplay",
@@ -167,8 +160,8 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportCertificateBehaviorEvent, Test
         "clearplay_v1",
         "bundleName",
     };
-    ReportCertificateBehaviorEvent(statisticsInfo, generationDuration, generationResult, processDuration,
-        "GenerateKeySystemRequest failed", callServerTime, serverCostDuration, serverResult);
+    ReportCertificateBehaviorEvent(statisticsInfo, downLoadInfo, callServerTime, serverCostDuration,
+        serverResult);
 }
 
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_HiSysWriteStatistic, TestSize.Level0)
