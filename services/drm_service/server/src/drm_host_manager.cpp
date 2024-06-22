@@ -126,9 +126,9 @@ void DrmHostManager::DelayedLazyLoad()
     std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
     for (auto pluginInfoIt = lazyLoadPluginInfoMap.begin(); pluginInfoIt != lazyLoadPluginInfoMap.end();
         pluginInfoIt++) {
-        DRM_DEBUG_LOG("DrmHostManager::ProcessMessage check lazy unload, name:%{public}s, Count:%{public}d," 
-            "Timeout:%{public}d", pluginInfoIt->second.c_str(),
-            lazyLoadPluginCountMap[pluginInfoIt->first], lazyLoadPluginTimeoutMap[pluginInfoIt->first]);
+        DRM_DEBUG_LOG("DrmHostManager::ProcessMessage check lazy unload, name:%{public}s, Count:%{public}d,"
+            "Timeout:%{public}d", pluginInfoIt->second.c_str(), lazyLoadPluginCountMap[pluginInfoIt->first],
+            lazyLoadPluginTimeoutMap[pluginInfoIt->first]);
         if (lazyLoadPluginCountMap[pluginInfoIt->first] == NOT_LAZY_LOADDED ||
             lazyLoadPluginTimeoutMap[pluginInfoIt->first] == NOT_LAZY_LOADDED) {
             DRM_DEBUG_LOG("DrmHostManager::ProcessMessage not need to unload");
