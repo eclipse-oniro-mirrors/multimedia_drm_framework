@@ -46,12 +46,11 @@ public:
     int32_t keySystemNumber = 0;
 
 private:
+    int32_t CreateListenerObject();
     void MediaKeySystemFactoryServerDied(pid_t pid);
-    const sptr<IMediaKeySystemFactoryService> GetServiceProxy();
-    std::mutex serviceProxyMutex_;
-    sptr<OHOS::DrmStandard::IMediaKeySystemFactoryService> privateServiceProxy_;
     std::mutex mutex_;
     static sptr<MediaKeySystemFactoryImpl> mediaKeySystemFactoryImpl_;
+    sptr<OHOS::DrmStandard::IMediaKeySystemFactoryService> serviceProxy_;
     sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
     sptr<DrmListenerStub> listenerStub_ = nullptr;
     #ifdef ENABLE_DRM_SYSEVENT_CONTROL

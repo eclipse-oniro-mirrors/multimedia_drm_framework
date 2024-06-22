@@ -77,7 +77,14 @@ ohos_shared_library("drm_napi") {
     cfi_vcall_icall_only = true
     debug = false
   }
-  cflags = [ "-fPIC" ]
+  cflags = [
+    "-fPIC",
+    "-fdata-sections",
+    "-ffunction-sections",
+    "-fno-asynchronous-unwind-tables",
+    "-fno-unwind-tables",
+    "-Os",
+  ]
   cflags_cc = cflags
   relative_install_dir = "module/multimedia"
   part_name = "drm_framework"

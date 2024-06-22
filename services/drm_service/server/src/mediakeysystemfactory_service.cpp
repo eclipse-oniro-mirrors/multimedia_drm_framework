@@ -105,16 +105,22 @@ void MediaKeySystemFactoryService::DistroyForClientDied(pid_t pid)
 {
     // destroy all system objects for this pid
     DRM_INFO_LOG("MediaKeySystemFactoryService::DistroyForClientDied pid: %{public}d", pid);
-    if (mediaKeySystemForPid_.find(pid) != mediaKeySystemForPid_.end()) {
-        for (auto it = mediaKeySystemForPid_[pid].begin(); it != mediaKeySystemForPid_[pid].end();) {
-            if ((*it) != nullptr) {
-                (*it)->CloseMediaKeySystemServiceByCallback();
-            }
-            it = mediaKeySystemForPid_[pid].erase(it);
-        }
-        mediaKeySystemForPid_[pid].clear();
-        mediaKeySystemForPid_.erase(pid);
+    if (mediaKeySystemForPid_.find(pid) == mediaKeySystemForPid_.end()) {
+        return;
     }
+    for (auto it = mediaKeySystemForPid_[pid].begin(); it != mediaKeySystemForPid_[pid].end();) {
+        if ((*it) != nullptr) {
+            sptr<IMediaKeySystem> hdiMediaKeySystem = (*it)->getMediaKeySystem();
+            (*it)->CloseMediaKeySystemServiceByCallback();
+            if (hdiMediaKeySystem != nullptr) {
+                DRM_DEBUG_LOG("MediaKeySystemFactoryService ReleaseMediaKeySystem");
+                drmHostManager_->ReleaseMediaKeySystem(hdiMediaKeySystem);
+            }
+        }
+        it = mediaKeySystemForPid_[pid].erase(it);
+    }
+    mediaKeySystemForPid_[pid].clear();
+    mediaKeySystemForPid_.erase(pid);
 }
 
 int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
@@ -160,6 +166,7 @@ int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySy
     int32_t errCode = DRM_OK;
     int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemFactoryService GetCallingPID: %{public}d", currentPid);
+    sptr<IMediaKeySystem> hdiMediaKeySystem = mediaKeySystemService->getMediaKeySystem();
 
     for (auto &pidSystemsSet : mediaKeySystemForPid_) {
         if (pidSystemsSet.second.find(mediaKeySystemService) != pidSystemsSet.second.end()) {
@@ -172,8 +179,11 @@ int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySy
     if (CurrentMediaKeySystemNum_.find(pluginName) != CurrentMediaKeySystemNum_.end()) {
         CurrentMediaKeySystemNum_[pluginName]--;
     }
+    if (hdiMediaKeySystem != NULL) {
+        DRM_DEBUG_LOG("MediaKeySystemFactoryService ReleaseMediaKeySystem");
+        drmHostManager_->ReleaseMediaKeySystem(hdiMediaKeySystem);
+    }
     mediaKeySystemService = nullptr;
-    drmHostManager_->ReleaseMediaKeySystem(pluginName);
     DRM_INFO_LOG("MediaKeySystemFactoryService CloseMediaKeySystemService exit.");
     return errCode;
 }

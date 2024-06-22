@@ -410,5 +410,11 @@ std::string MediaKeySystemService::GetPluginName()
 {
     return statisticsInfo_.pluginName;
 }
+
+sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> MediaKeySystemService::getMediaKeySystem()
+{
+    return hdiKeySystem_;
+}
+
 } // DrmStandard
 } // OHOS
