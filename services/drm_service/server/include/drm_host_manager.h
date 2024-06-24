@@ -111,12 +111,12 @@ private:
     static void UnLoadOEMCertifaicateService(std::string &name, ExtraInfo info);
     int32_t InitGetMediaKeySystems();
     void StopServiceThread();
-    void DelayedLazyLoad();
+    void DelayedLazyUnLoad();
     void ProcessMessage();
     void ServiceThreadMain();
     void GetOemLibraryPath(std::vector<std::string> &libsToLoad);
     void OemCertificateManager();
-    int32_t ProcessLazyUnLoadPlugin(std::string &name, sptr<IMediaKeySystemFactory> &drmHostServieProxy,
+    int32_t ProcessLazyLoadInfomation(std::string &name, sptr<IMediaKeySystemFactory> &drmHostServieProxy,
     sptr<IMediaKeySystemFactory> &drmHostServieProxys);
     int32_t ProcessLazyLoadPlugin(std::string &name, std::vector<std::string> &serviceName,
         sptr<IDeviceManager> &deviceMgr, sptr<IServiceManager> &servmgr);
