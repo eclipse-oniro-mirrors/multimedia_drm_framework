@@ -75,6 +75,7 @@ public:
     int32_t GetStatistics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics) override;
     int32_t SetCallback(sptr<IMeidaKeySystemServiceCallback> &callback) override;
     std::string GetPluginName();
+    sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> getMediaKeySystem();
     
     // for hdi callback
     int32_t SendEvent(OHOS::HDI::Drm::V1_0::EventType eventType, int32_t extra,

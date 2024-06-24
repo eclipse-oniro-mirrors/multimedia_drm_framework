@@ -27,10 +27,14 @@ config("drm_capi_common_config") {
     "-Wshadow",
     "-FPIC",
     "-FS",
-    "-O2",
     "-D_FORTIFY_SOURCE=2",
     "-Wformat=2",
     "-Wdate-time",
+    "-fdata-sections",
+    "-ffunction-sections",
+    "-fno-asynchronous-unwind-tables",
+    "-fno-unwind-tables",
+    "-Os",
   ]
 
   cflags_cc = [

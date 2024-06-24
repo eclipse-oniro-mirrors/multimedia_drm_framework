@@ -57,6 +57,11 @@ ohos_shared_library("drm_framework") {
   cflags = [
     "-fPIC",
     "-Wall",
+    "-fdata-sections",
+    "-ffunction-sections",
+    "-fno-asynchronous-unwind-tables",
+    "-fno-unwind-tables",
+    "-Os",
   ]
   cflags += [ "-DENABLE_DRM_SYSEVENT_CONTROL" ]
 

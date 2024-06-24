@@ -17,9 +17,9 @@
 #ifndef DRM_DRMSERVICE_FUZZER_H
 #define DRM_DRMSERVICE_FUZZER_H
 
-#include "imedia_key_session.h"
-#include "imedia_key_system.h"
-#include "imedia_decrypt_module.h"
+#include "v1_0/imedia_key_session.h"
+#include "v1_0/imedia_key_system.h"
+#include "v1_0/imedia_decrypt_module.h"
 
 #define FUZZ_PROJECT_NAME "mediakeysystemndkfactory_fuzzer"
 

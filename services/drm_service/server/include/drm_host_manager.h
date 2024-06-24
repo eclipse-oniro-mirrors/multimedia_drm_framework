@@ -26,7 +26,10 @@
 #include <queue>
 #include <condition_variable>
 #include <thread>
-
+#include "iservmgr_hdi.h"
+#include "servmgr_hdi.h"
+#include "idevmgr_hdi.h"
+#include "hdf_device_class.h"
 #include "i_mediakeysystem_service.h"
 #include "iservstat_listener_hdi.h"
 #include "media_key_session_proxy.h"
@@ -38,11 +41,17 @@ namespace OHOS {
 namespace DrmStandard {
 using namespace OHOS::HDI::Drm::V1_0;
 using namespace OHOS::HDI;
+using OHOS::HDI::DeviceManager::V1_0::IDeviceManager;
+using OHOS::HDI::ServiceManager::V1_0::IServiceManager;
 
 enum ExtraInfo {
     OEM_CERT_PROVISIONED_DONE = 0,
     MEDIA_KEY_SYSTEM_ERROR,
-    GET_OEM_CERTIFIATE_ERROE,
+    GET_OEM_CERTIFICATE_ERROR,
+    GET_OEM_PROVISION_REQUEST_ERROR,
+    OEM_CERT_PROVISION_SERVER_ERROR,
+    OEM_CERT_PROVISIONED_ERROR,
+    EXIT_FOR_UNKNOWN_CAUSE,
 };
 
 struct Message {
@@ -74,9 +83,13 @@ public:
     };
     class DrmHostDeathRecipient : public IRemoteObject::DeathRecipient {
     public:
-        explicit DrmHostDeathRecipient();
+        explicit DrmHostDeathRecipient(const sptr<DrmHostManager>& drmHostManager,
+            const sptr<IMediaKeySystemFactory> drmHostServieProxy);
         virtual ~DrmHostDeathRecipient();
         void OnRemoteDied(const wptr<IRemoteObject> &remote) override;
+    private:
+        wptr<DrmHostManager> drmHostManager_;
+        wptr<IMediaKeySystemFactory> drmHostServieProxy_;
     };
 
     explicit DrmHostManager(StatusCallback *statusCallback);
@@ -92,39 +105,48 @@ public:
     int32_t CreateMediaKeySystem(std::string &name, sptr<IMediaKeySystem> &hdiMediaKeySystem);
     int32_t GetMediaKeySystems(std::map<std::string, std::string> &mediaKeySystemDescription);
     int32_t GetMediaKeySystemUuid(std::string &name, std::string &uuid);
-    void ReleaseMediaKeySystem(std::string &name);
+    void ReleaseMediaKeySystem(sptr<IMediaKeySystem> &hdiMediaKeySystem);
+    void ClearDeathService(sptr<IMediaKeySystemFactory> drmHostServieProxy);
 private:
     static void UnLoadOEMCertifaicateService(std::string &name, ExtraInfo info);
+    int32_t InitGetMediaKeySystems();
     void StopServiceThread();
+    void DelayedLazyUnLoad();
     void ProcessMessage();
     void ServiceThreadMain();
     void GetOemLibraryPath(std::vector<std::string> &libsToLoad);
     void OemCertificateManager();
-    int32_t GetSevices(std::string &name, bool *isSurpported);
+    int32_t ProcessLazyLoadInfomation(std::string &name, sptr<IMediaKeySystemFactory> &drmHostServieProxy,
+    sptr<IMediaKeySystemFactory> &drmHostServieProxys);
+    int32_t ProcessLazyLoadPlugin(std::string &name, std::vector<std::string> &serviceName,
+        sptr<IDeviceManager> &deviceMgr, sptr<IServiceManager> &servmgr);
+    int32_t GetServices(std::string &name, bool *isSurpported, sptr<IMediaKeySystemFactory> &drmHostServieProxys);
     void ReleaseHandleAndKeySystemMap(void *handle);
-    std::string trim(const std::string& str);
+    std::string StringTrim(const std::string& str);
+    int32_t LazyLoadPlugin(std::string &name, std::vector<std::string> &serviceName,
+    sptr<IDeviceManager> &deviceMgr, sptr<IServiceManager> &servmgr);
     void parseLazyLoadService(std::ifstream& file, std::map<std::string, std::string>& lazyLoadPluginInfoMap);
-    int32_t loadPluginInfo(const std::string& filePath);
-    void ReleaseSevices(std::string &name);
+    int32_t LoadPluginInfo(const std::string& filePath);
+    void ReleaseSevices(sptr<IMediaKeySystemFactory> drmHostServieProxy);
+    void UnloadAllServices();
+
     StatusCallback *statusCallback_;
     std::string service_name_ = "drm_interface_service";
-    sptr<DrmHostDeathRecipient> drmHostDeathRecipient_ = nullptr;
-    sptr<IMediaKeySystem> hdiMediaKeySystem;
-    std::recursive_mutex handleAndKeySystemMapMutex;
     std::map<void *, sptr<IMediaKeySystem>> handleAndKeySystemMap;
     std::thread serviceThread;
     bool serviceThreadRunning = false;
     std::vector<void *> loadedLibs;
+    std::recursive_mutex drmHostMapMutex;
     static std::mutex queueMutex;
     static std::queue<Message> messageQueue;
     static std::condition_variable cv;
-    std::mutex libMutex;
-    std::map<std::string, void *> libMap;
-    std::shared_mutex drmHostServieProxyMapMtx;
-    std::map<std::string, sptr<IMediaKeySystemFactory>> drmHostServieProxyMap;
-    std::shared_mutex lazyLoadPluginInfoMapMtx;
+    std::map<std::string, void *> pluginNameAndHandleMap;
     std::map<std::string, std::string> lazyLoadPluginInfoMap;
-    std::map<std::string, int32_t> pluginCountMap;
+    std::map<std::string, int32_t> lazyLoadPluginCountMap;
+    std::map<std::string, int32_t> lazyLoadPluginTimeoutMap;
+    std::map<std::string, std::string> mediaKeySystemDescription_;
+    std::map<sptr<IMediaKeySystem>, sptr<IMediaKeySystemFactory>> hdiMediaKeySystemAndFactoryMap;
+    std::map<sptr<IMediaKeySystemFactory>, std::string> hdiMediaKeySystemFactoryAndPluginNameMap;
 };
 } // DrmStandard
 } // OHOS
