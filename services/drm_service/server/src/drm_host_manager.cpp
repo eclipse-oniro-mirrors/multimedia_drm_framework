@@ -117,8 +117,9 @@ void DrmHostManager::StopServiceThread()
     DRM_INFO_LOG("DrmHostManager::StopServiceThread exit.");
 }
 
-void DrmHostManager::DelayedLazyLoad()
+void DrmHostManager::DelayedLazyUnLoad()
 {
+    DRM_INFO_LOG("DrmHostManager::DelayedLazyUnLoad enter.");
     sptr<IDeviceManager> deviceMgr = IDeviceManager::Get();
     if (deviceMgr == nullptr || lazyLoadPluginInfoMap.empty()) {
         return;
@@ -145,6 +146,7 @@ void DrmHostManager::DelayedLazyLoad()
             }
         }
     }
+    DRM_INFO_LOG("DrmHostManager::DelayedLazyUnLoad exit.");
 }
 
 void DrmHostManager::ProcessMessage()
@@ -176,7 +178,7 @@ void DrmHostManager::ProcessMessage()
                 break;
             }
             DRM_DEBUG_LOG("DrmHostManager::ProcessMessage lazy unload start.");
-            DelayedLazyLoad();
+            DelayedLazyUnLoad();
             DRM_INFO_LOG("DrmHostManager::ProcessMessage exit.");
         }
     }).detach();
@@ -508,10 +510,10 @@ int32_t DrmHostManager::ProcessLazyLoadPlugin(std::string &name, std::vector<std
     return DRM_OK;
 }
 
-int32_t DrmHostManager::ProcessLazyUnLoadPlugin(std::string &name, sptr<IMediaKeySystemFactory> &drmHostServieProxy,
+int32_t DrmHostManager::ProcessLazyLoadInfomation(std::string &name, sptr<IMediaKeySystemFactory> &drmHostServieProxy,
     sptr<IMediaKeySystemFactory> &drmHostServieProxys)
 {
-    DRM_INFO_LOG("DrmHostManager::ProcessLazyUnLoadPlugin enter, name:%{public}s.", name.c_str());
+    DRM_INFO_LOG("DrmHostManager::ProcessLazyLoadInfomation enter, name:%{public}s.", name.c_str());
     drmHostServieProxys = drmHostServieProxy;
     sptr<DrmHostDeathRecipient> drmHostDeathRecipient = nullptr;
     drmHostDeathRecipient = new DrmHostDeathRecipient(this, drmHostServieProxys);
@@ -530,7 +532,7 @@ int32_t DrmHostManager::ProcessLazyUnLoadPlugin(std::string &name, sptr<IMediaKe
         DRM_DEBUG_LOG("Lazy load plugin name:%{public}s,count:%{public}d",
             name.c_str(), lazyLoadPluginCountMap[name]);
     }
-    DRM_INFO_LOG("DrmHostManager::ProcessLazyUnLoadPlugin exit.");
+    DRM_INFO_LOG("DrmHostManager::ProcessLazyLoadInfomation exit.");
     return DRM_OK;
 }
 
@@ -570,9 +572,9 @@ int32_t DrmHostManager::GetServices(std::string &name, bool *isSurpported,
             DRM_ERR_LOG("IsMediaKeySystemSupported return Code:%{public}d", ret);
             continue;
         } else if (*isSurpported) {
-            ret = ProcessLazyUnLoadPlugin(name, drmHostServieProxy, drmHostServieProxys);
+            ret = ProcessLazyLoadInfomation(name, drmHostServieProxy, drmHostServieProxys);
             if (ret != DRM_OK) {
-                DRM_ERR_LOG("DrmHostManager::GetServices ProcessLazyLoadPlugin faild, return Code:%{public}d", ret);
+                DRM_ERR_LOG("DrmHostManager::GetServices ProcessLazyLoadInfomation faild, return Code:%{public}d", ret);
                 return ret;
             }
             break;
