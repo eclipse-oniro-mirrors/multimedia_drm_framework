@@ -50,7 +50,6 @@ ohos_unittest("drm_framework_capi_unittest_v1_0") {
     debug = true
   }
   cflags = []
-  cflags += [ "-DENABLE_DRM_SYSEVENT_CONTROL" ]
   sources = [
     "../../../../frameworks/native/test/common/src/http.cpp",
     "../../../../frameworks/native/test/unittest/src/drm_framework_dfx_unittest.cpp",

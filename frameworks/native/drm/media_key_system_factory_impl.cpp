@@ -30,18 +30,14 @@ MediaKeySystemFactoryImpl::MediaKeySystemFactoryImpl()
 {
     DRM_DEBUG_LOG("MediaKeySystemFactoryImpl:0x%{public}06" PRIXPTR "MediaKeySystemFactoryImpl Instances create",
         FAKE_POINTER(this));
-    #ifdef ENABLE_DRM_SYSEVENT_CONTROL
     traceId_ = HiTraceChain::Begin("MediaKeySystemFactory", HITRACE_FLAG_DEFAULT);
-    #endif
     Init();
 }
 
 MediaKeySystemFactoryImpl::~MediaKeySystemFactoryImpl()
 {
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::~MediaKeySystemFactoryImpl enter.");
-    #ifdef ENABLE_DRM_SYSEVENT_CONTROL
     HiTraceChain::End(traceId_);
-    #endif
     deathRecipient_ = nullptr;
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::~MediaKeySystemFactoryImpl exit.");
 }
@@ -104,9 +100,7 @@ sptr<MediaKeySystemFactoryImpl> &MediaKeySystemFactoryImpl::GetInstance()
 void MediaKeySystemFactoryImpl::Init()
 {
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::Init enter.");
-    #ifdef ENABLE_DRM_SYSEVENT_CONTROL
     HiTraceChain::SetId(traceId_);
-    #endif
     DRM_INFO_LOG("MediaKeySystemFactoryImpl::Init exit.");
 }
 

@@ -63,7 +63,6 @@ ohos_shared_library("drm_framework") {
     "-fno-unwind-tables",
     "-Os",
   ]
-  cflags += [ "-DENABLE_DRM_SYSEVENT_CONTROL" ]
 
   if (target_cpu == "arm") {
     cflags += [ "-DBINDER_IPC_32BIT" ]

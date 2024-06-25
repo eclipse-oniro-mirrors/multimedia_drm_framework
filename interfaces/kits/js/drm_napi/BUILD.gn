@@ -68,6 +68,7 @@ ohos_shared_library("drm_napi") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:hitrace_meter",
+    "hitrace:libhitracechain",
     "ipc:ipc_core",
     "napi:ace_napi",
   ]
