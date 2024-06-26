@@ -24,9 +24,7 @@
 #include "i_mediakeysystemfactory_service.h"
 #include "drm_death_recipient.h"
 #include "drm_log.h"
-#ifdef ENABLE_DRM_SYSEVENT_CONTROL
 #include "hitrace/tracechain.h"
-#endif
 
 namespace OHOS {
 namespace DrmStandard {
@@ -54,9 +52,7 @@ private:
     static sptr<MediaKeySystemFactoryImpl> mediaKeySystemFactoryImpl_;
     sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
     sptr<DrmListenerStub> listenerStub_ = nullptr;
-    #ifdef ENABLE_DRM_SYSEVENT_CONTROL
     HiviewDFX::HiTraceId traceId_;
-    #endif
 };
 } // DrmStandard
 } // OHOS
