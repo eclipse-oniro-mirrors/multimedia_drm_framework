@@ -24,10 +24,10 @@
 #include "drm_host_manager.h"
 #include "key_session_service_stub.h"
 
-#include "media_key_session_proxy.h"
-#include "media_decrypt_module_proxy.h"
-#include "media_key_system_factory_proxy.h"
-#include "media_key_system_proxy.h"
+#include "v1_0/media_key_session_proxy.h"
+#include "v1_0/media_decrypt_module_proxy.h"
+#include "v1_0/media_key_system_factory_proxy.h"
+#include "v1_0/media_key_system_proxy.h"
 #include "media_decrypt_module_service.h"
 
 namespace OHOS {

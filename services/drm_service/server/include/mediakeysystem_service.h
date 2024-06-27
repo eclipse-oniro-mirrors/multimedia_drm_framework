@@ -33,10 +33,10 @@
 #include "iremote_stub.h"
 #include "system_ability.h"
 
-#include "media_key_session_proxy.h"
-#include "media_decrypt_module_proxy.h"
-#include "media_key_system_factory_proxy.h"
-#include "media_key_system_proxy.h"
+#include "v1_0/media_key_session_proxy.h"
+#include "v1_0/media_decrypt_module_proxy.h"
+#include "v1_0/media_key_system_factory_proxy.h"
+#include "v1_0/media_key_system_proxy.h"
 
 namespace OHOS {
 namespace DrmStandard {
