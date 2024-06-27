@@ -71,7 +71,6 @@ ohos_fuzztest("mediakeysessionndkFuzzTest") {
     "c_utils:utils",
     "hilog:libhilog",
     "hitrace:hitrace_meter",
-    "hitrace:libhitracechain",
     "ipc:ipc_core",
   ]
   subsystem_name = "multimedia"
