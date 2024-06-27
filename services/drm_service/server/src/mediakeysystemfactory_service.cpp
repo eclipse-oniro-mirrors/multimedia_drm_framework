@@ -25,6 +25,7 @@
 #include "drm_dfx_utils.h"
 #include "drm_log.h"
 #include "drm_dfx.h"
+#include "drm_error_code.h"
 #include "dump_usage.h"
 #include "hitrace/tracechain.h"
 #include "iservice_registry.h"

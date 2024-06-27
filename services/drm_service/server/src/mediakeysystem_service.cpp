@@ -23,6 +23,7 @@
 #include "drm_host_manager.h"
 #include "drm_log.h"
 #include "drm_trace.h"
+#include "drm_error_code.h"
 #include "key_session_service.h"
 #include "mediakeysystem_service.h"
 #include "hitrace/tracechain.h"

@@ -18,6 +18,7 @@
 #include "media_key_system_impl.h"
 #include "key_session_napi.h"
 #include "drm_trace.h"
+#include "drm_error_code.h"
 #include "drm_api_operation.h"
 
 namespace OHOS {

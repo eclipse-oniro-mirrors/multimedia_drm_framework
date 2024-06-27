@@ -34,7 +34,6 @@
 #include "media_key_system_factory_impl.h"
 #include "media_key_system_callback_napi.h"
 #include "napi_param_utils.h"
-#include "drm_error_code.h"
 #include "napi_async_work.h"
 
 namespace OHOS {

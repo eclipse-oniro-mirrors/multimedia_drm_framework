@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "drm_error_code.h"
 #include "napi_async_work.h"
 
 namespace OHOS {
