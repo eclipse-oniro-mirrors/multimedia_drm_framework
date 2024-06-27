@@ -19,11 +19,9 @@
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 #include "drm_log.h"
-#include "drm_error_code.h"
 #include "key_session_callback_napi.h"
 #include "key_session_impl.h"
 #include "napi_param_utils.h"
-#include "drm_error_code.h"
 #include "napi_async_work.h"
 
 namespace OHOS {

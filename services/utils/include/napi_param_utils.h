@@ -26,7 +26,6 @@
 #include "napi/native_node_api.h"
 #include "napi_base_context.h"
 #include "drm_log.h"
-#include "drm_error_code.h"
 #include "i_keysession_service.h"
 
 namespace OHOS {

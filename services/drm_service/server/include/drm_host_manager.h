@@ -32,8 +32,6 @@
 #include "hdf_device_class.h"
 #include "i_mediakeysystem_service.h"
 #include "iservstat_listener_hdi.h"
-#include "v1_0/media_key_session_proxy.h"
-#include "v1_0/media_decrypt_module_proxy.h"
 #include "v1_0/media_key_system_factory_proxy.h"
 #include "v1_0/media_key_system_proxy.h"
 

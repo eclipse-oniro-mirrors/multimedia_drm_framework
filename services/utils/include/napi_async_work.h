@@ -23,7 +23,6 @@
 #include "napi/native_api.h"
 #include "napi/native_common.h"
 #include "napi/native_node_api.h"
-#include "drm_error_code.h"
 #include "napi_param_utils.h"
 
 namespace OHOS {
