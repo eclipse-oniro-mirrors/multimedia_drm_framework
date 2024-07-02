@@ -18,7 +18,7 @@
  * @{
  *
  * @brief Provides APIs of Drm.
- * @kit Drm.
+ * @kit DrmKit.
  * @since 11
  * @version 1.0
  */
@@ -54,7 +54,7 @@ typedef enum Drm_ErrCode {
      */
     DRM_ERR_OK = 0,
     /**
-     * DRM_CAPI_ERR_BASE.
+     * DRM CAPI ERROR BASE.
      */
     DRM_CAPI_ERR_BASE = 24700500,
     /**

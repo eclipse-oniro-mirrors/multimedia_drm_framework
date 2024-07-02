@@ -18,7 +18,7 @@
  * @{
  *
  * @brief Provides APIs of Drm.
- * @kit Drm.
+ * @kit DrmKit.
  * @since 11
  * @version 1.0
  */
@@ -44,10 +44,11 @@ extern "C" {
 #endif
 
 /**
- * @brief Enumerates event types of listener.
- * @since 11
- * @version 1.0
- */
+  *
+  * @brief Enumerates event types of listener.
+  * @since 11
+  * @version 1.0
+*/
 typedef enum DRM_EventType {
     /**
      * DRM event base.
@@ -73,7 +74,7 @@ typedef enum DRM_EventType {
      * Expiration update event.
      */
     EVENT_EXPIRATION_UPDATE = 206,
-} DRM_EventType;
+  } DRM_EventType;
 
 /**
  * @brief Content potection level.
@@ -485,33 +486,6 @@ typedef struct DRM_MediaKeySystemInfo {
     DRM_PsshInfo psshInfo[MAX_PSSH_INFO_COUNT];
 } DRM_MediaKeySystemInfo;
 
-/**
- * @brief Max len of media key system name.
- * @since 12
- * @version 1.0
- */
-#define MAX_MEDIA_KEY_SYSTEM_NAME_LEN 128
-
-/**
- * @brief Max num of media key system supported
- * @since 12
- * @version 1.0
- */
-#define MAX_MEDIA_KEY_SYSTEM_NUM 8
-
-
-/**
- * @brief Name and UUID of DRM plugin.
- * @since 12
- * @version 1.0
- */
-typedef struct DRM_MediaKeySystemDescription {
-    /* Name of DRM plugin. */
-    char name[MAX_MEDIA_KEY_SYSTEM_NAME_LEN];
-    /* uuid. */
-    uint8_t uuid[DRM_UUID_LEN];
-} DRM_MediaKeySystemDescription;
-
 typedef void (*DRM_MediaKeySystemInfoCallback)(DRM_MediaKeySystemInfo *mediaKeySystemInfo);
 
 /**
@@ -527,6 +501,31 @@ typedef struct MediaKeySystem MediaKeySystem;
  * @version 1.0
  */
 typedef struct MediaKeySession MediaKeySession;
+/**
+ * @brief Max len of media key system name.
+ * @since 12
+ * @version 1.0
+ */
+#define MAX_MEDIA_KEY_SYSTEM_NAME_LEN 128
+
+/**
+ * @brief Max num of media key system supported
+ * @since 12
+ * @version 1.0
+ */
+#define MAX_MEDIA_KEY_SYSTEM_NUM 8
+
+/**
+ * @brief Name and UUID of DRM plugin.
+ * @since 12
+ * @version 1.0
+ */
+typedef struct DRM_MediaKeySystemDescription {
+    /* Name of DRM plugin. */
+    char name[MAX_MEDIA_KEY_SYSTEM_NAME_LEN];
+    /* uuid. */
+    uint8_t uuid[DRM_UUID_LEN];
+} DRM_MediaKeySystemDescription;
 
 #ifdef __cplusplus
 }
