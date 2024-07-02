@@ -13,156 +13,194 @@
 * limitations under the License.
 */
 
+#include <iostream>
 #include <fstream>
-#include <sys/file.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include "drm_api_operation.h"
+#include <sstream>
+#include <algorithm>
+#include <cstdlib>
+#include <climits>
+#include <unordered_map>
+#include <functional>
+#include <mutex>
+
 #include "app_event.h"
 #include "app_event_processor_mgr.h"
-#include "drm_dfx_utils.h"
 #include "drm_log.h"
+#include "drm_error_code.h"
+#include "drm_api_operation.h"
 
 namespace OHOS {
 namespace DrmStandard {
-static int64_t g_processorId = -1;
-std::string trim(const std::string& str)
-{
-    size_t first = str.find_first_not_of(" \t\n\r");
-    if (first == std::string::npos) {
-        return "";
+// Global variables for caching file content and mutex
+std::string ConfigParser::g_fileContent = "";
+int64_t ConfigParser::g_processorId = -1;
+std::mutex ConfigParser::g_apiOperationMutex;
+
+bool ConfigParser::LoadConfigurationFile(const std::string &configFile) {
+    std::ifstream file(configFile);
+    if (!file.is_open()) {
+        perror("Unable to open file");
+        return false;
     }
-    size_t last = str.find_last_not_of(" \t\n\r");
-    return str.substr(first, (last - first + 1));
+
+    std::ostringstream oss;
+    std::string line;
+    while (std::getline(file, line)) {
+        line = Trim(line);
+        if (!line.empty() && line[0] != '#') {
+            oss << line << "\n";
+        }
+    }
+    g_fileContent = oss.str();
+    file.close();
+    return true;
 }
 
-std::pair<std::string, std::string> parseKeyValue(const std::string& line)
-{
+void ConfigParser::GetConfigurationParams(ApiReportConfig &reportConfig, ApiEventConfig &eventConfig) {
+    std::istringstream stream(g_fileContent);
+    ParseApiOperationManagement(stream, reportConfig, eventConfig);
+}
+
+std::string ConfigParser::Trim(const std::string &str) {
+    const char* whitespace = " \t\n\r";
+    size_t first = str.find_first_not_of(whitespace);
+    size_t last = str.find_last_not_of(whitespace);
+    return (first == std::string::npos) ? "" : str.substr(first, last - first + 1);
+}
+
+std::pair<std::string, std::string> ConfigParser::ParseKeyValue(const std::string &line) {
     size_t colonPos = line.find(':');
     if (colonPos != std::string::npos) {
-        std::string key = trim(line.substr(0, colonPos));
-        std::string value = trim(line.substr(colonPos + 1));
-        if (!value.empty() && value.front() == '"' && value.back() == '"') {
-            /* 2 represents removing the length of two quotation marks */
-            value = value.substr(1, value.size() - 2);
+        std::string key = Trim(line.substr(0, colonPos));
+        std::string value = Trim(line.substr(colonPos + 1));
+        key.erase(std::remove(key.begin(), key.end(), '"'), key.end());
+        value.erase(std::remove(value.begin(), value.end(), '"'), value.end());
+        if (!value.empty() && value.back() == ',') {
+            value.pop_back(); // Remove trailing comma if present
         }
         return std::make_pair(key, value);
     }
     return std::make_pair("", "");
 }
 
-void parseReportConfig(std::ifstream& file, ApiReportConfig& reportConfig)
-{
+bool ConfigParser::TryParseInt(const std::string& str, int& out) {
+    char* end;
+    long val = strtol(str.c_str(), &end, 10);
+    if (*end == '\0' && end != str.c_str() && val >= INT_MIN && val <= INT_MAX) {
+        out = static_cast<int>(val);
+        return true;
+    } else {
+        DRM_ERR_LOG("Invalid integer: %s\n", str.c_str());
+        return false;
+    }
+}
+
+void ConfigParser::ParseReportConfig(std::istringstream &stream, ApiReportConfig &reportConfig) {
+    std::unordered_map<std::string, std::function<void(const std::string&)>> configMap = {
+        {"config_name", [&](const std::string &value) { reportConfig.config_name = value; }},
+        {"config_appId", [&](const std::string &value) { reportConfig.config_appId = value; }},
+        {"config_routeInfo", [&](const std::string &value) { reportConfig.config_routeInfo = value; }},
+        {"config_TriggerCond.timeout", [&](const std::string &value) {
+            int temp;
+            if (TryParseInt(value, temp)) {
+                reportConfig.config_timeout = temp;
+            } else {
+                DRM_ERR_LOG("Invalid integer for config_timeout: %s\n", value.c_str());
+            }
+        }},
+        {"config_TriggerCond.row", [&](const std::string &value) {
+            int temp;
+            if (TryParseInt(value, temp)) {
+                reportConfig.config_row = temp;
+            } else {
+                DRM_ERR_LOG("Invalid integer for config_row: %s\n", value.c_str());
+            }
+        }}
+    };
+
     std::string line;
-    while (getline(file, line)) {
-        line = trim(line);
+    while (std::getline(stream, line)) {
+        line = Trim(line);
         if (line == "},") {
             break;
         }
-        std::pair<std::string, std::string> keyValue = parseKeyValue(line);
-        std::string key = keyValue.first;
-        std::string value = keyValue.second;
-
-        if (!key.empty() && !value.empty()) {
-            if (key == "\"config_name\"") {
-                reportConfig.config_name = value;
-            } else if (key == "\"config_appId\"") {
-                reportConfig.config_appId = value;
-            } else if (key == "\"config_routeInfo\"") {
-                reportConfig.config_routeInfo = value;
-            } else if (key == "\"config_TriggerCond.timeout\"") {
-                value.erase(std::remove(value.begin(), value.end(), '"'), value.end());
-                reportConfig.config_timeout = std::stoi(value);
-            } else if (key == "\"config_TriggerCond.row\"") {
-                value.erase(std::remove(value.begin(), value.end(), '"'), value.end());
-                reportConfig.config_row = std::stoi(value);
-            }
+        auto keyValue = ParseKeyValue(line);
+        auto it = configMap.find(keyValue.first);
+        if (it != configMap.end()) {
+            it->second(keyValue.second);
         }
     }
 }
 
-void parseEvent(std::ifstream& file, ApiEventConfig& eventConfig)
-{
+void ConfigParser::ParseEvent(std::istringstream &stream, ApiEvent &event) {
+    std::unordered_map<std::string, std::function<void(const std::string&)>> eventMap = {
+        {"domain", [&](const std::string &value) { event.domain = value; }},
+        {"name", [&](const std::string &value) { event.name = value; }},
+        {"isRealTime", [&](const std::string &value) { event.isRealTime = (value == "true"); }}
+    };
+
     std::string line;
-    while (getline(file, line)) {
-        line = trim(line);
+    while (std::getline(stream, line)) {
+        line = Trim(line);
         if (line == "},") {
             break;
         }
-        std::pair<std::string, std::string> keyValue = parseKeyValue(line);
-        std::string key = keyValue.first;
-        std::string value = keyValue.second;
-
-        if (!key.empty() && !value.empty()) {
-            if (key == "\"domain\"") {
-                eventConfig.domain = value;
-            } else if (key == "\"name\"") {
-                eventConfig.name = value;
-            } else if (key == "\"isRealTime\"") {
-                eventConfig.isRealTime = (value == "true");
-            }
+        auto keyValue = ParseKeyValue(line);
+        auto it = eventMap.find(keyValue.first);
+        if (it != eventMap.end()) {
+            it->second(keyValue.second);
         }
     }
 }
 
-void parseEventConfig(std::ifstream& file, ApiEventConfig& event)
-{
+void ConfigParser::ParseEventConfig(std::istringstream &stream, ApiEventConfig &eventConfig) {
+    std::unordered_map<std::string, std::function<void(std::istringstream&)>> eventConfigMap = {
+        {"\"event1\": {", [&](std::istringstream &stream) { ParseEvent(stream, eventConfig.event1); }},
+        {"\"event2\": {", [&](std::istringstream &stream) { ParseEvent(stream, eventConfig.event2); }},
+        {"\"event3\": {", [&](std::istringstream &stream) { ParseEvent(stream, eventConfig.event3); }}
+    };
+
     std::string line;
-    while (getline(file, line)) {
-        line = trim(line);
-        if (line == "\"event\": {") {
-            parseEvent(file, event);
+    while (std::getline(stream, line)) {
+        line = Trim(line);
+        if (line == "},") {
+            break;
+        }
+        auto it = eventConfigMap.find(line);
+        if (it != eventConfigMap.end()) {
+            it->second(stream);
         }
     }
 }
 
-void parseApiOperationManagement(std::ifstream& file, ApiReportConfig& reportConfig, ApiEventConfig& event)
-{
+void ConfigParser::ParseApiOperationManagement(std::istringstream &stream, ApiReportConfig &reportConfig, ApiEventConfig &eventConfig) {
+    std::unordered_map<std::string, std::function<void(std::istringstream&)>> apiOpMgmtMap = {
+        {"\"report_config\": {", [&](std::istringstream &stream) { ParseReportConfig(stream, reportConfig); }},
+        {"\"event_config\": {", [&](std::istringstream &stream) { ParseEventConfig(stream, eventConfig); }}
+    };
+
     std::string line;
-    bool inApiOperationManagement = false;
-    while (getline(file, line)) {
-        line = trim(line);
-        if (line == "\"api_operation_management\": {") {
-            inApiOperationManagement = true;
-        } else if (inApiOperationManagement) {
-            if (line == "}") {
-                break;
-            } else if (line == "\"report_config\": {") {
-                parseReportConfig(file, reportConfig);
-            } else if (line == "\"event_config\": {") {
-                parseEventConfig(file, event);
-            }
+    while (std::getline(stream, line)) {
+        line = Trim(line);
+        if (line == "}") {
+            break;
+        }
+        auto it = apiOpMgmtMap.find(line);
+        if (it != apiOpMgmtMap.end()) {
+            it->second(stream);
         }
     }
 }
 
-int32_t GetConfigurationParame(const std::string &configFile, ApiReportConfig &reportConfig, ApiEventConfig &event)
-{
-    int fd = open(configFile.c_str(), O_RDONLY);
-    if (fd == -1) {
-        perror("Unable to open file");
-        return 1;
-    }
-
-    std::ifstream file(configFile);
-    if (!file.is_open()) {
-        perror("Unable to open file");
-        close(fd);
-        return 1;
-    }
-
-    parseApiOperationManagement(file, reportConfig, event);
-
-    file.close();
-    close(fd);
-    return 0;
-}
-
-int64_t AddProcessor()
+int64_t ConfigParser::AddProcessor()
 {
     ApiReportConfig reportConfig;
-    ApiEventConfig apiEvent;
-    GetConfigurationParame(DRM_API_OPERATION_CONFIG_PATH, reportConfig, apiEvent);
+    ApiEventConfig eventConfig;
+    std::lock_guard<std::mutex> lock(g_apiOperationMutex);
+    if (LoadConfigurationFile(DRM_API_OPERATION_CONFIG_PATH) != DRM_OK) {
+         return DRM_OPERATION_NOT_ALLOWED;
+    }
+    GetConfigurationParams(reportConfig, eventConfig);
     HiviewDFX::HiAppEvent::ReportConfig config;
     config.name = reportConfig.config_name;
     config.appId = reportConfig.config_appId;
@@ -170,11 +208,21 @@ int64_t AddProcessor()
     config.triggerCond.timeout = reportConfig.config_timeout;
     config.triggerCond.row = reportConfig.config_row;
     config.eventConfigs.clear();
-    HiviewDFX::HiAppEvent::EventConfig event;
-    event.domain = apiEvent.domain;
-    event.name = apiEvent.name;
-    event.isRealTime = apiEvent.isRealTime;
-    config.eventConfigs.push_back(event);
+    HiviewDFX::HiAppEvent::EventConfig event1;
+    event1.domain = eventConfig.event1.domain;
+    event1.name = eventConfig.event1.name;
+    event1.isRealTime = eventConfig.event1.isRealTime;
+    config.eventConfigs.push_back(event1);
+    HiviewDFX::HiAppEvent::EventConfig event2;
+    event2.domain = eventConfig.event2.domain;
+    event2.name = eventConfig.event2.name;
+    event2.isRealTime = eventConfig.event2.isRealTime;
+    config.eventConfigs.push_back(event2);
+    HiviewDFX::HiAppEvent::EventConfig event3;
+    event3.domain = eventConfig.event3.domain;
+    event3.name = eventConfig.event3.name;
+    event3.isRealTime = eventConfig.event3.isRealTime;
+    config.eventConfigs.push_back(event3);
     if (g_processorId != -1) {
         return g_processorId;
     }
@@ -182,9 +230,9 @@ int64_t AddProcessor()
     return g_processorId;
 }
 
-void WriteEndEvent(const int result, const int errCode, std::string apiName)
+void ConfigParser::WriteEndEvent(const int result, const int errCode, std::string apiName)
 {
-    AddProcessor();
+    (void)AddProcessor();
     std::string transId = std::string("traceId_") + std::to_string(std::rand());
     int64_t beginTime = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now())
         .time_since_epoch().count();

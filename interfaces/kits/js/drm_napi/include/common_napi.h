@@ -21,6 +21,7 @@
 #include <map>
 #include <refbase.h>
 #include "napi/native_api.h"
+#include "napi/native_common.h"
 #include "napi/native_node_api.h"
 
 namespace OHOS {
@@ -49,6 +50,13 @@ public:
 private:
     napi_env env_;
     napi_ref callback_;
+};
+
+class NapiDrmError {
+public:
+    static napi_status ThrowError(napi_env env, const char *napiMessage, int32_t napiCode);
+    static void ThrowError(napi_env env, int32_t code);
+    static std::string GetMessageByCode(int32_t &code);
 };
 } // namespace DrmStandard
 } // namespace OHOS

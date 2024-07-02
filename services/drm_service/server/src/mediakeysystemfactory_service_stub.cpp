@@ -71,8 +71,9 @@ int32_t MediaKeySystemFactoryServiceStub::SetListenerObject(const sptr<IRemoteOb
         clientListener != nullptr, DRM_MEMORY_ERROR, "failed to convert IDrmListener");
     sptr<DrmDeathRecipient> deathRecipient = new (std::nothrow) DrmDeathRecipient(pid);
     DRM_CHECK_AND_RETURN_RET_LOG(deathRecipient != nullptr, DRM_MEMORY_ERROR, "failed to new DrmDeathRecipient");
-    deathRecipient->SetNotifyCb(
-        std::bind(&MediaKeySystemFactoryServiceStub::MediaKeySystemFactoryClientDied, this, std::placeholders::_1));
+    deathRecipient->SetNotifyCb([this] (pid_t pid) {
+        this->MediaKeySystemFactoryClientDied(pid);
+    });
     if (clientListener->AsObject() != nullptr) {
         (void)clientListener->AsObject()->AddDeathRecipient(deathRecipient);
     }
