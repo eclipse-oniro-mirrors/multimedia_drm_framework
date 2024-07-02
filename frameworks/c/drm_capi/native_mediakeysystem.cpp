@@ -26,6 +26,7 @@
 #include "native_drm_object.h"
 #include "native_mediakeysystem.h"
 #include "drm_api_operation.h"
+#include "media_key_system_factory_impl.h"
 
 using namespace OHOS::DrmStandard;
 

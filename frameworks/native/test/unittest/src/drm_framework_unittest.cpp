@@ -35,6 +35,7 @@
 #include "drm_death_recipient.h"
 #include "key_session_impl.h"
 #include "i_mediakeysystem_service.h"
+#include "media_key_system_factory_impl.h"
 #include "mediakeysystem_service_callback_stub.h"
 #include "http.h"
 #include "ashmem.h"
