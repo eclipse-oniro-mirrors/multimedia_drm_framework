@@ -63,7 +63,8 @@ void ConfigParser::GetConfigurationParams(ApiReportConfig &reportConfig, ApiEven
     ParseApiOperationManagement(stream, reportConfig, eventConfig);
 }
 
-std::string ConfigParser::Trim(const std::string &str) {
+std::string ConfigParser::Trim(const std::string &str)
+{
     const char* whitespace = " \t\n\r";
     size_t first = str.find_first_not_of(whitespace);
     size_t last = str.find_last_not_of(whitespace);
