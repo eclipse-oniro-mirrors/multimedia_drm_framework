@@ -36,7 +36,8 @@ std::string ConfigParser::g_fileContent = "";
 int64_t ConfigParser::g_processorId = -1;
 std::mutex ConfigParser::g_apiOperationMutex;
 
-bool ConfigParser::LoadConfigurationFile(const std::string &configFile) {
+bool ConfigParser::LoadConfigurationFile(const std::string &configFile)
+{
     std::ifstream file(configFile);
     if (!file.is_open()) {
         perror("Unable to open file");
@@ -56,7 +57,8 @@ bool ConfigParser::LoadConfigurationFile(const std::string &configFile) {
     return true;
 }
 
-void ConfigParser::GetConfigurationParams(ApiReportConfig &reportConfig, ApiEventConfig &eventConfig) {
+void ConfigParser::GetConfigurationParams(ApiReportConfig &reportConfig, ApiEventConfig &eventConfig)
+{
     std::istringstream stream(g_fileContent);
     ParseApiOperationManagement(stream, reportConfig, eventConfig);
 }
@@ -68,7 +70,8 @@ std::string ConfigParser::Trim(const std::string &str) {
     return (first == std::string::npos) ? "" : str.substr(first, last - first + 1);
 }
 
-std::pair<std::string, std::string> ConfigParser::ParseKeyValue(const std::string &line) {
+std::pair<std::string, std::string> ConfigParser::ParseKeyValue(const std::string &line)
+{
     size_t colonPos = line.find(':');
     if (colonPos != std::string::npos) {
         std::string key = Trim(line.substr(0, colonPos));
@@ -83,7 +86,8 @@ std::pair<std::string, std::string> ConfigParser::ParseKeyValue(const std::strin
     return std::make_pair("", "");
 }
 
-bool ConfigParser::TryParseInt(const std::string& str, int& out) {
+bool ConfigParser::TryParseInt(const std::string& str, int& out)
+{
     char* end;
     long val = strtol(str.c_str(), &end, 10);
     if (*end == '\0' && end != str.c_str() && val >= INT_MIN && val <= INT_MAX) {
@@ -95,7 +99,8 @@ bool ConfigParser::TryParseInt(const std::string& str, int& out) {
     }
 }
 
-void ConfigParser::ParseReportConfig(std::istringstream &stream, ApiReportConfig &reportConfig) {
+void ConfigParser::ParseReportConfig(std::istringstream &stream, ApiReportConfig &reportConfig)
+{
     std::unordered_map<std::string, std::function<void(const std::string&)>> configMap = {
         {"config_name", [&](const std::string &value) { reportConfig.config_name = value; }},
         {"config_appId", [&](const std::string &value) { reportConfig.config_appId = value; }},
@@ -132,7 +137,8 @@ void ConfigParser::ParseReportConfig(std::istringstream &stream, ApiReportConfig
     }
 }
 
-void ConfigParser::ParseEvent(std::istringstream &stream, ApiEvent &event) {
+void ConfigParser::ParseEvent(std::istringstream &stream, ApiEvent &event)
+{
     std::unordered_map<std::string, std::function<void(const std::string&)>> eventMap = {
         {"domain", [&](const std::string &value) { event.domain = value; }},
         {"name", [&](const std::string &value) { event.name = value; }},
@@ -153,7 +159,8 @@ void ConfigParser::ParseEvent(std::istringstream &stream, ApiEvent &event) {
     }
 }
 
-void ConfigParser::ParseEventConfig(std::istringstream &stream, ApiEventConfig &eventConfig) {
+void ConfigParser::ParseEventConfig(std::istringstream &stream, ApiEventConfig &eventConfig)
+{
     std::unordered_map<std::string, std::function<void(std::istringstream&)>> eventConfigMap = {
         {"\"event1\": {", [&](std::istringstream &stream) { ParseEvent(stream, eventConfig.event1); }},
         {"\"event2\": {", [&](std::istringstream &stream) { ParseEvent(stream, eventConfig.event2); }},
@@ -173,7 +180,9 @@ void ConfigParser::ParseEventConfig(std::istringstream &stream, ApiEventConfig &
     }
 }
 
-void ConfigParser::ParseApiOperationManagement(std::istringstream &stream, ApiReportConfig &reportConfig, ApiEventConfig &eventConfig) {
+void ConfigParser::ParseApiOperationManagement(std::istringstream &stream, ApiReportConfig &reportConfig,
+    ApiEventConfig &eventConfig)
+{
     std::unordered_map<std::string, std::function<void(std::istringstream&)>> apiOpMgmtMap = {
         {"\"report_config\": {", [&](std::istringstream &stream) { ParseReportConfig(stream, reportConfig); }},
         {"\"event_config\": {", [&](std::istringstream &stream) { ParseEventConfig(stream, eventConfig); }}
@@ -198,7 +207,7 @@ int64_t ConfigParser::AddProcessor()
     ApiEventConfig eventConfig;
     std::lock_guard<std::mutex> lock(g_apiOperationMutex);
     if (LoadConfigurationFile(DRM_API_OPERATION_CONFIG_PATH) != DRM_OK) {
-         return DRM_OPERATION_NOT_ALLOWED;
+        return DRM_OPERATION_NOT_ALLOWED;
     }
     GetConfigurationParams(reportConfig, eventConfig);
     HiviewDFX::HiAppEvent::ReportConfig config;

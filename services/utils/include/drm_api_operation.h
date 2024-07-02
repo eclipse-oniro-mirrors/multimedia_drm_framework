@@ -58,7 +58,8 @@ private:
     static void ParseReportConfig(std::istringstream &stream, ApiReportConfig &reportConfig);
     static void ParseEvent(std::istringstream &stream, ApiEvent &event);
     static void ParseEventConfig(std::istringstream &stream, ApiEventConfig &eventConfig);
-    static void ParseApiOperationManagement(std::istringstream &stream, ApiReportConfig &reportConfig, ApiEventConfig &eventConfig);
+    static void ParseApiOperationManagement(std::istringstream &stream, ApiReportConfig &reportConfig,
+        ApiEventConfig &eventConfig);
     static std::string g_fileContent;
     static std::mutex g_apiOperationMutex;
     static int64_t g_processorId;
