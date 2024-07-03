@@ -305,7 +305,9 @@ void DrmHostManager::OemCertificateManager()
 {
     DRM_INFO_LOG("DrmHostManager::OemCertificateManager enter.");
     serviceThreadRunning = true;
-    serviceThread = std::thread(&DrmHostManager::ServiceThreadMain, this);
+    serviceThread = std::thread([this] {
+        this->ServiceThreadMain();
+    });
     ProcessMessage();
     DRM_INFO_LOG("DrmHostManager::OemCertificateManager exit.");
 }

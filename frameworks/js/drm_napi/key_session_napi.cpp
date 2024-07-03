@@ -285,7 +285,7 @@ napi_value MediaKeySessionNapi::GenerateMediaKeyRequest(napi_env env, napi_callb
     auto complete = [env, context](napi_value &output) {
         NapiParamUtils::SetMediaKeyRequest(env, context->mediaKeyRequest, output);
     };
-    WriteEndEvent(0, 0, std::string("generateMediaKeyRequest"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("generateMediaKeyRequest"));
     DRM_INFO_LOG("MediaKeySessionNapi::GenerateMediaKeyRequest exit.");
     return NapiAsyncWork::Enqueue(env, context, "GenerateMediaKeyRequest", executor, complete);
 }
@@ -326,7 +326,7 @@ napi_value MediaKeySessionNapi::ProcessMediaKeyResponse(napi_env env, napi_callb
         NapiParamUtils::SetValueUint8Array(env, context->licenseId, output);
     };
     DRM_INFO_LOG("MediaKeySessionNapi::ProcessMediaKeyResponse exit.");
-    WriteEndEvent(0, 0, std::string("processMediaKeyResponse"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("processMediaKeyResponse"));
     return NapiAsyncWork::Enqueue(env, context, "ProcessMediaKeyResponse", executor, complete);
 }
 
@@ -367,7 +367,7 @@ napi_value MediaKeySessionNapi::GenerateOfflineReleaseRequest(napi_env env, napi
     auto complete = [env, context](napi_value &output) {
         NapiParamUtils::SetValueUint8Array(env, context->releaseRequest, output);
     };
-    WriteEndEvent(0, 0, std::string("generateOfflineReleaseRequest"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("generateOfflineReleaseRequest"));
     DRM_INFO_LOG("MediaKeySessionNapi::GenerateOfflineReleaseRequest exit.");
     return NapiAsyncWork::Enqueue(env, context, "GenerateOfflineReleaseRequest", executor, complete);
 }
@@ -409,7 +409,7 @@ napi_value MediaKeySessionNapi::ProcessOfflineReleaseResponse(napi_env env, napi
     };
 
     auto complete = [env, context](napi_value &output) { output = NapiParamUtils::GetUndefinedValue(env); };
-    WriteEndEvent(0, 0, std::string("processOfflineReleaseResponse"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("processOfflineReleaseResponse"));
     DRM_INFO_LOG("MediaKeySessionNapi::ProcessOfflineReleaseResponse exit.");
     return NapiAsyncWork::Enqueue(env, context, "ProcessOfflineReleaseResponse", executor, complete);
 }
@@ -466,7 +466,7 @@ napi_value MediaKeySessionNapi::CheckMediaKeyStatus(napi_env env, napi_callback_
         return nullptr;
     }
     result = vectorToJsArray(env, licenseStatus);
-    WriteEndEvent(0, 0, std::string("checkMediaKeyStatus"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("checkMediaKeyStatus"));
     DRM_INFO_LOG("MediaKeySessionNapi::CheckMediaKeyStatus exit.");
     return result;
 }
@@ -505,7 +505,7 @@ napi_value MediaKeySessionNapi::RestoreOfflineMediaKeys(napi_env env, napi_callb
     };
 
     auto complete = [env, context](napi_value &output) { output = NapiParamUtils::GetUndefinedValue(env); };
-    WriteEndEvent(0, 0, std::string("restoreOfflineMediaKeys"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("restoreOfflineMediaKeys"));
     DRM_INFO_LOG("MediaKeySessionNapi::RestoreOfflineMediaKeys exit.");
     return NapiAsyncWork::Enqueue(env, context, "RestoreOfflineMediaKeys", executor, complete);
 }
@@ -539,7 +539,7 @@ napi_value MediaKeySessionNapi::ClearMediaKeys(napi_env env, napi_callback_info 
             DRM_UNKNOWN_ERROR);
         return nullptr;
     }
-    WriteEndEvent(0, 0, std::string("clearMediaKeys"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("clearMediaKeys"));
     DRM_INFO_LOG("MediaKeySessionNapi::ClearMediaKeys exit.");
     return result;
 }
@@ -585,7 +585,7 @@ napi_value MediaKeySessionNapi::RequireSecureDecoderModule(napi_env env, napi_ca
     }
     status = napi_get_boolean(env, statusValue, &result);
     DRM_INFO_LOG("napi_get_boolean call success!,statusValue:%{public}d.", statusValue);
-    WriteEndEvent(0, 0, std::string("requireSecureDecoderModule"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("requireSecureDecoderModule"));
     DRM_INFO_LOG("MediaKeySessionNapi::RequireSecureDecoderModule exit.");
     return result;
 }
@@ -619,7 +619,7 @@ napi_value MediaKeySessionNapi::GetContentProtectionLevel(napi_env env, napi_cal
     }
 
     NAPI_CALL(env, napi_create_int32(env, (int32_t)level, &result));
-    WriteEndEvent(0, 0, std::string("getContentProtectionLevel"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("getContentProtectionLevel"));
     DRM_INFO_LOG("MediaKeySessionNapi::GetContentProtectionLevel exit");
     return result;
 }

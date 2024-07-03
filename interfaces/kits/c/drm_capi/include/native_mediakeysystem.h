@@ -18,7 +18,7 @@
  * @{
  *
  * @brief Provides APIs of Drm.
- * @kit Drm.
+ * @kit DrmKit.
  * @since 11
  * @version 1.0
  */
@@ -89,6 +89,21 @@ typedef Drm_ErrCode (*OH_MediaKeySystem_Callback)(MediaKeySystem *mediaKeySystem
 Drm_ErrCode OH_MediaKeySystem_SetCallback(MediaKeySystem *mediaKeySystem, OH_MediaKeySystem_Callback callback);
 
 /**
+ * @brief Acquire supported media key systems' name and uuid.
+ * @param descs Array used to save media key systems' name and uuid.
+ * @param count Used to indicate count of struct DRM_MediaKeySystemDescription.
+ * @return {@link DRM_ERR_OK} 0 - Success.
+ *         {@link DRM_ERR_INVALID_VAL} 24700503 - Probably caused by:
+ *         1.the description or the count is nullptr.
+ *         2. the size of the description array is smaller than the actual number obtained.
+ *         {@link DRM_ERR_UNKNOWN} 24700506 - Unknown errors.
+ * @since 12
+ * @version 1.0
+ */
+
+Drm_ErrCode  OH_MediaKeySystem_GetMediaKeySystems(DRM_MediaKeySystemDescription *descs, uint32_t *count);
+
+/**
  * @brief Query if media key system is supported.
  * @param name Used to point a Digital Right Management solution.
  * @return Supported or not in boolean.
@@ -117,19 +132,6 @@ bool OH_MediaKeySystem_IsSupported2(const char *name, const char *mimeType);
 bool OH_MediaKeySystem_IsSupported3(const char *name, const char *mimeType,
     DRM_ContentProtectionLevel contentProtectionLevel);
 
-/**
- * @brief Acquire supported media key systems' name and uuid.
- * @param infos Array used to save media key systems' name and uuid.
- * @param count Used to indicate count of struct DRM_MediaKeySystemDescription.
- * @return {@link DRM_ERR_OK} 0 - Success.
- *         {@link DRM_ERR_INVALID_VAL} 24700503 - Probably caused by:
- *         1.the description or the count is nullptr.
- *         2. the size of the description array is smaller than the actual number obtained.
- *         {@link DRM_ERR_UNKNOWN} 24700506 - Unknown errors.
- * @since 12
- * @version 1.0
- */
-Drm_ErrCode  OH_MediaKeySystem_GetMediaKeySystems(DRM_MediaKeySystemDescription *description, uint32_t *count);
 /**
  * @brief Creates a media key system instance from the name.
  * @param name Secifies which drm system will be created by name.

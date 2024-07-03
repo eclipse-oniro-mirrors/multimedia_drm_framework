@@ -39,7 +39,7 @@ bool OH_MediaKeySystem_IsSupported(const char *uuid)
     DRM_CHECK_AND_RETURN_RET_LOG(uuidPtr.size() != 0, false, "MediaKeySystem uuidPtr.size is nullptr!");
     OHOS::sptr<MediaKeySystemFactoryImpl> fatory = MediaKeySystemFactoryImpl::GetInstance();
     isSurooprtted = fatory->IsMediaKeySystemSupported(uuidPtr);
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_IsSupported"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_IsSupported"));
     DRM_INFO_LOG("OH_MediaKeySystem_IsSupported exit.");
     return isSurooprtted;
 }
@@ -57,7 +57,7 @@ bool OH_MediaKeySystem_IsSupported2(const char *uuid, const char *mimeType)
 
     OHOS::sptr<MediaKeySystemFactoryImpl> fatory = MediaKeySystemFactoryImpl::GetInstance();
     isSurooprtted = fatory->IsMediaKeySystemSupported(uuidPtr, mimeTypePtr);
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_IsSupported2"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_IsSupported2"));
     DRM_INFO_LOG("OH_MediaKeySystem_IsSupported2 exit.");
     return isSurooprtted;
 }
@@ -84,7 +84,7 @@ bool OH_MediaKeySystem_IsSupported3(const char *uuid, const char *mimeType,
         return false;
     }
     isSurooprtted = fatory->IsMediaKeySystemSupported(uuidPtr, mimeTypePtr, securityLevel);
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_IsSupported3"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_IsSupported3"));
     DRM_INFO_LOG("OH_MediaKeySystem_IsSupported3 exit.");
     return isSurooprtted;
 }
@@ -125,7 +125,7 @@ Drm_ErrCode OH_MediaKeySystem_GetMediaKeySystems(DRM_MediaKeySystemDescription *
         return DRM_ERR_UNKNOWN;
     }
     *count = keySystemNames.size();
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_GetMediaKeySystems"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_GetMediaKeySystems"));
     DRM_INFO_LOG("OH_MediaKeySystem_GetMediaKeySystems exit.");
     return DRM_ERR_OK;
 }
@@ -165,7 +165,7 @@ Drm_ErrCode OH_MediaKeySystem_Create(const char *name, MediaKeySystem **mediaKey
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_UNKNOWN, "system set callback failed!");
 
     *mediaKeySystem = object;
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_Create"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_Create"));
     DRM_INFO_LOG("OH_MediaKeySystem_Create exit.");
     return DRM_ERR_OK;
 }
@@ -191,7 +191,7 @@ Drm_ErrCode OH_MediaKeySystem_SetConfigurationString(MediaKeySystem *mediaKeySys
     result = systemObject->systemImpl_->SetConfigurationString(name, valuePtr);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_UNKNOWN,
         "OH_MediaKeySystem_SetConfigurationString mediaKeySystemImpl::SetConfigurationString faild!");
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_SetConfigurationString"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_SetConfigurationString"));
     DRM_INFO_LOG("OH_MediaKeySystem_SetConfigurationString exit.");
     return DRM_ERR_OK;
 }
@@ -223,7 +223,7 @@ Drm_ErrCode OH_MediaKeySystem_GetConfigurationString(MediaKeySystem *mediaKeySys
         DRM_ERR_LOG("OH_MediaKeySystem_GetConfigurationString memcpy_s value failed!");
         return DRM_ERR_NO_MEMORY;
     }
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_GetConfigurationString"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_GetConfigurationString"));
     DRM_INFO_LOG("OH_MediaKeySystem_GetConfigurationString exit");
     return DRM_ERR_OK;
 }
@@ -254,7 +254,7 @@ Drm_ErrCode OH_MediaKeySystem_SetConfigurationByteArray(MediaKeySystem *mediaKey
     result = systemObject->systemImpl_->SetConfigurationByteArray(name, valueptr);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_UNKNOWN,
         "OH_MediaKeySystem_SetConfigurationByteArray mediaKeySystemImpl::SetConfigurationByteArray faild!");
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_SetConfigurationByteArray"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_SetConfigurationByteArray"));
     DRM_INFO_LOG("OH_MediaKeySystem_SetConfigurationByteArray exit.");
     return DRM_ERR_OK;
 }
@@ -287,7 +287,7 @@ Drm_ErrCode OH_MediaKeySystem_GetConfigurationByteArray(MediaKeySystem *mediaKey
         DRM_ERR_LOG("OH_MediaKeySystem_GetConfigurationByteArray memcpy_s value faild!");
         return DRM_ERR_NO_MEMORY;
     }
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_GetConfigurationByteArray"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_GetConfigurationByteArray"));
     DRM_INFO_LOG("OH_MediaKeySystem_GetConfigurationByteArray exit");
     return DRM_ERR_OK;
 }
@@ -333,7 +333,7 @@ Drm_ErrCode OH_MediaKeySystem_GetStatistics(MediaKeySystem *mediaKeySystem, DRM_
     Drm_ErrCode ret = vectorToClist(metrics, statistics);
     DRM_CHECK_AND_RETURN_RET_LOG(statistics != nullptr, DRM_ERR_UNKNOWN,
         "OH_MediaKeySystem_GetStatistics statistics obtained is nullptr!");
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_GetStatistics"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_GetStatistics"));
     DRM_INFO_LOG("OH_MediaKeySystem_GetStatistics exit.");
     return ret;
 }
@@ -359,7 +359,7 @@ Drm_ErrCode OH_MediaKeySystem_GetMaxContentProtectionLevel(MediaKeySystem *media
         return DRM_ERR_UNKNOWN;
     }
     *contentProtectionLevel = static_cast<DRM_ContentProtectionLevel>(level);
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_GetMaxContentProtectionLevel"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_GetMaxContentProtectionLevel"));
     DRM_INFO_LOG("OH_MediaKeySystem_GetMaxContentProtectionLevel exit");
     return DRM_ERR_OK;
 }
@@ -395,7 +395,7 @@ Drm_ErrCode OH_MediaKeySystem_GenerateKeySystemRequest(MediaKeySystem *mediaKeyS
         DRM_CHECK_AND_RETURN_RET_LOG(ret == 0, DRM_ERR_NO_MEMORY,
             "OH_MediaKeySystem_GenerateKeySystemRequest memcpy_s defaultUrl failed!");
     }
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_GenerateKeySystemRequest"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_GenerateKeySystemRequest"));
     DRM_INFO_LOG("OH_MediaKeySystem_GenerateKeySystemRequest exit.");
     return DRM_ERR_OK;
 }
@@ -415,7 +415,7 @@ Drm_ErrCode OH_MediaKeySystem_ProcessKeySystemResponse(MediaKeySystem *mediaKeyS
     result = systemObject->systemImpl_->ProcessKeySystemResponse(keySystemResponse);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_UNKNOWN,
         "OH_MediaKeySystem_ProcessKeySystemResponse systemObject is nullptr!");
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_ProcessKeySystemResponse"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_ProcessKeySystemResponse"));
     DRM_INFO_LOG("OH_MediaKeySystem_ProcessKeySystemResponse exit.");
     return DRM_ERR_OK;
 }
@@ -436,7 +436,7 @@ Drm_ErrCode OH_MediaKeySystem_GetCertificateStatus(MediaKeySystem *mediaKeySyste
         return DRM_ERR_UNKNOWN;
     }
     *certStatus = (DRM_CertificateStatus)((int32_t)(CertStatus));
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_GetCertificateStatus"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_GetCertificateStatus"));
     DRM_INFO_LOG("OH_MediaKeySystem_GetCertificateStatus exit.");
     return DRM_ERR_OK;
 }
@@ -451,7 +451,7 @@ Drm_ErrCode OH_MediaKeySystem_SetMediaKeySystemCallback(MediaKeySystem *mediaKey
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_SetMediaKeySystemCallback faild!");
     systemObject->systemCallback_->SetCallbackReference(callback);
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_SetMediaKeySystemCallback"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_SetMediaKeySystemCallback"));
     DRM_INFO_LOG("OH_MediaKeySystem_SetMediaKeySystemCallback exit.");
     return DRM_ERR_OK;
 }
@@ -465,7 +465,7 @@ Drm_ErrCode OH_MediaKeySystem_SetCallback(MediaKeySystem *mediaKeySystem, OH_Med
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_SetCallback faild!");
     systemObject->systemCallback_->SetCallbackReference(mediaKeySystem, callback);
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_SetCallback"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_SetCallback"));
     DRM_INFO_LOG("OH_MediaKeySystem_SetCallback exit.");
     return DRM_ERR_OK;
 }
@@ -509,7 +509,7 @@ Drm_ErrCode OH_MediaKeySystem_CreateMediaKeySession(MediaKeySystem *mediaKeySyst
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_UNKNOWN, "session set callback failed!");
 
     *mediaKeySession = static_cast<MediaKeySession *>(sessionObject);
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_CreateMediaKeySession"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_CreateMediaKeySession"));
     DRM_INFO_LOG("OH_MediaKeySystem_CreateMediaKeySession exit.");
     return DRM_ERR_OK;
 }
@@ -558,7 +558,7 @@ Drm_ErrCode OH_MediaKeySystem_GetOfflineMediaKeyIds(MediaKeySystem *mediaKeySyst
     result = vectorToC2DArray(licenseIds, offlineMediaKeyIds);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_NO_MEMORY,
         "vectorToC2DArray faild!");
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_GetOfflineMediaKeyIds"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_GetOfflineMediaKeyIds"));
     DRM_INFO_LOG("OH_MediaKeySystem_GetOfflineMediaKeyIds exit.");
     return DRM_ERR_OK;
 }
@@ -591,7 +591,7 @@ Drm_ErrCode OH_MediaKeySystem_GetOfflineMediaKeyStatus(MediaKeySystem *mediaKeyS
         return DRM_ERR_UNKNOWN;
     }
     *status = CofflineMediaKeyStatus;
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_GetOfflineMediaKeyStatus"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_GetOfflineMediaKeyStatus"));
     DRM_INFO_LOG("OH_MediaKeySystem_GetOfflineMediaKeyStatus exit");
     return DRM_ERR_OK;
 }
@@ -613,7 +613,7 @@ Drm_ErrCode OH_MediaKeySystem_ClearOfflineMediaKeys(MediaKeySystem *mediaKeySyst
     result = systemObject->systemImpl_->ClearOfflineMediaKeys(licenseIdVec);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_UNKNOWN,
         "OH_MediaKeySystem_ClearOfflineMediaKeys mediaKeySystemImpl::ClearOfflineMediaKeys faild!");
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_ClearOfflineMediaKeys"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_ClearOfflineMediaKeys"));
     DRM_INFO_LOG("OH_MediaKeySystem_ClearOfflineMediaKeys exit.");
     return DRM_ERR_OK;
 }
@@ -632,7 +632,7 @@ Drm_ErrCode OH_MediaKeySystem_Destroy(MediaKeySystem *mediaKeySystem)
     DRM_DEBUG_LOG("current keySystemNumber: %{public}d.", MediaKeySystemFactoryImpl::GetInstance()->keySystemNumber);
     delete mediaKeySystem;
     mediaKeySystem = nullptr;
-    WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_Destroy"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_Destroy"));
     DRM_INFO_LOG("OH_MediaKeySystem_Destroy exit.");
     return DRM_ERR_OK;
 }

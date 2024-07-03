@@ -18,7 +18,7 @@
  * @{
  *
  * @brief Provides APIs of Drm.
- * @kit Drm.
+ * @kit DrmKit.
  * @since 11
  * @version 1.0
  */

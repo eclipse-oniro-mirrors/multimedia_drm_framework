@@ -15,19 +15,11 @@
 
 #ifndef DRM_ERROR_CODE_H
 #define DRM_ERROR_CODE_H
-#include "napi/native_api.h"
-#include "napi/native_common.h"
-#include "napi/native_node_api.h"
+
+#include <string>
 
 namespace OHOS {
 namespace DrmStandard {
-class NapiDrmError {
-public:
-    static napi_status ThrowError(napi_env env, const char *napiMessage, int32_t napiCode);
-    static void ThrowError(napi_env env, int32_t code);
-    static std::string GetMessageByCode(int32_t &code);
-};
-
 const int32_t DRM_ERROR = -1;
 const int32_t DRM_OK = 0;
 const int32_t DRM_ALLOC_ERROR = 1;

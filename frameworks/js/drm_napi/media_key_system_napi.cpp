@@ -364,7 +364,7 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
         return nullptr;
     }
     result = MediaKeySessionNapi::CreateMediaKeySession(env, keySessionImpl);
-    WriteEndEvent(0, 0, std::string("createMediaKeySession"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("createMediaKeySession"));
     DRM_INFO_LOG("MediaKeySystemNapi::CreateMediaKeySession exit.");
     return result;
 }
@@ -420,7 +420,7 @@ napi_value MediaKeySystemNapi::SetConfigurationString(napi_env env, napi_callbac
         NapiDrmError::ThrowError(env, "Set configuration faild, unknown error.", DRM_UNKNOWN_ERROR);
         return nullptr;
     }
-    WriteEndEvent(0, 0, std::string("setConfigurationString"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("setConfigurationString"));
     DRM_INFO_LOG("MediaKeySystemNapi::SetConfiguration exit.");
     return result;
 }
@@ -462,7 +462,7 @@ napi_value MediaKeySystemNapi::GetConfigurationString(napi_env env, napi_callbac
     }
 
     napi_create_string_utf8(env, value.c_str(), NAPI_AUTO_LENGTH, &result);
-    WriteEndEvent(0, 0, std::string("getConfigurationString"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("getConfigurationString"));
     DRM_INFO_LOG("MediaKeySystemNapi::GetConfiguration exit");
     return result;
 }
@@ -524,7 +524,7 @@ napi_value MediaKeySystemNapi::SetConfigurationByteArray(napi_env env, napi_call
         DRM_ERR_LOG("mediaKeySystemNapi SetConfigurationByteArray call Failed!");
         return nullptr;
     }
-    WriteEndEvent(0, 0, std::string("setConfigurationByteArray"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("setConfigurationByteArray"));
     DRM_INFO_LOG("MediaKeySystemNapi::SetConfigurationByteArray exit.");
     return result;
 }
@@ -572,7 +572,7 @@ napi_value MediaKeySystemNapi::GetConfigurationByteArray(napi_env env, napi_call
         napi_create_int32(env, value[i], &item);
         napi_set_element(env, result, i, item);
     }
-    WriteEndEvent(0, 0, std::string("getConfigurationByteArray"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("getConfigurationByteArray"));
     DRM_INFO_LOG("MediaKeySystemNapi::GetConfigurationByteArray exit");
     return result;
 }
@@ -607,7 +607,7 @@ napi_value MediaKeySystemNapi::GetMaxContentProtectionLevel(napi_env env, napi_c
     }
 
     NAPI_CALL(env, napi_create_int32(env, (int32_t)level, &result));
-    WriteEndEvent(0, 0, std::string("getMaxContentProtectionLevel"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("getMaxContentProtectionLevel"));
     DRM_INFO_LOG("MediaKeySystemNapi::GetMaxContentProtectionLevel exit");
     return result;
 }
@@ -663,7 +663,7 @@ napi_value MediaKeySystemNapi::GenerateKeySystemRequest(napi_env env, napi_callb
     auto complete = [env, context](napi_value &output) {
         NapiParamUtils::SetProvisionRequest(env, context->provisionRequest, output);
     };
-    WriteEndEvent(0, 0, std::string("generateKeySystemRequest"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("generateKeySystemRequest"));
     DRM_INFO_LOG("MediaKeySystemNapi::GenerateKeySystemRequest exit");
     return NapiAsyncWork::Enqueue(env, context, "GenerateKeySystemRequest", executor, complete);
 }
@@ -701,7 +701,7 @@ napi_value MediaKeySystemNapi::ProcessKeySystemResponse(napi_env env, napi_callb
     };
 
     auto complete = [env](napi_value &output) { output = NapiParamUtils::GetUndefinedValue(env); };
-    WriteEndEvent(0, 0, std::string("processKeySystemResponse"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("processKeySystemResponse"));
     DRM_INFO_LOG("MediaKeySystemNapi::ProcessKeySystemResponse exit.");
     return NapiAsyncWork::Enqueue(env, context, "ProcessKeySystemResponse", executor, complete);
 }
@@ -753,7 +753,7 @@ napi_value MediaKeySystemNapi::GetStatistics(napi_env env, napi_callback_info in
         return nullptr;
     }
     result = vectorToJsArray(env, metrics);
-    WriteEndEvent(0, 0, std::string("getStatistics"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("getStatistics"));
     DRM_INFO_LOG("MediaKeySystemNapi::GetStatistics exit.");
     return result;
 }
@@ -858,7 +858,7 @@ napi_value MediaKeySystemNapi::GetOfflineMediaKeyIds(napi_env env, napi_callback
     }
 
     result = vectorToJs2DArray(env, licenseIds);
-    WriteEndEvent(0, 0, std::string("getOfflineMediaKeyIds"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("getOfflineMediaKeyIds"));
     DRM_INFO_LOG("MediaKeySystemNapi::GetOfflineMediaKeyIds exit.");
     return result;
 }
@@ -913,7 +913,7 @@ napi_value MediaKeySystemNapi::GetOfflineMediaKeyStatus(napi_env env, napi_callb
     }
 
     NAPI_CALL(env, napi_create_int32(env, (int32_t)offlineMediaKeyStatus, &result));
-    WriteEndEvent(0, 0, std::string("getOfflineMediaKeyStatus"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("getOfflineMediaKeyStatus"));
     DRM_INFO_LOG("MediaKeySystemNapi::GetOfflineMediaKeyStatus exit");
     return result;
 }
@@ -963,7 +963,7 @@ napi_value MediaKeySystemNapi::ClearOfflineMediaKeys(napi_env env, napi_callback
         return nullptr;
     }
 
-    WriteEndEvent(0, 0, std::string("clearOfflineMediaKeys"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("clearOfflineMediaKeys"));
     DRM_INFO_LOG("MediaKeySystemNapi::ClearOfflineMediaKeys exit.");
     return result;
 }
@@ -998,7 +998,7 @@ napi_value MediaKeySystemNapi::Destroy(napi_env env, napi_callback_info info)
         return nullptr;
     }
     DRM_DEBUG_LOG("current keySystemNumber: %{public}d.", MediaKeySystemFactoryImpl::GetInstance()->keySystemNumber);
-    WriteEndEvent(0, 0, std::string("destroy"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("destroy"));
     DRM_INFO_LOG("MediaKeySystemNapi::Release exit.");
     return result;
 }

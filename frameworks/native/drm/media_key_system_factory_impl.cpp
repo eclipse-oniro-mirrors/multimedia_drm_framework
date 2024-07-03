@@ -61,12 +61,13 @@ const sptr<IMediaKeySystemFactoryService> MediaKeySystemFactoryImpl::GetServiceP
     DRM_CHECK_AND_RETURN_RET_LOG(tmpProxy != nullptr, nullptr, "cast the object to privateServiceProxy_ failed!");
 
     pid_t pid = 0;
-    sptr<DrmDeathRecipient> tmpDeathRecipient = new (std::nothrow) DrmDeathRecipient(pid);
-    DRM_CHECK_AND_RETURN_RET_LOG(tmpDeathRecipient != nullptr, nullptr,
+    sptr<DrmDeathRecipient> deathRecipient = new (std::nothrow) DrmDeathRecipient(pid);
+    DRM_CHECK_AND_RETURN_RET_LOG(deathRecipient != nullptr, nullptr,
         "failed to new DrmDeathRecipient!");
-    tmpDeathRecipient->SetNotifyCb(
-        std::bind(&MediaKeySystemFactoryImpl::MediaKeySystemFactoryServerDied, this, std::placeholders::_1));
-    bool result = object->AddDeathRecipient(tmpDeathRecipient);
+    deathRecipient->SetNotifyCb([this] (pid_t pid) {
+        this->MediaKeySystemFactoryServerDied(pid);
+    });
+    bool result = object->AddDeathRecipient(deathRecipient);
     DRM_CHECK_AND_RETURN_RET_LOG(result, nullptr, "failed to new DrmDeathRecipient!");
 
     DRM_INFO_LOG("Ready to create listener object");
@@ -78,7 +79,7 @@ const sptr<IMediaKeySystemFactoryService> MediaKeySystemFactoryImpl::GetServiceP
     int32_t ret = tmpProxy->SetListenerObject(listenerObject);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, nullptr, "set listener failed.");
     privateServiceProxy_ = tmpProxy;
-    deathRecipient_ = tmpDeathRecipient;
+    deathRecipient_ = deathRecipient;
     listenerStub_ = tmpListenerStub;
     return privateServiceProxy_;
 }

@@ -19,30 +19,51 @@
 
 namespace OHOS {
 namespace DrmStandard {
-    #define DRM_API_OPERATION_CONFIG_PATH "/etc/drm/drm_api_operation.cfg"
-    struct ApiReportConfig {
-        std::string config_name;
-        std::string config_appId;
-        std::string config_routeInfo;
-        int config_timeout;
-        int config_row;
-    };
+#define DRM_API_OPERATION_CONFIG_PATH "/etc/drm/drm_api_operation.cfg"
+struct ApiReportConfig {
+    std::string config_name;
+    std::string config_appId;
+    std::string config_routeInfo;
+    int config_timeout = 0;
+    int config_row = 0;
+};
 
-    struct ApiEventConfig {
-        std::string domain;
-        std::string name;
-        bool isRealTime;
-    };
+struct ApiEvent {
+    std::string domain;
+    std::string name;
+    bool isRealTime = false;
+};
 
-    std::string trim(const std::string& str);
-    std::pair<std::string, std::string> parseKeyValue(const std::string& line);
-    void parseReportConfig(std::ifstream& file, ApiReportConfig& reportConfig);
-    void parseEvent(std::ifstream& file, ApiEventConfig& eventConfig);
-    void parseEventConfig(std::ifstream& file, ApiEventConfig& event);
-    void parseApiOperationManagement(std::ifstream& file, ApiReportConfig& reportConfig, ApiEventConfig& event);
-    int32_t GetConfigurationParame(const std::string &configFile, ApiReportConfig &reportConfig, ApiEventConfig &event);
-    int64_t AddProcessor();
-    void WriteEndEvent(const int result, const int errCode, std::string apiName);
+struct ApiEventConfig {
+    ApiEvent event1;
+    ApiEvent event2;
+    ApiEvent event3;
+};
+
+class ConfigParser {
+public:
+    static int64_t AddProcessor();
+    static void WriteEndEvent(const int result, const int errCode, std::string apiName);
+    ConfigParser(const ConfigParser&) = delete;
+    ConfigParser& operator=(const ConfigParser&) = delete;
+
+private:
+    ConfigParser() {}
+    ~ConfigParser() {}
+    static bool LoadConfigurationFile(const std::string &configFile);
+    static void GetConfigurationParams(ApiReportConfig &reportConfig, ApiEventConfig &eventConfig);
+    static std::string Trim(const std::string &str);
+    static std::pair<std::string, std::string> ParseKeyValue(const std::string &line);
+    static bool TryParseInt(const std::string& str, int& out);
+    static void ParseReportConfig(std::istringstream &stream, ApiReportConfig &reportConfig);
+    static void ParseEvent(std::istringstream &stream, ApiEvent &event);
+    static void ParseEventConfig(std::istringstream &stream, ApiEventConfig &eventConfig);
+    static void ParseApiOperationManagement(std::istringstream &stream, ApiReportConfig &reportConfig,
+        ApiEventConfig &eventConfig);
+    static std::string g_fileContent;
+    static std::mutex g_apiOperationMutex;
+    static int64_t g_processorId;
+};
 }  // namespace DrmStandard
 }  // namespace OHOS
 #endif  // DRM_API_OPERATION_H

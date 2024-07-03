@@ -31,8 +31,9 @@ MediaKeySystemImpl::MediaKeySystemImpl(sptr<IMediaKeySystemService> &mediaKeysys
     deathRecipient_ = new(std::nothrow) DrmDeathRecipient(pid);
     DRM_CHECK_AND_RETURN_LOG(deathRecipient_ != nullptr, "failed to new DrmDeathRecipient.");
 
-    deathRecipient_->SetNotifyCb(
-        std::bind(&MediaKeySystemImpl::MediaKeySystemServerDied, this, std::placeholders::_1));
+    deathRecipient_->SetNotifyCb([this] (pid_t pid) {
+        this->MediaKeySystemServerDied(pid);
+    });
     bool result = object->AddDeathRecipient(deathRecipient_);
     if (!result) {
         DRM_ERR_LOG("failed to add deathRecipient");
