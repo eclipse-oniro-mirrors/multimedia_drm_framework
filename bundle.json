@@ -25,7 +25,6 @@
               "safwk",
               "napi",
               "samgr",
-              "hidumper",
               "hitrace",
               "ipc",
               "hisysevent",

@@ -40,7 +40,7 @@ bool ConfigParser::LoadConfigurationFile(const std::string &configFile)
 {
     std::ifstream file(configFile);
     if (!file.is_open()) {
-        perror("Unable to open file");
+        perror("Unable to open api operation config file!");
         return false;
     }
 
@@ -95,7 +95,7 @@ bool ConfigParser::TryParseInt(const std::string& str, int& out)
         out = static_cast<int>(val);
         return true;
     } else {
-        DRM_ERR_LOG("Invalid integer: %s\n", str.c_str());
+        DRM_ERR_LOG("Invalid integer: %{public}s", str.c_str());
         return false;
     }
 }
@@ -111,7 +111,7 @@ void ConfigParser::ParseReportConfig(std::istringstream &stream, ApiReportConfig
             if (TryParseInt(value, temp)) {
                 reportConfig.config_timeout = temp;
             } else {
-                DRM_ERR_LOG("Invalid integer for config_timeout: %s\n", value.c_str());
+                DRM_ERR_LOG("Invalid integer for config_timeout: %{public}s", value.c_str());
             }
         }},
         {"config_TriggerCond.row", [&](const std::string &value) {
@@ -119,7 +119,7 @@ void ConfigParser::ParseReportConfig(std::istringstream &stream, ApiReportConfig
             if (TryParseInt(value, temp)) {
                 reportConfig.config_row = temp;
             } else {
-                DRM_ERR_LOG("Invalid integer for config_row: %s\n", value.c_str());
+                DRM_ERR_LOG("Invalid integer for config_row: %{public}s", value.c_str());
             }
         }}
     };
@@ -204,10 +204,16 @@ void ConfigParser::ParseApiOperationManagement(std::istringstream &stream, ApiRe
 
 int64_t ConfigParser::AddProcessor()
 {
+    DRM_INFO_LOG("ConfigParser::AddProcessor enter.");
     ApiReportConfig reportConfig;
     ApiEventConfig eventConfig;
     std::lock_guard<std::mutex> lock(g_apiOperationMutex);
-    if (LoadConfigurationFile(DRM_API_OPERATION_CONFIG_PATH) != DRM_OK) {
+    if (g_processorId != -1) {
+        DRM_ERR_LOG("AddProcessor start,g_processorId: %{public}lld", g_processorId);
+        return g_processorId;
+    }
+    if (LoadConfigurationFile(DRM_API_OPERATION_CONFIG_PATH) != true) {
+        DRM_ERR_LOG("ConfigParser::AddProcessor LoadConfigurationFile error!");
         return DRM_OPERATION_NOT_ALLOWED;
     }
     GetConfigurationParams(reportConfig, eventConfig);
@@ -233,15 +239,15 @@ int64_t ConfigParser::AddProcessor()
     event3.name = eventConfig.event3.name;
     event3.isRealTime = eventConfig.event3.isRealTime;
     config.eventConfigs.push_back(event3);
-    if (g_processorId != -1) {
-        return g_processorId;
-    }
     g_processorId = HiviewDFX::HiAppEvent::AppEventProcessorMgr::AddProcessor(config);
+    DRM_DEBUG_LOG("AppEventProcessorMgr::AddProcessor end,g_processorId: %{public}lld", g_processorId);
+    DRM_INFO_LOG("ConfigParser::AddProcessor exit.");
     return g_processorId;
 }
 
 void ConfigParser::WriteEndEvent(const int result, const int errCode, std::string apiName)
 {
+    DRM_INFO_LOG("ConfigParser::WriteEndEvent enter.");
     (void)AddProcessor();
     std::string transId = std::string("traceId_") + std::to_string(std::rand());
     int64_t beginTime = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now())
@@ -255,6 +261,7 @@ void ConfigParser::WriteEndEvent(const int result, const int errCode, std::strin
     event.AddParam("result", result);
     event.AddParam("error_code", errCode);
     HiviewDFX::HiAppEvent::Write(event);
+    DRM_INFO_LOG("ConfigParser::WriteEndEvent exit.");
 }
 }  // namespace DrmStandard
 }  // namespace OHOS

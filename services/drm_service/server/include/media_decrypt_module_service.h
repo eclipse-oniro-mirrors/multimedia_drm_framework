@@ -52,7 +52,7 @@ private:
     std::mutex moduleLock_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaDecryptModule> hdiMediaDecryptModule_;
     DecryptStatustics decryptStatustics_;
-    int32_t errCode_;
+    int32_t errCode_ = 0;
     std::string errMessage_;
     uint64_t instanceId_;
 };

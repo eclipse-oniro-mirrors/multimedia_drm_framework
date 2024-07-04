@@ -56,7 +56,6 @@ ohos_shared_library("drm_napi") {
     "./../../../../services/utils/drm_api_operation.cpp",
   ]
   deps = [
-    ":drm_api_operation",
     "./../../../../frameworks/native:drm_framework",
   ]
   external_deps = [
@@ -88,13 +87,6 @@ ohos_shared_library("drm_napi") {
   ]
   cflags_cc = cflags
   relative_install_dir = "module/multimedia"
-  part_name = "drm_framework"
-  subsystem_name = "multimedia"
-}
-
-ohos_prebuilt_etc("drm_api_operation") {
-  source = "../../../../services/etc/drm_api_operation.cfg"
-  relative_install_dir = "drm"
   part_name = "drm_framework"
   subsystem_name = "multimedia"
 }

@@ -85,7 +85,9 @@ ohos_shared_library("drm_framework") {
     "//foundation//arkui/napi/interfaces/kits",
   ]
 
-  deps = []
+  deps = [
+    ":drm_api_operation"
+  ]
 
   external_deps = [
     "ability_runtime:abilitykit_native",
@@ -103,6 +105,13 @@ ohos_shared_library("drm_framework") {
 
   cflags_cc = cflags
   innerapi_tags = [ "platformsdk" ]
+  part_name = "drm_framework"
+  subsystem_name = "multimedia"
+}
+
+ohos_prebuilt_etc("drm_api_operation") {
+  source = "../../services/etc/drm_api_operation.cfg"
+  relative_install_dir = "drm"
   part_name = "drm_framework"
   subsystem_name = "multimedia"
 }

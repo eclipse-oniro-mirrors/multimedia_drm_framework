@@ -64,6 +64,7 @@ public:
     int32_t GetMediaKeySystemUuid(std::string &name, std::string &uuid) override;
 
 private:
+    void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
     void InitStatisticsInfo(sptr<IMediaKeySystem> hdiMediaKeySystem, StatisticsInfo &statisticsInfo);
     int32_t WriteDumpInfo(int32_t fd, std::string &dumpString);
     int32_t DumpMetricsInfo(std::string &dumpString, std::vector<IMediaKeySystemService::MetircKeyValue> metrics);
