@@ -209,7 +209,7 @@ int64_t ConfigParser::AddProcessor()
     ApiEventConfig eventConfig;
     std::lock_guard<std::mutex> lock(g_apiOperationMutex);
     if (g_processorId != -1) {
-        DRM_ERR_LOG("AddProcessor start,g_processorId: %{public}lld", g_processorId);
+        DRM_ERR_LOG("ConfigParser::AddProcessor start, g_processorId: %{public}lld", g_processorId);
         return g_processorId;
     }
     if (LoadConfigurationFile(DRM_API_OPERATION_CONFIG_PATH) != true) {
