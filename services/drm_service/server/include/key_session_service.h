@@ -41,7 +41,7 @@ public:
         StatisticsInfo statisticsInfo);
     ~MediaKeySessionService();
     int32_t Release() override;
-    int32_t CreateMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule) override;
+    int32_t GetMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule) override;
     int32_t SetMediaKeySessionServiceOperatorsCallback(wptr<IMediaKeySessionServiceOperatorsCallback> callback);
     int32_t CloseMediaKeySessionServiceByCallback();
     int32_t GenerateMediaKeyRequest(IMediaKeySessionService::MediaKeyRequestInfo &licenseRequestInfo,
@@ -70,6 +70,7 @@ private:
     sptr<IMediaKeySessionServiceCallback> callback_;
     wptr<IMediaKeySessionServiceOperatorsCallback> sessionOperatorsCallback_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySession> hdiMediaKeySession_;
+    sptr<MediaDecryptModuleService> decryptModule_;
     StatisticsInfo statisticsInfo_;
     std::string generationResult_;
     std::string mediaKeyType_;

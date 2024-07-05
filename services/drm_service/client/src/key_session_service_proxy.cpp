@@ -26,21 +26,21 @@ MediaKeySessionServiceProxy::MediaKeySessionServiceProxy(const sptr<IRemoteObjec
     DRM_INFO_LOG("MediaKeySessionServiceProxy::MediaKeySessionServiceProxy Initialized");
 }
 
-int32_t MediaKeySessionServiceProxy::CreateMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule)
+int32_t MediaKeySessionServiceProxy::GetMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule)
 {
-    DRM_INFO_LOG("MediaKeySessionServiceProxy::CreateMediaDecryptModule enter.");
+    DRM_INFO_LOG("MediaKeySessionServiceProxy::GetMediaDecryptModule enter.");
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
 
     if (!data.WriteInterfaceToken(GetDescriptor())) {
-        DRM_ERR_LOG("MediaKeySessionServiceProxy CreateMediaDecryptModule Write interface token failed.");
+        DRM_ERR_LOG("MediaKeySessionServiceProxy GetMediaDecryptModule Write interface token failed.");
         return IPC_PROXY_ERR;
     }
 
     int32_t ret = MediaKeySessionServiceProxy::Remote()->SendRequest(CREATE_MEDIA_DECRYPT_MODULE, data, reply, option);
     if (ret != ERR_NONE) {
-        DRM_ERR_LOG("MediaKeySessionServiceProxy::CreateMediaDecryptModule failed, ret: %{public}d", ret);
+        DRM_ERR_LOG("MediaKeySessionServiceProxy::GetMediaDecryptModule failed, ret: %{public}d", ret);
         return ret;
     }
 
@@ -48,10 +48,10 @@ int32_t MediaKeySessionServiceProxy::CreateMediaDecryptModule(sptr<IMediaDecrypt
     if (remoteObject != nullptr) {
         decryptModule = iface_cast<IMediaDecryptModuleService>(remoteObject);
     } else {
-        DRM_ERR_LOG("MediaKeySessionServiceProxy CreateMediaDecryptModule decryptModule is nullptr");
+        DRM_ERR_LOG("MediaKeySessionServiceProxy GetMediaDecryptModule decryptModule is nullptr");
         ret = IPC_PROXY_ERR;
     }
-    DRM_INFO_LOG("MediaKeySessionServiceProxy::CreateMediaDecryptModule exit.");
+    DRM_INFO_LOG("MediaKeySessionServiceProxy::GetMediaDecryptModule exit.");
     return ret;
 }
 

@@ -29,7 +29,7 @@ struct ProcessRemoteRequestFuncArray {
     ProcessRemoteRequestFunc processFunc;
 };
 
-static int32_t ProcessCreateMediaDecryptModule(MediaKeySessionServiceStub *stub, MessageParcel &data,
+static int32_t ProcessGetMediaDecryptModule(MediaKeySessionServiceStub *stub, MessageParcel &data,
     MessageParcel &reply, MessageOption &option);
 
 static int32_t ProcessRleaseKeySession(MediaKeySessionServiceStub *stub, MessageParcel &data, MessageParcel &reply,
@@ -69,7 +69,7 @@ static int32_t ProcessSetListenerObject(MediaKeySessionServiceStub *stub, Messag
     MessageParcel &reply, MessageOption &option);
 
 static struct ProcessRemoteRequestFuncArray g_mediaKeySessionServiceStubRequestProcessFunc[] = {
-    {CREATE_MEDIA_DECRYPT_MODULE, ProcessCreateMediaDecryptModule},
+    {CREATE_MEDIA_DECRYPT_MODULE, ProcessGetMediaDecryptModule},
     {KEY_SESSION_RELEASE, ProcessRleaseKeySession},
     {MEDIA_KEY_SESSION_GENERATE_LICENSE_REQUEST, ProcessMediaKeyRequest},
     {MEDIA_KEY_SESSION_PROCESS_LICENSE_RESPONSE, ProcessMediaKeyResponse},
@@ -84,14 +84,14 @@ static struct ProcessRemoteRequestFuncArray g_mediaKeySessionServiceStubRequestP
     {MEDIA_KEY_SESSION_GETSECURITYLEVEL, ProcessGetContentProtectionLevel},
 };
 
-static int32_t ProcessCreateMediaDecryptModule(MediaKeySessionServiceStub *stub, MessageParcel &data,
+static int32_t ProcessGetMediaDecryptModule(MediaKeySessionServiceStub *stub, MessageParcel &data,
     MessageParcel &reply, MessageOption &option)
 {
     DRM_INFO_LOG("MediaKeySessionServiceStub GET_MEDIA_DECRYPT_MODULE enter.");
     sptr<IMediaDecryptModuleService> decryptModuleServiceProxy = nullptr;
-    int32_t errCode = stub->CreateMediaDecryptModule(decryptModuleServiceProxy);
+    int32_t errCode = stub->GetMediaDecryptModule(decryptModuleServiceProxy);
     if (errCode != ERR_NONE) {
-        DRM_ERR_LOG("MediaKeySessionServiceStub CreateMediaDecryptModule failed : %{public}d", errCode);
+        DRM_ERR_LOG("MediaKeySessionServiceStub GetMediaDecryptModule failed : %{public}d", errCode);
         return errCode;
     }
     if (!reply.WriteRemoteObject(decryptModuleServiceProxy->AsObject())) {

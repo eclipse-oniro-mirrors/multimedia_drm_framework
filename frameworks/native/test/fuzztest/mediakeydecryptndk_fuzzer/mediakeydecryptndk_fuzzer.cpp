@@ -182,7 +182,7 @@ bool MediadecryptNdkFuzzer::FuzzTestMediaKeyDecryptNdk(uint8_t *rawData, size_t 
         sptr<IMediaKeySessionService> SessionServiceProxy =
             sessionObject->sessionImpl_->GetMediaKeySessionServiceProxy();
         sptr<IMediaDecryptModuleService> decryptModule;
-        SessionServiceProxy->CreateMediaDecryptModule(decryptModule);
+        SessionServiceProxy->GetMediaDecryptModule(decryptModule);
         IMediaDecryptModuleService::DrmBuffer srcBuffer;
         IMediaDecryptModuleService::DrmBuffer dstBuffer;
         bool secureDecodrtState = false;

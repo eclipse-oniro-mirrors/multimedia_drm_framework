@@ -402,7 +402,7 @@ bool DrmServiceNdkFuzzer::DrmserviceClearOfflineMediaKeysTest(uint8_t *rawData, 
     return true;
 }
 
-bool DrmServiceNdkFuzzer::DrmserviceCreateMediaDecryptModuleTest(uint8_t *rawData, size_t size,
+bool DrmServiceNdkFuzzer::DrmserviceGetMediaDecryptModuleTest(uint8_t *rawData, size_t size,
     std::shared_ptr<MediaKeySessionService> mediaKeySessionService)
 {
     if (rawData == nullptr || size < sizeof(int32_t)) {
@@ -630,7 +630,7 @@ bool FuzzSystemFactoryNdk(uint8_t *data, size_t size)
     sptr<IMediaKeySession> hdiMediaKeySession = new (std::nothrow) IMediaKeySessionMock();
     std::shared_ptr<MediaKeySessionService> mediaKeySessionService =
         std::make_shared<MediaKeySessionService>(hdiMediaKeySession);
-    testMediaSystemFactory.DrmserviceCreateMediaDecryptModuleTest(data, size, mediaKeySessionService);
+    testMediaSystemFactory.DrmserviceGetMediaDecryptModuleTest(data, size, mediaKeySessionService);
     testMediaSystemFactory.DrmserviceGenerateMediaKeyRequestTest(data, size, mediaKeySessionService);
     testMediaSystemFactory.DrmserviceProcessMediaKeyResponseTest(data, size, mediaKeySessionService);
     testMediaSystemFactory.DrmserviceGenerateOfflineReleaseRequestTest(data, size, mediaKeySessionService);
