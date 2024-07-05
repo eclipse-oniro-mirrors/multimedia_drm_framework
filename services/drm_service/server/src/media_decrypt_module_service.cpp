@@ -34,7 +34,7 @@ namespace DrmStandard {
 MediaDecryptModuleService::MediaDecryptModuleService(
     sptr<OHOS::HDI::Drm::V1_0::IMediaDecryptModule> hdiMediaDecryptModule)
 {
-    DRM_DEBUG_LOG("MediaDecryptModuleService::MediaDecryptModuleService");
+    DRM_INFO_LOG("MediaDecryptModuleService 0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
     hdiMediaDecryptModule_ = hdiMediaDecryptModule;
     int32_t uid = IPCSkeleton::GetCallingUid();
     instanceId_ = HiTraceChain::GetId().GetChainId();
@@ -43,7 +43,7 @@ MediaDecryptModuleService::MediaDecryptModuleService(
 
 MediaDecryptModuleService::~MediaDecryptModuleService()
 {
-    DRM_INFO_LOG("MediaDecryptModuleService::~MediaDecryptModuleService enter.");
+    DRM_INFO_LOG("MediaDecryptModuleService 0x%{public}06" PRIXPTR " Instances destroy.", FAKE_POINTER(this));
     std::lock_guard<std::mutex> lock(moduleLock_);
     if (hdiMediaDecryptModule_ != nullptr) {
         Release();

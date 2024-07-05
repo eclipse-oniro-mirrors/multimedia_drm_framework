@@ -76,7 +76,7 @@ public:
     bool DrmserviceClearOfflineMediaKeysTest(uint8_t *rawData, size_t size,
         std::shared_ptr<MediaKeySystemService> mediaKeySystemServicePtr);
     /* MediaKeySession */
-    bool DrmserviceCreateMediaDecryptModuleTest(uint8_t *rawData, size_t size,
+    bool DrmserviceGetMediaDecryptModuleTest(uint8_t *rawData, size_t size,
         std::shared_ptr<MediaKeySessionService> mediaKeySessionService);
     bool DrmserviceGenerateMediaKeyRequestTest(uint8_t *rawData, size_t size,
         std::shared_ptr<MediaKeySessionService> mediaKeySessionService);

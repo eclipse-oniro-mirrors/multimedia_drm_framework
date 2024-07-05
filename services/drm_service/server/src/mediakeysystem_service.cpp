@@ -33,7 +33,7 @@ namespace DrmStandard {
 using namespace OHOS::HiviewDFX;
 MediaKeySystemService::MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem)
 {
-    DRM_DEBUG_LOG("MediaKeySystemService::MediaKeySystemService enter.");
+    DRM_INFO_LOG("MediaKeySystemService 0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
     keySystemOperatoersCallback_ = nullptr;
     hdiKeySystem_ = hdiKeySystem;
 }
@@ -41,7 +41,7 @@ MediaKeySystemService::MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKe
 MediaKeySystemService::MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem,
     StatisticsInfo statisticsInfo)
 {
-    DRM_DEBUG_LOG("MediaKeySystemService::MediaKeySystemService with statisticsInfo_ enter.");
+    DRM_INFO_LOG("MediaKeySystemService 0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
     keySystemOperatoersCallback_ = nullptr;
     hdiKeySystem_ = hdiKeySystem;
     statisticsInfo_ = statisticsInfo;
@@ -49,7 +49,7 @@ MediaKeySystemService::MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKe
 
 MediaKeySystemService::~MediaKeySystemService()
 {
-    DRM_DEBUG_LOG("~MediaKeySystemService");
+    DRM_INFO_LOG("MediaKeySystemService 0x%{public}06" PRIXPTR " Instances destroy.", FAKE_POINTER(this));
     std::lock_guard<std::mutex> lock(mutex_);
     keySystemOperatoersCallback_ = nullptr;
     if (hdiKeySystem_ != nullptr) {

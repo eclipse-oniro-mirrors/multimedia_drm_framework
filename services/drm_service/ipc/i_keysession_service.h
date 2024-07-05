@@ -85,7 +85,7 @@ public:
 
     virtual ~IMediaKeySessionService() = default;
     virtual int32_t Release() = 0;
-    virtual int32_t CreateMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule) = 0;
+    virtual int32_t GetMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule) = 0;
     virtual int32_t GenerateMediaKeyRequest(MediaKeyRequestInfo &licenseRequestInfo, MediaKeyRequest &licenseInfo) = 0;
     virtual int32_t ProcessMediaKeyResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &licenseResponse) = 0;
     virtual int32_t GenerateOfflineReleaseRequest(std::vector<uint8_t> &licenseId,

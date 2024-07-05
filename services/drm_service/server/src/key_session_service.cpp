@@ -30,7 +30,7 @@ static std::mutex sessionMutex_;
 
 MediaKeySessionService::MediaKeySessionService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySession> hdiMediaKeySession)
 {
-    DRM_DEBUG_LOG("MediaKeySessionService::MediaKeySessionService.");
+    DRM_INFO_LOG("MediaKeySessionService 0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
     sessionOperatorsCallback_ = nullptr;
     hdiMediaKeySession_ = hdiMediaKeySession;
 }
@@ -38,7 +38,7 @@ MediaKeySessionService::MediaKeySessionService(sptr<OHOS::HDI::Drm::V1_0::IMedia
 MediaKeySessionService::MediaKeySessionService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySession> hdiMediaKeySession,
     StatisticsInfo statisticsInfo)
 {
-    DRM_INFO_LOG("MediaKeySessionService::MediaKeySessionService with statisticsInfo_ enter.");
+    DRM_INFO_LOG("MediaKeySessionService 0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
     sessionOperatorsCallback_ = nullptr;
     hdiMediaKeySession_ = hdiMediaKeySession;
     statisticsInfo_ = statisticsInfo;
@@ -46,7 +46,7 @@ MediaKeySessionService::MediaKeySessionService(sptr<OHOS::HDI::Drm::V1_0::IMedia
 
 MediaKeySessionService::~MediaKeySessionService()
 {
-    DRM_INFO_LOG("MediaKeySessionService::~MediaKeySessionService enter.");
+    DRM_INFO_LOG("MediaKeySessionService 0x%{public}06" PRIXPTR " Instances destroy.", FAKE_POINTER(this));
     std::lock_guard<std::mutex> lock(sessionMutex_);
     if (sessionOperatorsCallback_ != nullptr) {
         sessionOperatorsCallback_ = nullptr;
@@ -272,12 +272,16 @@ int32_t MediaKeySessionService::GetContentProtectionLevel(
     return ret;
 }
 
-int32_t MediaKeySessionService::CreateMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule)
+int32_t MediaKeySessionService::GetMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule)
 {
-    DrmTrace trace("MediaKeySessionService::CreateMediaDecryptModule");
-    DRM_INFO_LOG("MediaKeySessionService::CreateMediaDecryptModule enter.");
+    DrmTrace trace("MediaKeySessionService::GetMediaDecryptModule");
+    DRM_INFO_LOG("MediaKeySessionService::GetMediaDecryptModule enter.");
     std::lock_guard<std::mutex> lock(sessionMutex_);
-    sptr<MediaDecryptModuleService> mediaDecryptService = nullptr;
+    if (decryptModule_ != nullptr) {
+        DRM_INFO_LOG("decryptModule already exists.");
+        decryptModule = decryptModule_;
+        return DRM_OK;
+    }
     sptr<OHOS::HDI::Drm::V1_0::IMediaDecryptModule> hdiDecryptModule = nullptr;
     if (hdiMediaKeySession_ == nullptr) {
         DRM_ERR_LOG("MediaKeySessionService:: hdiMediaKeySession_ == nullptr");
@@ -289,13 +293,13 @@ int32_t MediaKeySessionService::CreateMediaDecryptModule(sptr<IMediaDecryptModul
             DRM_ERR_LOG("MediaKeySessionService:: hdiDecryptModule allocation failed.");
             return DRM_SERVICE_ERROR;
         }
-        mediaDecryptService = new (std::nothrow) MediaDecryptModuleService(hdiDecryptModule);
-        if (mediaDecryptService == nullptr) {
+        decryptModule_ = new (std::nothrow) MediaDecryptModuleService(hdiDecryptModule);
+        if (decryptModule_ == nullptr) {
             DRM_ERR_LOG("MediaKeySessionService:: new MediaDecryptModuleService allocation failed.");
             return DRM_ALLOC_ERROR;
         }
-        decryptModule = mediaDecryptService;
-        DRM_INFO_LOG("MediaKeySessionService::CreateMediaDecryptModule enter.");
+        decryptModule = decryptModule_;
+        DRM_INFO_LOG("MediaKeySessionService::GetMediaDecryptModule enter.");
         return DRM_OK;
     }
 }
