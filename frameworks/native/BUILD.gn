@@ -85,9 +85,7 @@ ohos_shared_library("drm_framework") {
     "//foundation//arkui/napi/interfaces/kits",
   ]
 
-  deps = [
-    ":drm_api_operation"
-  ]
+  deps = [ ":drm_api_operation" ]
 
   external_deps = [
     "ability_runtime:abilitykit_native",
