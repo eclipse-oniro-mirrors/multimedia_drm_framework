@@ -93,7 +93,7 @@ void MediaKeySystemFactoryService::OnAddSystemAbility(int32_t systemAbilityId, c
     DRM_INFO_LOG("MediaKeySystemFactoryService::OnAddSystemAbility called.");
     if (systemAbilityId == MEMORY_MANAGER_SA_ID) {
         int32_t pid = getpid();
-        /* 3012 is the said of drm service */     
+        /* 3012 is the said of drm service */
         Memory::MemMgrClient::GetInstance().NotifyProcessStatus(pid, 1, 1, 3012);
     }
     DRM_INFO_LOG("MediaKeySystemFactoryService::OnAddSystemAbility end.");
