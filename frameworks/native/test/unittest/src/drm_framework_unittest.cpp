@@ -3777,11 +3777,13 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_KillClearPlayHostAbNormal1, TestSize
     if (g_isWisePlay) {
         int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
         EXPECT_EQ(rett, 0);
+        errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+        EXPECT_NE(errNo, DRM_ERR_OK);
     } else {
         KeySystemResponseLen = 50;
+        errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
+        EXPECT_EQ(errNo, DRM_ERR_OK);
     }
-    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);
-    EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
     EXPECT_NE(mediaKeySession, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
