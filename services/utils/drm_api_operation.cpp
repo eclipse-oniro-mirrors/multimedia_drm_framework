@@ -22,7 +22,6 @@
 #include <unordered_map>
 #include <functional>
 #include <mutex>
-
 #include "app_event.h"
 #include "app_event_processor_mgr.h"
 #include "drm_log.h"
@@ -35,6 +34,7 @@ namespace DrmStandard {
 std::string ConfigParser::g_fileContent = "";
 int64_t ConfigParser::g_processorId = -1;
 std::mutex ConfigParser::g_apiOperationMutex;
+const int32_t appFlag = -200;
 
 bool ConfigParser::LoadConfigurationFile(const std::string &configFile)
 {
@@ -209,7 +209,11 @@ int64_t ConfigParser::AddProcessor()
     ApiEventConfig eventConfig;
     std::lock_guard<std::mutex> lock(g_apiOperationMutex);
     if (g_processorId != -1) {
-        DRM_ERR_LOG("ConfigParser::AddProcessor start, g_processorId: %{public}lld", g_processorId);
+        DRM_DEBUG_LOG("ConfigParser::AddProcessor exit, g_processorId: %{public}lld", g_processorId);
+        return g_processorId;
+    }
+    if (g_processorId == appFlag) {
+        DRM_ERR_LOG("dotting is not supported for non-apps, g_processorId: %{public}lld", g_processorId);
         return g_processorId;
     }
     if (LoadConfigurationFile(DRM_API_OPERATION_CONFIG_PATH) != true) {
