@@ -168,7 +168,7 @@ void DrmFrameworkUnitTest::SetUp()
             int rett = HttpPost(PROVISION_URL, request, requestLen, KeySystemResponse, &KeySystemResponseLen, 10);
             EXPECT_EQ(rett, 0);
         } else {
-            KeySystemResponseLen = 50;
+            KeySystemResponseLen = 50; // 50 is the length of system response
         }        
         errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, 0);
         EXPECT_NE(errNo, DRM_ERR_OK);
