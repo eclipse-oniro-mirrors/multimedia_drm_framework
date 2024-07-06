@@ -1612,3 +1612,53 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyStatusNormal_038, 
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 }
+
+/*
+ * Feature: Framework
+ * Function: Processing device certificate response testing
+ * Sub function: NA
+ * Function point: NA
+ * Environmental conditions: NA
+ * Case Description: Processing Device Certificate Response Testing
+ */
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyStatusAbNormal_039, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    MediaKeySession *mediaKeySession = nullptr;
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    // mediakeysession
+    DRM_MediaKeyRequest mediaKeyRequest;
+    DRM_MediaKeyRequestInfo info;
+    unsigned char testData[139] = REQUESTINFODATA;
+    memset_s(&info, sizeof(DRM_MediaKeyRequestInfo), 0, sizeof(DRM_MediaKeyRequestInfo));
+    info.initDataLen = sizeof(testData);
+    info.type = MEDIA_KEY_TYPE_ONLINE;
+    memcpy_s(info.mimeType, sizeof("video/mp4"), (char *)"video/mp4", sizeof("video/mp4"));
+    memcpy_s(info.initData, sizeof(testData), testData, sizeof(testData));
+    memcpy_s(info.optionName[0], sizeof("optionalDataName"), (char *)"optionalDataName", sizeof("optionalDataName"));
+    memcpy_s(info.optionData[0], sizeof("optionalDataValue"), (char *)"optionalDataValue", sizeof("optionalDataValue"));
+    info.optionsCount = 1;
+    errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char onlineMediaKeyId[128] = { 0 }; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    int32_t onlineMediaKeyIdLen = 128; // 64:OFFLINE_MEDIA_KEY_ID_LEN
+    unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
+    int32_t testKeySessionResponseLen = 12288;
+    if (g_isWisePlay) {
+        int rett = HttpPost(LICENSE_URL, mediaKeyRequest.data,
+            (uint32_t)mediaKeyRequest.dataLen, testKeySessionResponse, &testKeySessionResponseLen, 10);
+        EXPECT_EQ(rett, 0);
+    } else {
+        testKeySessionResponseLen = 50;
+    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    DRM_MediaKeyStatus mediaKeyStatus;
+    errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyStatus);
