@@ -3049,7 +3049,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_DecryptModuleNormal_066, TestSize.Le
         sptr<IMediaKeySessionService> SessionServiceProxy =
             sessionObject->sessionImpl_->GetMediaKeySessionServiceProxy();
         sptr<IMediaDecryptModuleService> decryptModule;
-        SessionServiceProxy->CreateMediaDecryptModule(decryptModule);
+        SessionServiceProxy->GetMediaDecryptModule(decryptModule);
         MessageParcel data;
         IMediaDecryptModuleService::DrmBuffer srcBuffer;
         IMediaDecryptModuleService::DrmBuffer dstBuffer;
