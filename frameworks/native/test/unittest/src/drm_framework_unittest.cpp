@@ -2949,6 +2949,7 @@ static void filltest3(MediaKeySystem *mediaKeySystem,
     errNo = OH_MediaKeySession_GetContentProtectionLevel(mediaKeySession, nullptr);
     EXPECT_NE(errNo, DRM_ERR_OK);
 }
+
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelNormal_064, TestSize.Level0)
 {
     MediaKeySystem *mediaKeySystem = nullptr;
@@ -3633,7 +3634,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_SessionImplAbNormal_083, TestSize.Le
     unsigned char testKeySessionResponse[12288] = OFFRESPONSE;
     int32_t testKeySessionResponseLen = 50;
     errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
-        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);    
+        (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     if (mediaKeySession) {
         MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySession);
         MediaKeySessionServiceCallback *Object = new MediaKeySessionServiceCallback(sessionObject->sessionImpl_);
