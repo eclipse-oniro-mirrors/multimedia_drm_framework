@@ -488,3 +488,497 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CreateMediaKeySystemNormal_010, Test
     errNo = OH_MediaKeySystem_GetMaxContentProtectionLevel(mediaKeySystem, &contentProtectionLevel);
     EXPECT_NE(errNo, DRM_ERR_OK);
 }
+
+/*
+ * Feature: Framework
+ * Function: Test and create sessions
+ * Sub function: NA
+ * Function point: NA
+ * Environmental conditions: NA
+ * Case Description: Test Creating Sessions
+ */
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CreateMediaKeySessionNormal_011, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    MediaKeySession *mediaKeySession = nullptr;
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_SetMediaKeySystemCallback(mediaKeySystem, &TestSystemEventCallBack);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    mediaKeySystem = nullptr;
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+/*
+ * Feature: Framework
+ * Function: Test that the RequireSecureDecoderModule interface is functioning properly
+ * Sub function: NA
+ * Function point: NA
+ * Environmental conditions: NA
+ * Case description: Testing that the RequireSecureDecoderModule interface is functioning properly
+ */
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RequireSecureDecoderModuleNormal_012, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    MediaKeySession *mediaKeySession = nullptr;
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    bool requireSecureDecoder;
+    errNo = OH_MediaKeySession_RequireSecureDecoderModule(mediaKeySession, "video/mp4", &requireSecureDecoder);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    mediaKeySystem = nullptr;
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+/*
+ * Feature: Framework
+ * Function: RequireSecureDecoderModule Exception Test Input Error mimtype
+ * Sub function: NA
+ * Function point: NA
+ * Environmental conditions: NA
+ * Case Description: RequireSecureDecoderModule Exception Test
+ */
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RequireSecureDecoderModuleAbNormal_013, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    MediaKeySession *mediaKeySession = nullptr;
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    bool requireSecureDecoder = false;
+    errNo = OH_MediaKeySession_RequireSecureDecoderModule(mediaKeySession, "asdssadadsa", &requireSecureDecoder);
+    if (g_isWisePlay) {
+        EXPECT_NE(errNo, DRM_ERR_OK);
+    } else {
+        EXPECT_EQ(errNo, DRM_ERR_OK);
+    }
+    EXPECT_EQ(requireSecureDecoder, false);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    mediaKeySystem = nullptr;
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+/*
+ * Feature: Framework
+ * Function: RequireSecureDecoderModule Exception Test Input Error mimtype
+ * Sub function: NA
+ * Function point: NA
+ * Environmental conditions: NA
+ * Case Description: RequireSecureDecoderModule Exception Test
+ */
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RequireSecureDecoderModuleAbNormal_014, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    MediaKeySession *mediaKeySession = nullptr;
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    bool requireSecureDecoder = false;
+    errNo = OH_MediaKeySession_RequireSecureDecoderModule(mediaKeySession, "", &requireSecureDecoder);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    EXPECT_EQ(requireSecureDecoder, false);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    mediaKeySystem = nullptr;
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+/*
+ * Feature: Framework
+ * Function: RequireSecureDecoderModule Exception Test Input Error mimtype
+ * Sub function: NA
+ * Function point: NA
+ * Environmental conditions: NA
+ * Case Description: RequireSecureDecoderModule Exception Test
+ */
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RequireSecureDecoderModuleAbNormal_015, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    MediaKeySession *mediaKeySession = nullptr;
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    bool requireSecureDecoder = false;
+    errNo = OH_MediaKeySession_RequireSecureDecoderModule(mediaKeySession, nullptr, &requireSecureDecoder);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    EXPECT_EQ(requireSecureDecoder, false);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    mediaKeySystem = nullptr;
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+/*
+ * Feature: Framework
+ * Function: RequireSecureDecoderModule Exception Test Input Error mimtype
+ * Sub function: NA
+ * Function point: NA
+ * Environmental conditions: NA
+ * Case Description: RequireSecureDecoderModule Exception Test
+ */
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RequireSecureDecoderModuleAbNormal_016, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    MediaKeySession *mediaKeySession = nullptr;
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    bool requireSecureDecoder = false;
+    errNo = OH_MediaKeySession_RequireSecureDecoderModule(mediaKeySession, "video/mp4", nullptr);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    EXPECT_EQ(requireSecureDecoder, false);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+/*
+ * Feature: Framework
+ * Function: RequireSecureDecoderModule Exception Test Input Error mimtype
+ * Sub function: NA
+ * Function point: NA
+ * Environmental conditions: NA
+ * Case Description: RequireSecureDecoderModule Exception Test
+ */
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RequireSecureDecoderModuleAbNormal_017, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    MediaKeySession *mediaKeySession = nullptr;
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    bool requireSecureDecoder = false;
+    errNo = OH_MediaKeySession_RequireSecureDecoderModule(nullptr, "video/mp4", &requireSecureDecoder);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    EXPECT_EQ(requireSecureDecoder, false);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+/*
+ * Feature: Framework
+ * Function: GenerateKeySystemRequest normal testing to obtain normal requests
+ * Sub function: NA
+ * Function point: NA
+ * Environmental conditions: NA
+ * Case description: GenerateKeySystemRequest obtained a normal request through normal testing
+ */
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateKeySystemRequestNormal_018, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+/*
+ * Feature: Framework
+ * Function: GenerateKeySystemRequest parameter exception testing
+ * Sub function: NA
+ * Function point: NA
+ * Environmental conditions: NA
+ * Case Description: GenerateKeySystemRequest Parameter Exception Test
+ */
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateKeySystemRequestAbNormal_019, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char request[12288] = { 0 }; // 12288:request len
+    int32_t requestLen = 12288; // 12288:request len
+    char defaultUrl[2048] = { 0 }; // 2048:url len
+    int32_t defaultUrlLen = 2048; // 2048:url len
+    errNo = OH_MediaKeySystem_GenerateKeySystemRequest(nullptr, request, &requestLen, defaultUrl, defaultUrlLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    requestLen = 12288; // 12288:request len
+    errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, nullptr, &requestLen, defaultUrl,
+        defaultUrlLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, nullptr, defaultUrl, defaultUrlLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    requestLen = 12288; // 12288:request len
+    errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, nullptr, defaultUrlLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    requestLen = 12288; // 12288:request len
+    errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl, 0);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+/*
+ * Feature: Framework
+ * Function: Processing device certificate response testing
+ * Sub function: NA
+ * Function point: NA
+ * Environmental conditions: NA
+ * Case Description: Processing Device Certificate Response Testing
+ */
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseNormal_020, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    MediaKeySession *mediaKeySession = nullptr;
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_SetMediaKeySystemCallback(mediaKeySystem, &TestSystemEventCallBack);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+
+/*
+ * Feature: Framework
+ * Function: Processing device certificate response testing
+ * Sub function: NA
+ * Function point: NA
+ * Environmental conditions: NA
+ * Case Description: Processing Device Certificate Response Testing
+ */
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_021, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    MediaKeySession *mediaKeySession = nullptr;
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    unsigned char KeySystemResponse[12288] = OFFRESPONSE;
+    int32_t KeySystemResponseLen = 12288;
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(nullptr, KeySystemResponse, KeySystemResponseLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+/*
+ * Feature: Framework
+ * Function: Processing device certificate response testing
+ * Sub function: NA
+ * Function point: NA
+ * Environmental conditions: NA
+ * Case Description: Processing Device Certificate Response Testing
+ */
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_022, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    MediaKeySession *mediaKeySession = nullptr;
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    int32_t KeySystemResponseLen = 12288;
+    errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, nullptr, KeySystemResponseLen);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+/*
+ * Feature: Framework
+ * Function: Processing device certificate response testing
+ * Sub function: NA
+ * Function point: NA
+ * Environmental conditions: NA
+ * Case Description: Processing Device Certificate Response Testing
+ */
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ProcessMediaKeyResponseAbNormal_023, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+/*
+ * Feature: Framework
+ * Function: Processing device certificate response testing
+ * Sub function: NA
+ * Function point: NA
+ * Environmental conditions: NA
+ * Case Description: Processing Device Certificate Response Testing
+ */
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateMediaKeyRequestNormal_024, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    MediaKeySession *mediaKeySession = nullptr;
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    // mediakeysession
+    DRM_MediaKeyRequest mediaKeyRequest;
+    DRM_MediaKeyRequestInfo info;
+    unsigned char testData[139] = REQUESTINFODATA;
+    memset_s(&info, sizeof(DRM_MediaKeyRequestInfo), 0, sizeof(DRM_MediaKeyRequestInfo));
+    info.initDataLen = sizeof(testData);
+    info.type = MEDIA_KEY_TYPE_ONLINE;
+    memcpy_s(info.mimeType, sizeof("video/mp4"), (char *)"video/mp4", sizeof("video/mp4"));
+    memcpy_s(info.initData, sizeof(testData), testData, sizeof(testData));
+    memcpy_s(info.optionName[0], sizeof("optionalDataName"), (char *)"optionalDataName", sizeof("optionalDataName"));
+    memcpy_s(info.optionData[0], sizeof("optionalDataValue"), (char *)"optionalDataValue", sizeof("optionalDataValue"));
+    info.optionsCount = 1;
+    errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, &info, &mediaKeyRequest);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+/*
+ * Feature: Framework
+ * Function: Processing device certificate response testing
+ * Sub function: NA
+ * Function point: NA
+ * Environmental conditions: NA
+ * Case Description: Processing Device Certificate Response Testing
+ */
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateMediaKeyRequestAbNormal_025, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    MediaKeySession *mediaKeySession = nullptr;
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    // mediakeysession
+    DRM_MediaKeyRequest mediaKeyRequest;
+    DRM_MediaKeyRequestInfo info;
+    unsigned char testData[139] = REQUESTINFODATA;
+    memset_s(&info, sizeof(DRM_MediaKeyRequestInfo), 0, sizeof(DRM_MediaKeyRequestInfo));
+    info.initDataLen = sizeof(testData);
+    info.type = MEDIA_KEY_TYPE_ONLINE;
+    memcpy_s(info.mimeType, sizeof("video/mp4"), (char *)"video/mp4", sizeof("video/mp4"));
+    memcpy_s(info.initData, sizeof(testData), testData, sizeof(testData));
+    memcpy_s(info.optionName[0], sizeof("optionalDataName"), (char *)"optionalDataName", sizeof("optionalDataName"));
+    memcpy_s(info.optionData[0], sizeof("optionalDataValue"), (char *)"optionalDataValue", sizeof("optionalDataValue"));
+    info.optionsCount = 1;
+    errNo = OH_MediaKeySession_GenerateMediaKeyRequest(nullptr, &info, &mediaKeyRequest);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+/*
+ * Feature: Framework
+ * Function: Processing device certificate response testing
+ * Sub function: NA
+ * Function point: NA
+ * Environmental conditions: NA
+ * Case Description: Processing Device Certificate Response Testing
+ */
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GenerateMediaKeyRequestAbNormal_026, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    MediaKeySession *mediaKeySession = nullptr;
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    // mediakeysession
+    DRM_MediaKeyRequest mediaKeyRequest;
+    DRM_MediaKeyRequestInfo info;
+    unsigned char testData[139] = REQUESTINFODATA;
+    memset_s(&info, sizeof(DRM_MediaKeyRequestInfo), 0, sizeof(DRM_MediaKeyRequestInfo));
+    info.initDataLen = sizeof(testData);
+    info.type = MEDIA_KEY_TYPE_ONLINE;
+    memcpy_s(info.mimeType, sizeof("video/mp4"), (char *)"video/mp4", sizeof("video/mp4"));
+    memcpy_s(info.initData, sizeof(testData), testData, sizeof(testData));
+    memcpy_s(info.optionName[0], sizeof("optionalDataName"), (char *)"optionalDataName", sizeof("optionalDataName"));
+    memcpy_s(info.optionData[0], sizeof("optionalDataValue"), (char *)"optionalDataValue", sizeof("optionalDataValue"));
+    info.optionsCount = 1;
+    errNo = OH_MediaKeySession_GenerateMediaKeyRequest(mediaKeySession, nullptr, &mediaKeyRequest);
+    EXPECT_NE(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
