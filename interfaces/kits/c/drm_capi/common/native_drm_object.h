@@ -59,8 +59,10 @@ public:
 
     void InitEventMap()
     {
-        eventMap_.insert({ static_cast<std::string>(MediaKeySystemEvent::EVENT_STR_PROVISION_REQUIRED),
+        DRM_INFO_LOG("InitEventMap enter.");
+        eventMap_.insert({ MediaKeySystemEvent::EVENT_STR_PROVISION_REQUIRED,
             EVENT_PROVISION_REQUIRED });
+        DRM_INFO_LOG("InitEventMap exit.");
     }
 
     virtual ~MediaKeySystemCallbackCapi()
