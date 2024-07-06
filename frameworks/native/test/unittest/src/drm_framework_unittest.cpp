@@ -1662,3 +1662,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyStatusAbNormal_039
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_MediaKeyStatus mediaKeyStatus;
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyStatus);
+
+    DRM_OfflineMediaKeyStatus OfflineMediaKeyStatus = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
+    errNo = OH_MediaKeySystem_GetOfflineMediaKeyStatus(nullptr, onlineMediaKeyId, onlineMediaKeyIdLen,
+        &OfflineMediaKeyStatus);
