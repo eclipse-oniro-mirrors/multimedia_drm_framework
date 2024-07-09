@@ -35,6 +35,8 @@
 namespace OHOS {
 namespace DrmStandard {
 using namespace OHOS::HiviewDFX;
+const std::string SPLIT_LINE =
+    "----------------------------------------------------------------------------------------\n";
 
 REGISTER_SYSTEM_ABILITY_BY_ID(MediaKeySystemFactoryService, MEDIA_KEY_SYSTEM_SERVICE_ID, true)
 
@@ -104,7 +106,6 @@ int32_t MediaKeySystemFactoryService::Dump(int32_t fd, const std::vector<std::u1
     DRM_CHECK_AND_RETURN_RET_LOG(fd > 0, OHOS::INVALID_OPERATION, "Failed to check fd.");
     std::string dumpString;
 
-    dumpString += "------------------DrmFramework HiDunmper------------------\n";
     auto ret = WriteDumpInfo(fd, dumpString);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == NO_ERROR,
         OHOS::INVALID_OPERATION, "Failed to write framework information");
@@ -148,7 +149,7 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
     }
     StatisticsInfo statisticsInfo;
     InitStatisticsInfo(hdiMediaKeySystem, statisticsInfo);
-    mediaKeySystemService = new (std::nothrow) MediaKeySystemService(hdiMediaKeySystem, statisticsInfo);
+    mediaKeySystemService = new (std::nothrow) MediaKeySystemService(hdiMediaKeySystem, statisticsInfo, name);
     if (mediaKeySystemService == nullptr) {
         DRM_ERR_LOG("MediaKeySystemFactoryService::CreateMediaKeySystem allocation failed.");
         ReportFaultEvent(DRM_ALLOC_ERROR, "CreateMediaKeySystem failed", "");
@@ -293,48 +294,43 @@ void MediaKeySystemFactoryService::InitStatisticsInfo(sptr<IMediaKeySystem> hdiM
 int32_t MediaKeySystemFactoryService::WriteDumpInfo(int32_t fd, std::string &dumpString)
 {
     OHOS::HiviewDFX::DumpUsage dumpUse;
-    uint64_t memoryUsageInfo = dumpUse.GetPss(getpid());
-    IMediaKeySystemService::CertificateStatus certStatus = IMediaKeySystemService::CERT_STATUS_UNAVAILABLE;
-    std::vector<IMediaKeySystemService::MetircKeyValue> metrics;
-    dumpString += "-----mediaKeySystem memoryUsage = " + std::to_string(memoryUsageInfo) + "\n";
+    dumpString += "MediaKeySystem MemoryUsage: " + std::to_string(dumpUse.GetPss(getpid())) + "\n";
     std::map<std::string, std::string> mediaKeySystemInfo;
     drmHostManager_->GetMediaKeySystems(mediaKeySystemInfo);
     for (auto &iter : mediaKeySystemInfo) {
-        dumpString += "-----pluginName:" + iter.first + " uuid:" + iter.second + "\n";
+        dumpString += SPLIT_LINE;
+        std::string tmpStr = "Plugin Name: " + iter.first + "\n" +
+                             "Plugin UUID: " + iter.second + "\n" +
+                             "Total MediaKeySystem Num: ";
+        int32_t systemNum = 0;
+        if (CurrentMediaKeySystemNum_.find(iter.first) != CurrentMediaKeySystemNum_.end()) {
+            systemNum = CurrentMediaKeySystemNum_[iter.first];
+        }
+        tmpStr += std::to_string(systemNum) + "\n";
+        dumpString += tmpStr;
     }
-    for (auto &iter : CurrentMediaKeySystemNum_) {
-        dumpString += "-----" + iter.first + " mediaKeySystemNum:" + std::to_string(iter.second) + "\n";
-    }
+    uint32_t systemNum = 0;
     for (auto &pidIter : mediaKeySystemForPid_) {
-        dumpString += "-----pid:" + std::to_string(pidIter.first) + "\n";
-        for (auto &iter : pidIter.second) {
-            iter->GetCertificateStatus(&certStatus);
-            dumpString += "certificateStatus:" + std::to_string(certStatus) + "\n";
-            iter->GetStatistics(metrics);
-            DumpMetricsInfo(dumpString, metrics);
-            dumpString += "\n";
-            metrics.clear();
+        dumpString += SPLIT_LINE;
+        systemNum++;
+        dumpString += "#### MediaKeySystem " + std::to_string(systemNum) + " ####\n";
+        dumpString += "PID: " + std::to_string(pidIter.first) + "\n";
+        for (auto &system : pidIter.second) {
+            IMediaKeySystemService::CertificateStatus certStatus = IMediaKeySystemService::CERT_STATUS_UNAVAILABLE;
+            system->GetCertificateStatus(&certStatus);
+            dumpString += "Plugin Name: " + system->GetPluginName() + "\n";
+            dumpString += "Certificate Status: " + std::to_string(certStatus) + "\n";
+            dumpString += system->GetSessionsDumpInfo();
         }
     }
+    dumpString += SPLIT_LINE;
     if (fd != -1) {
         write(fd, dumpString.c_str(), dumpString.size());
     } else {
         DRM_INFO_LOG("%{public}s", dumpString.c_str());
     }
-    dumpString.clear();
-
     return OHOS::NO_ERROR;
 }
 
-int32_t MediaKeySystemFactoryService::DumpMetricsInfo(std::string &dumpString,
-    std::vector<IMediaKeySystemService::MetircKeyValue> metrics)
-{
-    for (auto &iter : metrics) {
-        if (iter.name == currentSessionNum || iter.name == decryptTimes || iter.name == errorDecryptNumber) {
-            dumpString += iter.name + ":" + iter.value + " ";
-        }
-    }
-    return OHOS::NO_ERROR;
-}
 } // DrmStandard
 } // OHOS

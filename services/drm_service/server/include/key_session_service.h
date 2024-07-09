@@ -64,6 +64,7 @@ public:
     int32_t SendEventKeyChange(
         const std::map<std::vector<uint8_t>, OHOS::HDI::Drm::V1_0::MediaKeySessionKeyStatus> &keyStatus,
         bool hasNewGoodLicense) override;
+    std::string GetDecryptModuleDumpInfo();
 
 private:
     std::mutex sessionMutex_;

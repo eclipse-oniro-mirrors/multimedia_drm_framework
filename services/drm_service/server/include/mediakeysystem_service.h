@@ -47,7 +47,7 @@ class MediaKeySystemService : public MediaKeySystemServiceStub,
 public:
     explicit MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem);
     explicit MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem,
-        StatisticsInfo statisticsInfo);
+        StatisticsInfo statisticsInfo, std::string pluginName);
     ~MediaKeySystemService() override;
     int32_t Release() override;
     int32_t SetMediaKeySystemServiceOperatorsCallback(wptr<IMediaKeySystemServiceOperatorsCallback> callback);
@@ -77,14 +77,17 @@ public:
     // for hdi callback
     int32_t SendEvent(OHOS::HDI::Drm::V1_0::EventType eventType, int32_t extra,
         const std::vector<uint8_t> &data) override;
+    std::string GetSessionsDumpInfo();
 
 private:
     std::mutex mutex_;
     sptr<IMeidaKeySystemServiceCallback> callback_;
     wptr<IMediaKeySystemServiceOperatorsCallback> keySystemOperatoersCallback_;
+    std::mutex sessionsSetMutex_;
     std::set<sptr<MediaKeySessionService>> sessionsSet_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem_;
     StatisticsInfo statisticsInfo_;
+    std::string pluginName_;
     std::string generationResult_;
     uint32_t generationDuration_ = 0;
 };

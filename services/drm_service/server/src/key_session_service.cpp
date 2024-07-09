@@ -367,5 +367,13 @@ int32_t MediaKeySessionService::SendEventKeyChange(
     DRM_INFO_LOG("MediaKeySessionService:: SendEvent failed because callback is nullptr");
     return DRM_OPERATION_NOT_ALLOWED;
 }
+
+std::string MediaKeySessionService::GetDecryptModuleDumpInfo()
+{
+    if (decryptModule_ != nullptr) {
+        return decryptModule_->GetDumpInfo();
+    }
+    return "";
+}
 } // DrmStandard
 } // OHOS

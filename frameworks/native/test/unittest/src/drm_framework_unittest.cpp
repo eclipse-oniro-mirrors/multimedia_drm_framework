@@ -3807,5 +3807,42 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_KillClearPlayHostAbNormal1, TestSize
     EXPECT_EQ(errNo, DRM_ERR_OK);
     sleep(5);
 }
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_Dump_01, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    MediaKeySession *mediaKeySession = nullptr;
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_NE(mediaKeySession, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    if (mediaKeySession) {
+        MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySession);
+        sptr<IMediaKeySessionService> SessionServiceProxy =
+            sessionObject->sessionImpl_->GetMediaKeySessionServiceProxy();
+        sptr<IMediaDecryptModuleService> decryptModule;
+        SessionServiceProxy->GetMediaDecryptModule(decryptModule);
+        MessageParcel data;
+        IMediaDecryptModuleService::DrmBuffer srcBuffer;
+        IMediaDecryptModuleService::DrmBuffer dstBuffer;
+        bool secureDecodrtState = false;
+        IMediaDecryptModuleService::CryptInfo cryptInfo;
+        decryptModule->DecryptMediaData(secureDecodrtState, cryptInfo, srcBuffer, dstBuffer);
+        system("hidumper -s 3012");
+        decryptModule->Release();
+    }
+
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
 } // DrmStandard
 } // OHOS

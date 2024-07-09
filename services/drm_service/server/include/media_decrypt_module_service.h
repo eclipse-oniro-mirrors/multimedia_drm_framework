@@ -16,6 +16,7 @@
 #define OHOS_DRM_MEDIADECRYPTMODULESERVICE_H
 
 #include <iostream>
+#include <queue>
 #include <refbase.h>
 #include "drm_host_manager.h"
 #include "drm_log.h"
@@ -26,12 +27,16 @@ namespace OHOS {
 namespace DrmStandard {
 using namespace OHOS::HDI::Drm::V1_0;
 using namespace OHOS::HDI;
-struct DecryptStatustics {
+struct DecryptStatistics {
     uint32_t decryptTimes = 0;
     uint64_t decryptSumSize = 0;
     uint64_t decryptSumDuration = 0;
     uint32_t decryptMaxSize = 0;
     uint32_t decryptMaxDuration = 0;
+    uint64_t errorDecryptTimes = 0;
+    int32_t errCode = 0;
+    std::string errMessage = "no error";
+    std::priority_queue<int, std::vector<int>, std::greater<int>> topThree;
 };
 
 class MediaDecryptModuleService : public MediaDecryptModuleServiceStub {
@@ -41,6 +46,7 @@ public:
     int32_t Release() override;
     int32_t DecryptMediaData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo,
         IMediaDecryptModuleService::DrmBuffer &srcBuffer, IMediaDecryptModuleService::DrmBuffer &dstBuffer) override;
+    std::string GetDumpInfo();
 
 private:
     void SetCryptInfo(OHOS::HDI::Drm::V1_0::CryptoInfo &cryptInfoTmp,
@@ -48,12 +54,13 @@ private:
     void SetDrmBufferInfo(OHOS::HDI::Drm::V1_0::DrmBuffer* drmSrcBuffer, OHOS::HDI::Drm::V1_0::DrmBuffer* drmDstBuffer,
         IMediaDecryptModuleService::DrmBuffer &srcBuffer, IMediaDecryptModuleService::DrmBuffer &dstBuffer,
         uint32_t bufLen);
+    void UpdateDecryptionStatistics(int32_t decryptionResult, uint32_t bufLen, uint32_t curDuration);
+    const std::string GetTopThreeDecryptionDurations();
     void ReportDecryptionStatisticEvent();
     std::mutex moduleLock_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaDecryptModule> hdiMediaDecryptModule_;
-    DecryptStatustics decryptStatustics_;
-    int32_t errCode_ = 0;
-    std::string errMessage_;
+    std::mutex statisticsMutex_;
+    DecryptStatistics decryptStatustics_;
     uint64_t instanceId_;
 };
 } // DrmStandard

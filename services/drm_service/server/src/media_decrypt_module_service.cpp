@@ -31,6 +31,12 @@
 
 namespace OHOS {
 namespace DrmStandard {
+
+const uint32_t TOP_THREE_SIZE = 3;
+const uint32_t TOP_ONE = 0;
+const uint32_t TOP_SEC = 1;
+const uint32_t TOP_THD = 2;
+
 MediaDecryptModuleService::MediaDecryptModuleService(
     sptr<OHOS::HDI::Drm::V1_0::IMediaDecryptModule> hdiMediaDecryptModule)
 {
@@ -73,39 +79,25 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
     DRM_INFO_LOG("MediaDecryptModuleService::DecryptMediaData enter.");
     int32_t ret = DRM_OK;
     uint32_t bufLen = 0;
-    auto timeBefore = std::chrono::system_clock::now();
     OHOS::HDI::Drm::V1_0::CryptoInfo cryptInfoTmp;
     SetCryptInfo(cryptInfoTmp, cryptInfo, bufLen);
-    decryptStatustics_.decryptTimes++;
-    decryptStatustics_.decryptSumSize += bufLen;
-    if (decryptStatustics_.decryptMaxSize < bufLen) {
-        decryptStatustics_.decryptMaxSize = bufLen;
-    }
     OHOS::HDI::Drm::V1_0::DrmBuffer drmSrcBuffer;
     OHOS::HDI::Drm::V1_0::DrmBuffer drmDstBuffer;
     memset_s(&drmSrcBuffer, sizeof(drmSrcBuffer), 0, sizeof(drmSrcBuffer));
     memset_s(&drmDstBuffer, sizeof(drmSrcBuffer), 0, sizeof(drmDstBuffer));
     SetDrmBufferInfo(&drmSrcBuffer, &drmDstBuffer, srcBuffer, dstBuffer, bufLen);
+    auto timeBefore = std::chrono::system_clock::now();
     ret = hdiMediaDecryptModule_->DecryptMediaData(secureDecodrtState, cryptInfoTmp, drmSrcBuffer, drmDstBuffer);
     uint32_t decryptDuration = CalculateTimeDiff(timeBefore, std::chrono::system_clock::now());
-    errCode_ = ret;
-    decryptStatustics_.decryptSumDuration += decryptDuration;
-    if (decryptStatustics_.decryptMaxDuration < decryptDuration) {
-        decryptStatustics_.decryptMaxDuration = decryptDuration;
-    }
+    UpdateDecryptionStatistics(ret, bufLen, decryptDuration);
     if (ret != DRM_OK) {
-        (void)::close(srcBuffer.fd);
-        (void)::close(dstBuffer.fd);
         DRM_ERR_LOG("MediaDecryptModuleService::DecryptMediaData failed.");
-        std::string decryptKeyId = CastToHexString(cryptInfoTmp.keyId);
-        std::string decryptKeyIv = CastToHexString(cryptInfoTmp.iv);
         ReportDecryptionFaultEvent(ret, "DecryptMediaData failed",
-            std::to_string(static_cast<int32_t>(cryptInfoTmp.type)), decryptKeyId, decryptKeyIv);
-        return ret;
+            std::to_string(static_cast<int32_t>(cryptInfoTmp.type)),
+            CastToHexString(cryptInfoTmp.keyId), CastToHexString(cryptInfoTmp.iv));
     }
     (void)::close(srcBuffer.fd);
     (void)::close(dstBuffer.fd);
-    errMessage_ = "no error";
     DRM_INFO_LOG("MediaDecryptModuleService::DecryptMediaData exit.");
     return ret;
 }
@@ -154,14 +146,14 @@ void MediaDecryptModuleService::ReportDecryptionStatisticEvent()
     std::shared_ptr<Media::Meta> meta = std::make_shared<Media::Meta>();
     meta->SetData(Media::Tag::DRM_APP_NAME, GetClientBundleName(IPCSkeleton::GetCallingUid()));
     meta->SetData(Media::Tag::DRM_INSTANCE_ID, std::to_string(instanceId_));
-    meta->SetData(Media::Tag::DRM_ERROR_CODE, errCode_);
-    meta->SetData(Media::Tag::DRM_ERROR_MESG, errMessage_);
+    meta->SetData(Media::Tag::DRM_ERROR_CODE, decryptStatustics_.errCode);
+    meta->SetData(Media::Tag::DRM_ERROR_MESG, decryptStatustics_.errMessage);
     meta->SetData(Media::Tag::DRM_DECRYPT_TIMES, decryptStatustics_.decryptTimes);
     if (decryptStatustics_.decryptTimes != 0) {
         meta->SetData(Media::Tag::DRM_DECRYPT_AVG_SIZE,
-            static_cast<uint32_t>(decryptStatustics_.decryptSumSize/decryptStatustics_.decryptTimes));
+            static_cast<uint32_t>(decryptStatustics_.decryptSumSize / decryptStatustics_.decryptTimes));
         meta->SetData(Media::Tag::DRM_DECRYPT_AVG_DURATION,
-            static_cast<uint32_t>(decryptStatustics_.decryptSumDuration/decryptStatustics_.decryptTimes));
+            static_cast<uint32_t>(decryptStatustics_.decryptSumDuration / decryptStatustics_.decryptTimes));
     } else {
         meta->SetData(Media::Tag::DRM_DECRYPT_AVG_SIZE, 0);
         meta->SetData(Media::Tag::DRM_DECRYPT_AVG_DURATION, 0);
@@ -171,5 +163,54 @@ void MediaDecryptModuleService::ReportDecryptionStatisticEvent()
     DrmEvent::GetInstance().AppendMediaInfo(meta, instanceId_);
     DrmEvent::GetInstance().ReportMediaInfo(instanceId_);
 }
+
+void MediaDecryptModuleService::UpdateDecryptionStatistics(int32_t decryptionResult,
+    uint32_t bufLen, uint32_t curDuration)
+{
+    std::lock_guard<std::mutex> statisticsLock(statisticsMutex_);
+    decryptStatustics_.topThree.push(curDuration);
+    if (decryptStatustics_.topThree.size() > TOP_THREE_SIZE) {
+        decryptStatustics_.topThree.pop();
+    }
+
+    if (decryptStatustics_.decryptMaxSize < bufLen) {
+        decryptStatustics_.decryptMaxSize = bufLen;
+    }
+    if (decryptionResult != DRM_OK) {
+        decryptStatustics_.errorDecryptTimes++;
+    }
+    decryptStatustics_.decryptTimes++;
+    decryptStatustics_.decryptSumSize += bufLen;
+    decryptStatustics_.decryptSumDuration += curDuration;
+}
+
+const std::string MediaDecryptModuleService::GetTopThreeDecryptionDurations()
+{
+    DRM_INFO_LOG("MediaDecryptModuleService::GetTopThreeDecryptionDurations");
+    std::vector<uint32_t> topThreeDurations(TOP_THREE_SIZE, 0);
+    std::lock_guard<std::mutex> statisticsLock(statisticsMutex_);
+    uint32_t currentTopThreeSize = decryptStatustics_.topThree.size();
+    for (uint32_t i = 0; i < currentTopThreeSize; i++) {
+        uint32_t tmp = decryptStatustics_.topThree.top();
+        decryptStatustics_.topThree.pop();
+        topThreeDurations[i] = tmp;
+    }
+    for (uint32_t i = 0; i < currentTopThreeSize; i++) {
+        decryptStatustics_.topThree.push(topThreeDurations[i]);
+    }
+    return std::to_string(topThreeDurations[TOP_ONE]) + " " +
+           std::to_string(topThreeDurations[TOP_SEC]) + " " +
+           std::to_string(topThreeDurations[TOP_THD]) + "\n";
+}
+
+std::string MediaDecryptModuleService::GetDumpInfo()
+{
+    DRM_INFO_LOG("MediaDecryptModuleService::GetDumpInfo");
+    std::string dumpInfo = "Total Decryption Times: " + std::to_string(decryptStatustics_.decryptTimes) + "\n"
+                           "Error Decryption Times: " + std::to_string(decryptStatustics_.errorDecryptTimes) + "\n"
+                           "Top3 Decryption Duration: " + GetTopThreeDecryptionDurations();
+    return dumpInfo;
+}
+
 } // DrmStandard
 } // OHOS
