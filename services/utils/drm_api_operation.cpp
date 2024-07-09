@@ -34,7 +34,7 @@ namespace DrmStandard {
 std::string ConfigParser::g_fileContent = "";
 int64_t ConfigParser::g_processorId = -1;
 std::mutex ConfigParser::g_apiOperationMutex;
-const int32_t appFlag = -200;
+const int32_t APP_FLAG = -200;
 
 bool ConfigParser::LoadConfigurationFile(const std::string &configFile)
 {
@@ -209,11 +209,11 @@ int64_t ConfigParser::AddProcessor()
     ApiEventConfig eventConfig;
     std::lock_guard<std::mutex> lock(g_apiOperationMutex);
     if (g_processorId != -1) {
-        DRM_DEBUG_LOG("ConfigParser::AddProcessor exit, g_processorId: %{public}lld", g_processorId);
+        DRM_DEBUG_LOG("ConfigParser::AddProcessor exit");
         return g_processorId;
     }
-    if (g_processorId == appFlag) {
-        DRM_ERR_LOG("dotting is not supported for non-apps, g_processorId: %{public}lld", g_processorId);
+    if (g_processorId == APP_FLAG) {
+        DRM_ERR_LOG("dotting is not supported for non-apps");
         return g_processorId;
     }
     if (LoadConfigurationFile(DRM_API_OPERATION_CONFIG_PATH) != true) {
@@ -244,7 +244,6 @@ int64_t ConfigParser::AddProcessor()
     event3.isRealTime = eventConfig.event3.isRealTime;
     config.eventConfigs.push_back(event3);
     g_processorId = HiviewDFX::HiAppEvent::AppEventProcessorMgr::AddProcessor(config);
-    DRM_DEBUG_LOG("AppEventProcessorMgr::AddProcessor end,g_processorId: %{public}lld", g_processorId);
     DRM_INFO_LOG("ConfigParser::AddProcessor exit.");
     return g_processorId;
 }
