@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <functional>
 #include <mutex>
+#include <inttypes.h>
 #include "app_event.h"
 #include "app_event_processor_mgr.h"
 #include "drm_log.h"
