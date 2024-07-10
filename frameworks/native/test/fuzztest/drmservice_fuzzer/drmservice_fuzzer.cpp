@@ -412,7 +412,7 @@ bool DrmServiceNdkFuzzer::DrmserviceGetMediaDecryptModuleTest(uint8_t *rawData, 
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SESSION_TOKEN);
-    mediaKeySessionService->OnRemoteRequest(CREATE_MEDIA_DECRYPT_MODULE, data, reply, option);
+    mediaKeySessionService->OnRemoteRequest(GET_MEDIA_DECRYPT_MODULE, data, reply, option);
     return true;
 }
 

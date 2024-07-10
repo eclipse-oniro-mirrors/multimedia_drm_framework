@@ -146,20 +146,20 @@ void MediaDecryptModuleService::ReportDecryptionStatisticEvent()
     std::shared_ptr<Media::Meta> meta = std::make_shared<Media::Meta>();
     meta->SetData(Media::Tag::DRM_APP_NAME, GetClientBundleName(IPCSkeleton::GetCallingUid()));
     meta->SetData(Media::Tag::DRM_INSTANCE_ID, std::to_string(instanceId_));
-    meta->SetData(Media::Tag::DRM_ERROR_CODE, decryptStatustics_.errCode);
-    meta->SetData(Media::Tag::DRM_ERROR_MESG, decryptStatustics_.errMessage);
-    meta->SetData(Media::Tag::DRM_DECRYPT_TIMES, decryptStatustics_.decryptTimes);
-    if (decryptStatustics_.decryptTimes != 0) {
+    meta->SetData(Media::Tag::DRM_ERROR_CODE, decryptStatistics_.errCode);
+    meta->SetData(Media::Tag::DRM_ERROR_MESG, decryptStatistics_.errMessage);
+    meta->SetData(Media::Tag::DRM_DECRYPT_TIMES, decryptStatistics_.decryptTimes);
+    if (decryptStatistics_.decryptTimes != 0) {
         meta->SetData(Media::Tag::DRM_DECRYPT_AVG_SIZE,
-            static_cast<uint32_t>(decryptStatustics_.decryptSumSize / decryptStatustics_.decryptTimes));
+            static_cast<uint32_t>(decryptStatistics_.decryptSumSize / decryptStatistics_.decryptTimes));
         meta->SetData(Media::Tag::DRM_DECRYPT_AVG_DURATION,
-            static_cast<uint32_t>(decryptStatustics_.decryptSumDuration / decryptStatustics_.decryptTimes));
+            static_cast<uint32_t>(decryptStatistics_.decryptSumDuration / decryptStatistics_.decryptTimes));
     } else {
         meta->SetData(Media::Tag::DRM_DECRYPT_AVG_SIZE, 0);
         meta->SetData(Media::Tag::DRM_DECRYPT_AVG_DURATION, 0);
     }
-    meta->SetData(Media::Tag::DRM_DECRYPT_MAX_SIZE, decryptStatustics_.decryptMaxSize);
-    meta->SetData(Media::Tag::DRM_DECRYPT_MAX_DURATION, decryptStatustics_.decryptMaxDuration);
+    meta->SetData(Media::Tag::DRM_DECRYPT_MAX_SIZE, decryptStatistics_.decryptMaxSize);
+    meta->SetData(Media::Tag::DRM_DECRYPT_MAX_DURATION, decryptStatistics_.decryptMaxDuration);
     DrmEvent::GetInstance().AppendMediaInfo(meta, instanceId_);
     DrmEvent::GetInstance().ReportMediaInfo(instanceId_);
 }
@@ -168,20 +168,25 @@ void MediaDecryptModuleService::UpdateDecryptionStatistics(int32_t decryptionRes
     uint32_t bufLen, uint32_t curDuration)
 {
     std::lock_guard<std::mutex> statisticsLock(statisticsMutex_);
-    decryptStatustics_.topThree.push(curDuration);
-    if (decryptStatustics_.topThree.size() > TOP_THREE_SIZE) {
-        decryptStatustics_.topThree.pop();
+    decryptStatistics_.topThree.push(curDuration);
+    if (decryptStatistics_.topThree.size() > TOP_THREE_SIZE) {
+        decryptStatistics_.topThree.pop();
     }
 
-    if (decryptStatustics_.decryptMaxSize < bufLen) {
-        decryptStatustics_.decryptMaxSize = bufLen;
+    if (decryptStatistics_.decryptMaxSize < bufLen) {
+        decryptStatistics_.decryptMaxSize = bufLen;
     }
     if (decryptionResult != DRM_OK) {
-        decryptStatustics_.errorDecryptTimes++;
+        decryptStatistics_.errorDecryptTimes++;
     }
-    decryptStatustics_.decryptTimes++;
-    decryptStatustics_.decryptSumSize += bufLen;
-    decryptStatustics_.decryptSumDuration += curDuration;
+    if (decryptStatistics_.decryptTimes == UINT32_MAX) {
+        decryptStatistics_.decryptTimes = 0;
+        decryptStatistics_.decryptSumSize = 0;
+        decryptStatistics_.decryptSumDuration = 0;
+    }
+    decryptStatistics_.decryptTimes++;
+    decryptStatistics_.decryptSumSize += bufLen;
+    decryptStatistics_.decryptSumDuration += curDuration;
 }
 
 const std::string MediaDecryptModuleService::GetTopThreeDecryptionDurations()
@@ -189,14 +194,14 @@ const std::string MediaDecryptModuleService::GetTopThreeDecryptionDurations()
     DRM_INFO_LOG("MediaDecryptModuleService::GetTopThreeDecryptionDurations");
     std::vector<uint32_t> topThreeDurations(TOP_THREE_SIZE, 0);
     std::lock_guard<std::mutex> statisticsLock(statisticsMutex_);
-    uint32_t currentTopThreeSize = decryptStatustics_.topThree.size();
+    uint32_t currentTopThreeSize = decryptStatistics_.topThree.size();
     for (uint32_t i = 0; i < currentTopThreeSize; i++) {
-        uint32_t tmp = decryptStatustics_.topThree.top();
-        decryptStatustics_.topThree.pop();
+        uint32_t tmp = decryptStatistics_.topThree.top();
+        decryptStatistics_.topThree.pop();
         topThreeDurations[i] = tmp;
     }
     for (uint32_t i = 0; i < currentTopThreeSize; i++) {
-        decryptStatustics_.topThree.push(topThreeDurations[i]);
+        decryptStatistics_.topThree.push(topThreeDurations[i]);
     }
     return std::to_string(topThreeDurations[TOP_ONE]) + " " +
            std::to_string(topThreeDurations[TOP_SEC]) + " " +
@@ -206,8 +211,8 @@ const std::string MediaDecryptModuleService::GetTopThreeDecryptionDurations()
 std::string MediaDecryptModuleService::GetDumpInfo()
 {
     DRM_INFO_LOG("MediaDecryptModuleService::GetDumpInfo");
-    std::string dumpInfo = "Total Decryption Times: " + std::to_string(decryptStatustics_.decryptTimes) + "\n"
-                           "Error Decryption Times: " + std::to_string(decryptStatustics_.errorDecryptTimes) + "\n"
+    std::string dumpInfo = "Total Decryption Times: " + std::to_string(decryptStatistics_.decryptTimes) + "\n"
+                           "Error Decryption Times: " + std::to_string(decryptStatistics_.errorDecryptTimes) + "\n"
                            "Top3 Decryption Duration: " + GetTopThreeDecryptionDurations();
     return dumpInfo;
 }

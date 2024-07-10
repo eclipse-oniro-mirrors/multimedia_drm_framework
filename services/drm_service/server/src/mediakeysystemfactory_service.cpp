@@ -316,6 +316,7 @@ int32_t MediaKeySystemFactoryService::WriteDumpInfo(int32_t fd, std::string &dum
         dumpString += "#### MediaKeySystem " + std::to_string(systemNum) + " ####\n";
         dumpString += "PID: " + std::to_string(pidIter.first) + "\n";
         for (auto &system : pidIter.second) {
+            dumpString += "-------------------------------\n";
             IMediaKeySystemService::CertificateStatus certStatus = IMediaKeySystemService::CERT_STATUS_UNAVAILABLE;
             system->GetCertificateStatus(&certStatus);
             dumpString += "Plugin Name: " + system->GetPluginName() + "\n";

@@ -69,7 +69,7 @@ static int32_t ProcessSetListenerObject(MediaKeySessionServiceStub *stub, Messag
     MessageParcel &reply, MessageOption &option);
 
 static struct ProcessRemoteRequestFuncArray g_mediaKeySessionServiceStubRequestProcessFunc[] = {
-    {CREATE_MEDIA_DECRYPT_MODULE, ProcessGetMediaDecryptModule},
+    {GET_MEDIA_DECRYPT_MODULE, ProcessGetMediaDecryptModule},
     {KEY_SESSION_RELEASE, ProcessRleaseKeySession},
     {MEDIA_KEY_SESSION_GENERATE_LICENSE_REQUEST, ProcessMediaKeyRequest},
     {MEDIA_KEY_SESSION_PROCESS_LICENSE_RESPONSE, ProcessMediaKeyResponse},
@@ -421,7 +421,7 @@ int32_t MediaKeySessionServiceStub::OnRemoteRequest(uint32_t code, MessageParcel
     DRM_CHECK_AND_RETURN_RET_LOG(data.ReadInterfaceToken() == GetDescriptor(), errCode,
         "MediaKeySessionServiceStub: ReadInterfaceToken failed.");
 
-    DRM_CHECK_AND_RETURN_RET_LOG((code >= CREATE_MEDIA_DECRYPT_MODULE) && (code <= MEDIA_KEY_SESSION_GETSECURITYLEVEL),
+    DRM_CHECK_AND_RETURN_RET_LOG((code >= GET_MEDIA_DECRYPT_MODULE) && (code <= MEDIA_KEY_SESSION_GETSECURITYLEVEL),
         IPCObjectStub::OnRemoteRequest(code, data, reply, option),
         "code not match, need check MediaKeySessionServiceStub");
     return g_mediaKeySessionServiceStubRequestProcessFunc[code].processFunc(this, data, reply, option);
