@@ -39,12 +39,13 @@ MediaKeySystemService::MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKe
 }
 
 MediaKeySystemService::MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem,
-    StatisticsInfo statisticsInfo)
+    StatisticsInfo statisticsInfo, std::string pluginName)
 {
     DRM_INFO_LOG("MediaKeySystemService 0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
     keySystemOperatoersCallback_ = nullptr;
     hdiKeySystem_ = hdiKeySystem;
     statisticsInfo_ = statisticsInfo;
+    pluginName_ = pluginName;
 }
 
 MediaKeySystemService::~MediaKeySystemService()
@@ -62,13 +63,16 @@ int32_t MediaKeySystemService::CloseMediaKeySystemServiceByCallback()
     DRM_INFO_LOG("MediaKeySystemService::CloseMediaKeySystemServiceByCallback enter.");
     int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemService GetCallingPID: %{public}d", currentPid);
-    for (auto it = sessionsSet_.begin(); it != sessionsSet_.end();) {
-        if ((*it) != nullptr) {
-            (*it)->CloseMediaKeySessionServiceByCallback();
+    {
+        std::lock_guard<std::mutex> lock(sessionsSetMutex_);
+        for (auto it = sessionsSet_.begin(); it != sessionsSet_.end();) {
+            if ((*it) != nullptr) {
+                (*it)->CloseMediaKeySessionServiceByCallback();
+            }
+            it = sessionsSet_.erase(it);
         }
-        it = sessionsSet_.erase(it);
+        sessionsSet_.clear();
     }
-    sessionsSet_.clear();
 
     // release itself
     if (hdiKeySystem_ != nullptr) {
@@ -246,7 +250,10 @@ int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::Co
 
     int32_t pid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemService CreateMediaKeySession GetCallingPID: %{public}d", pid);
-    sessionsSet_.insert(keySessionService);
+    {
+        std::lock_guard<std::mutex> lock(sessionsSetMutex_);
+        sessionsSet_.insert(keySessionService);
+    }
 
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " is Current keySessionService", FAKE_POINTER(keySessionService.GetRefPtr()));
     keySessionProxy = keySessionService;
@@ -265,7 +272,10 @@ int32_t MediaKeySystemService::CloseMediaKeySessionService(sptr<MediaKeySessionS
         DRM_INFO_LOG("MediaKeySystemService call CloseMediaKeySessionServiceByCallback ");
         ret = sessionService->CloseMediaKeySessionServiceByCallback();
     }
-    sessionsSet_.erase(sessionService);
+    {
+        std::lock_guard<std::mutex> lock(sessionsSetMutex_);
+        sessionsSet_.erase(sessionService);
+    }
     sessionService = nullptr;
     DRM_INFO_LOG("MediaKeySystemService::CloseMediaKeySessionService exit.");
     return ret;
@@ -409,7 +419,24 @@ int32_t MediaKeySystemService::SendEvent(OHOS::HDI::Drm::V1_0::EventType eventTy
 
 std::string MediaKeySystemService::GetPluginName()
 {
-    return statisticsInfo_.pluginName;
+    return pluginName_;
+}
+
+std::string MediaKeySystemService::GetSessionsDumpInfo()
+{
+    DRM_INFO_LOG("MediaKeySystemService:: GetSessionsDumpInfo.");
+    std::string dumpInfo;
+    std::lock_guard<std::mutex> lock(sessionsSetMutex_);
+    dumpInfo += "Total MediaKeySession Num: " + std::to_string(sessionsSet_.size()) + "\n";
+    uint32_t sessionNum = 0;
+    for (auto &session : sessionsSet_) {
+        sessionNum++;
+        dumpInfo += "#### MediaKeySession " + std::to_string(sessionNum) + " ####\n";
+        if (session != nullptr) {
+            dumpInfo += session->GetDecryptModuleDumpInfo();
+        }
+    }
+    return dumpInfo;
 }
 
 sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> MediaKeySystemService::getMediaKeySystem()
