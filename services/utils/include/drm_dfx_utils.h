@@ -32,10 +32,7 @@ namespace DrmStandard {
     uint32_t __attribute__((visibility("default"))) CalculateTimeDiff(std::chrono::system_clock::time_point timeBefore,
         std::chrono::system_clock::time_point timeAfter);
     const int minimumDigit = 2;
-    const std::string currentSessionNum = "currentSessionNum";
     const std::string version = "version";
-    const std::string errorDecryptNumber = "errorDecryptNumber";
-    const std::string decryptTimes = "decryptTimes";
     const std::string vendor = "vendor";
 }  // namespace DrmStandard
 }  // namespace OHOS

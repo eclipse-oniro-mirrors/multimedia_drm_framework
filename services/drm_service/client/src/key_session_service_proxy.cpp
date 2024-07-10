@@ -38,7 +38,7 @@ int32_t MediaKeySessionServiceProxy::GetMediaDecryptModule(sptr<IMediaDecryptMod
         return IPC_PROXY_ERR;
     }
 
-    int32_t ret = MediaKeySessionServiceProxy::Remote()->SendRequest(CREATE_MEDIA_DECRYPT_MODULE, data, reply, option);
+    int32_t ret = MediaKeySessionServiceProxy::Remote()->SendRequest(GET_MEDIA_DECRYPT_MODULE, data, reply, option);
     if (ret != ERR_NONE) {
         DRM_ERR_LOG("MediaKeySessionServiceProxy::GetMediaDecryptModule failed, ret: %{public}d", ret);
         return ret;

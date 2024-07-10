@@ -60,7 +60,7 @@ private:
     std::mutex moduleLock_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaDecryptModule> hdiMediaDecryptModule_;
     std::mutex statisticsMutex_;
-    DecryptStatistics decryptStatustics_;
+    DecryptStatistics decryptStatistics_;
     uint64_t instanceId_;
 };
 } // DrmStandard
