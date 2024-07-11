@@ -65,7 +65,8 @@ public:
 
 private:
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
-    void InitStatisticsInfo(sptr<IMediaKeySystem> hdiMediaKeySystem, StatisticsInfo &statisticsInfo);
+    void InitStatisticsInfo(const sptr<IMediaKeySystem> &hdiMediaKeySystem,
+        std::string pluginName, StatisticsInfo &statisticsInfo);
     int32_t WriteDumpInfo(int32_t fd, std::string &dumpString);
     std::mutex mutex_;
     sptr<DrmHostManager> drmHostManager_;
