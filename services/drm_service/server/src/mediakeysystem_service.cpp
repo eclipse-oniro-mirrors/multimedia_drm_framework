@@ -39,13 +39,12 @@ MediaKeySystemService::MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKe
 }
 
 MediaKeySystemService::MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem,
-    StatisticsInfo statisticsInfo, std::string pluginName)
+    StatisticsInfo statisticsInfo)
 {
     DRM_INFO_LOG("MediaKeySystemService 0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
     keySystemOperatoersCallback_ = nullptr;
     hdiKeySystem_ = hdiKeySystem;
     statisticsInfo_ = statisticsInfo;
-    pluginName_ = pluginName;
 }
 
 MediaKeySystemService::~MediaKeySystemService()
@@ -419,7 +418,7 @@ int32_t MediaKeySystemService::SendEvent(OHOS::HDI::Drm::V1_0::EventType eventTy
 
 std::string MediaKeySystemService::GetPluginName()
 {
-    return pluginName_;
+    return statisticsInfo_.pluginName;
 }
 
 std::string MediaKeySystemService::GetSessionsDumpInfo()

@@ -148,8 +148,8 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
         return DRM_SERVICE_ERROR;
     }
     StatisticsInfo statisticsInfo;
-    InitStatisticsInfo(hdiMediaKeySystem, statisticsInfo);
-    mediaKeySystemService = new (std::nothrow) MediaKeySystemService(hdiMediaKeySystem, statisticsInfo, name);
+    InitStatisticsInfo(hdiMediaKeySystem, name, statisticsInfo);
+    mediaKeySystemService = new(std::nothrow) MediaKeySystemService(hdiMediaKeySystem, statisticsInfo);
     if (mediaKeySystemService == nullptr) {
         DRM_ERR_LOG("MediaKeySystemFactoryService::CreateMediaKeySystem allocation failed.");
         ReportFaultEvent(DRM_ALLOC_ERROR, "CreateMediaKeySystem failed", "");
@@ -261,34 +261,26 @@ int32_t MediaKeySystemFactoryService::GetMediaKeySystemUuid(std::string &name, s
     return ret;
 }
 
-void MediaKeySystemFactoryService::InitStatisticsInfo(sptr<IMediaKeySystem> hdiMediaKeySystem,
-    StatisticsInfo &statisticsInfo)
+void MediaKeySystemFactoryService::InitStatisticsInfo(const sptr<IMediaKeySystem> &hdiMediaKeySystem,
+    std::string pluginName, StatisticsInfo &statisticsInfo)
 {
-    std::string pluginUuid;
-    std::string pluginName;
-    std::string vendorName;
-    std::string versionName;
-    std::map<std::string, std::string> mediaKeySystemNames;
-    std::map<std::string, std::string> statistics;
-    int32_t ret = GetMediaKeySystems(mediaKeySystemNames);
-    if (ret == DRM_OK) {
-        auto it = mediaKeySystemNames.begin();
-        pluginName = it->first;
-        pluginUuid = it->second;
+    DRM_INFO_LOG("InitStatisticsInfo.");
+    statisticsInfo.pluginName = pluginName;
+    if (drmHostManager_ != nullptr) {
+        std::map<std::string, std::string> pluginNameUuidMap;
+        drmHostManager_->GetMediaKeySystems(pluginNameUuidMap);
+        if (pluginNameUuidMap.find(pluginName) != pluginNameUuidMap.end()) {
+            statisticsInfo.pluginUuid = pluginNameUuidMap[pluginName];
+        }
     }
-    ret = hdiMediaKeySystem->GetStatistics(statistics);
-    if (ret == DRM_OK) {
-        vendorName = statistics[vendor];
-        versionName = statistics[version];
+    statisticsInfo.bundleName = GetClientBundleName(IPCSkeleton::GetCallingUid());
+    if (hdiMediaKeySystem != nullptr) {
+        (void)hdiMediaKeySystem->GetConfigurationString("vendor", statisticsInfo.vendorName);
+        (void)hdiMediaKeySystem->GetConfigurationString("version", statisticsInfo.versionName);
     }
-    std::string bundleName = GetClientBundleName(IPCSkeleton::GetCallingUid());
-    statisticsInfo = {
-        pluginUuid,
-        pluginName,
-        vendorName,
-        versionName,
-        bundleName,
-    };
+    DRM_INFO_LOG("InitStatisticsInfo %{public}s %{public}s %{public}s %{public}s %{public}s.",
+        statisticsInfo.pluginName.c_str(), statisticsInfo.pluginUuid.c_str(), statisticsInfo.bundleName.c_str(),
+        statisticsInfo.vendorName.c_str(), statisticsInfo.versionName.c_str());
 }
 
 int32_t MediaKeySystemFactoryService::WriteDumpInfo(int32_t fd, std::string &dumpString)
