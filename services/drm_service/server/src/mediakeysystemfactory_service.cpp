@@ -121,12 +121,17 @@ void MediaKeySystemFactoryService::DistroyForClientDied(pid_t pid)
     }
     for (auto it = mediaKeySystemForPid_[pid].begin(); it != mediaKeySystemForPid_[pid].end();) {
         if ((*it) != nullptr) {
+            // decrease the total count in drm host manager.
             sptr<IMediaKeySystem> hdiMediaKeySystem = (*it)->getMediaKeySystem();
             (*it)->CloseMediaKeySystemServiceByCallback();
             if (hdiMediaKeySystem != nullptr) {
                 DRM_DEBUG_LOG("MediaKeySystemFactoryService ReleaseMediaKeySystem.");
                 drmHostManager_->ReleaseMediaKeySystem(hdiMediaKeySystem);
             }
+        }
+        // decrease in dfx.
+        if (CurrentMediaKeySystemNum_.find((*it)->GetPluginName()) != CurrentMediaKeySystemNum_.end()) {
+            CurrentMediaKeySystemNum_[(*it)->GetPluginName()]--;
         }
         it = mediaKeySystemForPid_[pid].erase(it);
     }
