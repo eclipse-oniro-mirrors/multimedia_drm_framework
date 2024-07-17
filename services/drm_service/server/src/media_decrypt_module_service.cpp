@@ -16,18 +16,17 @@
 #include <memory>
 #include <unistd.h>
 #include <securec.h>
+#include <algorithm>
 #include "ashmem.h"
 #include "system_ability_definition.h"
 #include "mem_mgr_client.h"
 #include "mem_mgr_proxy.h"
-#include "drm_dfx.h"
 #include "drm_trace.h"
 #include "drm_dfx_utils.h"
 #include "drm_error_code.h"
 #include "hitrace/tracechain.h"
 #include "ipc_skeleton.h"
 #include "media_decrypt_module_service.h"
-#include "meta/meta.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -42,9 +41,16 @@ MediaDecryptModuleService::MediaDecryptModuleService(
 {
     DRM_INFO_LOG("MediaDecryptModuleService 0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
     hdiMediaDecryptModule_ = hdiMediaDecryptModule;
-    int32_t uid = IPCSkeleton::GetCallingUid();
+}
+
+MediaDecryptModuleService::MediaDecryptModuleService(
+    sptr<OHOS::HDI::Drm::V1_0::IMediaDecryptModule> hdiMediaDecryptModule,
+    StatisticsInfo statisticsInfo)
+{
+    DRM_INFO_LOG("MediaDecryptModuleService 0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
+    hdiMediaDecryptModule_ = hdiMediaDecryptModule;
+    statisticsInfo_ = statisticsInfo;
     instanceId_ = HiTraceChain::GetId().GetChainId();
-    DrmEvent::GetInstance().CreateMediaInfo(uid, instanceId_);
 }
 
 MediaDecryptModuleService::~MediaDecryptModuleService()
@@ -54,7 +60,7 @@ MediaDecryptModuleService::~MediaDecryptModuleService()
     if (hdiMediaDecryptModule_ != nullptr) {
         Release();
     }
-    ReportDecryptionStatisticEvent();
+    ReportDecryptionStatisticsEvent(instanceId_, statisticsInfo_.bundleName, decryptStatistics_);
     DRM_INFO_LOG("MediaDecryptModuleService::~MediaDecryptModuleService exit.");
 }
 
@@ -141,29 +147,6 @@ void MediaDecryptModuleService::SetDrmBufferInfo(OHOS::HDI::Drm::V1_0::DrmBuffer
     drmDstBuffer->sharedMemType = dstBuffer.sharedMemType;
 }
 
-void MediaDecryptModuleService::ReportDecryptionStatisticEvent()
-{
-    std::shared_ptr<Media::Meta> meta = std::make_shared<Media::Meta>();
-    meta->SetData(Media::Tag::DRM_APP_NAME, GetClientBundleName(IPCSkeleton::GetCallingUid()));
-    meta->SetData(Media::Tag::DRM_INSTANCE_ID, std::to_string(instanceId_));
-    meta->SetData(Media::Tag::DRM_ERROR_CODE, decryptStatistics_.errCode);
-    meta->SetData(Media::Tag::DRM_ERROR_MESG, decryptStatistics_.errMessage);
-    meta->SetData(Media::Tag::DRM_DECRYPT_TIMES, decryptStatistics_.decryptTimes);
-    if (decryptStatistics_.decryptTimes != 0) {
-        meta->SetData(Media::Tag::DRM_DECRYPT_AVG_SIZE,
-            static_cast<uint32_t>(decryptStatistics_.decryptSumSize / decryptStatistics_.decryptTimes));
-        meta->SetData(Media::Tag::DRM_DECRYPT_AVG_DURATION,
-            static_cast<uint32_t>(decryptStatistics_.decryptSumDuration / decryptStatistics_.decryptTimes));
-    } else {
-        meta->SetData(Media::Tag::DRM_DECRYPT_AVG_SIZE, 0);
-        meta->SetData(Media::Tag::DRM_DECRYPT_AVG_DURATION, 0);
-    }
-    meta->SetData(Media::Tag::DRM_DECRYPT_MAX_SIZE, decryptStatistics_.decryptMaxSize);
-    meta->SetData(Media::Tag::DRM_DECRYPT_MAX_DURATION, decryptStatistics_.decryptMaxDuration);
-    DrmEvent::GetInstance().AppendMediaInfo(meta, instanceId_);
-    DrmEvent::GetInstance().ReportMediaInfo(instanceId_);
-}
-
 void MediaDecryptModuleService::UpdateDecryptionStatistics(int32_t decryptionResult,
     uint32_t bufLen, uint32_t curDuration)
 {
@@ -173,9 +156,9 @@ void MediaDecryptModuleService::UpdateDecryptionStatistics(int32_t decryptionRes
         decryptStatistics_.topThree.pop();
     }
 
-    if (decryptStatistics_.decryptMaxSize < bufLen) {
-        decryptStatistics_.decryptMaxSize = bufLen;
-    }
+    decryptStatistics_.decryptMaxSize = std::max(decryptStatistics_.decryptMaxSize, bufLen);
+    decryptStatistics_.decryptMaxDuration = std::max(decryptStatistics_.decryptMaxDuration, curDuration);
+
     if (decryptionResult != DRM_OK) {
         decryptStatistics_.errorDecryptTimes++;
     }

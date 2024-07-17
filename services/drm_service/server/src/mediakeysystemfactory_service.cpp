@@ -20,7 +20,6 @@
 #include "mem_mgr_client.h"
 #include "mem_mgr_proxy.h"
 #include "ipc_skeleton.h"
-#include "access_token.h"
 #include "iservice_registry.h"
 #include "drm_dfx_utils.h"
 #include "drm_log.h"
@@ -128,10 +127,10 @@ void MediaKeySystemFactoryService::DistroyForClientDied(pid_t pid)
                 DRM_DEBUG_LOG("MediaKeySystemFactoryService ReleaseMediaKeySystem.");
                 drmHostManager_->ReleaseMediaKeySystem(hdiMediaKeySystem);
             }
-        }
-        // decrease in dfx.
-        if (CurrentMediaKeySystemNum_.find((*it)->GetPluginName()) != CurrentMediaKeySystemNum_.end()) {
-            CurrentMediaKeySystemNum_[(*it)->GetPluginName()]--;
+            // decrease in dfx.
+            if (CurrentMediaKeySystemNum_.find((*it)->GetPluginName()) != CurrentMediaKeySystemNum_.end()) {
+                CurrentMediaKeySystemNum_[(*it)->GetPluginName()]--;
+            }
         }
         it = mediaKeySystemForPid_[pid].erase(it);
     }
@@ -283,8 +282,11 @@ void MediaKeySystemFactoryService::InitStatisticsInfo(const sptr<IMediaKeySystem
         (void)hdiMediaKeySystem->GetConfigurationString("vendor", statisticsInfo.vendorName);
         (void)hdiMediaKeySystem->GetConfigurationString("version", statisticsInfo.versionName);
     }
-    DRM_INFO_LOG("InitStatisticsInfo %{public}s %{public}s %{public}s %{public}s %{public}s.",
-        statisticsInfo.pluginName.c_str(), statisticsInfo.pluginUuid.c_str(), statisticsInfo.bundleName.c_str(),
+    DRM_INFO_LOG("InitStatisticsInfo uid: %{public}d, appName: %{public}s.",
+        IPCSkeleton::GetCallingUid(), statisticsInfo.bundleName.c_str());
+    DRM_INFO_LOG("InitStatisticsInfo pluginName: %{public}s, pluginUUID: %{public}s",
+        statisticsInfo.pluginName.c_str(), statisticsInfo.pluginUuid.c_str());
+    DRM_INFO_LOG("InitStatisticsInfo vendorName: %{public}s, versionName: %{public}s",
         statisticsInfo.vendorName.c_str(), statisticsInfo.versionName.c_str());
 }
 

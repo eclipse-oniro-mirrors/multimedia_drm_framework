@@ -31,13 +31,11 @@
               "c_utils",
               "hilog",
               "hidumper",
-              "access_token",
               "hicollie",
               "hdf_core",
               "eventhandler",
               "bundle_framework",
               "drivers_interface_drm",
-              "media_foundation",
               "memmgr",
               "hiappevent",
               "json"

@@ -71,10 +71,8 @@ ohos_unittest("drm_framework_capi_unittest_v1_0") {
     "hidumper:lib_dump_usage",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
-    "hitrace:hitrace_meter",
     "hitrace:libhitracechain",
     "ipc:ipc_core",
-    "media_foundation:media_foundation",
   ]
   subsystem_name = "multimedia"
   part_name = "drm_framework"
