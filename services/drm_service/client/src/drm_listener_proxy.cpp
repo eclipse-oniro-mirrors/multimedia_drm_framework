@@ -22,13 +22,9 @@ namespace DrmStandard {
 DrmListenerProxy::DrmListenerProxy(const sptr<IRemoteObject> &impl)
     : IRemoteProxy<IDrmListener>(impl)
 {
-    DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " DrmListenerProxy Instances create",
-        (POINTER_MASK & reinterpret_cast<uintptr_t>(this)));
 }
 DrmListenerProxy::~DrmListenerProxy()
 {
-    DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " DrmListenerProxy Instances destroy",
-        (POINTER_MASK & reinterpret_cast<uintptr_t>(this)));
 }
 } // namespace DrmStandard
 } // namespace OHOS
