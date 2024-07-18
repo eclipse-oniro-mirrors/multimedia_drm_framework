@@ -22,7 +22,6 @@
 #include "native_drm_common.h"
 #include "native_drm_err.h"
 #include "gmock/gmock.h"
-#include "meta/meta.h"
 #include "native_drm_base.h"
 #include "native_drm_object.h"
 #include "native_mediakeysession.h"
@@ -164,30 +163,5 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportCertificateBehaviorEvent, Test
         serverResult);
 }
 
-HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_HiSysWriteStatistic, TestSize.Level0)
-{
-    int32_t errNo = DRM_ERR_UNKNOWN;
-    int32_t uid = 324442;
-    int32_t instanceId = 324442;
-    errNo = DrmEvent::GetInstance().CreateMediaInfo(uid, instanceId);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    std::shared_ptr<OHOS::Media::Meta> meta = std::make_shared<Media::Meta>();
-    meta->SetData(Media::Tag::DRM_ERROR_MESG, "errMessage");
-    errNo = DrmEvent::GetInstance().AppendMediaInfo(meta, instanceId);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = DrmEvent::GetInstance().ReportMediaInfo(instanceId);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
-}
-
-HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_HiSysWriteStatisticAbNormal, TestSize.Level0)
-{
-    int32_t errNo = DRM_ERR_UNKNOWN;
-    int32_t uid = 324442;
-    int32_t instanceId = 324442;
-    DrmEvent::GetInstance().CreateMediaInfo(uid, instanceId);
-    std::shared_ptr<OHOS::Media::Meta> meta = std::make_shared<Media::Meta>();
-    errNo = DrmEvent::GetInstance().AppendMediaInfo(meta, instanceId);
-    EXPECT_NE(errNo, DRM_ERR_OK);
-}
 } // DrmStandard
 } // OHOS

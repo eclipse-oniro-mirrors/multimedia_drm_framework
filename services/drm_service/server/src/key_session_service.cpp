@@ -105,9 +105,6 @@ int32_t MediaKeySessionService::GenerateMediaKeyRequest(
 {
     DrmTrace trace("MediaKeySessionService::GenerateMediaKeyRequest");
     DRM_INFO_LOG("MediaKeySessionService::GenerateMediaKeyRequest enter.");
-    DRM_DEBUG_LOG("pluginName:%{public}s, pluginUuid:%{public}s\nbundleName:%{public}s,\nvendor:%{public}s,\n"
-        "version:%{public}s,\n", statisticsInfo_.pluginName.c_str(), statisticsInfo_.pluginUuid.c_str(),
-        statisticsInfo_.bundleName.c_str(), statisticsInfo_.vendorName.c_str(), statisticsInfo_.versionName.c_str());
     int32_t ret = DRM_OK;
     OHOS::HDI::Drm::V1_0::MediaKeyRequestInfo hdiMediaKeyRequestInfo;
 
@@ -148,9 +145,6 @@ int32_t MediaKeySessionService::ProcessMediaKeyResponse(std::vector<uint8_t> &li
 {
     DrmTrace trace("MediaKeySessionService::ProcessMediaKeyResponse");
     DRM_INFO_LOG("MediaKeySessionService::ProcessMediaKeyResponse enter.");
-    DRM_DEBUG_LOG("pluginName:%{public}s, pluginUuid:%{public}s\nbundleName:%{public}s,\nvendor:%{public}s,\n"
-        "version:%{public}s,\n", statisticsInfo_.pluginName.c_str(), statisticsInfo_.pluginUuid.c_str(),
-        statisticsInfo_.bundleName.c_str(), statisticsInfo_.vendorName.c_str(), statisticsInfo_.versionName.c_str());
     int32_t ret = DRM_OK;
     auto timeBefore = std::chrono::system_clock::now();
     ret = hdiMediaKeySession_->ProcessMediaKeyResponse(licenseResponse, licenseId);
@@ -228,9 +222,6 @@ int32_t MediaKeySessionService::CheckMediaKeyStatus(std::map<std::string, std::s
 int32_t MediaKeySessionService::RestoreOfflineMediaKeys(std::vector<uint8_t> &licenseId)
 {
     DRM_INFO_LOG("MediaKeySessionService::RestoreOfflineMediaKeys enter.");
-    DRM_DEBUG_LOG("pluginName:%{public}s, pluginUuid:%{public}s\nbundleName:%{public}s,\nvendor:%{public}s,\n"
-        "version:%{public}s,\n", statisticsInfo_.pluginName.c_str(), statisticsInfo_.pluginUuid.c_str(),
-        statisticsInfo_.bundleName.c_str(), statisticsInfo_.vendorName.c_str(), statisticsInfo_.versionName.c_str());
     int32_t ret = DRM_OK;
     ret = hdiMediaKeySession_->RestoreOfflineMediaKeys(licenseId);
     if (ret != DRM_OK) {
@@ -293,7 +284,7 @@ int32_t MediaKeySessionService::GetMediaDecryptModule(sptr<IMediaDecryptModuleSe
             DRM_ERR_LOG("MediaKeySessionService:: hdiDecryptModule allocation failed.");
             return DRM_SERVICE_ERROR;
         }
-        decryptModule_ = new (std::nothrow) MediaDecryptModuleService(hdiDecryptModule);
+        decryptModule_ = new (std::nothrow) MediaDecryptModuleService(hdiDecryptModule, statisticsInfo_);
         if (decryptModule_ == nullptr) {
             DRM_ERR_LOG("MediaKeySessionService:: new MediaDecryptModuleService allocation failed.");
             return DRM_ALLOC_ERROR;

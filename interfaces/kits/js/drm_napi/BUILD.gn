@@ -59,12 +59,10 @@ ohos_shared_library("drm_napi") {
   external_deps = [
     "ability_runtime:abilitykit_native",
     "ability_runtime:napi_base_context",
-    "access_token:libtokenid_sdk",
     "c_utils:utils",
     "hiappevent:hiappevent_innerapi",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
-    "hitrace:hitrace_meter",
     "hitrace:libhitracechain",
     "ipc:ipc_core",
     "napi:ace_napi",

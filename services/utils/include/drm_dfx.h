@@ -18,11 +18,11 @@
 
 #include <list>
 #include <string>
+#include <queue>
 #include <refbase.h>
 #include "drm_dfx_utils.h"
 #include "nocopyable.h"
 #include "nlohmann/json.hpp"
-#include "meta/meta.h"
 #include "hisysevent.h"
 #include "hitrace/tracechain.h"
 #include <chrono>
@@ -98,21 +98,21 @@ struct DownLoadInfo {
     std::string processResult;
 };
 
+struct DecryptionStatistics {
+    uint32_t decryptTimes = 0;
+    uint64_t decryptSumSize = 0;
+    uint64_t decryptSumDuration = 0;
+    uint32_t decryptMaxSize = 0;
+    uint32_t decryptMaxDuration = 0;
+    uint64_t errorDecryptTimes = 0;
+    int32_t errCode = 0;
+    std::string errMessage = "no error";
+    std::priority_queue<int, std::vector<int>, std::greater<int>> topThree;
+};
+
 class DrmEvent {
 public:
     static DrmEvent& GetInstance();
-
-    void DrmStatisicsEventWrite(OHOS::HiviewDFX::HiSysEvent::EventType type,
-        const std::map<int32_t, std::list<std::pair<uint64_t, std::shared_ptr<Media::Meta>>>>& infoMap);
-    void StatisicsHiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::EventType type,
-        const std::vector<std::string>& infoArr);
-    void ParseOneEvent(const std::pair<uint64_t, std::shared_ptr<OHOS::Media::Meta>> &listPair,
-        nlohmann::json& metaInfoJson);
-    void CollectReportMediaInfo(uint64_t instanceId);
-    int32_t AppendMediaInfo(const std::shared_ptr<Media::Meta>& meta, uint64_t instanceId);
-    int32_t CreateMediaInfo(int32_t uid, uint64_t instanceId);
-    int32_t ReportMediaInfo(uint64_t instanceId);
-    int32_t StatisticsEventReport();
     void WriteServiceEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type, DrmServiveInfo &info);
     void WriteLicenseEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type, DrmLicenseInfo &info);
     void WriteCertificateEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
@@ -133,6 +133,8 @@ __attribute__((visibility("default"))) void ReportDecryptionFaultEvent(int32_t e
     std::string decryptAlgo, std::string decryptKeyid, std::string decryptIv);
 __attribute__((visibility("default"))) DownLoadInfo InitDownLoadInfo(uint32_t generationDuration,
     std::string generationResult, uint32_t processDuration, std::string processResult);
+__attribute__((visibility("default"))) void ReportDecryptionStatisticsEvent(uint64_t instanceId, std::string appName,
+    DecryptionStatistics &statistics);
 } // namespace DrmStandard
 } // namespace OHOS
 #endif // DRM_DFX_H

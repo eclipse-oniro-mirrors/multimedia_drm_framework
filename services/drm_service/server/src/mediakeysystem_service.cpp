@@ -18,7 +18,6 @@
 #include "system_ability_definition.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
-#include "access_token.h"
 #include "drm_dfx_utils.h"
 #include "drm_host_manager.h"
 #include "drm_log.h"
@@ -87,9 +86,6 @@ int32_t MediaKeySystemService::CloseMediaKeySystemServiceByCallback()
 int32_t MediaKeySystemService::Release()
 {
     DRM_INFO_LOG("MediaKeySystemService::Release enter.");
-    DRM_DEBUG_LOG("pluginName:%{public}s, pluginUuid:%{public}s\nbundleName:%{public}s,\nvendor:%{public}s,\n"
-        "version:%{public}s,\n", statisticsInfo_.pluginName.c_str(), statisticsInfo_.pluginUuid.c_str(),
-        statisticsInfo_.bundleName.c_str(), statisticsInfo_.vendorName.c_str(), statisticsInfo_.versionName.c_str());
     int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemService GetCallingPID: %{public}d", currentPid);
     if (keySystemOperatoersCallback_ != nullptr) {
@@ -114,9 +110,6 @@ int32_t MediaKeySystemService::GenerateKeySystemRequest(std::vector<uint8_t> &re
 {
     DrmTrace trace("MediaKeySystemService::GenerateKeySystemRequest");
     DRM_INFO_LOG("MediaKeySystemService::GenerateKeySystemRequest enter.");
-    DRM_DEBUG_LOG("pluginName:%{public}s, pluginUuid:%{public}s\nbundleName:%{public}s,\nvendor:%{public}s,\n"
-        "version:%{public}s,\n", statisticsInfo_.pluginName.c_str(), statisticsInfo_.pluginUuid.c_str(),
-        statisticsInfo_.bundleName.c_str(), statisticsInfo_.vendorName.c_str(), statisticsInfo_.versionName.c_str());
     int32_t ret = DRM_OK;
     auto timeBefore = std::chrono::system_clock::now();
     ret = hdiKeySystem_->GenerateKeySystemRequest(defaultUrl, request);
@@ -139,9 +132,6 @@ int32_t MediaKeySystemService::ProcessKeySystemResponse(const std::vector<uint8_
 {
     DrmTrace trace("MediaKeySystemService::ProcessKeySystemResponse");
     DRM_INFO_LOG("MediaKeySystemService::ProcessKeySystemResponse enter.");
-    DRM_DEBUG_LOG("pluginName:%{public}s, pluginUuid:%{public}s\nbundleName:%{public}s,\nvendor:%{public}s,\n"
-        "version:%{public}s,\n", statisticsInfo_.pluginName.c_str(), statisticsInfo_.pluginUuid.c_str(),
-        statisticsInfo_.bundleName.c_str(), statisticsInfo_.vendorName.c_str(), statisticsInfo_.versionName.c_str());
     int32_t ret = DRM_OK;
     auto timeBefore = std::chrono::system_clock::now();
     ret = hdiKeySystem_->ProcessKeySystemResponse(response);
@@ -225,9 +215,6 @@ int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::Co
 {
     DrmTrace trace("MediaKeySystemService::CreateMediaKeySession");
     DRM_INFO_LOG("MediaKeySystemService::CreateMediaKeySession enter, securityLevel:%{public}d.", securityLevel);
-    DRM_DEBUG_LOG("pluginName:%{public}s, pluginUuid:%{public}s\nbundleName:%{public}s,\nvendor:%{public}s,\n"
-        "version:%{public}s,\n", statisticsInfo_.pluginName.c_str(), statisticsInfo_.pluginUuid.c_str(),
-        statisticsInfo_.bundleName.c_str(), statisticsInfo_.vendorName.c_str(), statisticsInfo_.versionName.c_str());
     int32_t ret = DRM_OK;
     std::lock_guard<std::mutex> lock(mutex_);
     sptr<MediaKeySessionService> keySessionService = nullptr;
