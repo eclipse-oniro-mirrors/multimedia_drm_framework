@@ -155,10 +155,14 @@ Drm_ErrCode OH_MediaKeySystem_Create(const char *name, MediaKeySystem **mediaKey
     if (object->systemCallback_ == nullptr) {
         delete object;
         DRM_ERR_LOG("MediaKeySystemObject create systemCallback failed!");
-        return DRM_ERR_UNKNOWN;
+        return DRM_ERR_NO_MEMORY;
     }
     int32_t ret = object->systemImpl_->SetCallback(object->systemCallback_);
-    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_UNKNOWN, "system set callback failed!");
+    if (ret != DRM_ERR_OK) {
+        delete object;
+        DRM_ERR_LOG("system set callback failed!");
+        return DRM_ERR_UNKNOWN;
+    }
 
     *mediaKeySystem = object;
     ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_Create"));
