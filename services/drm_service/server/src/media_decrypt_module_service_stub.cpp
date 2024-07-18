@@ -82,7 +82,7 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
             DRM_CHECK_AND_RETURN_RET_LOG(keyIdSize < KEYID_MAX_LEN, DRM_MEMORY_ERROR,
                 "The size of keyId is too large.");
             if (keyIdSize != 0) {
-                const uint8_t *keyIdBuf = static_cast<const uint8_t *>(data.ReadBuffer(keyIdSize));
+                const uint8_t *keyIdBuf = static_cast<const uint8_t *>(data.ReadUnpadBuffer(keyIdSize));
                 if (keyIdBuf == nullptr) {
                     DRM_ERR_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_DECRYPT_DATA read keyId failed.");
                     return IPC_STUB_WRITE_PARCEL_ERR;
@@ -92,7 +92,7 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
             uint32_t ivSize = data.ReadUint32();
             DRM_CHECK_AND_RETURN_RET_LOG(ivSize < IV_MAX_LEN, DRM_MEMORY_ERROR, "The size of iv is too large.");
             if (ivSize != 0) {
-                const uint8_t *ivBuf = static_cast<const uint8_t *>(data.ReadBuffer(ivSize));
+                const uint8_t *ivBuf = static_cast<const uint8_t *>(data.ReadUnpadBuffer(ivSize));
                 if (ivBuf == nullptr) {
                     DRM_ERR_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_DECRYPT_DATA read ivSize failed.");
                     return IPC_STUB_WRITE_PARCEL_ERR;

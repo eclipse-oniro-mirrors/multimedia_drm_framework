@@ -54,11 +54,11 @@ int32_t MediaKeySessionServiceCallbackProxy::SendEvent(DrmEventType event, int32
         }
     }
 
-    int32_t error = Remote()->SendRequest(MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT, parcelData, reply, option);
-    if (error != ERR_NONE) {
-        DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent failed, error: %{public}d", error);
+    int32_t ret = Remote()->SendRequest(MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT, parcelData, reply, option);
+    if (ret != DRM_OK) {
+        DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent failed, error: %{public}d", ret);
     }
-    return error;
+    return ret;
 }
 
 int32_t MediaKeySessionServiceCallbackProxy::SendEventKeyChanged(
@@ -96,12 +96,12 @@ int32_t MediaKeySessionServiceCallbackProxy::SendEventKeyChanged(
         return IPC_PROXY_ERR;
     }
 
-    int32_t error =
+    int32_t ret =
         Remote()->SendRequest(MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT_KEY_CHANGED, parcelData, reply, option);
-    if (error != ERR_NONE) {
-        DRM_ERR_LOG("SendEventKeyChanged failed, error: %{public}d", error);
+    if (ret != ERR_NONE) {
+        DRM_ERR_LOG("SendEventKeyChanged failed, error: %{public}d", ret);
     }
-    return error;
+    return ret;
 }
 } // DrmStandard
 } // namespace OHOS

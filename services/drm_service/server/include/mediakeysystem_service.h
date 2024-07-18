@@ -89,6 +89,7 @@ private:
     StatisticsInfo statisticsInfo_;
     std::string generationResult_;
     uint32_t generationDuration_ = 0;
+    uint32_t currentKeySessionNumber = 0;
 };
 
 class IMediaKeySystemServiceOperatorsCallback : public virtual RefBase {

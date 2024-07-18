@@ -41,7 +41,6 @@ public:
     int32_t GetMediaKeySystems(std::map<std::string, std::string> &keySystemNames);
     int32_t GetMediaKeySystemUuid(std::string &name, std::string &uuid);
     int32_t CreateMediaKeySystem(std::string &name, sptr<MediaKeySystemImpl> *mediaKeySystemImpl);
-    int32_t keySystemNumber = 0;
 
 private:
     void MediaKeySystemFactoryServerDied(pid_t pid);

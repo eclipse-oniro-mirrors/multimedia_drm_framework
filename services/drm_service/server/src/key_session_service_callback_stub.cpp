@@ -22,23 +22,23 @@ namespace DrmStandard {
 int32_t MediaKeySessionServiceCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    int32_t errCode = DRM_ERROR;
+    int32_t ret = DRM_ERROR;
     if (data.ReadInterfaceToken() != GetDescriptor()) {
-        return errCode;
+        return ret;
     }
     switch (code) {
         case MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT:
-            errCode = MediaKeySessionServiceCallbackStub::HandleSendEvent(data);
+            ret = MediaKeySessionServiceCallbackStub::HandleSendEvent(data);
             break;
         case MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT_KEY_CHANGED:
-            errCode = MediaKeySessionServiceCallbackStub::HandleSendEventKeyChanged(data);
+            ret = MediaKeySessionServiceCallbackStub::HandleSendEventKeyChanged(data);
             break;
         default:
             DRM_ERR_LOG("MediaKeySessionServiceCallbackStub request code %{public}u not handled", code);
-            errCode = IPCObjectStub::OnRemoteRequest(code, data, reply, option);
+            ret = IPCObjectStub::OnRemoteRequest(code, data, reply, option);
             break;
     }
-    return errCode;
+    return ret;
 }
 
 int32_t MediaKeySessionServiceCallbackStub::HandleSendEvent(MessageParcel &data)
@@ -49,7 +49,7 @@ int32_t MediaKeySessionServiceCallbackStub::HandleSendEvent(MessageParcel &data)
     uint32_t dataSize = data.ReadUint32();
     std::vector<uint8_t> customizedData;
     if (dataSize != 0) {
-        const uint8_t *dataBuf = static_cast<const uint8_t *>(data.ReadBuffer(dataSize));
+        const uint8_t *dataBuf = static_cast<const uint8_t *>(data.ReadUnpadBuffer(dataSize));
         if (dataBuf == nullptr) {
             DRM_ERR_LOG("MediaKeySessionServiceCallbackStub::HandleSendEvent read data failed.");
             return IPC_STUB_WRITE_PARCEL_ERR;
@@ -72,7 +72,7 @@ int32_t MediaKeySessionServiceCallbackStub::HandleSendEventKeyChanged(MessagePar
         std::vector<uint8_t> item;
         uint32_t idSize = data.ReadUint32();
         if (idSize != 0) {
-            const uint8_t *idBuf = static_cast<const uint8_t *>(data.ReadBuffer(idSize));
+            const uint8_t *idBuf = static_cast<const uint8_t *>(data.ReadUnpadBuffer(idSize));
             if (idBuf == nullptr) {
                 DRM_ERR_LOG("MediaKeySessionServiceCallbackStub::HandleSendEventKeyChanged read data failed.");
                 return IPC_STUB_WRITE_PARCEL_ERR;

@@ -128,8 +128,8 @@ void MediaKeySystemFactoryService::DistroyForClientDied(pid_t pid)
                 drmHostManager_->ReleaseMediaKeySystem(hdiMediaKeySystem);
             }
             // decrease in dfx.
-            if (CurrentMediaKeySystemNum_.find((*it)->GetPluginName()) != CurrentMediaKeySystemNum_.end()) {
-                CurrentMediaKeySystemNum_[(*it)->GetPluginName()]--;
+            if (currentMediaKeySystemNum_.find((*it)->GetPluginName()) != currentMediaKeySystemNum_.end()) {
+                currentMediaKeySystemNum_[(*it)->GetPluginName()]--;
             }
         }
         it = mediaKeySystemForPid_[pid].erase(it);
@@ -145,6 +145,10 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
     std::lock_guard<std::mutex> lock(mutex_);
     sptr<MediaKeySystemService> mediaKeySystemService = nullptr;
     sptr<IMediaKeySystem> hdiMediaKeySystem = nullptr;
+    if (currentMediaKeySystemNum_[name] >= KEY_SYSTEM_MAX_NUMBER) {
+        DRM_ERR_LOG("The number of MediaKeySystem is greater than 64");
+        return DRM_MAX_SYSTEM_NUM_REACHED;
+    }
     int32_t ret = drmHostManager_->CreateMediaKeySystem(name, hdiMediaKeySystem);
     if (hdiMediaKeySystem == nullptr || ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemFactoryService::drmHostManager_ return hdiMediaKeySystem nullptr.");
@@ -166,10 +170,10 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " is Current mediaKeySystemService",
         FAKE_POINTER(mediaKeySystemService.GetRefPtr()));
     mediaKeySystemProxy = mediaKeySystemService;
-    if (CurrentMediaKeySystemNum_.find(name) != CurrentMediaKeySystemNum_.end()) {
-        CurrentMediaKeySystemNum_[name]++;
+    if (currentMediaKeySystemNum_.find(name) != currentMediaKeySystemNum_.end()) {
+        currentMediaKeySystemNum_[name]++;
     } else {
-        CurrentMediaKeySystemNum_[name] = 1;
+        currentMediaKeySystemNum_[name] = 1;
     }
     DRM_INFO_LOG("MediaKeySystemFactoryService CreateMediaKeySystem exit.");
     return ret;
@@ -178,7 +182,6 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
 int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySystemService> mediaKeySystemService)
 {
     DRM_INFO_LOG("MediaKeySystemFactoryService CloseMediaKeySystemService enter.");
-    int32_t errCode = DRM_OK;
     int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemFactoryService GetCallingPID: %{public}d", currentPid);
     sptr<IMediaKeySystem> hdiMediaKeySystem = mediaKeySystemService->getMediaKeySystem();
@@ -191,8 +194,9 @@ int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySy
         }
     }
     std::string pluginName = mediaKeySystemService->GetPluginName();
-    if (CurrentMediaKeySystemNum_.find(pluginName) != CurrentMediaKeySystemNum_.end()) {
-        CurrentMediaKeySystemNum_[pluginName]--;
+    if (currentMediaKeySystemNum_.find(pluginName) != currentMediaKeySystemNum_.end() &&
+        currentMediaKeySystemNum_[pluginName] > 0) {
+        currentMediaKeySystemNum_[pluginName]--;
     }
     if (hdiMediaKeySystem != NULL) {
         DRM_DEBUG_LOG("MediaKeySystemFactoryService ReleaseMediaKeySystem.");
@@ -200,7 +204,7 @@ int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySy
     }
     mediaKeySystemService = nullptr;
     DRM_INFO_LOG("MediaKeySystemFactoryService CloseMediaKeySystemService exit.");
-    return errCode;
+    return DRM_OK;
 }
 
 int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &name, bool *isSurpported)
@@ -302,8 +306,8 @@ int32_t MediaKeySystemFactoryService::WriteDumpInfo(int32_t fd, std::string &dum
                              "Plugin UUID: " + iter.second + "\n" +
                              "Total MediaKeySystem Num: ";
         int32_t systemNum = 0;
-        if (CurrentMediaKeySystemNum_.find(iter.first) != CurrentMediaKeySystemNum_.end()) {
-            systemNum = CurrentMediaKeySystemNum_[iter.first];
+        if (currentMediaKeySystemNum_.find(iter.first) != currentMediaKeySystemNum_.end()) {
+            systemNum = currentMediaKeySystemNum_[iter.first];
         }
         tmpStr += std::to_string(systemNum) + "\n";
         dumpString += tmpStr;

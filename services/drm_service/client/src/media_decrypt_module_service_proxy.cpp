@@ -38,7 +38,7 @@ int32_t MediaDecryptModuleServiceProxy::Release()
     }
 
     int32_t ret = Remote()->SendRequest(DECRYPT_MODULE_RELEASE, data, reply, option);
-    if (ret != ERR_NONE) {
+    if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaDecryptModuleServiceProxy::Release failed, ret: %{public}d", ret);
         return ret;
     }
@@ -56,9 +56,9 @@ int32_t MediaDecryptModuleServiceProxy::SetListenerObject(const sptr<IRemoteObje
 
     data.WriteInterfaceToken(GetDescriptor());
     (void)data.WriteRemoteObject(object);
-    int error = Remote()->SendRequest(DECRYPT_MODULE_SET_LISTENER_OBJ, data, reply, option);
-    if (error != ERR_NONE) {
-        DRM_ERR_LOG("Set listener obj failed, error: %{public}d", error);
+    int ret = Remote()->SendRequest(DECRYPT_MODULE_SET_LISTENER_OBJ, data, reply, option);
+    if (ret != DRM_OK) {
+        DRM_ERR_LOG("Set listener obj failed, error: %{public}d", ret);
         return IPC_PROXY_ERR;
     }
     DRM_INFO_LOG("MediaDecryptModuleServiceProxy::SetListenerObject exit.");
@@ -156,7 +156,7 @@ int32_t MediaDecryptModuleServiceProxy::DecryptMediaData(bool secureDecodrtState
         "MediaDecryptModuleServiceProxy DecryptMediaData failed, ret: %{public}d", ret);
 
     ret = Remote()->SendRequest(DECRYPT_MODULE_DECRYPT_DATA, data, reply, option);
-    DRM_CHECK_AND_RETURN_RET_LOG(ret == ERR_NONE, IPC_PROXY_ERR,
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, IPC_PROXY_ERR,
         "MediaDecryptModuleServiceProxy DecryptMediaData failed, ret: %{public}d", ret);
 
     DRM_INFO_LOG("MediaDecryptModuleServiceProxy::DecryptMediaData exit.");

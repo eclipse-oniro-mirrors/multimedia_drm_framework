@@ -35,9 +35,9 @@ int32_t MediaKeySystemFactoryServiceProxy::SetListenerObject(const sptr<IRemoteO
 
     data.WriteInterfaceToken(GetDescriptor());
     (void)data.WriteRemoteObject(object);
-    int error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_SET_LISTENER_OBJ, data, reply, option);
-    if (error != ERR_NONE) {
-        DRM_ERR_LOG("Set listener obj failed, error: %{public}d", error);
+    int ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_SET_LISTENER_OBJ, data, reply, option);
+    if (ret != DRM_OK) {
+        DRM_ERR_LOG("Set listener obj failed, error: %{public}d", ret);
         return IPC_PROXY_ERR;
     }
     DRM_INFO_LOG("MediaKeySystemFactoryServiceProxy SetListenerObject exit.");
@@ -67,16 +67,16 @@ int32_t MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported(std::string
         return IPC_PROXY_ERR;
     }
 
-    int32_t error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED, data, reply, option);
-    if (error != ERR_NONE) {
-        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported failed, error: %{public}d", error);
-        return error;
+    int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED, data, reply, option);
+    if (ret != DRM_OK) {
+        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported failed, error: %{public}d", ret);
+        return ret;
     }
 
     *isSurpported = reply.ReadBool();
     DRM_INFO_LOG("MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported one param called, exit.");
 
-    return error;
+    return ret;
 }
 
 int32_t MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType,
@@ -108,15 +108,15 @@ int32_t MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported(std::string
         return IPC_PROXY_ERR;
     }
 
-    int32_t error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED, data, reply, option);
-    if (error != ERR_NONE) {
-        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported failed, error: %{public}d", error);
-        return error;
+    int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED, data, reply, option);
+    if (ret != DRM_OK) {
+        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported failed, error: %{public}d", ret);
+        return ret;
     }
 
     *isSurpported = reply.ReadBool();
     DRM_INFO_LOG("MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported two param called, exit.");
-    return error;
+    return ret;
 }
 
 int32_t MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType,
@@ -154,16 +154,16 @@ int32_t MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported(std::string
         return IPC_PROXY_ERR;
     }
 
-    int32_t error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED, data, reply, option);
-    if (error != ERR_NONE) {
-        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported failed, error: %{public}d", error);
-        return error;
+    int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED, data, reply, option);
+    if (ret != DRM_OK) {
+        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported failed, error: %{public}d", ret);
+        return ret;
     }
 
     *isSurpported = reply.ReadBool();
     DRM_INFO_LOG("MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported three param called, exit.");
 
-    return error;
+    return ret;
 }
 
 int32_t MediaKeySystemFactoryServiceProxy::GetMediaKeySystems(std::map<std::string, std::string> &keySystemNames)
@@ -180,7 +180,7 @@ int32_t MediaKeySystemFactoryServiceProxy::GetMediaKeySystems(std::map<std::stri
     int32_t ret =
         MediaKeySystemFactoryServiceProxy::Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_GET_MEDIA_KEYSYSTEM_NAME,
         data, reply, option);
-    if (ret != ERR_NONE) {
+    if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy::GetMediaKeySystems failed, ret: %{public}d", ret);
         return ret;
     }
@@ -212,7 +212,7 @@ int32_t MediaKeySystemFactoryServiceProxy::GetMediaKeySystemUuid(std::string &na
     int32_t ret =
         MediaKeySystemFactoryServiceProxy::Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_GET_MEDIA_KEYSYSTEM_UUID,
         data, reply, option);
-    if (ret != ERR_NONE) {
+    if (ret != DRM_OK) {
         DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy::GetMediaKeySystemUuid failed, ret: %{public}d", ret);
         return ret;
     }
@@ -238,10 +238,10 @@ int32_t MediaKeySystemFactoryServiceProxy::CreateMediaKeySystem(std::string &nam
         return IPC_PROXY_ERR;
     }
 
-    int32_t error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_CREATE_MEDIA_KEYSYSTEM, data, reply, option);
-    if (error != ERR_NONE) {
-        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy::CreateMediaKeySystem failed, error: %{public}d", error);
-        return error;
+    int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_CREATE_MEDIA_KEYSYSTEM, data, reply, option);
+    if (ret != DRM_OK) {
+        DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy::CreateMediaKeySystem failed, error: %{public}d", ret);
+        return ret;
     }
 
     auto remoteObject = reply.ReadRemoteObject();
@@ -249,10 +249,10 @@ int32_t MediaKeySystemFactoryServiceProxy::CreateMediaKeySystem(std::string &nam
         mediaKeySystemProxy = iface_cast<IMediaKeySystemService>(remoteObject);
     } else {
         DRM_ERR_LOG("MediaKeySystemFactoryServiceProxy::CreateMediaKeySystem mediaKeySystemProxy is nullptr");
-        error = IPC_PROXY_ERR;
+        ret = IPC_PROXY_ERR;
     }
     DRM_INFO_LOG("MediaKeySystemFactoryServiceProxy::CreateMediaKeySystem exit.");
-    return error;
+    return ret;
 }
 } // DrmStandard
 } // OHOS

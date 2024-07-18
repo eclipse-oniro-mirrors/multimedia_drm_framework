@@ -125,11 +125,11 @@ static int32_t ProcessSetListenerObject(MediaKeySystemFactoryServiceStub *stub, 
     DRM_INFO_LOG("MediaKeySystemFactoryServiceStub ProcessSetListenerObject.");
     (void)reply;
     sptr<IRemoteObject> object = data.ReadRemoteObject();
-    int32_t errCode = stub->SetListenerObject(object);
-    DRM_CHECK_AND_RETURN_RET_LOG(errCode == DRM_OK, errCode,
-        "ProcessSetListenerObject faild, errCode:%{public}d", errCode);
+    int32_t ret = stub->SetListenerObject(object);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret,
+        "ProcessSetListenerObject faild, errCode:%{public}d", ret);
     DRM_INFO_LOG("MediaKeySystemFactoryServiceStub ProcessSetListenerObject exit.");
-    return errCode;
+    return ret;
 }
 
 static int32_t ProcessGetMediaKeySystems(MediaKeySystemFactoryServiceStub *stub, MessageParcel &data,
@@ -169,6 +169,7 @@ static int32_t ProcessGetMediaKeySystemUuid(MediaKeySystemFactoryServiceStub *st
 int32_t MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
+    int32_t ret = DRM_OK;
     if (data.ReadInterfaceToken() != GetDescriptor()) {
         DRM_DEBUG_LOG("MediaKeySystemFactoryServiceStub: ReadInterfaceToken failed.");
         return -1;
@@ -177,46 +178,37 @@ int32_t MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, Message
     switch (code) {
         case MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED: {
             DRM_INFO_LOG("MediaKeySystemFactoryServiceStub IS_MEDIA_KEY_SYSTEM_SURPPORTED enter.");
-            int32_t ret = ProcessMediaKeySystemSupportedRequest(this, data, reply, option);
-            DRM_INFO_LOG("MediaKeySystemFactoryServiceStub IS_MEDIA_KEY_SYSTEM_SURPPORTED exit.");
-            return ret;
+            return ProcessMediaKeySystemSupportedRequest(this, data, reply, option);
         }
         case MEDIA_KEY_SYSTEM_FACTORY_CREATE_MEDIA_KEYSYSTEM: {
             DRM_INFO_LOG("MediaKeySystemFactoryServiceStub CREATE_MEDIA_KEYSYSTEM enter.");
             sptr<IMediaKeySystemService> mediaKeysystemProxy = nullptr;
             std::string name = data.ReadString();
-            int32_t errCode = CreateMediaKeySystem(name, mediaKeysystemProxy);
-            if (errCode != ERR_NONE) {
-                DRM_ERR_LOG("MediaKeySystemFactoryServiceStub CreateMediaKeySystem failed : %{public}d", errCode);
-                return errCode;
+            ret = CreateMediaKeySystem(name, mediaKeysystemProxy);
+            if (ret != DRM_OK) {
+                DRM_ERR_LOG("MediaKeySystemFactoryServiceStub CreateMediaKeySystem failed, errCode: %{public}d", ret);
+                return ret;
             }
             if (!reply.WriteRemoteObject(mediaKeysystemProxy->AsObject())) {
                 DRM_ERR_LOG("MediaKeySystemFactoryServiceStub CreateMediaKeySystem Write MediaKeySession obj failed.");
                 return IPC_STUB_WRITE_PARCEL_ERR;
             }
-            DRM_INFO_LOG("MediaKeySystemFactoryServiceStub CREATE_MEDIA_KEYSYSTEM exit.");
-            return errCode;
+            return ret;
         }
         case MEDIA_KEY_SYSTEM_FACTORY_SET_LISTENER_OBJ: {
             DRM_INFO_LOG("MediaKeySystemFactoryServiceStub MEDIA_KEY_SYSTEM_FACTORY_SET_LISTENER_OBJ enter.");
-            int32_t ret = ProcessSetListenerObject(this, data, reply, option);
-            DRM_INFO_LOG("MediaKeySystemFactoryServiceStub MEDIA_KEY_SYSTEM_FACTORY_SET_LISTENER_OBJ exit.");
-            return ret;
+            return ProcessSetListenerObject(this, data, reply, option);
         }
         case MEDIA_KEY_SYSTEM_FACTORY_GET_MEDIA_KEYSYSTEM_NAME: {
             DRM_INFO_LOG("MediaKeySystemFactoryServiceStub MEDIA_KEY_SYSTEM_FACTORY_GST_MEDIA_KEYSYSTEM_NAME enter.");
-            int32_t ret = ProcessGetMediaKeySystems(this, data, reply, option);
-            DRM_INFO_LOG("MediaKeySystemFactoryServiceStub MEDIA_KEY_SYSTEM_FACTORY_GST_MEDIA_KEYSYSTEM_NAME exit.");
-            return ret;
+            return ProcessGetMediaKeySystems(this, data, reply, option);
         }
         case MEDIA_KEY_SYSTEM_FACTORY_GET_MEDIA_KEYSYSTEM_UUID: {
             DRM_INFO_LOG("MediaKeySystemFactoryServiceStub MEDIA_KEY_SYSTEM_FACTORY_GET_MEDIA_KEYSYSTEM_UUID enter.");
-            int32_t ret = ProcessGetMediaKeySystemUuid(this, data, reply, option);
-            DRM_INFO_LOG("MediaKeySystemFactoryServiceStub MEDIA_KEY_SYSTEM_FACTORY_GET_MEDIA_KEYSYSTEM_UUID exit.");
-            return ret;
+            return ProcessGetMediaKeySystemUuid(this, data, reply, option);
         }
     }
-    return DRM_OK;
+    return ret;
 }
 } // namespace DrmStandard
 } // namespace OHOS

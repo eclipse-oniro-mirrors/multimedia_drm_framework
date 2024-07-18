@@ -219,6 +219,10 @@ int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::Co
     std::lock_guard<std::mutex> lock(mutex_);
     sptr<MediaKeySessionService> keySessionService = nullptr;
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySession> hdiMediaKeySession = nullptr;
+    if (currentKeySessionNumber >= KEY_SESSION_MAX_NUMBER) {
+        DRM_ERR_LOG("The number of MediaKeySession is greater than 64");
+        return DRM_MAX_SESSION_NUM_REACHED;
+    }
     ret = hdiKeySystem_->CreateMediaKeySession((OHOS::HDI::Drm::V1_0::ContentProtectionLevel)securityLevel,
         hdiMediaKeySession);
     if (hdiMediaKeySession == nullptr) {
@@ -243,6 +247,7 @@ int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::Co
 
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " is Current keySessionService", FAKE_POINTER(keySessionService.GetRefPtr()));
     keySessionProxy = keySessionService;
+    currentKeySessionNumber++;
     DRM_INFO_LOG("MediaKeySystemService::CreateMediaKeySession exit.");
     return ret;
 }
@@ -261,6 +266,9 @@ int32_t MediaKeySystemService::CloseMediaKeySessionService(sptr<MediaKeySessionS
     {
         std::lock_guard<std::mutex> lock(sessionsSetMutex_);
         sessionsSet_.erase(sessionService);
+        if (currentKeySessionNumber > 0) {
+            currentKeySessionNumber--;
+        }
     }
     sessionService = nullptr;
     DRM_INFO_LOG("MediaKeySystemService::CloseMediaKeySessionService exit.");

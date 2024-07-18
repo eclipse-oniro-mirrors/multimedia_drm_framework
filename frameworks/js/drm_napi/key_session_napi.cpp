@@ -254,7 +254,8 @@ napi_value MediaKeySessionNapi::GenerateMediaKeyRequest(napi_env env, napi_callb
     }
 
     auto inputParser = [env, context](size_t argc, napi_value *argv) {
-        NAPI_CHECK_ARGS_RETURN_VOID(context, argc <= ARGS_FOUR, "invalid arguments", DRM_INVALID_PARAM);
+        NAPI_CHECK_ARGS_RETURN_VOID(context, argc == ARGS_THREE || argc == ARGS_FOUR, "invalid arguments",
+            DRM_INVALID_PARAM);
         context->mediaKeyRequestInfo.mimeType = NapiParamUtils::GetStringArgument(env, argv[PARAM0]);
         context->status = NapiParamUtils::GetValueUint8Array(env, context->mediaKeyRequestInfo.initData, argv[PARAM1]);
         NAPI_CHECK_STATUS_RETURN_VOID(context, "generateMediaKeyRequest failed!", DRM_INVALID_PARAM);
@@ -262,9 +263,11 @@ napi_value MediaKeySessionNapi::GenerateMediaKeyRequest(napi_env env, napi_callb
         context->status = NapiParamUtils::GetValueInt32(env, mediaKeyType, argv[PARAM2]);
         NAPI_CHECK_STATUS_RETURN_VOID(context, "generateMediaKeyRequest failed!", DRM_INVALID_PARAM);
         context->mediaKeyRequestInfo.mediaKeyType = (IMediaKeySessionService::MediaKeyType)mediaKeyType;
-        context->status =
+        if (argc == ARGS_FOUR) {
+            context->status =
             NapiParamUtils::GetValueOptionsData(env, context->mediaKeyRequestInfo.optionalData, argv[PARAM3]);
-        NAPI_CHECK_STATUS_RETURN_VOID(context, "generateMediaKeyRequest failed!", DRM_INVALID_PARAM);
+            NAPI_CHECK_STATUS_RETURN_VOID(context, "generateMediaKeyRequest failed!", DRM_INVALID_PARAM);
+        }
     };
     context->GetCbInfo(env, info, inputParser);
 
