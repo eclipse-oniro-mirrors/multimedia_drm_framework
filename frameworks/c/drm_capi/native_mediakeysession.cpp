@@ -148,7 +148,7 @@ Drm_ErrCode OH_MediaKeySession_CheckMediaKeyStatus(MediaKeySession *mediaKeySess
         "OH_MediaKeySession_CheckMediaKeyStatus inner sessionImpl is nullptr!");
     int32_t result = sessionObject->sessionImpl_->CheckMediaKeyStatus(licenseStatus);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_UNKNOWN,
-        "OH_SetConfigurationByteArray mediaKeySystemImpl::SetConfigurationByteArray faild!");
+        "mediaKeySystemImpl::CheckMediaKeyStatus faild!");
     if (licenseStatus.size() == 0) {
         DRM_ERR_LOG("Licence not exist.");
         return DRM_ERR_UNKNOWN;
