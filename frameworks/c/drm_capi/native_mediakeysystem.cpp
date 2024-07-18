@@ -14,7 +14,7 @@
  */
 
 #include <mutex>
-#include<map>
+#include <map>
 #include <shared_mutex>
 #include <string>
 #include <refbase.h>

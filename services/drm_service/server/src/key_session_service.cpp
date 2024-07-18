@@ -115,9 +115,6 @@ int32_t MediaKeySessionService::GenerateMediaKeyRequest(
         it != licenseRequestInfo.optionalData.end(); ++it) {
         hdiMediaKeyRequestInfo.optionalData.insert(std::make_pair(it->first, it->second));
     }
-    for (size_t i = 0; i < hdiMediaKeyRequestInfo.initData.size(); i++) {
-        DRM_DEBUG_LOG("hdiMediaKeyRequestInfo.initData : %{public}d\n", hdiMediaKeyRequestInfo.initData[i]);
-    }
     OHOS::HDI::Drm::V1_0::MediaKeyRequest hdiMediaKeyRequest;
     mediaKeyType_ = std::to_string(static_cast<int32_t>(licenseRequestInfo.mediaKeyType));
     auto timeBefore = std::chrono::system_clock::now();
@@ -127,9 +124,6 @@ int32_t MediaKeySessionService::GenerateMediaKeyRequest(
         generationResult_ = "failed";
         DRM_ERR_LOG("MediaKeySessionService::GenerateMediaKeyRequest failed.");
         ReportFaultEvent(ret, "GenerateMediaKeyRequest failed", "");
-        struct DownLoadInfo downLoadInfo = InitDownLoadInfo(generationDuration_, generationResult_, 0,
-            "GenerateMediaKeyRequest failed");
-        ReportLicenseBehaviorEvent(statisticsInfo_, mediaKeyType_, downLoadInfo);
         return ret;
     }
     generationResult_ = "success";
@@ -153,11 +147,7 @@ int32_t MediaKeySessionService::ProcessMediaKeyResponse(std::vector<uint8_t> &li
         DRM_ERR_LOG("MediaKeySessionService::ProcessMediaKeyResponse failed.");
         std::string responseString = std::string(reinterpret_cast<const char*>(licenseResponse.data()),
             licenseResponse.size());
-
         ReportFaultEvent(ret, "ProcessMediaKeyResponse failed", responseString);
-        struct DownLoadInfo downLoadInfo = InitDownLoadInfo(generationDuration_, generationResult_, processDuration,
-            "failed");
-        ReportLicenseBehaviorEvent(statisticsInfo_, mediaKeyType_, downLoadInfo);
         return ret;
     }
     struct DownLoadInfo downLoadInfo = InitDownLoadInfo(generationDuration_, generationResult_, processDuration,
