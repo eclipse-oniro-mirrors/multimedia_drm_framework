@@ -63,7 +63,7 @@ static int32_t ProcessGetMaxContentProtectionLevel(MediaKeySystemServiceStub *st
 static int32_t ProcessGetCertificateStatus(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
-static int32_t ProcessGetOfflineLMediaKeyIds(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessGetOfflineMediaKeyIds(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
 static int32_t ProcessGetOfflineMediaKeyStatus(MediaKeySystemServiceStub *stub, MessageParcel &data,
@@ -90,7 +90,7 @@ static struct ProcessRemoteRequestFuncArray g_mediaKeySystemServiceStubRequestPr
     {MEDIA_KEY_SYSTEM_RELEASE, ProcessReleaseKeySystem},
     {MEDIA_KEY_SYSTEM_GETMAXSECURITYLEVEL, ProcessGetMaxContentProtectionLevel},
     {MEDIA_KEY_SYSTEM_GETCERTIFICATESTATUS, ProcessGetCertificateStatus},
-    {MEDIA_KEY_SYSTEM_GET_OFFLINELICENSEIDS, ProcessGetOfflineLMediaKeyIds},
+    {MEDIA_KEY_SYSTEM_GET_OFFLINELICENSEIDS, ProcessGetOfflineMediaKeyIds},
     {MEDIA_KEY_SYSTEM_GET_OFFLINEKEY_STATUS, ProcessGetOfflineMediaKeyStatus},
     {MEDIA_KEY_SYSTEM_REMOVE_OFFLINELICENSE, ProcessRemoveOfflineMediaKey},
     {MEDIA_KEY_SYSTEM_SET_LISTENER_OBJ, ProcessSetListenerObject},
@@ -99,12 +99,10 @@ static struct ProcessRemoteRequestFuncArray g_mediaKeySystemServiceStubRequestPr
 
 MediaKeySystemServiceStub::MediaKeySystemServiceStub()
 {
-    DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " Instances create", (POINTER_MASK & reinterpret_cast<uintptr_t>(this)));
 }
 
 MediaKeySystemServiceStub::~MediaKeySystemServiceStub()
 {
-    DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " Instances destroy", (POINTER_MASK & reinterpret_cast<uintptr_t>(this)));
     sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
     sptr<IDrmListener> clientListener_ = nullptr;
 }
@@ -112,152 +110,144 @@ MediaKeySystemServiceStub::~MediaKeySystemServiceStub()
 static int32_t ProcessCreatekeySession(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_CREATE_KEY_SESSION enter.");
+    DRM_INFO_LOG("ProcessCreatekeySession enter.");
     sptr<IMediaKeySessionService> keySessionServiceProxy = nullptr;
     const int32_t securityLevel = data.ReadInt32();
-    int32_t errCode = stub->CreateMediaKeySession((IMediaKeySessionService::ContentProtectionLevel)securityLevel,
+    int32_t ret = stub->CreateMediaKeySession((IMediaKeySessionService::ContentProtectionLevel)securityLevel,
         keySessionServiceProxy);
-    DRM_CHECK_AND_RETURN_RET_LOG(errCode == DRM_OK, errCode, "CreateMediaKeySession faild, errCode:%{public}d",
-        errCode);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "CreateMediaKeySession faild, errCode:%{public}d",
+        ret);
 
     if (!reply.WriteRemoteObject(keySessionServiceProxy->AsObject())) {
-        DRM_ERR_LOG("MediaKeySystemServiceStub CreateMediaKeySession Write MediaKeySession obj failed.");
+        DRM_ERR_LOG("CreateMediaKeySession Write MediaKeySession obj failed.");
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_CREATE_KEY_SESSION exit.");
-    return errCode;
+    return ret;
 }
 
 static int32_t ProcessKeySystemRequest(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GENERATE_KEYSYSTEM_REQUEST enter.");
+    DRM_INFO_LOG("ProcessKeySystemRequest enter.");
     std::vector<uint8_t> request;
     std::string defaultUrl;
     int32_t ret = stub->GenerateKeySystemRequest(request, defaultUrl);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessKeySystemRequest faild, errCode:%{public}d", ret);
     if (!reply.WriteString(defaultUrl)) {
-        DRM_ERR_LOG("MediaKeySystemServiceStub Write GenerateKeySystemRequest failed.");
+        DRM_ERR_LOG("Write GenerateKeySystemRequest failed.");
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     if (!reply.WriteInt32(request.size())) {
-        DRM_ERR_LOG("MediaKeySystemServiceStub Write request size failed.");
+        DRM_ERR_LOG("Write request size failed.");
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     DRM_CHECK_AND_RETURN_RET_LOG(request.size() < REQUEST_MAX_LEN, DRM_MEMORY_ERROR,
         "The size of request is too large.");
     if (request.size() != 0) {
         if (!reply.WriteBuffer(request.data(), request.size())) {
-            DRM_ERR_LOG("MediaKeySystemServiceStub RestoreOfflineMediaKeys write request failed.");
+            DRM_ERR_LOG("RestoreOfflineMediaKeys write request failed.");
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
     }
-
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GENERATE_KEYSYSTEM_REQUEST exit.");
     return ret;
 }
 
 static int32_t ProcessKeySystemResponse(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_PROCESS_KEYSYSTEM_RESPONSE enter.");
+    DRM_INFO_LOG("ProcessKeySystemResponse enter.");
     std::vector<uint8_t> response;
     int32_t responseSize = data.ReadInt32();
     DRM_CHECK_AND_RETURN_RET_LOG(responseSize < RESPONSE_MAX_LEN, DRM_MEMORY_ERROR,
         "The size of response is too large.");
     if (responseSize != 0) {
-        const uint8_t *responseBuf = static_cast<const uint8_t *>(data.ReadBuffer(responseSize));
+        const uint8_t *responseBuf = static_cast<const uint8_t *>(data.ReadUnpadBuffer(responseSize));
         if (responseBuf == nullptr) {
-            DRM_ERR_LOG("MediaKeySystemServiceStub::ProcessOfflineReleaseResponse read response failed.");
+            DRM_ERR_LOG("ProcessOfflineReleaseResponse read response failed.");
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
         response.assign(responseBuf, responseBuf + responseSize);
     }
     int32_t ret = stub->ProcessKeySystemResponse(response);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessKeySystemResponse faild, errCode:%{public}d", ret);
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_PROCESS_KEYSYSTEM_RESPONSE exit.");
     return ret;
 }
 
 static int32_t ProcessSetConfigurationString(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_SETCONFIGURATION enter.");
+    DRM_INFO_LOG("ProcessSetConfigurationString enter.");
     std::string configName = data.ReadString();
     std::string value = data.ReadString();
     int32_t ret = stub->SetConfigurationString(configName, value);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessSetConfigurationString faild, errCode:%{public}d", ret);
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_SETCONFIGURATION exit.");
     return ret;
 }
 
 static int32_t ProcessGetConfigurationString(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GETCONFIGURATION enter.");
+    DRM_INFO_LOG("ProcessGetConfigurationString enter.");
     std::string configName = data.ReadString();
     std::string value;
     int32_t ret = stub->GetConfigurationString(configName, value);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessGetConfigurationString faild, errCode:%{public}d", ret);
     if (!reply.WriteString(value)) {
-        DRM_ERR_LOG("MediaKeySystemServiceStub ProcessGetConfigurationString write value failed.");
+        DRM_ERR_LOG("ProcessGetConfigurationString write value failed.");
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GETCONFIGURATION exit.");
     return ret;
 }
 
 static int32_t ProcessSetConfigurationByteArray(MediaKeySystemServiceStub *stub, MessageParcel &data,
     MessageParcel &reply, MessageOption &option)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_SETCONFIGURATION enter.");
+    DRM_INFO_LOG("ProcessSetConfigurationByteArray enter.");
     std::string configName = data.ReadString();
     std::vector<uint8_t> value;
     int32_t valueSize = data.ReadInt32();
     DRM_CHECK_AND_RETURN_RET_LOG(valueSize < RESPONSE_MAX_LEN, DRM_MEMORY_ERROR,
         "The size of configurate value is too large.");
     if (valueSize != 0) {
-        const uint8_t *valueBuf = static_cast<const uint8_t *>(data.ReadBuffer(valueSize));
+        const uint8_t *valueBuf = static_cast<const uint8_t *>(data.ReadUnpadBuffer(valueSize));
         if (valueBuf == nullptr) {
-            DRM_ERR_LOG("MediaKeySystemServiceStub::ProcessSetConfigurationByteArray read value failed.");
+            DRM_ERR_LOG("ProcessSetConfigurationByteArray read value failed.");
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
         value.assign(valueBuf, valueBuf + valueSize);
     }
     int32_t ret = stub->SetConfigurationByteArray(configName, value);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessSetConfigurationByteArray faild, errCode:%{public}d", ret);
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_SETCONFIGURATION exit.");
     return ret;
 }
 
 static int32_t ProcessGetConfigurationByteArray(MediaKeySystemServiceStub *stub, MessageParcel &data,
     MessageParcel &reply, MessageOption &option)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GETCONFIGURATION enter.");
+    DRM_INFO_LOG("ProcessGetConfigurationByteArray enter.");
     std::string configName = data.ReadString();
     std::vector<uint8_t> value;
     int32_t ret = stub->GetConfigurationByteArray(configName, value);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessGetConfigurationByteArray faild, errCode:%{public}d", ret);
     if (!reply.WriteInt32(value.size())) {
-        DRM_ERR_LOG("MediaKeySystemServiceStub Write value size failed.");
+        DRM_ERR_LOG("Write value size failed.");
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
     DRM_CHECK_AND_RETURN_RET_LOG(value.size() < RESPONSE_MAX_LEN, DRM_MEMORY_ERROR,
         "The size of configurate value is too large.");
     if (value.size() != 0) {
         if (!reply.WriteBuffer(value.data(), value.size())) {
-            DRM_ERR_LOG("MediaKeySystemServiceStub ProcessGetConfigurationByteArray write value failed.");
+            DRM_ERR_LOG("ProcessGetConfigurationByteArray write value failed.");
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
     }
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GETCONFIGURATION exit.");
     return ret;
 }
 
 static int32_t ProcessGetMetircs(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GETMETRIC enter.");
+    DRM_INFO_LOG("ProcessGetMetircs enter.");
     std::vector<IMediaKeySystemService::MetircKeyValue> metrics;
     int32_t ret = stub->GetStatistics(metrics);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessGetMetircs faild, errCode:%{public}d", ret);
@@ -266,92 +256,87 @@ static int32_t ProcessGetMetircs(MediaKeySystemServiceStub *stub, MessageParcel 
         reply.WriteString(info.name);
         reply.WriteString(info.value);
     }
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GETMETRIC exit.");
     return ret;
 }
 
 static int32_t ProcessReleaseKeySystem(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceStub KEY_SESSION_RELEASE enter.");
+    DRM_INFO_LOG("ProcessReleaseKeySystem enter.");
     int32_t ret = stub->Release();
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessReleaseKeySystem faild, errCode:%{public}d", ret);
-    DRM_INFO_LOG("MediaKeySystemServiceStub KEY_SESSION_RELEASE exit.");
     return ret;
 }
 
 static int32_t ProcessGetMaxContentProtectionLevel(MediaKeySystemServiceStub *stub, MessageParcel &data,
     MessageParcel &reply, MessageOption &option)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GETMAXSECURITYLEVEL enter.");
+    DRM_INFO_LOG("ProcessGetMaxContentProtectionLevel enter.");
     IMediaKeySessionService::ContentProtectionLevel securityLevel =
         IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN;
     int32_t ret = stub->GetMaxContentProtectionLevel(&securityLevel);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessGetMaxContentProtectionLevel faild, errCode:%{public}d",
         ret);
     if (!reply.WriteInt32(securityLevel)) {
-        DRM_ERR_LOG("MediaKeySystemServiceStub Write ProcessGetMaxContentProtectionLevel failed.");
+        DRM_ERR_LOG("Write ProcessGetMaxContentProtectionLevel failed.");
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GETMAXSECURITYLEVEL exit.");
     return ret;
 }
 
 static int32_t ProcessGetCertificateStatus(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GETCERTIFICATESTATUS enter.");
+    DRM_INFO_LOG("ProcessGetCertificateStatus enter.");
     IMediaKeySystemService::CertificateStatus certStatus = IMediaKeySystemService::CERT_STATUS_PROVISIONED;
     int32_t ret = stub->GetCertificateStatus(&certStatus);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessGetCertificateStatus faild, errCode:%{public}d", ret);
     if (!reply.WriteInt32(certStatus)) {
-        DRM_ERR_LOG("MediaKeySystemServiceStub ProcessGetCertificateStatus write certStatus failed.");
+        DRM_ERR_LOG("ProcessGetCertificateStatus write certStatus failed.");
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GETCERTIFICATESTATUS exit.");
     return ret;
 }
 
-static int32_t ProcessGetOfflineLMediaKeyIds(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessGetOfflineMediaKeyIds(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GET_OFFLINELICENSEIDS enter.");
+    DRM_INFO_LOG("ProcessGetOfflineMediaKeyIds enter.");
     std::vector<std::vector<uint8_t>> licenseIds;
     int32_t ret = stub->GetOfflineMediaKeyIds(licenseIds);
-    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessGetOfflineLMediaKeyIds faild, errCode:%{public}d", ret);
-    reply.WriteInt32(licenseIds.size());
-    if (licenseIds.size() == 0) {
-        DRM_DEBUG_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GET_OFFLINELICENSEIDS licenseIds is empty.");
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessGetOfflineMediaKeyIds faild, errCode:%{public}d", ret);
+
+    reply.WriteUint32(licenseIds.size());
+    if (licenseIds.size() == 0 || licenseIds.size() > LICENSEID_MAX_LEN) {
+        DRM_DEBUG_LOG("licenseIds size is error.");
         return ret;
     }
-    for (auto licenseId : licenseIds) {
-        uint32_t licenseIdSize = licenseId.size();
-        reply.WriteInt32(licenseIdSize);
+    for (uint32_t i = 0; i < licenseIds.size(); i++) {
+        uint32_t licenseIdSize = licenseIds[i].size();
+        reply.WriteUint32(licenseIdSize);
         if (licenseIdSize == 0 || licenseIdSize > LICENSEID_MAX_LEN) {
             continue;
         }
-        if (!reply.WriteBuffer(licenseId.data(), licenseId.size())) {
-            DRM_ERR_LOG("MediaKeySystemServiceStub ProcessGetOfflineLMediaKeyIds write licenseId failed.");
+        if (!reply.WriteBuffer(licenseIds[i].data(), licenseIdSize)) {
+            DRM_ERR_LOG("ProcessGetOfflineMediaKeyIds write licenseId failed.");
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
     }
-
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GET_OFFLINELICENSEIDS exit.");
     return ret;
 }
 
 static int32_t ProcessGetOfflineMediaKeyStatus(MediaKeySystemServiceStub *stub, MessageParcel &data,
     MessageParcel &reply, MessageOption &option)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GET_OFFLINEKEY_STATUS enter.");
+    DRM_INFO_LOG("ProcessGetOfflineMediaKeyStatus enter.");
     std::vector<uint8_t> licenseId;
     int32_t licenseIdSize = data.ReadInt32();
     DRM_CHECK_AND_RETURN_RET_LOG(licenseIdSize < LICENSEID_MAX_LEN, DRM_MEMORY_ERROR,
         "The size of licenseId is too large.");
     if (licenseIdSize != 0) {
-        const uint8_t *licenseIdBuf = static_cast<const uint8_t *>(data.ReadBuffer(licenseIdSize));
+        const uint8_t *licenseIdBuf = static_cast<const uint8_t *>(data.ReadUnpadBuffer(licenseIdSize));
         if (licenseIdBuf == nullptr) {
-            DRM_ERR_LOG("MediaKeySystemServiceStub::ProcessGetOfflineMediaKeyStatus read licenseId failed.");
+            DRM_ERR_LOG(":ProcessGetOfflineMediaKeyStatus read licenseId failed.");
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
         licenseId.assign(licenseIdBuf, licenseIdBuf + licenseIdSize);
@@ -360,32 +345,30 @@ static int32_t ProcessGetOfflineMediaKeyStatus(MediaKeySystemServiceStub *stub, 
     int32_t ret = stub->GetOfflineMediaKeyStatus(licenseId, status);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessGetOfflineMediaKeyStatus faild, errCode:%{public}d", ret);
     if (!reply.WriteInt32((int32_t)status)) {
-        DRM_ERR_LOG("MediaKeySystemServiceStub Write state failed.");
+        DRM_ERR_LOG("Write state failed.");
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_GET_OFFLINEKEY_STATUS exit.");
     return ret;
 }
 
 static int32_t ProcessRemoveOfflineMediaKey(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_REMOVE_OFFLINELICENSE enter.");
+    DRM_INFO_LOG("ProcessRemoveOfflineMediaKey enter.");
     std::vector<uint8_t> licenseId;
     int32_t licenseIdSize = data.ReadInt32();
     DRM_CHECK_AND_RETURN_RET_LOG(licenseIdSize < LICENSEID_MAX_LEN, DRM_MEMORY_ERROR,
         "The size of licenseId is too large.");
     if (licenseIdSize != 0) {
-        const uint8_t *licenseIdBuf = static_cast<const uint8_t *>(data.ReadBuffer(licenseIdSize));
+        const uint8_t *licenseIdBuf = static_cast<const uint8_t *>(data.ReadUnpadBuffer(licenseIdSize));
         if (licenseIdBuf == nullptr) {
-            DRM_ERR_LOG("MediaKeySystemServiceStub::ProcessRemoveOfflineMediaKey read licenseId failed.");
+            DRM_ERR_LOG("ProcessRemoveOfflineMediaKey read licenseId failed.");
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
         licenseId.assign(licenseIdBuf, licenseIdBuf + licenseIdSize);
     }
     int32_t ret = stub->ClearOfflineMediaKeys(licenseId);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessRemoveOfflineMediaKey faild, errCode:%{public}d", ret);
-    DRM_INFO_LOG("MediaKeySystemServiceStub MEDIA_KEY_SYSTEM_REMOVE_OFFLINELICENSE exit.");
     return ret;
 }
 
@@ -416,48 +399,45 @@ int32_t MediaKeySystemServiceStub::SetListenerObject(const sptr<IRemoteObject> &
     if (clientListener_->AsObject() != nullptr) {
         (void)clientListener_->AsObject()->AddDeathRecipient(deathRecipient_);
     }
-    DRM_DEBUG_LOG("MediaKeySystem client pid:%{public}d", pid);
     return DRM_OK;
 }
 
 static int32_t ProcessSetListenerObject(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceStub ProcessSetListenerObject.");
+    DRM_INFO_LOG("ProcessSetListenerObject.");
     (void)reply;
     sptr<IRemoteObject> object = data.ReadRemoteObject();
-    int32_t errCode = stub->SetListenerObject(object);
-    DRM_CHECK_AND_RETURN_RET_LOG(errCode == DRM_OK, errCode,
-        "ProcessSetListenerObject faild, errCode:%{public}d", errCode);
-    DRM_INFO_LOG("MediaKeySystemServiceStub ProcessSetListenerObject exit.");
-    return errCode;
+    int32_t ret = stub->SetListenerObject(object);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret,
+        "ProcessSetListenerObject faild, errCode:%{public}d", ret);
+    return ret;
 }
 
 static int32_t ProcessSetCallabck(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    DRM_INFO_LOG("MediaKeySystemServiceStub SetCallback enter.");
+    DRM_INFO_LOG("ProcessSetCallabck enter.");
     auto remoteObject = data.ReadRemoteObject();
     if (remoteObject == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemServiceStub SetCallback remote is null");
+        DRM_ERR_LOG("ProcessSetCallabck remote is null");
         return IPC_STUB_INVALID_DATA_ERR;
     }
     auto callback = iface_cast<IMeidaKeySystemServiceCallback>(remoteObject);
     if (callback == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemServiceStub SetCallback cast nullptr");
+        DRM_ERR_LOG("ProcessSetCallabck iface_cast nullptr");
         return IPC_STUB_INVALID_DATA_ERR;
     }
-    int32_t errCode = stub->SetCallback(callback);
-    DRM_CHECK_AND_RETURN_RET_LOG(errCode == DRM_OK, errCode, "ProcessSetCallabck faild, errCode:%{public}d", errCode);
-    DRM_INFO_LOG("MediaKeySystemServiceStub SetCallback exit.");
-    return errCode;
+    int32_t ret = stub->SetCallback(callback);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessSetCallabck faild, errCode:%{public}d", ret);
+    return ret;
 }
 
 int32_t MediaKeySystemServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
     DRM_CHECK_AND_RETURN_RET_LOG(data.ReadInterfaceToken() == GetDescriptor(), -1,
-        "MediaKeySystemServiceStub: ReadInterfaceToken failed.");
+        "ReadInterfaceToken failed.");
     DRM_INFO_LOG("OnRemoteRequest, cmd = %{public}u", code);
 
     DRM_CHECK_AND_RETURN_RET_LOG((code >= MEDIA_KEY_SYSTEM_CREATE_KEY_SESSION) &&

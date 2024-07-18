@@ -73,8 +73,6 @@ private:
     sptr<IMediaKeySystemService> serviceProxy_;
     sptr<MediaKeySystemImplCallback> mediaKeySystemApplicationCallback_;
     sptr<IMeidaKeySystemServiceCallback> serviceCallback_;
-    std::vector<sptr<MediaKeySessionImpl>> keySessionVec;
-    uint32_t keySessionNumber = 0;
     sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
     sptr<DrmListenerStub> listenerStub_ = nullptr;
 };

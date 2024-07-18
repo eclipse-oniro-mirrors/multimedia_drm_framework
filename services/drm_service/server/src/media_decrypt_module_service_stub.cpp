@@ -25,17 +25,14 @@ namespace OHOS {
 namespace DrmStandard {
 MediaDecryptModuleServiceStub::MediaDecryptModuleServiceStub()
 {
-    DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " Instances create", (POINTER_MASK & reinterpret_cast<uintptr_t>(this)));
 }
 
 MediaDecryptModuleServiceStub::~MediaDecryptModuleServiceStub()
 {
-    DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " Instances destroy", (POINTER_MASK & reinterpret_cast<uintptr_t>(this)));
 }
 
 void MediaDecryptModuleServiceStub::MediaDecryptModuleClientDied(pid_t pid)
 {
-    DRM_ERR_LOG("MediaDecryptModule client has died, pid:%{public}d", pid);
 }
 
 int32_t MediaDecryptModuleServiceStub::SetListenerObject(const sptr<IRemoteObject> &object)
@@ -74,7 +71,7 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
     }
     switch (code) {
         case DECRYPT_MODULE_DECRYPT_DATA: {
-            DRM_INFO_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_DECRYPT_DATA enter.");
+            DRM_INFO_LOG("DECRYPT_MODULE_DECRYPT_DATA enter.");
             IMediaDecryptModuleService::CryptInfo cryptInfo;
             bool secureDecodrtState = data.ReadBool();
             cryptInfo.type = (OHOS::DrmStandard::IMediaDecryptModuleService::CryptAlgorithmType)data.ReadUint32();
@@ -82,9 +79,9 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
             DRM_CHECK_AND_RETURN_RET_LOG(keyIdSize < KEYID_MAX_LEN, DRM_MEMORY_ERROR,
                 "The size of keyId is too large.");
             if (keyIdSize != 0) {
-                const uint8_t *keyIdBuf = static_cast<const uint8_t *>(data.ReadBuffer(keyIdSize));
+                const uint8_t *keyIdBuf = static_cast<const uint8_t *>(data.ReadUnpadBuffer(keyIdSize));
                 if (keyIdBuf == nullptr) {
-                    DRM_ERR_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_DECRYPT_DATA read keyId failed.");
+                    DRM_ERR_LOG("DECRYPT_MODULE_DECRYPT_DATA read keyId failed.");
                     return IPC_STUB_WRITE_PARCEL_ERR;
                 }
                 cryptInfo.keyId.assign(keyIdBuf, keyIdBuf + keyIdSize);
@@ -92,7 +89,7 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
             uint32_t ivSize = data.ReadUint32();
             DRM_CHECK_AND_RETURN_RET_LOG(ivSize < IV_MAX_LEN, DRM_MEMORY_ERROR, "The size of iv is too large.");
             if (ivSize != 0) {
-                const uint8_t *ivBuf = static_cast<const uint8_t *>(data.ReadBuffer(ivSize));
+                const uint8_t *ivBuf = static_cast<const uint8_t *>(data.ReadUnpadBuffer(ivSize));
                 if (ivBuf == nullptr) {
                     DRM_ERR_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_DECRYPT_DATA read ivSize failed.");
                     return IPC_STUB_WRITE_PARCEL_ERR;
@@ -130,20 +127,17 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
                 DRM_ERR_LOG("DecryptMediaData faild.");
                 return ret;
             }
-            DRM_INFO_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_DECRYPT_DATA exit.");
             return ret;
         }
         case DECRYPT_MODULE_SET_LISTENER_OBJ: {
-            DRM_INFO_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_SET_LISTENER_OBJ enter.");
+            DRM_INFO_LOG("DECRYPT_MODULE_SET_LISTENER_OBJ enter.");
             sptr<IRemoteObject> object = data.ReadRemoteObject();
             int32_t ret = SetListenerObject(object);
-            DRM_INFO_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_SET_LISTENER_OBJ exit.");
             return ret;
         }
         case DECRYPT_MODULE_RELEASE: {
             DRM_INFO_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_RELEASE enter.");
             int32_t ret = Release();
-            DRM_INFO_LOG("MediaDecryptModuleServiceStub DECRYPT_MODULE_RELEASE exit.");
             return ret;
         }
         default: {

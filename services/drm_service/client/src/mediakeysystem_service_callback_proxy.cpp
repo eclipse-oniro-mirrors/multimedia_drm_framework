@@ -27,34 +27,34 @@ int32_t MediaKeySystemServiceCallbackProxy::SendEvent(DrmEventType event, int32_
     MessageParcel parcelData;
     MessageParcel reply;
     MessageOption option;
-    DRM_INFO_LOG("MediaKeySystemServiceCallbackProxy SendEvent called, event:%{public}d", event);
+    DRM_INFO_LOG("SendEvent called, event:%{public}d", event);
     if (!parcelData.WriteInterfaceToken(GetDescriptor())) {
-        DRM_ERR_LOG("MediaKeySystemServiceCallbackProxy SendEvent Write interface token failed.");
+        DRM_ERR_LOG("SendEvent Write interface token failed.");
         return IPC_PROXY_ERR;
     }
     if (!parcelData.WriteInt32(event)) {
-        DRM_ERR_LOG("MediaKeySystemServiceCallbackProxy SendEvent Write event failed.");
+        DRM_ERR_LOG("SendEvent Write event failed.");
         return IPC_PROXY_ERR;
     }
     if (!parcelData.WriteInt32(extra)) {
-        DRM_ERR_LOG("MediaKeySystemServiceCallbackProxy SendEvent Write extra failed.");
+        DRM_ERR_LOG("SendEvent Write extra failed.");
         return IPC_PROXY_ERR;
     }
     if (!parcelData.WriteUint32(data.size())) {
-        DRM_ERR_LOG("MediaKeySystemServiceCallbackProxy SendEvent Write data size failed.");
+        DRM_ERR_LOG("SendEvent Write data size failed.");
         return IPC_PROXY_ERR;
     }
     for (auto item : data) {
         if (!parcelData.WriteUint8(item)) {
-            DRM_ERR_LOG("MediaKeySystemServiceCallbackProxy SendEvent Write data failed.");
+            DRM_ERR_LOG("SendEvent Write data failed.");
             return IPC_PROXY_ERR;
         }
     }
-    int32_t error = Remote()->SendRequest(MEDIA_KEY_SYSTEM_SERVICE_CALLBACK_SEND_EVENT, parcelData, reply, option);
-    if (error != ERR_NONE) {
-        DRM_ERR_LOG("MediaKeySystemServiceCallbackProxy SendEvent failed, error: %{public}d", error);
+    int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_SERVICE_CALLBACK_SEND_EVENT, parcelData, reply, option);
+    if (ret != ERR_OK) {
+        DRM_ERR_LOG("SendEvent failed, errcode: %{public}d", ret);
     }
-    return error;
+    return ret;
 }
 } // namespace DrmStandard
 } // namespace OHOS

@@ -43,9 +43,6 @@ const int32_t ARGS_TWO = 2;
 const int32_t ARGS_THREE = 3;
 const int32_t ARGS_FOUR = 4;
 
-const int32_t KEY_SYSTEM_MAX_NUMBER = 64;
-const int32_t KEY_SESSION_MAX_NUMBER = 64;
-
 enum NapiMediaKeyRequestType {
     MEDIA_KEY_REQUEST_TYPE_UNKNOWN = 0,
     MEDIA_KEY_REQUEST_TYPE_INITIAL,

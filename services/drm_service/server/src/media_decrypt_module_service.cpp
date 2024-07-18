@@ -39,7 +39,7 @@ const uint32_t TOP_THD = 2;
 MediaDecryptModuleService::MediaDecryptModuleService(
     sptr<OHOS::HDI::Drm::V1_0::IMediaDecryptModule> hdiMediaDecryptModule)
 {
-    DRM_INFO_LOG("MediaDecryptModuleService 0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
+    DRM_INFO_LOG("0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
     hdiMediaDecryptModule_ = hdiMediaDecryptModule;
 }
 
@@ -47,7 +47,7 @@ MediaDecryptModuleService::MediaDecryptModuleService(
     sptr<OHOS::HDI::Drm::V1_0::IMediaDecryptModule> hdiMediaDecryptModule,
     StatisticsInfo statisticsInfo)
 {
-    DRM_INFO_LOG("MediaDecryptModuleService 0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
+    DRM_INFO_LOG("0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
     hdiMediaDecryptModule_ = hdiMediaDecryptModule;
     statisticsInfo_ = statisticsInfo;
     instanceId_ = HiTraceChain::GetId().GetChainId();
@@ -55,25 +55,23 @@ MediaDecryptModuleService::MediaDecryptModuleService(
 
 MediaDecryptModuleService::~MediaDecryptModuleService()
 {
-    DRM_INFO_LOG("MediaDecryptModuleService 0x%{public}06" PRIXPTR " Instances destroy.", FAKE_POINTER(this));
+    DRM_INFO_LOG("0x%{public}06" PRIXPTR " Instances destroy.", FAKE_POINTER(this));
     std::lock_guard<std::mutex> lock(moduleLock_);
     if (hdiMediaDecryptModule_ != nullptr) {
         Release();
     }
     ReportDecryptionStatisticsEvent(instanceId_, statisticsInfo_.bundleName, decryptStatistics_);
-    DRM_INFO_LOG("MediaDecryptModuleService::~MediaDecryptModuleService exit.");
 }
 
 int32_t MediaDecryptModuleService::Release()
 {
-    DrmTrace trace("MediaDecryptModuleService::Release");
-    DRM_INFO_LOG("MediaDecryptModuleService::Release enter.");
+    DrmTrace trace("Release");
+    DRM_INFO_LOG("Release enter.");
     int32_t errCode = DRM_OK;
     if (hdiMediaDecryptModule_ != nullptr) {
         DRM_INFO_LOG("hdiMediaDecryptModule_ call Close");
         hdiMediaDecryptModule_ = nullptr;
     }
-    DRM_INFO_LOG("MediaDecryptModuleService::Release exit.");
     return errCode;
 }
 
@@ -81,8 +79,8 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
     IMediaDecryptModuleService::CryptInfo &cryptInfo, IMediaDecryptModuleService::DrmBuffer &srcBuffer,
     IMediaDecryptModuleService::DrmBuffer &dstBuffer)
 {
-    DrmTrace trace("MediaDecryptModuleService::DecryptMediaData");
-    DRM_INFO_LOG("MediaDecryptModuleService::DecryptMediaData enter.");
+    DrmTrace trace("DecryptMediaData");
+    DRM_INFO_LOG("DecryptMediaData enter.");
     int32_t ret = DRM_OK;
     uint32_t bufLen = 0;
     OHOS::HDI::Drm::V1_0::CryptoInfo cryptInfoTmp;
@@ -97,14 +95,13 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
     uint32_t decryptDuration = CalculateTimeDiff(timeBefore, std::chrono::system_clock::now());
     UpdateDecryptionStatistics(ret, bufLen, decryptDuration);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaDecryptModuleService::DecryptMediaData failed.");
+        DRM_ERR_LOG("DecryptMediaData failed.");
         ReportDecryptionFaultEvent(ret, "DecryptMediaData failed",
             std::to_string(static_cast<int32_t>(cryptInfoTmp.type)),
             CastToHexString(cryptInfoTmp.keyId), CastToHexString(cryptInfoTmp.iv));
     }
     (void)::close(srcBuffer.fd);
     (void)::close(dstBuffer.fd);
-    DRM_INFO_LOG("MediaDecryptModuleService::DecryptMediaData exit.");
     return ret;
 }
 
@@ -129,7 +126,7 @@ void MediaDecryptModuleService::SetDrmBufferInfo(OHOS::HDI::Drm::V1_0::DrmBuffer
     OHOS::HDI::Drm::V1_0::DrmBuffer* drmDstBuffer, IMediaDecryptModuleService::DrmBuffer &srcBuffer,
     IMediaDecryptModuleService::DrmBuffer &dstBuffer, uint32_t bufLen)
 {
-    DRM_INFO_LOG("MediaDecryptModuleService::SetDrmBufferInfo");
+    DRM_INFO_LOG("SetDrmBufferInfo");
     drmSrcBuffer->bufferType = srcBuffer.bufferType;
     drmSrcBuffer->fd = srcBuffer.fd;
     drmSrcBuffer->bufferLen = bufLen;
@@ -174,7 +171,7 @@ void MediaDecryptModuleService::UpdateDecryptionStatistics(int32_t decryptionRes
 
 const std::string MediaDecryptModuleService::GetTopThreeDecryptionDurations()
 {
-    DRM_INFO_LOG("MediaDecryptModuleService::GetTopThreeDecryptionDurations");
+    DRM_INFO_LOG("GetTopThreeDecryptionDurations");
     std::vector<uint32_t> topThreeDurations(TOP_THREE_SIZE, 0);
     std::lock_guard<std::mutex> statisticsLock(statisticsMutex_);
     uint32_t currentTopThreeSize = decryptStatistics_.topThree.size();
@@ -193,7 +190,7 @@ const std::string MediaDecryptModuleService::GetTopThreeDecryptionDurations()
 
 std::string MediaDecryptModuleService::GetDumpInfo()
 {
-    DRM_INFO_LOG("MediaDecryptModuleService::GetDumpInfo");
+    DRM_INFO_LOG("GetDumpInfo");
     std::string dumpInfo = "Total Decryption Times: " + std::to_string(decryptStatistics_.decryptTimes) + "\n"
                            "Error Decryption Times: " + std::to_string(decryptStatistics_.errorDecryptTimes) + "\n"
                            "Top3 Decryption Duration: " + GetTopThreeDecryptionDurations();

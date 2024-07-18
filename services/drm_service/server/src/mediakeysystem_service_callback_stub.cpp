@@ -23,21 +23,21 @@ namespace DrmStandard {
 int32_t MeidaKeySystemServiceCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    int32_t errCode = DRM_ERROR;
+    int32_t ret = DRM_ERROR;
 
     if (data.ReadInterfaceToken() != GetDescriptor()) {
-        return errCode;
+        return ret;
     }
     switch (code) {
         case MEDIA_KEY_SYSTEM_SERVICE_CALLBACK_SEND_EVENT:
-            errCode = MeidaKeySystemServiceCallbackStub::HandleSendEvent(data);
+            ret = MeidaKeySystemServiceCallbackStub::HandleSendEvent(data);
             break;
         default:
             DRM_ERR_LOG("MeidaKeySystemServiceCallbackStub request code %{public}u not handled", code);
-            errCode = IPCObjectStub::OnRemoteRequest(code, data, reply, option);
+            ret = IPCObjectStub::OnRemoteRequest(code, data, reply, option);
             break;
     }
-    return errCode;
+    return ret;
 }
 
 int32_t MeidaKeySystemServiceCallbackStub::HandleSendEvent(MessageParcel &data)

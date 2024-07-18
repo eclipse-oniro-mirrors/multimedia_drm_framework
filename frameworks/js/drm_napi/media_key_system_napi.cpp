@@ -991,13 +991,11 @@ napi_value MediaKeySystemNapi::Destroy(napi_env env, napi_callback_info info)
             DRM_ERR_LOG("mediaKeySystemImpl_->GetCertificateStatus faild!");
             return nullptr;
         }
-        MediaKeySystemFactoryImpl::GetInstance()->keySystemNumber--;
     } else {
         NapiDrmError::ThrowError(env, "Destroy faild.", DRM_UNKNOWN_ERROR);
         DRM_ERR_LOG("mediaKeySystemNapi Destroy Failed!");
         return nullptr;
     }
-    DRM_DEBUG_LOG("current keySystemNumber: %{public}d.", MediaKeySystemFactoryImpl::GetInstance()->keySystemNumber);
     ConfigParser::WriteEndEvent(0, 0, std::string("destroy"));
     DRM_INFO_LOG("MediaKeySystemNapi::Release exit.");
     return result;

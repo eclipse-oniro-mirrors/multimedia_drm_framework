@@ -29,36 +29,36 @@ int32_t MediaKeySessionServiceCallbackProxy::SendEvent(DrmEventType event, int32
     MessageParcel parcelData;
     MessageParcel reply;
     MessageOption option;
-    DRM_INFO_LOG("KeySessionServiceCallbackProxy SendEvent called, event:%{public}d", event);
+    DRM_INFO_LOG("SendEvent called, event:%{public}d", event);
     if (!parcelData.WriteInterfaceToken(GetDescriptor())) {
-        DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent Write interface token failed.");
+        DRM_ERR_LOG("SendEvent Write interface token failed.");
         return IPC_PROXY_ERR;
     }
     if (!parcelData.WriteInt32(event)) {
-        DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent Write event failed.");
+        DRM_ERR_LOG("SendEvent Write event failed.");
         return IPC_PROXY_ERR;
     }
     if (!parcelData.WriteInt32(extra)) {
-        DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent Write extra failed.");
+        DRM_ERR_LOG("SendEvent Write extra failed.");
         return IPC_PROXY_ERR;
     }
     if (!parcelData.WriteUint32(data.size())) {
-        DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent Write data size failed.");
+        DRM_ERR_LOG("SendEvent Write data size failed.");
         return IPC_PROXY_ERR;
     }
     DRM_CHECK_AND_RETURN_RET_LOG(data.size() < DATA_MAX_LEN, DRM_MEMORY_ERROR, "The size of data is too large.");
     if (data.size() != 0) {
         if (!parcelData.WriteBuffer(data.data(), data.size())) {
-            DRM_ERR_LOG("MediaKeySessionServiceProxy SendEvent write data failed.");
+            DRM_ERR_LOG("SendEvent write data failed.");
             return IPC_PROXY_ERR;
         }
     }
 
-    int32_t error = Remote()->SendRequest(MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT, parcelData, reply, option);
-    if (error != ERR_NONE) {
-        DRM_ERR_LOG("KeySessionServiceCallbackProxy SendEvent failed, error: %{public}d", error);
+    int32_t ret = Remote()->SendRequest(MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT, parcelData, reply, option);
+    if (ret != DRM_OK) {
+        DRM_ERR_LOG("SendEvent failed, error: %{public}d", ret);
     }
-    return error;
+    return ret;
 }
 
 int32_t MediaKeySessionServiceCallbackProxy::SendEventKeyChanged(
@@ -67,15 +67,15 @@ int32_t MediaKeySessionServiceCallbackProxy::SendEventKeyChanged(
     MessageParcel parcelData;
     MessageParcel reply;
     MessageOption option;
-    DRM_INFO_LOG("SendEventKeyChanged");
+    DRM_INFO_LOG("SendEventKeyChanged enter.");
     if (!parcelData.WriteInterfaceToken(GetDescriptor())) {
-        DRM_ERR_LOG("SendEventKeyChanged Write interface token failed.");
+        DRM_ERR_LOG("Write interface token failed.");
         return IPC_PROXY_ERR;
     }
 
     uint32_t mapSize = statusTable.size();
     if (!parcelData.WriteUint32(mapSize)) {
-        DRM_ERR_LOG("SendEventKeyChanged Write mapSize failed.");
+        DRM_ERR_LOG("Write mapSize failed.");
         return IPC_PROXY_ERR;
     }
     for (auto item : statusTable) {
@@ -84,7 +84,7 @@ int32_t MediaKeySessionServiceCallbackProxy::SendEventKeyChanged(
         DRM_CHECK_AND_RETURN_RET_LOG(idSize < DATA_MAX_LEN, DRM_MEMORY_ERROR, "The size of data is too large.");
         if (idSize != 0) {
             if (!parcelData.WriteBuffer(item.first.data(), idSize)) {
-                DRM_ERR_LOG("MediaKeySessionServiceProxy SendEventKeyChanged write data failed.");
+                DRM_ERR_LOG("write data failed.");
                 return IPC_PROXY_ERR;
             }
         }
@@ -92,16 +92,16 @@ int32_t MediaKeySessionServiceCallbackProxy::SendEventKeyChanged(
     }
 
     if (!parcelData.WriteBool(hasNewGoodLicense)) {
-        DRM_ERR_LOG("SendEventKeyChanged Write extra failed.");
+        DRM_ERR_LOG("Write extra failed.");
         return IPC_PROXY_ERR;
     }
 
-    int32_t error =
+    int32_t ret =
         Remote()->SendRequest(MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT_KEY_CHANGED, parcelData, reply, option);
-    if (error != ERR_NONE) {
-        DRM_ERR_LOG("SendEventKeyChanged failed, error: %{public}d", error);
+    if (ret != ERR_NONE) {
+        DRM_ERR_LOG("failed, error: %{public}d", ret);
     }
-    return error;
+    return ret;
 }
 } // DrmStandard
 } // namespace OHOS

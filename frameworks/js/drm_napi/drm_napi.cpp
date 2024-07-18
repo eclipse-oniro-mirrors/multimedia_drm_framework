@@ -63,8 +63,6 @@ napi_value DrmNapi::Init(napi_env env, napi_value exports)
     status = napi_define_properties(env, exports, sizeof(drm_static_properties) / sizeof(drm_static_properties[0]),
         drm_static_properties);
     DRM_CHECK_AND_RETURN_RET_LOG(status == napi_ok, nullptr, "Failed to define static DrmNapi function");
-
-    DRM_INFO_LOG("DrmNapi Init success");
     return exports;
 }
 
@@ -94,7 +92,6 @@ napi_value DrmNapi::DrmNapiConstructor(napi_env env, napi_callback_info info)
         }
     }
     DRM_ERR_LOG("DrmNapiDestructor call Failed!");
-    DRM_INFO_LOG("DrmNapi DrmNapiConstructor exit.");
     return result;
 }
 
@@ -105,7 +102,6 @@ void DrmNapi::DrmNapiDestructor(napi_env env, void *nativeObject, void *finalize
     if (drmNapi != nullptr) {
         drmNapi->~DrmNapi();
     }
-    DRM_INFO_LOG("DrmNapi DrmNapiDestructor exit.");
 }
 
 napi_value DrmNapi::IsMediaKeySystemSupported(napi_env env, napi_callback_info info)
@@ -124,7 +120,6 @@ napi_value DrmNapi::GetMediaKeySystems(napi_env env, napi_callback_info info)
     napi_value result = nullptr;
     result = MediaKeySystemNapi::GetMediaKeySystems(env, info);
     ConfigParser::WriteEndEvent(0, 0, std::string("getMediaKeySystems"));
-    DRM_INFO_LOG("DrmNapi GetMediaKeySystems exit.");
     return result;
 }
 
@@ -134,7 +129,6 @@ napi_value DrmNapi::GetMediaKeySystemUuid(napi_env env, napi_callback_info info)
     napi_value result = nullptr;
     result = MediaKeySystemNapi::GetMediaKeySystemUuid(env, info);
     ConfigParser::WriteEndEvent(0, 0, std::string("getMediaKeySystemUuid"));
-    DRM_INFO_LOG("DrmNapi GetMediaKeySystemUuid exit.");
     return result;
 }
 
@@ -144,7 +138,6 @@ napi_value DrmNapi::CreateMediaKeySystemInstance(napi_env env, napi_callback_inf
     napi_value result = nullptr;
     result = MediaKeySystemNapi::CreateMediaKeySystemInstance(env, info);
     ConfigParser::WriteEndEvent(0, 0, std::string("createMediaKeySystem"));
-    DRM_INFO_LOG("DrmNapi CreateMediaKeySystemInstance exit.");
     return result;
 }
 } // namespace OHOS

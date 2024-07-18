@@ -71,7 +71,7 @@ private:
     std::mutex mutex_;
     sptr<DrmHostManager> drmHostManager_;
     std::map<int32_t, std::set<sptr<MediaKeySystemService>>> mediaKeySystemForPid_;
-    std::map<std::string, int32_t> CurrentMediaKeySystemNum_;
+    std::map<std::string, int32_t> currentMediaKeySystemNum_;
 };
 } // DrmStandard
 } // OHOS
