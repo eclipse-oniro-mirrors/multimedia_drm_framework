@@ -489,7 +489,11 @@ Drm_ErrCode OH_MediaKeySystem_CreateMediaKeySession(MediaKeySystem *mediaKeySyst
         return DRM_ERR_NO_MEMORY;
     }
     ret = sessionObject->sessionImpl_->SetCallback(sessionObject->sessionCallback_);
-    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_UNKNOWN, "session set callback failed!");
+    if (ret != DRM_ERR_OK) {
+        delete sessionObject;
+        DRM_ERR_LOG("session set callback failed!");
+        return DRM_ERR_UNKNOWN;
+    }
 
     *mediaKeySession = static_cast<MediaKeySession *>(sessionObject);
     ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySystem_CreateMediaKeySession"));
