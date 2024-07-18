@@ -372,7 +372,7 @@ Drm_ErrCode OH_MediaKeySystem_GenerateKeySystemRequest(MediaKeySystem *mediaKeyS
         "mediaKeySystemImpl::GenerateKeySystemRequest faild!");
     int32_t result = systemObject->systemImpl_->GenerateKeySystemRequest(requestData, defaultUrlData);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_UNKNOWN,
-        "OH_MediaKeySystem_GenerateKeySystemRequest mediaKeySystem is nullptr!");
+        "MediaKeySystemImpl GenerateKeySystemRequest failed!");
     if (requestData.size() != 0) {
         int32_t ret = memcpy_s(request, *requestLen, requestData.data(), requestData.size());
         DRM_CHECK_AND_RETURN_RET_LOG(ret == 0, DRM_ERR_NO_MEMORY,
