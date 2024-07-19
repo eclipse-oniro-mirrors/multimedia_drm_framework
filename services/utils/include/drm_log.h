@@ -23,7 +23,7 @@
 
 #undef LOG_DOMAIN
 #undef LOG_TAG
-#define LOG_DOMAIN 0xD002B00
+#define LOG_DOMAIN 0xD002B21
 #define LOG_TAG "DRM"
 #define MAX_STRING_SIZE 256
 
