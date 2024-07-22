@@ -120,9 +120,6 @@ int32_t MediaKeySessionService::GenerateMediaKeyRequest(
         generationResult_ = "failed";
         DRM_ERR_LOG("MediaKeySessionService::GenerateMediaKeyRequest failed.");
         ReportFaultEvent(ret, "GenerateMediaKeyRequest failed", "");
-        struct DownLoadInfo downLoadInfo = InitDownLoadInfo(generationDuration_, generationResult_, 0,
-            "GenerateMediaKeyRequest failed");
-        ReportLicenseBehaviorEvent(statisticsInfo_, mediaKeyType_, downLoadInfo);
         return ret;
     }
     generationResult_ = "success";
@@ -146,9 +143,6 @@ int32_t MediaKeySessionService::ProcessMediaKeyResponse(std::vector<uint8_t> &li
         std::string responseString = std::string(reinterpret_cast<const char*>(licenseResponse.data()),
             licenseResponse.size());
         ReportFaultEvent(ret, "ProcessMediaKeyResponse failed", responseString);
-        struct DownLoadInfo downLoadInfo = InitDownLoadInfo(generationDuration_, generationResult_, processDuration,
-            "failed");
-        ReportLicenseBehaviorEvent(statisticsInfo_, mediaKeyType_, downLoadInfo);
         return ret;
     }
     struct DownLoadInfo downLoadInfo = InitDownLoadInfo(generationDuration_, generationResult_, processDuration,

@@ -118,9 +118,6 @@ int32_t MediaKeySystemService::GenerateKeySystemRequest(std::vector<uint8_t> &re
         DRM_ERR_LOG("MediaKeySystemService::GenerateKeySystemRequest failed.");
         ReportFaultEvent(ret, "GenerateKeySystemRequest failed", "");
         generationResult_ = "failed";
-        struct DownLoadInfo downLoadInfo = InitDownLoadInfo(generationDuration_, generationResult_, 0,
-            "GenerateKeySystemRequest failed");
-        ReportCertificateBehaviorEvent(statisticsInfo_, downLoadInfo, 0, 0, "");
         return ret;
     }
     generationResult_ = "success";
@@ -140,9 +137,6 @@ int32_t MediaKeySystemService::ProcessKeySystemResponse(const std::vector<uint8_
         DRM_ERR_LOG("MediaKeySystemService::ProcessKeySystemResponse failed.");
         std::string responseString = std::string(reinterpret_cast<const char*>(response.data()), response.size());
         ReportFaultEvent(ret, "ProcessKeySystemResponse failed", responseString);
-        struct DownLoadInfo downLoadInfo = InitDownLoadInfo(generationDuration_, generationResult_, processDuration,
-            "failed");
-        ReportCertificateBehaviorEvent(statisticsInfo_, downLoadInfo, 0, 0, "");
         return ret;
     }
     DRM_INFO_LOG("MediaKeySystemService::ProcessKeySystemResponse exit.");
