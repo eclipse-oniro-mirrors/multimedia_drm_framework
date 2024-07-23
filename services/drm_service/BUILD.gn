@@ -73,6 +73,8 @@ ohos_shared_library("drm_service") {
     "samgr:samgr_proxy",
   ]
 
+  public_external_deps = [ "json:nlohmann_json_static" ]
+
   cflags = [
     "-Wall",
     "-fPIC",
