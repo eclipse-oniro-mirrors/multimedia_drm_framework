@@ -293,7 +293,7 @@ void MediaKeySystemFactoryService::InitStatisticsInfo(const sptr<IMediaKeySystem
     std::string pluginName, StatisticsInfo &statisticsInfo)
 {
     DRM_INFO_LOG("InitStatisticsInfo enter.");
-	std::lock_guard<std::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     statisticsInfo.pluginName = pluginName;
     if (drmHostManager_ != nullptr) {
         std::map<std::string, std::string> pluginNameUuidMap;
