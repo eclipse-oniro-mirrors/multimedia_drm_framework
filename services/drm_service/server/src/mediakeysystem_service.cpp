@@ -56,6 +56,9 @@ MediaKeySystemService::~MediaKeySystemService()
     }
 }
 
+void MediaKeySystemService::OnDrmPluginDied(std::string &name)
+{}
+
 int32_t MediaKeySystemService::CloseMediaKeySystemServiceByCallback()
 {
     DRM_INFO_LOG("MediaKeySystemService::CloseMediaKeySystemServiceByCallback enter.");
