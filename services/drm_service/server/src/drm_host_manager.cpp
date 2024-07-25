@@ -41,9 +41,10 @@ const int32_t LAZY_UNLOAD_TIME_IN_MINUTES = 3;
 const int32_t NOT_LAZY_LOADDED = -65536;
 
 DrmHostManager::DrmHostDeathRecipient::DrmHostDeathRecipient(
-    const sptr<DrmHostManager> &drmHostManager, const sptr<IMediaKeySystemFactory> drmHostServieProxy)
-    : drmHostManager_(drmHostManager), drmHostServieProxy_(drmHostServieProxy)
+    const sptr<DrmHostManager> &drmHostManager, std::string &name)
+    : drmHostManager_(drmHostManager)
 {
+    name_ = name;
     DRM_DEBUG_LOG("DrmHostManager::DrmHostDeathRecipient");
 }
 
@@ -51,22 +52,20 @@ DrmHostManager::DrmHostDeathRecipient::~DrmHostDeathRecipient()
 {
     DRM_DEBUG_LOG("DrmHostManager::~DrmHostDeathRecipient");
 }
-
+void DrmHostManager::OnDrmPluginDied(std::string &name)
+{
+}
 void DrmHostManager::DrmHostDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
     DRM_ERR_LOG("DrmHostManager remote Service died, do clean works.");
-    sptr<IMediaKeySystemFactory> drmHostServieProxy = drmHostServieProxy_.promote();
-    if (drmHostServieProxy != nullptr) {
-        drmHostManager_->ClearDeathService(drmHostServieProxy);
-    }
+    drmHostManager_->ClearDeathService(name_);
     DRM_INFO_LOG("DrmHostManager::DrmHostDeathRecipient::OnRemoteDied exit.");
 }
 
-void DrmHostManager::ClearDeathService(sptr<IMediaKeySystemFactory> drmHostServieProxy)
+void DrmHostManager::ClearDeathService(std::string &name)
 {
-    DRM_DEBUG_LOG("DrmHostManager::ClearDeathService enter.");
+    DRM_INFO_LOG("DrmHostManager::ClearDeathService enter.");
     std::lock_guard<std::recursive_mutex> lock(drmHostMapMutex);
-    std::string name = hdiMediaKeySystemFactoryAndPluginNameMap[drmHostServieProxy];
     if (lazyLoadPluginInfoMap.count(name) <= 0) {
         DRM_DEBUG_LOG("DrmHostManager::ClearDeathService PluginCountInfo is empty, name:%{public}s",
             name.c_str());
@@ -76,9 +75,20 @@ void DrmHostManager::ClearDeathService(sptr<IMediaKeySystemFactory> drmHostServi
         DRM_DEBUG_LOG("DrmHostManager::ClearDeathService PluginCountMap is empty.");
         return;
     }
+    if (statusCallback_ != nullptr) {
+        DRM_INFO_LOG("DrmHostManager::ClearDeathService OnDrmPluginDied.");
+        statusCallback_->OnDrmPluginDied(name);
+        DRM_INFO_LOG("DrmHostManager::ClearDeathService OnDrmPluginDied.");
+    }
     lazyLoadPluginCountMap[name] = NOT_LAZY_LOADDED;
     lazyLoadPluginTimeoutMap[name] = NOT_LAZY_LOADDED;
-    hdiMediaKeySystemFactoryAndPluginNameMap.erase(drmHostServieProxy);
+    for (auto it = hdiMediaKeySystemFactoryAndPluginNameMap.begin(); it != hdiMediaKeySystemFactoryAndPluginNameMap.end();) { 
+        if (it->second == name) {
+            it = hdiMediaKeySystemFactoryAndPluginNameMap.erase(it);
+        } else {
+            ++it;
+        }
+    }
     DRM_DEBUG_LOG("DrmHostManager::ClearDeathService exit.");
 }
 
@@ -130,8 +140,8 @@ void DrmHostManager::DelayedLazyUnLoad()
         DRM_DEBUG_LOG("DrmHostManager::ProcessMessage check lazy unload, name:%{public}s, Count:%{public}d,"
             "Timeout:%{public}d", pluginInfoIt->second.c_str(), lazyLoadPluginCountMap[pluginInfoIt->first],
             lazyLoadPluginTimeoutMap[pluginInfoIt->first]);
-        if (lazyLoadPluginCountMap[pluginInfoIt->first] == NOT_LAZY_LOADDED ||
-            lazyLoadPluginTimeoutMap[pluginInfoIt->first] == NOT_LAZY_LOADDED) {
+        if (lazyLoadPluginCountMap[pluginInfoIt->first] <= NOT_LAZY_LOADDED ||
+            lazyLoadPluginTimeoutMap[pluginInfoIt->first] <= NOT_LAZY_LOADDED) {
             DRM_DEBUG_LOG("DrmHostManager::ProcessMessage not need to unload");
             continue;
         }
@@ -518,7 +528,7 @@ int32_t DrmHostManager::ProcessLazyLoadInfomation(std::string &name, sptr<IMedia
     DRM_INFO_LOG("DrmHostManager::ProcessLazyLoadInfomation enter, name:%{public}s.", name.c_str());
     drmHostServieProxys = drmHostServieProxy;
     sptr<DrmHostDeathRecipient> drmHostDeathRecipient = nullptr;
-    drmHostDeathRecipient = new DrmHostDeathRecipient(this, drmHostServieProxys);
+    drmHostDeathRecipient = new DrmHostDeathRecipient(this, name);
     const sptr<IRemoteObject> &remote = OHOS::HDI::hdi_objcast<IMediaKeySystemFactory>(drmHostServieProxys);
     if (remote != nullptr) {
         bool result = remote->AddDeathRecipient(drmHostDeathRecipient);
