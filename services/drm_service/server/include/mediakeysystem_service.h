@@ -80,6 +80,7 @@ public:
     std::string GetSessionsDumpInfo();
 
 private:
+    void OnDrmPluginDied(std::string &name) override;
     std::mutex mutex_;
     sptr<IMeidaKeySystemServiceCallback> callback_;
     wptr<IMediaKeySystemServiceOperatorsCallback> keySystemOperatoersCallback_;
