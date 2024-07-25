@@ -39,6 +39,31 @@ const std::string SPLIT_LINE =
 
 REGISTER_SYSTEM_ABILITY_BY_ID(MediaKeySystemFactoryService, MEDIA_KEY_SYSTEM_SERVICE_ID, true)
 
+
+void MediaKeySystemFactoryService::OnDrmPluginDied(std::string &name)
+{
+    DRM_INFO_LOG("OnDrmPluginDied enter.");
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    for (auto pidIt = mediaKeySystemForPid_.begin(); pidIt != mediaKeySystemForPid_.end();) {
+        std::set<sptr<MediaKeySystemService>> mediaKeySystemServiceSet = pidIt->second;
+        for (auto keySystem = mediaKeySystemServiceSet.begin(); keySystem != mediaKeySystemServiceSet.end();) {
+            std::string pluginName = (*keySystem)->GetPluginName();
+            if (name == pluginName) {
+                CloseMediaKeySystemService(*keySystem);
+                mediaKeySystemServiceSet.erase(keySystem++);
+            } else {
+                ++keySystem;
+            }
+        }
+        if (mediaKeySystemServiceSet.empty()) {
+            pidIt = mediaKeySystemForPid_.erase(pidIt);
+        } else {
+            pidIt++;
+        }
+    }
+    currentMediaKeySystemNum_.erase(name);
+}
+
 MediaKeySystemFactoryService::MediaKeySystemFactoryService(int32_t systemAbilityId, bool runOnCreate)
     : SystemAbility(systemAbilityId, runOnCreate)
 {
@@ -73,6 +98,7 @@ void MediaKeySystemFactoryService::OnDump()
 void MediaKeySystemFactoryService::OnStop()
 {
     DRM_INFO_LOG("OnStop enter.");
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
 
     if (drmHostManager_) {
         drmHostManager_->DeInit();
@@ -112,6 +138,7 @@ void MediaKeySystemFactoryService::DistroyForClientDied(pid_t pid)
 {
     // destroy all system objects for this pid
     DRM_INFO_LOG("DistroyForClientDied pid: %{public}d.", pid);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (mediaKeySystemForPid_.find(pid) == mediaKeySystemForPid_.end()) {
         return;
     }
@@ -137,7 +164,7 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
     sptr<IMediaKeySystemService> &mediaKeySystemProxy)
 {
     DRM_INFO_LOG("CreateMediaKeySystem enter.");
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     sptr<MediaKeySystemService> mediaKeySystemService = nullptr;
     sptr<IMediaKeySystem> hdiMediaKeySystem = nullptr;
     if (currentMediaKeySystemNum_[name] >= KEY_SYSTEM_MAX_NUMBER) {
@@ -175,6 +202,7 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
 
 int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySystemService> mediaKeySystemService)
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     DRM_INFO_LOG("CloseMediaKeySystemService enter.");
     int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemFactoryService GetCallingPID: %{public}d", currentPid);
@@ -202,6 +230,7 @@ int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySy
 int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &name, bool *isSurpported)
 {
     DRM_INFO_LOG("IsMediaKeySystemSupported one parameters enter.");
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, isSurpported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed.");
@@ -214,6 +243,7 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &nam
     bool *isSurpported)
 {
     DRM_INFO_LOG("IsMediaKeySystemSupported two parameters enter.");
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, mimeType, isSurpported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed.");
@@ -226,6 +256,7 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &nam
     int32_t securityLevel, bool *isSurpported)
 {
     DRM_INFO_LOG("IsMediaKeySystemSupported three parameters enter.");
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, mimeType, securityLevel, isSurpported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed.");
@@ -237,6 +268,7 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &nam
 int32_t MediaKeySystemFactoryService::GetMediaKeySystems(std::map<std::string, std::string> &mediaKeySystemNames)
 {
     DRM_INFO_LOG("GetMediaKeySystems enter.");
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = drmHostManager_->GetMediaKeySystems(mediaKeySystemNames);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("GetMediaKeySystems failed.");
@@ -248,6 +280,7 @@ int32_t MediaKeySystemFactoryService::GetMediaKeySystems(std::map<std::string, s
 int32_t MediaKeySystemFactoryService::GetMediaKeySystemUuid(std::string &name, std::string &uuid)
 {
     DRM_INFO_LOG("GetMediaKeySystemUuid enter.");
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = drmHostManager_->GetMediaKeySystemUuid(name, uuid);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("GetMediaKeySystemUuid failed.");
@@ -260,6 +293,7 @@ void MediaKeySystemFactoryService::InitStatisticsInfo(const sptr<IMediaKeySystem
     std::string pluginName, StatisticsInfo &statisticsInfo)
 {
     DRM_INFO_LOG("InitStatisticsInfo enter.");
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     statisticsInfo.pluginName = pluginName;
     if (drmHostManager_ != nullptr) {
         std::map<std::string, std::string> pluginNameUuidMap;
@@ -273,17 +307,18 @@ void MediaKeySystemFactoryService::InitStatisticsInfo(const sptr<IMediaKeySystem
         (void)hdiMediaKeySystem->GetConfigurationString("vendor", statisticsInfo.vendorName);
         (void)hdiMediaKeySystem->GetConfigurationString("version", statisticsInfo.versionName);
     }
-    DRM_INFO_LOG("InitStatisticsInfo uid: %{public}d, appName: %{public}s.",
+    DRM_INFO_LOG("uid: %{public}d, appName: %{public}s.",
         IPCSkeleton::GetCallingUid(), statisticsInfo.bundleName.c_str());
-    DRM_INFO_LOG("InitStatisticsInfo pluginName: %{public}s, pluginUUID: %{public}s",
+    DRM_INFO_LOG("pluginName: %{public}s, pluginUUID: %{public}s",
         statisticsInfo.pluginName.c_str(), statisticsInfo.pluginUuid.c_str());
-    DRM_INFO_LOG("InitStatisticsInfo vendorName: %{public}s, versionName: %{public}s",
+    DRM_INFO_LOG("vendorName: %{public}s, versionName: %{public}s",
         statisticsInfo.vendorName.c_str(), statisticsInfo.versionName.c_str());
 }
 
 int32_t MediaKeySystemFactoryService::WriteDumpInfo(int32_t fd, std::string &dumpString)
 {
     OHOS::HiviewDFX::DumpUsage dumpUse;
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     dumpString += "MediaKeySystem MemoryUsage: " + std::to_string(dumpUse.GetPss(getpid())) + "\n";
     std::map<std::string, std::string> mediaKeySystemInfo;
     drmHostManager_->GetMediaKeySystems(mediaKeySystemInfo);

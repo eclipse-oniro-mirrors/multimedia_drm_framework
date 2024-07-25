@@ -43,7 +43,7 @@ struct ApiEventConfig {
 class ConfigParser {
 public:
     static int64_t AddProcessor();
-    static void WriteEndEvent(const int result, const int errCode, std::string apiName);
+    static void WriteEndEvent(const int result, const int errCode, std::string apiName, int64_t beginTime);
     ConfigParser(const ConfigParser&) = delete;
     ConfigParser& operator=(const ConfigParser&) = delete;
 

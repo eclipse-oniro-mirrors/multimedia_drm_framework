@@ -49,6 +49,7 @@ MediaDecryptModuleService::MediaDecryptModuleService(
     StatisticsInfo statisticsInfo)
 {
     DRM_INFO_LOG("0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
+    std::lock_guard<std::mutex> lock(moduleLock_);
     hdiMediaDecryptModule_ = hdiMediaDecryptModule;
     statisticsInfo_ = statisticsInfo;
     instanceId_ = HiTraceChain::GetId().GetChainId();
@@ -61,6 +62,7 @@ MediaDecryptModuleService::~MediaDecryptModuleService()
     if (hdiMediaDecryptModule_ != nullptr) {
         Release();
     }
+    std::lock_guard<std::mutex> statisticsLock(statisticsMutex_);
     ReportDecryptionStatisticsEvent(instanceId_, statisticsInfo_.bundleName, decryptStatistics_);
 }
 
@@ -92,6 +94,7 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
     memset_s(&drmDstBuffer, sizeof(drmSrcBuffer), 0, sizeof(drmDstBuffer));
     SetDrmBufferInfo(&drmSrcBuffer, &drmDstBuffer, srcBuffer, dstBuffer, bufLen);
     auto timeBefore = std::chrono::system_clock::now();
+    std::lock_guard<std::mutex> lock(moduleLock_);
     ret = hdiMediaDecryptModule_->DecryptMediaData(secureDecodrtState, cryptInfoTmp, drmSrcBuffer, drmDstBuffer);
     uint32_t decryptDuration = CalculateTimeDiff(timeBefore, std::chrono::system_clock::now());
     UpdateDecryptionStatistics(ret, bufLen, decryptDuration);

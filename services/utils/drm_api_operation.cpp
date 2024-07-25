@@ -248,19 +248,20 @@ int64_t ConfigParser::AddProcessor()
     return g_processorId;
 }
 
-void ConfigParser::WriteEndEvent(const int result, const int errCode, std::string apiName)
+void ConfigParser::WriteEndEvent(const int result, const int errCode, std::string apiName, int64_t beginTime)
 {
     DRM_INFO_LOG("ConfigParser::WriteEndEvent enter.");
     (void)AddProcessor();
     std::string transId = std::string("traceId_") + std::to_string(std::rand());
-    int64_t beginTime = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now())
-        .time_since_epoch().count();
+    int64_t endTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
+    
     HiviewDFX::HiAppEvent::Event event("api_diagnostic", "api_exec_end", OHOS::HiviewDFX::HiAppEvent::BEHAVIOR);
     event.AddParam("trans_id", transId);
     event.AddParam("api_name", apiName);
     event.AddParam("sdk_name", std::string("DrmKit"));
     event.AddParam("begin_time", beginTime);
-    event.AddParam("end_time", time(NULL));
+    event.AddParam("end_time", endTime);
     event.AddParam("result", result);
     event.AddParam("error_code", errCode);
     HiviewDFX::HiAppEvent::Write(event);

@@ -58,8 +58,10 @@ static Drm_ErrCode DealMediaKeyRequest(IMediaKeySessionService::MediaKeyRequest 
 Drm_ErrCode OH_MediaKeySession_GenerateMediaKeyRequest(MediaKeySession *mediaKeySession, DRM_MediaKeyRequestInfo *info,
     DRM_MediaKeyRequest *mediaKeyRequest)
 {
-    DrmTrace trace("OH_MediaKeySession_GenerateMediaKeyRequest");
     DRM_INFO_LOG("OH_MediaKeySession_GenerateMediaKeyRequest enter");
+    int64_t beginTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
+    DrmTrace trace("OH_MediaKeySession_GenerateMediaKeyRequest");
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySession != nullptr) && (info != nullptr) && (mediaKeyRequest != nullptr)),
         DRM_ERR_INVALID_VAL, "parameter is error.");
     IMediaKeySessionService::MediaKeyRequestInfo licenseRequestInfo;
@@ -81,15 +83,17 @@ Drm_ErrCode OH_MediaKeySession_GenerateMediaKeyRequest(MediaKeySession *mediaKey
     DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_ERR_OK), DRM_ERR_UNKNOWN,
         "OH_MediaKeySession_GenerateMediaKeyRequest call Failed!");
     Drm_ErrCode result = DealMediaKeyRequest(licenseRequest, mediaKeyRequest);
-    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_GenerateMediaKeyRequest"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_GenerateMediaKeyRequest"), beginTime);
     return result;
 }
 
 Drm_ErrCode OH_MediaKeySession_ProcessMediaKeyResponse(MediaKeySession *mediaKeySession, uint8_t *response,
     int32_t responseLen, uint8_t *offlineMediaKeyId, int32_t *offlineMediaKeyIdLen)
 {
-    DrmTrace trace("OH_MediaKeySession_ProcessMediaKeyResponse");
     DRM_INFO_LOG("OH_MediaKeySession_ProcessMediaKeyResponse enter.");
+    int64_t beginTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
+    DrmTrace trace("OH_MediaKeySession_ProcessMediaKeyResponse");
     DRM_CHECK_AND_RETURN_RET_LOG(
         ((mediaKeySession != nullptr) && (response != nullptr) && (responseLen > 0) &&
         (offlineMediaKeyId != nullptr) && (offlineMediaKeyIdLen != nullptr)), DRM_ERR_INVALID_VAL,
@@ -111,7 +115,7 @@ Drm_ErrCode OH_MediaKeySession_ProcessMediaKeyResponse(MediaKeySession *mediaKey
         return DRM_ERR_NO_MEMORY;
     }
     *offlineMediaKeyIdLen = keyIdVec.size();
-    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_ProcessMediaKeyResponse"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_ProcessMediaKeyResponse"), beginTime);
     return DRM_ERR_OK;
 }
 
@@ -140,6 +144,8 @@ static Drm_ErrCode MapToClist(std::map<std::string, std::string> licenseStatus, 
 Drm_ErrCode OH_MediaKeySession_CheckMediaKeyStatus(MediaKeySession *mediaKeySessoin, DRM_MediaKeyStatus *mediaKeyStatus)
 {
     DRM_INFO_LOG("OH_MediaKeySession_CheckMediaKeyStatus enter");
+    int64_t beginTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
     std::map<std::string, std::string> licenseStatus;
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySessoin != nullptr) && (mediaKeyStatus != nullptr)), DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_CheckMediaKeyStatus parameter is error!");
@@ -154,13 +160,15 @@ Drm_ErrCode OH_MediaKeySession_CheckMediaKeyStatus(MediaKeySession *mediaKeySess
         return DRM_ERR_UNKNOWN;
     }
     Drm_ErrCode ret = MapToClist(licenseStatus, mediaKeyStatus);
-    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_CheckMediaKeyStatus"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_CheckMediaKeyStatus"), beginTime);
     return ret;
 }
 
 Drm_ErrCode OH_MediaKeySession_ClearMediaKeys(MediaKeySession *mediaKeySessoin)
 {
     DRM_INFO_LOG("OH_MediaKeySession_ClearMediaKeys enter.");
+    int64_t beginTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
     DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySessoin != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_ClearMediaKeys parameter is error!");
     int32_t currentPid = OHOS::IPCSkeleton::GetCallingPid();
@@ -172,7 +180,7 @@ Drm_ErrCode OH_MediaKeySession_ClearMediaKeys(MediaKeySession *mediaKeySessoin)
     result = sessionObject->sessionImpl_->ClearMediaKeys();
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_UNKNOWN,
         "OH_SetConfigurationByteArray mediaKeySystemImpl::SetConfigurationByteArray faild!");
-    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_ClearMediaKeys"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_ClearMediaKeys"), beginTime);
     return DRM_ERR_OK;
 }
 
@@ -180,6 +188,8 @@ Drm_ErrCode OH_MediaKeySession_GenerateOfflineReleaseRequest(MediaKeySession *me
     uint8_t *offlineMediaKeyId, int32_t offlineMediaKeyIdLen, uint8_t *releaseRequest, int32_t *releaseRequestLen)
 {
     DRM_INFO_LOG("OH_MediaKeySession_GenerateOfflineReleaseRequest enter");
+    int64_t beginTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySessoin != nullptr) && (offlineMediaKeyId != nullptr) &&
         (offlineMediaKeyIdLen > 0) && (releaseRequest != nullptr) && (releaseRequestLen != nullptr)),
         DRM_ERR_INVALID_VAL, "OH_MediaKeySession_GenerateOfflineReleaseRequest parameter is error!");
@@ -203,7 +213,7 @@ Drm_ErrCode OH_MediaKeySession_GenerateOfflineReleaseRequest(MediaKeySession *me
         return DRM_ERR_NO_MEMORY;
     }
     *releaseRequestLen = ReleaseRequest.size();
-    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_GenerateOfflineReleaseRequest"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_GenerateOfflineReleaseRequest"), beginTime);
     return DRM_ERR_OK;
 }
 
@@ -211,6 +221,8 @@ Drm_ErrCode OH_MediaKeySession_ProcessOfflineReleaseResponse(MediaKeySession *me
     uint8_t *offlineMediaKeyId, int32_t offlineMediaKeyIdLen, uint8_t *releaseReponse, int32_t releaseReponseLen)
 {
     DRM_INFO_LOG("OH_MediaKeySession_ProcessOfflineReleaseResponse enter.");
+    int64_t beginTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySessoin != nullptr) && (offlineMediaKeyId != nullptr) &&
         (offlineMediaKeyIdLen > 0) && (releaseReponse != nullptr) && (releaseReponseLen > 0)),
         DRM_ERR_INVALID_VAL, "OH_MediaKeySession_ProcessOfflineReleaseResponse parameter is error!");
@@ -223,7 +235,7 @@ Drm_ErrCode OH_MediaKeySession_ProcessOfflineReleaseResponse(MediaKeySession *me
     result = sessionObject->sessionImpl_->ProcessOfflineReleaseResponse(licenseIdVec, responseVec);
     DRM_CHECK_AND_RETURN_RET_LOG((result == DRM_ERR_OK), DRM_ERR_UNKNOWN,
         "OH_MediaKeySession_ProcessOfflineReleaseResponse call Failed!");
-    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_ProcessOfflineReleaseResponse"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_ProcessOfflineReleaseResponse"), beginTime);
     return DRM_ERR_OK;
 }
 
@@ -231,6 +243,8 @@ Drm_ErrCode OH_MediaKeySession_RestoreOfflineMediaKeys(MediaKeySession *mediaKey
     uint8_t *offlineMediaKeyId, int32_t offlineMediaKeyIdLen)
 {
     DRM_INFO_LOG("OH_MediaKeySession_RestoreOfflineMediaKeys enter.");
+    int64_t beginTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
     DRM_CHECK_AND_RETURN_RET_LOG(
         ((mediaKeySessoin != nullptr) && (offlineMediaKeyId != nullptr) && (offlineMediaKeyIdLen > 0)),
         DRM_ERR_INVALID_VAL, "OH_MediaKeySession_RestoreOfflineMediaKeys parameter is error!");
@@ -242,7 +256,7 @@ Drm_ErrCode OH_MediaKeySession_RestoreOfflineMediaKeys(MediaKeySession *mediaKey
     result = sessionObject->sessionImpl_->RestoreOfflineMediaKeys(licenseIdVec);
     DRM_CHECK_AND_RETURN_RET_LOG((result == DRM_ERR_OK), DRM_ERR_UNKNOWN,
         "OH_MediaKeySession_RestoreOfflineMediaKeys call Failed!");
-    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_RestoreOfflineMediaKeys"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_RestoreOfflineMediaKeys"), beginTime);
     return DRM_ERR_OK;
 }
 
@@ -250,6 +264,8 @@ Drm_ErrCode OH_MediaKeySession_GetContentProtectionLevel(MediaKeySession *mediaK
     DRM_ContentProtectionLevel *contentProtectionLevel)
 {
     DRM_INFO_LOG("OH_MediaKeySession_GetContentProtectionLevel enter.");
+    int64_t beginTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySessoin != nullptr) && (contentProtectionLevel != nullptr)),
         DRM_ERR_INVALID_VAL, "OH_MediaKeySession_GetContentProtectionLevel parameter is error!");
     int32_t result = DRM_ERR_OK;
@@ -267,7 +283,7 @@ Drm_ErrCode OH_MediaKeySession_GetContentProtectionLevel(MediaKeySession *mediaK
         DRM_ERR_LOG("OH_MediaKeySession_GetContentProtectionLevel the level obtained is beyond reasonable range!");
         return DRM_ERR_UNKNOWN;
     }
-    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_GetContentProtectionLevel"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_GetContentProtectionLevel"), beginTime);
     return DRM_ERR_OK;
 }
 
@@ -275,6 +291,8 @@ Drm_ErrCode OH_MediaKeySession_RequireSecureDecoderModule(MediaKeySession *media
     bool *status)
 {
     DRM_INFO_LOG("OH_MediaKeySession_RequireSecureDecoderModule enter.");
+    int64_t beginTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySessoin != nullptr) && (mimeType != nullptr) && (status != nullptr)),
         DRM_ERR_INVALID_VAL, "OH_MediaKeySession_RequireSecureDecoderModule parameter is error!");
     std::string mimeTypeBuf = std::string(mimeType);
@@ -291,7 +309,7 @@ Drm_ErrCode OH_MediaKeySession_RequireSecureDecoderModule(MediaKeySession *media
         return DRM_ERR_UNKNOWN;
     }
     *status = statusValue;
-    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_RequireSecureDecoderModule"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_RequireSecureDecoderModule"), beginTime);
     return DRM_ERR_OK;
 }
 
@@ -324,6 +342,8 @@ Drm_ErrCode OH_MediaKeySession_SetCallback(MediaKeySession *mediaKeySessoin,
 Drm_ErrCode OH_MediaKeySession_Destroy(MediaKeySession *keySession)
 {
     DRM_INFO_LOG("OH_MediaKeySession_Destroy enter.");
+    int64_t beginTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count();
     DRM_CHECK_AND_RETURN_RET_LOG(keySession != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_Destroy keySession is nullptr!");
     int32_t result = DRM_ERR_OK;
@@ -337,6 +357,6 @@ Drm_ErrCode OH_MediaKeySession_Destroy(MediaKeySession *keySession)
     }
     delete keySession;
     keySession = nullptr;
-    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_Destroy"));
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_Destroy"), beginTime);
     return DRM_ERR_OK;
 }

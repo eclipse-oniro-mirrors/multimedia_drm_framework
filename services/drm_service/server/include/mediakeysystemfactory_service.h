@@ -62,13 +62,14 @@ public:
     void DistroyForClientDied(pid_t pid) override;
     int32_t GetMediaKeySystems(std::map<std::string, std::string> &mediaKeySystemNames) override;
     int32_t GetMediaKeySystemUuid(std::string &name, std::string &uuid) override;
+    void OnDrmPluginDied(std::string &name) override;
 
 private:
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
     void InitStatisticsInfo(const sptr<IMediaKeySystem> &hdiMediaKeySystem,
         std::string pluginName, StatisticsInfo &statisticsInfo);
     int32_t WriteDumpInfo(int32_t fd, std::string &dumpString);
-    std::mutex mutex_;
+    std::recursive_mutex mutex_;
     sptr<DrmHostManager> drmHostManager_;
     std::map<int32_t, std::set<sptr<MediaKeySystemService>>> mediaKeySystemForPid_;
     std::map<std::string, int32_t> currentMediaKeySystemNum_;
