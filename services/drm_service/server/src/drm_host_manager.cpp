@@ -79,7 +79,8 @@ void DrmHostManager::ClearDeathService(std::string &name)
     }
     lazyLoadPluginCountMap[name] = NOT_LAZY_LOADDED;
     lazyLoadPluginTimeoutMap[name] = NOT_LAZY_LOADDED;
-    for (auto it = hdiMediaKeySystemFactoryAndPluginNameMap.begin(); it != hdiMediaKeySystemFactoryAndPluginNameMap.end();) { 
+    for (auto it = hdiMediaKeySystemFactoryAndPluginNameMap.begin();
+        it != hdiMediaKeySystemFactoryAndPluginNameMap.end();) { 
         if (it->second == name) {
             it = hdiMediaKeySystemFactoryAndPluginNameMap.erase(it);
         } else {
