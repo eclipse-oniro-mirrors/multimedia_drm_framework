@@ -78,16 +78,17 @@ public:
     class StatusCallback {
     public:
         virtual ~StatusCallback() = default;
+        virtual void OnDrmPluginDied(std::string &name) = 0;
     };
     class DrmHostDeathRecipient : public IRemoteObject::DeathRecipient {
     public:
         explicit DrmHostDeathRecipient(const sptr<DrmHostManager>& drmHostManager,
-            const sptr<IMediaKeySystemFactory> drmHostServieProxy);
+            std::string &name);
         virtual ~DrmHostDeathRecipient();
         void OnRemoteDied(const wptr<IRemoteObject> &remote) override;
     private:
         wptr<DrmHostManager> drmHostManager_;
-        wptr<IMediaKeySystemFactory> drmHostServieProxy_;
+        std::string name_;
     };
 
     explicit DrmHostManager(StatusCallback *statusCallback);
@@ -104,7 +105,8 @@ public:
     int32_t GetMediaKeySystems(std::map<std::string, std::string> &mediaKeySystemDescription);
     int32_t GetMediaKeySystemUuid(std::string &name, std::string &uuid);
     void ReleaseMediaKeySystem(sptr<IMediaKeySystem> &hdiMediaKeySystem);
-    void ClearDeathService(sptr<IMediaKeySystemFactory> drmHostServieProxy);
+    void ClearDeathService(std::string &name);
+    void OnDrmPluginDied(std::string &name);
 private:
     static void UnLoadOEMCertifaicateService(std::string &name, ExtraInfo info);
     int32_t InitGetMediaKeySystems();
@@ -148,6 +150,5 @@ private:
 };
 } // DrmStandard
 } // OHOS
-
 
 #endif // OHOS_DRM_DRM_HOST_MANAGER_H
