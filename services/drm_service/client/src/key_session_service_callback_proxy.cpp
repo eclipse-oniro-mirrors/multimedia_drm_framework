@@ -56,7 +56,7 @@ int32_t MediaKeySessionServiceCallbackProxy::SendEvent(DrmEventType event, int32
 
     int32_t ret = Remote()->SendRequest(MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT, parcelData, reply, option);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("SendEvent failed, error: %{public}d", ret);
+        DRM_ERR_LOG("SendEvent failed, errorcode: %{public}d", ret);
     }
     return ret;
 }
@@ -99,7 +99,7 @@ int32_t MediaKeySessionServiceCallbackProxy::SendEventKeyChanged(
     int32_t ret =
         Remote()->SendRequest(MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT_KEY_CHANGED, parcelData, reply, option);
     if (ret != ERR_NONE) {
-        DRM_ERR_LOG("failed, error: %{public}d", ret);
+        DRM_ERR_LOG("failed, errorcode: %{public}d", ret);
     }
     return ret;
 }
