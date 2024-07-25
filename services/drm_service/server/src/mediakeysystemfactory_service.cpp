@@ -230,7 +230,7 @@ int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySy
 int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &name, bool *isSurpported)
 {
     DRM_INFO_LOG("IsMediaKeySystemSupported one parameters enter.");
-	std::lock_guard<std::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, isSurpported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed.");
