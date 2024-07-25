@@ -256,7 +256,7 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &nam
     int32_t securityLevel, bool *isSurpported)
 {
     DRM_INFO_LOG("IsMediaKeySystemSupported three parameters enter.");
-	std::lock_guard<std::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, mimeType, securityLevel, isSurpported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed.");
@@ -268,7 +268,7 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &nam
 int32_t MediaKeySystemFactoryService::GetMediaKeySystems(std::map<std::string, std::string> &mediaKeySystemNames)
 {
     DRM_INFO_LOG("GetMediaKeySystems enter.");
-	std::lock_guard<std::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = drmHostManager_->GetMediaKeySystems(mediaKeySystemNames);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("GetMediaKeySystems failed.");
@@ -280,7 +280,7 @@ int32_t MediaKeySystemFactoryService::GetMediaKeySystems(std::map<std::string, s
 int32_t MediaKeySystemFactoryService::GetMediaKeySystemUuid(std::string &name, std::string &uuid)
 {
     DRM_INFO_LOG("GetMediaKeySystemUuid enter.");
-	std::lock_guard<std::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = drmHostManager_->GetMediaKeySystemUuid(name, uuid);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("GetMediaKeySystemUuid failed.");
@@ -318,7 +318,7 @@ void MediaKeySystemFactoryService::InitStatisticsInfo(const sptr<IMediaKeySystem
 int32_t MediaKeySystemFactoryService::WriteDumpInfo(int32_t fd, std::string &dumpString)
 {
     OHOS::HiviewDFX::DumpUsage dumpUse;
-	std::lock_guard<std::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     dumpString += "MediaKeySystem MemoryUsage: " + std::to_string(dumpUse.GetPss(getpid())) + "\n";
     std::map<std::string, std::string> mediaKeySystemInfo;
     drmHostManager_->GetMediaKeySystems(mediaKeySystemInfo);
