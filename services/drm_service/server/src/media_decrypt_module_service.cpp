@@ -41,6 +41,7 @@ MediaDecryptModuleService::MediaDecryptModuleService(
 {
     DRM_INFO_LOG("0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
     hdiMediaDecryptModule_ = hdiMediaDecryptModule;
+    instanceId_ = HiTraceChain::GetId().GetChainId();
 }
 
 MediaDecryptModuleService::MediaDecryptModuleService(
