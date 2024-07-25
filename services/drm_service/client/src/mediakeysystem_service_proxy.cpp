@@ -383,10 +383,10 @@ int32_t MediaKeySystemServiceProxy::GetOfflineMediaKeyIds(std::vector<std::vecto
         DRM_ERR_LOG("GetOfflineMediaKeyIds failed, errcode: %{public}d", ret);
         return ret;
     }
-    int32_t licenseIdsSize = reply.ReadUint32();
+    uint32_t licenseIdsSize = reply.ReadUint32();
     licenseIds.resize(licenseIdsSize);
-    for (int32_t i = 0; i < licenseIdsSize; i++) {
-        int32_t licenseIdSize = reply.ReadUint32();
+    for (uint32_t i = 0; i < licenseIdsSize; i++) {
+        uint32_t licenseIdSize = reply.ReadUint32();
         if (licenseIdSize == 0 || licenseIdSize > LICENSEID_MAX_LEN) {
             continue;
         }
