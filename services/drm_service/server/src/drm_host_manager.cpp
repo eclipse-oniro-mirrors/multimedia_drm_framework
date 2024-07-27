@@ -725,13 +725,6 @@ int32_t DrmHostManager::GetMediaKeySystems(std::map<std::string, std::string> &m
 {
     DRM_INFO_LOG("GetMediaKeySystems enter.");
     mediaKeySystemDescription.clear();
-    if (mediaKeySystemDescription_.empty()) {
-        int32_t ret = InitGetMediaKeySystems();
-        if (ret != DRM_OK) {
-            DRM_ERR_LOG("GetMediaKeySystems return Code:%{public}d", ret);
-            return DRM_HOST_ERROR;
-        }
-    }
     mediaKeySystemDescription.insert(mediaKeySystemDescription_.begin(), mediaKeySystemDescription_.end());
     DRM_DEBUG_LOG("GetMediaKeySystems size:%{public}zu\n", mediaKeySystemDescription.size());
     return DRM_OK;
