@@ -723,9 +723,17 @@ int32_t DrmHostManager::GetMediaKeySystemUuid(std::string &name, std::string &uu
 
 int32_t DrmHostManager::GetMediaKeySystems(std::map<std::string, std::string> &mediaKeySystemDescription)
 {
+    DRM_INFO_LOG("GetMediaKeySystems enter.");
     mediaKeySystemDescription.clear();
+    if (mediaKeySystemDescription_.empty()) {
+        int32_t ret = InitGetMediaKeySystems();
+        if (ret != DRM_OK) {
+            DRM_ERR_LOG("GetMediaKeySystems return Code:%{public}d", ret);
+            return DRM_HOST_ERROR;
+        }
+    }
     mediaKeySystemDescription.insert(mediaKeySystemDescription_.begin(), mediaKeySystemDescription_.end());
-    DRM_DEBUG_LOG("MetMediaKeySystems size:%{public}zu\n", mediaKeySystemDescription.size());
+    DRM_DEBUG_LOG("GetMediaKeySystems size:%{public}zu\n", mediaKeySystemDescription.size());
     return DRM_OK;
 }
 
@@ -762,8 +770,7 @@ int32_t DrmHostManager::InitGetMediaKeySystems()
     }
     ret = servmgr->ListServiceByInterfaceDesc(pluginServiceNames, "ohos.hdi.drm.v1_0.IMediaKeySystemFactory");
     if (ret != DRM_OK) {
-        DRM_ERR_LOG(
-            "InitGetMediaKeySystems ListServiceByInterfaceDesc faild, return Code:%{public}d", ret);
+        DRM_ERR_LOG("InitGetMediaKeySystems ListServiceByInterfaceDesc faild, return Code:%{public}d", ret);
         return ret;
     }
     for (auto hdiServiceName : pluginServiceNames) {
