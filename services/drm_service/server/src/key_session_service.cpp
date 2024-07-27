@@ -104,7 +104,7 @@ int32_t MediaKeySessionService::GenerateMediaKeyRequest(
     int32_t ret = DRM_OK;
     OHOS::HDI::Drm::V1_0::MediaKeyRequestInfo hdiMediaKeyRequestInfo;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiMediaKeySession_ != nullptr, DRM_SERVICE_FATAL_ERROR,
-	    "hdiMediaKeySession_ is nullptr!");
+        "hdiMediaKeySession_ is nullptr!");
 
     hdiMediaKeyRequestInfo.mediaKeyType = (OHOS::HDI::Drm::V1_0::MediaKeyType)licenseRequestInfo.mediaKeyType;
     hdiMediaKeyRequestInfo.mimeType = licenseRequestInfo.mimeType;
@@ -138,7 +138,7 @@ int32_t MediaKeySessionService::ProcessMediaKeyResponse(std::vector<uint8_t> &li
     DRM_INFO_LOG("ProcessMediaKeyResponse enter.");
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiMediaKeySession_ != nullptr, DRM_SERVICE_FATAL_ERROR,
-	    "hdiMediaKeySession_ is nullptr!");
+        "hdiMediaKeySession_ is nullptr!");
     auto timeBefore = std::chrono::system_clock::now();
     ret = hdiMediaKeySession_->ProcessMediaKeyResponse(licenseResponse, licenseId);
     uint32_t processDuration = CalculateTimeDiff(timeBefore, std::chrono::system_clock::now());
@@ -161,7 +161,7 @@ int32_t MediaKeySessionService::GenerateOfflineReleaseRequest(std::vector<uint8_
     DRM_INFO_LOG("GenerateOfflineReleaseRequest enter.");
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiMediaKeySession_ != nullptr, DRM_SERVICE_FATAL_ERROR,
-	    "hdiMediaKeySession_ is nullptr!");
+        "hdiMediaKeySession_ is nullptr!");
     ret = hdiMediaKeySession_->GetOfflineReleaseRequest(licenseId, releaseRequest);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("GenerateOfflineReleaseRequest failed.");
@@ -176,7 +176,7 @@ int32_t MediaKeySessionService::ProcessOfflineReleaseResponse(std::vector<uint8_
     DRM_INFO_LOG("ProcessOfflineReleaseResponse enter.");
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiMediaKeySession_ != nullptr, DRM_SERVICE_FATAL_ERROR,
-	    "hdiMediaKeySession_ is nullptr!");
+        "hdiMediaKeySession_ is nullptr!");
 
     ret = hdiMediaKeySession_->ProcessOfflineReleaseResponse(licenseId, releaseResponse);
     if (ret != DRM_OK) {
@@ -191,7 +191,7 @@ int32_t MediaKeySessionService::CheckMediaKeyStatus(std::map<std::string, std::s
     DRM_INFO_LOG("CheckMediaKeyStatus enter.");
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiMediaKeySession_ != nullptr, DRM_SERVICE_FATAL_ERROR,
-	    "hdiMediaKeySession_ is nullptr!");
+       "hdiMediaKeySession_ is nullptr!");
     std::map<std::string, std::string> mp;
     ret = hdiMediaKeySession_->CheckMediaKeyStatus(mp);
     if (ret != DRM_OK) {
@@ -215,7 +215,7 @@ int32_t MediaKeySessionService::RestoreOfflineMediaKeys(std::vector<uint8_t> &li
     DRM_INFO_LOG("RestoreOfflineMediaKeys enter.");
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiMediaKeySession_ != nullptr, DRM_SERVICE_FATAL_ERROR,
-	    "hdiMediaKeySession_ is nullptr!");
+        "hdiMediaKeySession_ is nullptr!");
     ret = hdiMediaKeySession_->RestoreOfflineMediaKeys(licenseId);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("RestoreOfflineMediaKeys failed.");
@@ -229,7 +229,7 @@ int32_t MediaKeySessionService::ClearMediaKeys()
     DRM_INFO_LOG("ClearMediaKeys enter.");
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiMediaKeySession_ != nullptr, DRM_SERVICE_FATAL_ERROR,
-	    "hdiMediaKeySession_ is nullptr!");
+        "hdiMediaKeySession_ is nullptr!");
     ret = hdiMediaKeySession_->ClearMediaKeys();
     if (ret != DRM_OK) {
         DRM_ERR_LOG("ClearMediaKeys failed.");
@@ -244,8 +244,7 @@ int32_t MediaKeySessionService::GetContentProtectionLevel(
     DRM_INFO_LOG("GetContentProtectionLevel enter.");
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiMediaKeySession_ != nullptr, DRM_SERVICE_FATAL_ERROR,
-	    "hdiMediaKeySession_ is nullptr!");
-
+        "hdiMediaKeySession_ is nullptr!");
     OHOS::HDI::Drm::V1_0::ContentProtectionLevel level;
     ret = hdiMediaKeySession_->GetContentProtectionLevel(level);
     if (ret != DRM_OK) {
@@ -295,8 +294,7 @@ int32_t MediaKeySessionService::RequireSecureDecoderModule(std::string &mimeType
     (void)mimeType;
     (void)status;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiMediaKeySession_ != nullptr, DRM_SERVICE_FATAL_ERROR,
-	    "hdiMediaKeySession_ is nullptr!");
-
+        "hdiMediaKeySession_ is nullptr!");
     bool decoderModuleStatus = false;
     ret = hdiMediaKeySession_->RequiresSecureDecoderModule(mimeType, decoderModuleStatus);
     if (ret != DRM_OK) {
