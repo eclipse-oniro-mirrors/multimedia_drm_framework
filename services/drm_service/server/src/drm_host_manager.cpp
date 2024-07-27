@@ -770,8 +770,7 @@ int32_t DrmHostManager::InitGetMediaKeySystems()
     }
     ret = servmgr->ListServiceByInterfaceDesc(pluginServiceNames, "ohos.hdi.drm.v1_0.IMediaKeySystemFactory");
     if (ret != DRM_OK) {
-        DRM_ERR_LOG(
-            "InitGetMediaKeySystems ListServiceByInterfaceDesc faild, return Code:%{public}d", ret);
+        DRM_ERR_LOG("InitGetMediaKeySystems ListServiceByInterfaceDesc faild, return Code:%{public}d", ret);
         return ret;
     }
     for (auto hdiServiceName : pluginServiceNames) {
