@@ -16,7 +16,6 @@
 #include "ipc_skeleton.h"
 #include "napi_param_utils.h"
 #include "drm_napi.h"
-#include "drm_api_operation.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -107,11 +106,8 @@ void DrmNapi::DrmNapiDestructor(napi_env env, void *nativeObject, void *finalize
 napi_value DrmNapi::IsMediaKeySystemSupported(napi_env env, napi_callback_info info)
 {
     DRM_INFO_LOG("DrmNapi IsMediaKeySystemSupported enter.");
-    int64_t beginTime = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now().time_since_epoch()).count();
     napi_value result = nullptr;
     result = MediaKeySystemNapi::IsMediaKeySystemSupported(env, info);
-    ConfigParser::WriteEndEvent(0, 0, std::string("isMediaKeySystemSupported"), beginTime);
     DRM_INFO_LOG("DrmNapi IsMediaKeySystemSupported exit.");
     return result;
 }
@@ -119,33 +115,24 @@ napi_value DrmNapi::IsMediaKeySystemSupported(napi_env env, napi_callback_info i
 napi_value DrmNapi::GetMediaKeySystems(napi_env env, napi_callback_info info)
 {
     DRM_INFO_LOG("DrmNapi GetMediaKeySystems enter.");
-    int64_t beginTime = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now().time_since_epoch()).count();
     napi_value result = nullptr;
     result = MediaKeySystemNapi::GetMediaKeySystems(env, info);
-    ConfigParser::WriteEndEvent(0, 0, std::string("getMediaKeySystems"), beginTime);
     return result;
 }
 
 napi_value DrmNapi::GetMediaKeySystemUuid(napi_env env, napi_callback_info info)
 {
     DRM_INFO_LOG("DrmNapi GetMediaKeySystemUuid enter.");
-    int64_t beginTime = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now().time_since_epoch()).count();
     napi_value result = nullptr;
     result = MediaKeySystemNapi::GetMediaKeySystemUuid(env, info);
-    ConfigParser::WriteEndEvent(0, 0, std::string("getMediaKeySystemUuid"), beginTime);
     return result;
 }
 
 napi_value DrmNapi::CreateMediaKeySystemInstance(napi_env env, napi_callback_info info)
 {
     DRM_INFO_LOG("DrmNapi CreateMediaKeySystemInstance enter.");
-    int64_t beginTime = std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now().time_since_epoch()).count();
     napi_value result = nullptr;
     result = MediaKeySystemNapi::CreateMediaKeySystemInstance(env, info);
-    ConfigParser::WriteEndEvent(0, 0, std::string("createMediaKeySystem"), beginTime);
     return result;
 }
 } // namespace OHOS
