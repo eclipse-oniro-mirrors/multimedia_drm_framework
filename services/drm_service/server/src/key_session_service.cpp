@@ -191,7 +191,7 @@ int32_t MediaKeySessionService::CheckMediaKeyStatus(std::map<std::string, std::s
     DRM_INFO_LOG("CheckMediaKeyStatus enter.");
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiMediaKeySession_ != nullptr, DRM_SERVICE_FATAL_ERROR,
-       "hdiMediaKeySession_ is nullptr!");
+        "hdiMediaKeySession_ is nullptr!");
     std::map<std::string, std::string> mp;
     ret = hdiMediaKeySession_->CheckMediaKeyStatus(mp);
     if (ret != DRM_OK) {
