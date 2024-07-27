@@ -3788,6 +3788,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_KillClearPlayHostAbNormal1, TestSize
     EXPECT_NE(mediaKeySession, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     killclearplay(mediaKeySystem, mediaKeySession);
+    sleep(5);
     killclearplay2(mediaKeySystem, mediaKeySession);
     requestLen = 12288; // 12288:request len
     errNo = OH_MediaKeySystem_GenerateKeySystemRequest(mediaKeySystem, request, &requestLen, defaultUrl,
