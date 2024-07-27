@@ -136,7 +136,7 @@ typedef struct OH_MediaKeySession_Callback {
  * @return {@link DRM_ERR_OK} 0 - Success.
  *         {@link DRM_ERR_NO_MEMORY} 24700501 - Memory errors.
  *         {@link DRM_ERR_INVALID_VAL} 24700503 - The parameter passed in is a null pointer or invalid.
- *         {@link DRM_ERR_UNKNOWN} 24700506 - Unknown errors.
+ *         {@link DRM_ERR_UNKNOWN} 24700506 - Internal error occurred, it is recommended to check the logs.
  * @since 11
  * @version 1.0
  */
@@ -153,7 +153,7 @@ Drm_ErrCode OH_MediaKeySession_GenerateMediaKeyRequest(MediaKeySession *mediaKey
  * @return {@link DRM_ERR_OK} 0 - Success.
  *         {@link DRM_ERR_NO_MEMORY} 24700501 - Memory errors.
  *         {@link DRM_ERR_INVALID_VAL} 24700503 - The parameter passed in is a null pointer or invalid.
- *         {@link DRM_ERR_UNKNOWN} 24700506 - Unknown errors.
+ *         {@link DRM_ERR_UNKNOWN} 24700506 - Internal error occurred, it is recommended to check the logs.
  * @since 11
  * @version 1.0
  */
@@ -167,7 +167,7 @@ Drm_ErrCode OH_MediaKeySession_ProcessMediaKeyResponse(MediaKeySession *mediaKey
  * @return {@link DRM_ERR_OK} 0 - Success.
  *         {@link DRM_ERR_NO_MEMORY} 24700501 - Memory errors.
  *         {@link DRM_ERR_INVALID_VAL} 24700503 - The parameter passed in is a null pointer or invalid.
- *         {@link DRM_ERR_UNKNOWN} 24700506 - Unknown errors.
+ *         {@link DRM_ERR_UNKNOWN} 24700506 - Internal error occurred, it is recommended to check the logs.
  * @since 11
  * @version 1.0
  */
@@ -179,7 +179,7 @@ Drm_ErrCode OH_MediaKeySession_CheckMediaKeyStatus(MediaKeySession *mediaKeySess
  * @param mediaKeySession Media key session instance.
  * @return {@link DRM_ERR_OK} 0 - Success.
  *         {@link DRM_ERR_INVALID_VAL} 24700503 - The parameter passed in is a null pointer or invalid.
- *         {@link DRM_ERR_UNKNOWN} 24700506 - Unknown errors.
+ *         {@link DRM_ERR_UNKNOWN} 24700506 - Internal error occurred, it is recommended to check the logs.
  * @since 11
  * @version 1.0
  */
@@ -195,7 +195,7 @@ Drm_ErrCode OH_MediaKeySession_ClearMediaKeys(MediaKeySession *mediaKeySessoin);
  * @return {@link DRM_ERR_OK} 0 - Success.
  *         {@link DRM_ERR_NO_MEMORY} 24700501 - Memory errors.
  *         {@link DRM_ERR_INVALID_VAL} 24700503 - The parameter passed in is a null pointer or invalid.
- *         {@link DRM_ERR_UNKNOWN} 24700506 - Unknown errors.
+ *         {@link DRM_ERR_UNKNOWN} 24700506 - Internal error occurred, it is recommended to check the logs.
  * @since 11
  * @version 1.0
  */
@@ -212,7 +212,7 @@ Drm_ErrCode OH_MediaKeySession_GenerateOfflineReleaseRequest(MediaKeySession *me
  * @param releaseReponseLen Media Key resposne len.
  * @return {@link DRM_ERR_OK} 0 - Success.
  *         {@link DRM_ERR_INVALID_VAL} 24700503 - The parameter passed in is a null pointer or invalid.
- *         {@link DRM_ERR_UNKNOWN} 24700506 - Unknown errors.
+ *         {@link DRM_ERR_UNKNOWN} 24700506 - Internal error occurred, it is recommended to check the logs.
  * @since 11
  * @version 1.0
  */
@@ -227,7 +227,7 @@ Drm_ErrCode OH_MediaKeySession_ProcessOfflineReleaseResponse(MediaKeySession *me
  * @param offlineMediaKeyIdLen Offline media key identifier len.
  * @return {@link DRM_ERR_OK} 0 - Success.
  *         {@link DRM_ERR_INVALID_VAL} 24700503 - The parameter passed in is a null pointer or invalid.
- *         {@link DRM_ERR_UNKNOWN} 24700506 - Unknown errors.
+ *         {@link DRM_ERR_UNKNOWN} 24700506 - Internal error occurred, it is recommended to check the logs.
  * @since 11
  * @version 1.0
  */
@@ -240,7 +240,7 @@ Drm_ErrCode OH_MediaKeySession_RestoreOfflineMediaKeys(MediaKeySession *mediaKey
  * @param contentProtectionLevel Content protection level.
  * @return {@link DRM_ERR_OK} 0 - Success.
  *         {@link DRM_ERR_INVALID_VAL} 24700503 - The parameter passed in is a null pointer or invalid.
- *         {@link DRM_ERR_UNKNOWN} 24700506 - Unknown errors.
+ *         {@link DRM_ERR_UNKNOWN} 24700506 - Internal error occurred, it is recommended to check the logs.
  * @since 11
  * @version 1.0
  */
@@ -254,7 +254,7 @@ Drm_ErrCode OH_MediaKeySession_GetContentProtectionLevel(MediaKeySession *mediaK
  * @param status Whether secure decoder is required.
  * @return {@link DRM_ERR_OK} 0 - Success.
  *         {@link DRM_ERR_INVALID_VAL} 24700503 - The parameter passed in is a null pointer or invalid.
- *         {@link DRM_ERR_UNKNOWN} 24700506 - Unknown errors.
+ *         {@link DRM_ERR_UNKNOWN} 24700506 - Internal error occurred, it is recommended to check the logs.
  * @since 11
  * @version 1.0
  */
@@ -290,7 +290,7 @@ Drm_ErrCode OH_MediaKeySession_SetCallback(MediaKeySession *mediaKeySessoin,
  * @param mediaKeySession Media key session instance.
  * @return {@link DRM_ERR_OK} 0 - Success.
  *         {@link DRM_ERR_INVALID_VAL} 24700503 - The parameter passed in is a null pointer or invalid.
- *         {@link DRM_ERR_UNKNOWN} 24700506 - Unknown errors.
+ *         {@link DRM_ERR_UNKNOWN} 24700506 - Internal error occurred, it is recommended to check the logs.
  * @since 11
  * @version 1.0
  */
