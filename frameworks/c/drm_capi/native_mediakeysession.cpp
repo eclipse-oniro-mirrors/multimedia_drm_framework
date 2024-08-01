@@ -62,6 +62,8 @@ Drm_ErrCode OH_MediaKeySession_GenerateMediaKeyRequest(MediaKeySession *mediaKey
     DrmTrace trace("OH_MediaKeySession_GenerateMediaKeyRequest");
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySession != nullptr) && (info != nullptr) && (mediaKeyRequest != nullptr)),
         DRM_ERR_INVALID_VAL, "parameter is error.");
+    DRM_CHECK_AND_RETURN_RET_LOG(((info->initDataLen >= 0) && (info->initDataLen <= MAX_INIT_DATA_LEN) &&
+        (info->optionsCount <= MAX_MEDIA_KEY_REQUEST_OPTION_COUNT)), DRM_ERR_INVALID_VAL, "info err");
     IMediaKeySessionService::MediaKeyRequestInfo licenseRequestInfo;
     IMediaKeySessionService::MediaKeyRequest licenseRequest;
     licenseRequest.requestType = OHOS::DrmStandard::IMediaKeySessionService::REQUEST_TYPE_RELEASE;
