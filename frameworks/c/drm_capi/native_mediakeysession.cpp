@@ -37,7 +37,10 @@ static Drm_ErrCode DealMediaKeyRequest(IMediaKeySessionService::MediaKeyRequest 
     memset_s(mediaKeyRequest, sizeof(DRM_MediaKeyRequest), 0, sizeof(DRM_MediaKeyRequest));
     mediaKeyRequest->type = (DRM_MediaKeyRequestType)(licenseRequest.requestType);
     mediaKeyRequest->dataLen = (int32_t)licenseRequest.mData.size();
-    int ret = memcpy_s(mediaKeyRequest->data, licenseRequest.mData.size(), licenseRequest.mData.data(),
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        ((mediaKeyRequest->dataLen > 0) && (mediaKeyRequest->dataLen <= MAX_MEDIA_KEY_REQUEST_DATA_LEN)),
+        DRM_ERR_NO_MEMORY, "licenseRequest dataLen err!");
+    int ret = memcpy_s(mediaKeyRequest->data, sizeof(mediaKeyRequest->data), licenseRequest.mData.data(),
         licenseRequest.mData.size());
     if (ret != 0) {
         DRM_DEBUG_LOG("memcpy_s mediaKeyRequest->data failed!");
@@ -46,7 +49,7 @@ static Drm_ErrCode DealMediaKeyRequest(IMediaKeySessionService::MediaKeyRequest 
     if (licenseRequest.mDefaultURL.size() == 0) {
         return DRM_ERR_OK;
     }
-    ret = memcpy_s(mediaKeyRequest->defaultUrl, licenseRequest.mDefaultURL.size(), licenseRequest.mDefaultURL.data(),
+    ret = memcpy_s(mediaKeyRequest->defaultUrl, sizeof(mediaKeyRequest->defaultUrl), licenseRequest.mDefaultURL.data(),
         licenseRequest.mDefaultURL.size());
     if (ret != 0) {
         DRM_DEBUG_LOG("memcpy_s mediaKeyRequest->defaultUrl failed!");
@@ -108,6 +111,7 @@ Drm_ErrCode OH_MediaKeySession_ProcessMediaKeyResponse(MediaKeySession *mediaKey
         DRM_DEBUG_LOG("keyIdVec.data() is nullptr!");
         return DRM_ERR_OK;
     }
+    DRM_CHECK_AND_RETURN_RET_LOG((*offlineMediaKeyIdLen > 0), DRM_ERR_NO_MEMORY, "offlineMediaKeyIdLen err!");
     ret = memcpy_s(offlineMediaKeyId, *offlineMediaKeyIdLen, keyIdVec.data(), keyIdVec.size());
     if (ret != 0) {
         DRM_ERR_LOG("memcpy_s offlineMediaKeyId faild!");
@@ -123,17 +127,25 @@ static Drm_ErrCode MapToClist(std::map<std::string, std::string> licenseStatus, 
     DRM_INFO_LOG("MapToClist enter.");
     memset_s(mediaKeyStatus, sizeof(DRM_MediaKeyStatus), 0, sizeof(DRM_MediaKeyStatus));
     mediaKeyStatus->statusCount = licenseStatus.size();
+    DRM_CHECK_AND_RETURN_RET_LOG((mediaKeyStatus->statusCount <= MAX_MEDIA_KEY_STATUS_COUNT),
+        DRM_ERR_NO_MEMORY, "statusCount err!");
     auto it = licenseStatus.begin();
     for (size_t i = 0; i < licenseStatus.size(); i++) {
-        int32_t ret = memcpy_s(mediaKeyStatus->statusName[i], it->first.size(), it->first.c_str(), it->first.size());
-        if (ret != 0) {
-            DRM_DEBUG_LOG("memcpy_s mediaKeyStatus->statusName failed!");
-            return DRM_ERR_NO_MEMORY;
+        if (it->first.size() != 0) {
+            int32_t ret = memcpy_s(mediaKeyStatus->statusName[i], sizeof(mediaKeyStatus->statusName[i]),
+                it->first.c_str(), it->first.size());
+            if (ret != 0) {
+                DRM_DEBUG_LOG("memcpy_s mediaKeyStatus->statusName failed!");
+                return DRM_ERR_NO_MEMORY;
+            }
         }
-        ret = memcpy_s(mediaKeyStatus->statusValue[i], it->second.size(), it->second.c_str(), it->second.size());
-        if (ret != 0) {
-            DRM_DEBUG_LOG("memcpy_s mediaKeyStatus->statusValue failed!");
-            return DRM_ERR_NO_MEMORY;
+        if (it->second.size() != 0) {
+            int32_t ret = memcpy_s(mediaKeyStatus->statusValue[i], sizeof(mediaKeyStatus->statusValue[i]),
+                it->second.c_str(), it->second.size());
+            if (ret != 0) {
+                DRM_DEBUG_LOG("memcpy_s mediaKeyStatus->statusValue failed!");
+                return DRM_ERR_NO_MEMORY;
+            }
         }
         it++;
     }
@@ -198,6 +210,7 @@ Drm_ErrCode OH_MediaKeySession_GenerateOfflineReleaseRequest(MediaKeySession *me
         DRM_DEBUG_LOG("ReleaseRequest.data() is nullptr!");
         return DRM_ERR_OK;
     }
+    DRM_CHECK_AND_RETURN_RET_LOG((*releaseRequestLen > 0), DRM_ERR_NO_MEMORY, "releaseRequestLen err!");
     int32_t ret = memcpy_s(releaseRequest, *releaseRequestLen, ReleaseRequest.data(), ReleaseRequest.size());
     if (ret != 0) {
         DRM_ERR_LOG("memcpy_s releaseRequest faild!");
