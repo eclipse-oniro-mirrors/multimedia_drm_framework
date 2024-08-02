@@ -98,7 +98,8 @@ Drm_ErrCode OH_MediaKeySystem_GetMediaKeySystems(DRM_MediaKeySystemDescription *
         "GetMediaKeySystems call Failed!");
     for (auto it = keySystemNames.begin(); it != keySystemNames.end(); it++) {
         if (it->first.size() != 0) {
-            ret = memcpy_s(description[times].name, it->first.size(), it->first.c_str(), it->first.size());
+            ret = memcpy_s(description[times].name, sizeof(description[times].name), it->first.c_str(),
+                it->first.size());
             if (ret != 0) {
                 DRM_ERR_LOG("OH_MediaKeySystem_GetMediaKeySystems memcpy_s description faild!");
                 return DRM_ERR_NO_MEMORY;
@@ -284,16 +285,21 @@ static Drm_ErrCode vectorToClist(std::vector<IMediaKeySystemService::MetircKeyVa
     DRM_INFO_LOG("vectorToCArray start.");
     memset_s(statistics, sizeof(DRM_Statistics), 0, sizeof(DRM_Statistics));
     statistics->statisticsCount = metrics.size();
+    DRM_CHECK_AND_RETURN_RET_LOG((statistics->statisticsCount <= MAX_STATISTICS_COUNT), DRM_ERR_NO_MEMORY,
+        "statisticsCount err!");
     for (size_t i = 0; i < metrics.size(); i++) {
+        if (metrics[i].name.size() == 0) {
+            continue;
+        }
         int32_t ret = memcpy_s(statistics->statisticsName[i],
-            metrics[i].name.size(), metrics[i].name.c_str(), metrics[i].name.size());
+            sizeof(statistics->statisticsName[i]), metrics[i].name.c_str(), metrics[i].name.size());
         if (ret != 0) {
             DRM_ERR_LOG(" memcpy_s faild!");
             return DRM_ERR_NO_MEMORY;
         }
         if (metrics[i].value.size() != 0) {
             ret = memcpy_s(statistics->statisticsDescription[i],
-                metrics[i].value.size(), metrics[i].value.c_str(), metrics[i].value.size());
+                sizeof(statistics->statisticsDescription[i]), metrics[i].value.c_str(), metrics[i].value.size());
             if (ret != 0) {
                 DRM_ERR_LOG(" memcpy_s faild!");
                 return DRM_ERR_NO_MEMORY;
@@ -351,7 +357,7 @@ Drm_ErrCode OH_MediaKeySystem_GenerateKeySystemRequest(MediaKeySystem *mediaKeyS
     DRM_INFO_LOG("OH_MediaKeySystem_GenerateKeySystemRequest enter");
     DrmTrace trace("OH_MediaKeySystem_GenerateKeySystemRequest");
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySystem != nullptr) && (request != nullptr) && (requestLen != nullptr) &&
-        (defaultUrl != nullptr) && (defaultUrlLen > 0)),
+        (*requestLen > 0) && (defaultUrl != nullptr) && (defaultUrlLen > 0)),
         DRM_ERR_INVALID_VAL, "OH_MediaKeySystem_GenerateKeySystemRequest mediaKeySystem is nullptr!");
     std::vector<uint8_t> requestData;
     std::string defaultUrlData;
@@ -360,15 +366,13 @@ Drm_ErrCode OH_MediaKeySystem_GenerateKeySystemRequest(MediaKeySystem *mediaKeyS
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
         "mediaKeySystemImpl::GenerateKeySystemRequest faild!");
     int32_t result = systemObject->systemImpl_->GenerateKeySystemRequest(requestData, defaultUrlData);
-    DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_UNKNOWN,
+    DRM_CHECK_AND_RETURN_RET_LOG(((result == DRM_ERR_OK) && (requestData.size() != 0)), DRM_ERR_UNKNOWN,
         "MediaKeySystemImpl GenerateKeySystemRequest failed!");
-    if (requestData.size() != 0) {
-        int32_t ret = memcpy_s(request, *requestLen, requestData.data(), requestData.size());
-        DRM_CHECK_AND_RETURN_RET_LOG(ret == 0, DRM_ERR_NO_MEMORY,
-            "OH_MediaKeySystem_GenerateKeySystemRequest memcpy_s request failed!");
-    }
+    int32_t ret = memcpy_s(request, *requestLen, requestData.data(), requestData.size());
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == 0, DRM_ERR_NO_MEMORY,
+        "OH_MediaKeySystem_GenerateKeySystemRequest memcpy_s request failed!");
     *requestLen = requestData.size();
-    int32_t ret = memset_s(defaultUrl, defaultUrlLen, 0, defaultUrlLen);
+    ret = memset_s(defaultUrl, defaultUrlLen, 0, defaultUrlLen);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == 0, DRM_ERR_NO_MEMORY,
         "OH_MediaKeySystem_GenerateKeySystemRequest memset_s defaultUrl failed!");
     if (defaultUrlData.size() != 0) {
@@ -501,12 +505,14 @@ static Drm_ErrCode vectorToC2DArray(std::vector<std::vector<uint8_t>> licenseIds
 
     offlineMediaKeyIds->idsCount = (uint32_t)(licenseIds.size());
     for (size_t i = 0; i < licenseIds.size(); i++) {
-        offlineMediaKeyIds->idsLen[i] = (int32_t)(licenseIds[i].size());
-        int32_t ret = memcpy_s(offlineMediaKeyIds->ids[i], MAX_OFFLINE_MEDIA_KEY_ID_LEN, licenseIds[i].data(),
-            licenseIds[i].size());
-        if (ret != 0) {
-            DRM_ERR_LOG("memcpy_s faild!");
-            return DRM_ERR_NO_MEMORY;
+        if (licenseIds[i].size() != 0) {
+            offlineMediaKeyIds->idsLen[i] = (int32_t)(licenseIds[i].size());
+            int32_t ret = memcpy_s(offlineMediaKeyIds->ids[i], MAX_OFFLINE_MEDIA_KEY_ID_LEN, licenseIds[i].data(),
+                licenseIds[i].size());
+            if (ret != 0) {
+                DRM_ERR_LOG("memcpy_s faild!");
+                return DRM_ERR_NO_MEMORY;
+            }
         }
     }
     return DRM_ERR_OK;
