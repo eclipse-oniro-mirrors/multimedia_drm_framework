@@ -152,7 +152,7 @@ Drm_ErrCode OH_MediaKeySystem_Create(const char *name, MediaKeySystem **mediaKey
     if (object->systemCallback_ == nullptr) {
         delete object;
         DRM_ERR_LOG("MediaKeySystemObject create systemCallback failed!");
-        return DRM_ERR_NO_MEMORY;
+        return DRM_ERR_UNKNOWN;
     }
     int32_t ret = object->systemImpl_->SetCallback(object->systemCallback_);
     if (ret != DRM_ERR_OK) {
