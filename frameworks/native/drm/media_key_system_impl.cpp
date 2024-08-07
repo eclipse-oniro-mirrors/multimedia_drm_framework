@@ -232,7 +232,7 @@ int32_t MediaKeySystemImpl::CreateMediaKeySession(IMediaKeySessionService::Conte
         }
     } else {
         DRM_ERR_LOG("Failed to get session object from mediakeysystem service!, %{public}d", ret);
-        return DRM_SERVICE_FATAL_ERROR;
+        return ret;
     }
     *keySessionImpl = localMediaKeySessionImpl;
     return DRM_OK;

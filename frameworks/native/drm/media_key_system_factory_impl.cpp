@@ -230,7 +230,7 @@ int32_t MediaKeySystemFactoryImpl::CreateMediaKeySystem(std::string &name, sptr<
         }
     } else {
         DRM_ERR_LOG("Failed to get session object from mediakeysystem service!, %{public}d", ret);
-        return DRM_SERVICE_FATAL_ERROR;
+        return ret;
     }
     *mediaKeySystemImpl = localMediaKeySystemImpl;
     return DRM_OK;

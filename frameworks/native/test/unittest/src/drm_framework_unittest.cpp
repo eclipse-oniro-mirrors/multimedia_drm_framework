@@ -3845,5 +3845,46 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_Dump_01, TestSize.Level0)
     EXPECT_EQ(errNo, DRM_ERR_OK);
 }
 
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CreateMediaKeySystem_MAX_01, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+
+    for (uint i = 0; i < 64; i++) {
+        errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+        EXPECT_EQ(errNo, DRM_ERR_OK);
+    }
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_MAX_SYSTEM_NUM_REACHED);
+
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CreateMediaKeySession_MAX_01, TestSize.Level0)
+{
+    Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
+    MediaKeySystem *mediaKeySystem = nullptr;
+    MediaKeySession *mediaKeySession = nullptr;
+
+    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    EXPECT_NE(mediaKeySystem, nullptr);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    for (uint i = 0; i < 64; i++) {
+        errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+        EXPECT_EQ(errNo, DRM_ERR_OK);
+    }
+
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_MAX_SESSION_NUM_REACHED);
+
+    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+}
+
 } // DrmStandard
 } // OHOS
