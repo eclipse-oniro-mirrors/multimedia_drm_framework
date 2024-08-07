@@ -81,6 +81,23 @@ int32_t MediaKeySystemFactoryServiceStub::SetListenerObject(const sptr<IRemoteOb
     return DRM_OK;
 }
 
+static int32_t ProcessCreateMediaKeySystem(MediaKeySystemFactoryServiceStub *stub, MessageParcel &data,
+    MessageParcel &reply, MessageOption &option)
+{
+    sptr<IMediaKeySystemService> mediaKeysystemProxy = nullptr;
+    std::string name = data.ReadString();
+    int32_t ret = stub->CreateMediaKeySystem(name, mediaKeysystemProxy);
+    if (ret != DRM_OK) {
+        DRM_ERR_LOG("CreateMediaKeySystem failed, errCode: %{public}d", ret);
+        return ret;
+    }
+    if (!reply.WriteRemoteObject(mediaKeysystemProxy->AsObject())) {
+        DRM_ERR_LOG("CreateMediaKeySystem Write MediaKeySession object failed.");
+        return DRM_OPERATION_NOT_ALLOWED;
+    }
+    return ret;
+}
+
 static int32_t ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServiceStub *stub, MessageParcel &data,
     MessageParcel &reply, MessageOption &option)
 {
@@ -176,19 +193,8 @@ int32_t MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, Message
             return ProcessMediaKeySystemSupportedRequest(this, data, reply, option);
         }
         case MEDIA_KEY_SYSTEM_FACTORY_CREATE_MEDIA_KEYSYSTEM: {
-            DRM_INFO_LOG("CREATE_MEDIA_KEYSYSTEM enter.");
-            sptr<IMediaKeySystemService> mediaKeysystemProxy = nullptr;
-            std::string name = data.ReadString();
-            ret = CreateMediaKeySystem(name, mediaKeysystemProxy);
-            if (ret != DRM_OK) {
-                DRM_ERR_LOG("CreateMediaKeySystem failed, errCode: %{public}d", ret);
-                return ret;
-            }
-            if (!reply.WriteRemoteObject(mediaKeysystemProxy->AsObject())) {
-                DRM_ERR_LOG("CreateMediaKeySystem Write MediaKeySession object failed.");
-                return IPC_STUB_WRITE_PARCEL_ERR;
-            }
-            return ret;
+            DRM_INFO_LOG("IS_MEDIA_KEY_SYSTEM_SURPPORTED enter.");
+            return ProcessCreateMediaKeySystem(this, data, reply, option);
         }
         case MEDIA_KEY_SYSTEM_FACTORY_SET_LISTENER_OBJ: {
             DRM_INFO_LOG("MEDIA_KEY_SYSTEM_FACTORY_SET_LISTENER_OBJ enter.");
