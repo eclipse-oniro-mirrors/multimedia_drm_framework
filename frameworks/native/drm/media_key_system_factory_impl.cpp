@@ -228,9 +228,12 @@ int32_t MediaKeySystemFactoryImpl::CreateMediaKeySystem(std::string &name, sptr<
             DRM_ERR_LOG("mediaKeySystemProxy is nullptr");
             return DRM_UNKNOWN_ERROR;
         }
+    } else if (ret == DRM_MAX_SYSTEM_NUM_REACHED) {
+        DRM_ERR_LOG("The number of MediaKeySystem is greater than 64");
+        return DRM_MAX_SYSTEM_NUM_REACHED;
     } else {
-        DRM_ERR_LOG("Failed to get session object from mediakeysystem service!, %{public}d", ret);
-        return ret;
+        DRM_ERR_LOG("Service faltal error");
+        return DRM_SERVICE_FATAL_ERROR;
     }
     *mediaKeySystemImpl = localMediaKeySystemImpl;
     return DRM_OK;

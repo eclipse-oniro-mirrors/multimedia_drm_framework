@@ -74,7 +74,7 @@ bool OH_MediaKeySystem_IsSupported3(const char *uuid, const char *mimeType,
 
     IMediaKeySessionService::ContentProtectionLevel securityLevel =
         (IMediaKeySessionService::ContentProtectionLevel)ContentProtectionLevel;
-    if ((securityLevel <= IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN) ||
+    if ((securityLevel < IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN) ||
         (securityLevel >= IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_MAX)) {
         DRM_ERR_LOG("ContentProtectionLevel is invalid");
         return false;
@@ -343,7 +343,7 @@ Drm_ErrCode OH_MediaKeySystem_GetMaxContentProtectionLevel(MediaKeySystem *media
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_UNKNOWN,
         "OH_MediaKeySystem_GetMaxContentProtectionLevel fail!");
     if (level < IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN ||
-        level > IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_MAX) {
+        level >= IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_MAX) {
         DRM_ERR_LOG("the level obtained is beyond reasonable range!");
         return DRM_ERR_UNKNOWN;
     }
@@ -358,7 +358,7 @@ Drm_ErrCode OH_MediaKeySystem_GenerateKeySystemRequest(MediaKeySystem *mediaKeyS
     DrmTrace trace("OH_MediaKeySystem_GenerateKeySystemRequest");
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySystem != nullptr) && (request != nullptr) && (requestLen != nullptr) &&
         (*requestLen > 0) && (defaultUrl != nullptr) && (defaultUrlLen > 0)),
-        DRM_ERR_INVALID_VAL, "OH_MediaKeySystem_GenerateKeySystemRequest mediaKeySystem is nullptr!");
+        DRM_ERR_INVALID_VAL, "Incorrect parameters of OH_MediaKeySystem_GenerateKeySystemRequest!");
     std::vector<uint8_t> requestData;
     std::string defaultUrlData;
 
@@ -460,7 +460,7 @@ Drm_ErrCode OH_MediaKeySystem_CreateMediaKeySession(MediaKeySystem *mediaKeySyst
         {0, DRM_ERR_OK}
     };
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySystem != nullptr) && (level != nullptr) && (mediaKeySession != nullptr) &&
-        (*level > CONTENT_PROTECTION_LEVEL_UNKNOWN) && (*level < CONTENT_PROTECTION_LEVEL_MAX)),
+        (*level >= CONTENT_PROTECTION_LEVEL_UNKNOWN) && (*level < CONTENT_PROTECTION_LEVEL_MAX)),
         DRM_ERR_INVALID_VAL, "mediaKeySystem is nullptr!");
     struct MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
