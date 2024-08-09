@@ -88,7 +88,7 @@ public:
     {
         InitEventMap();
     };
-    explicit MediaKeySessionServiceCallback(const sptr<MediaKeySessionImpl> &keySessionImpl)
+    explicit MediaKeySessionServiceCallback(MediaKeySessionImpl *keySessionImpl)
         : keySessionImpl_(keySessionImpl)
     {
         InitEventMap();
