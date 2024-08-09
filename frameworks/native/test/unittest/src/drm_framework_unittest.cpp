@@ -1313,11 +1313,8 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CheckMediaKeyStatusNormal_033, TestS
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_MediaKeyStatus mediaKeyStatus;
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyStatus);
-    if (g_isWisePlay) {
-        EXPECT_EQ(errNo, DRM_ERR_OK);
-    } else {
-        EXPECT_EQ(errNo, DRM_ERR_OK);
-    }
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
@@ -1484,11 +1481,8 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearMediaKeysNormal_036, TestSize.L
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_MediaKeyStatus mediaKeyStatus;
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyStatus);
-    if (g_isWisePlay) {
-        EXPECT_EQ(errNo, DRM_ERR_OK);
-    } else {
-        EXPECT_EQ(errNo, DRM_ERR_OK);
-    }
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
     errNo = OH_MediaKeySession_ClearMediaKeys(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyStatus);
