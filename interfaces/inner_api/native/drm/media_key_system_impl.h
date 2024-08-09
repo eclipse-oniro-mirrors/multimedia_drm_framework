@@ -83,7 +83,7 @@ public:
     {
         InitEventMap();
     };
-    explicit MediaKeySystemCallback(const sptr<MediaKeySystemImpl> &systemImpl) : systemImpl_(systemImpl)
+    explicit MediaKeySystemCallback(MediaKeySystemImpl *systemImpl) : systemImpl_(systemImpl)
     {
         InitEventMap();
     };
