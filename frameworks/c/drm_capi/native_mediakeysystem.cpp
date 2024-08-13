@@ -127,7 +127,7 @@ Drm_ErrCode OH_MediaKeySystem_Create(const char *name, MediaKeySystem **mediaKey
 {
     DRM_INFO_LOG("OH_MediaKeySystem_Create enter.");
     DrmTrace trace("OH_MediaKeySystem_Create");
-    std::map<int32_t, Drm_ErrCode> maps = {
+    std::map<int32_t, Drm_ErrCode> errCodeMaps = {
         {401, DRM_ERR_INVALID_VAL},
         {24700201, DRM_ERR_SERVICE_DIED},
         {24700103, DRM_ERR_MAX_SYSTEM_NUM_REACHED},
@@ -143,7 +143,11 @@ Drm_ErrCode OH_MediaKeySystem_Create(const char *name, MediaKeySystem **mediaKey
     DRM_CHECK_AND_RETURN_RET_LOG(factory != nullptr, DRM_ERR_UNKNOWN, "factory is nullptr!");
     OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> system = nullptr;
     int32_t result = factory->CreateMediaKeySystem(nameStr, &system);
-    DRM_CHECK_AND_RETURN_RET_LOG(system != nullptr, maps[result], "system create by name failed!");
+    Drm_ErrCode retCode = DRM_ERR_UNKNOWN;
+    if (errCodeMaps.find(result) != errCodeMaps.end()) {
+        retCode = errCodeMaps[result];
+    }
+    DRM_CHECK_AND_RETURN_RET_LOG(system != nullptr, retCode, "system create by name failed!");
 
     struct MediaKeySystemObject *object = new (std::nothrow) MediaKeySystemObject(system);
     DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_ERR_UNKNOWN, "MediaKeySystemObject create failed!");
@@ -453,7 +457,7 @@ Drm_ErrCode OH_MediaKeySystem_CreateMediaKeySession(MediaKeySystem *mediaKeySyst
 {
     DRM_INFO_LOG("OH_MediaKeySystem_CreateMediaKeySession enter.");
     DrmTrace trace("OH_MediaKeySystem_CreateMediaKeySession");
-    std::map<int32_t, Drm_ErrCode> maps = {
+    std::map<int32_t, Drm_ErrCode> errCodeMaps = {
         {24700201, DRM_ERR_SERVICE_DIED},
         {24700104, DRM_ERR_MAX_SESSION_NUM_REACHED},
         {24700101, DRM_ERR_UNKNOWN},
@@ -470,8 +474,11 @@ Drm_ErrCode OH_MediaKeySystem_CreateMediaKeySession(MediaKeySystem *mediaKeySyst
         static_cast<IMediaKeySessionService::ContentProtectionLevel>(secure);
     OHOS::sptr<MediaKeySessionImpl> keySessionImpl = nullptr;
     int32_t ret = systemObject->systemImpl_->CreateMediaKeySession(secureLevel, &keySessionImpl);
-
-    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, maps[ret], "session create return failed!");
+    Drm_ErrCode retCode = DRM_ERR_UNKNOWN;
+    if (errCodeMaps.find(ret) != errCodeMaps.end()) {
+        retCode = errCodeMaps[ret];
+    }
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, retCode, "session create return failed!");
     DRM_CHECK_AND_RETURN_RET_LOG(keySessionImpl != nullptr, DRM_ERR_INVALID_VAL, "session create failed!");
 
     struct MediaKeySessionObject *sessionObject = new (std::nothrow) MediaKeySessionObject(keySessionImpl);

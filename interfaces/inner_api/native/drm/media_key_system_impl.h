@@ -83,7 +83,7 @@ public:
     {
         InitEventMap();
     };
-    explicit MediaKeySystemCallback(const sptr<MediaKeySystemImpl> &systemImpl) : systemImpl_(systemImpl)
+    explicit MediaKeySystemCallback(MediaKeySystemImpl *systemImpl) : systemImpl_(systemImpl)
     {
         InitEventMap();
     };
@@ -93,7 +93,7 @@ public:
     int32_t SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> data) override;
 
 private:
-    sptr<MediaKeySystemImpl> systemImpl_;
+    MediaKeySystemImpl *systemImpl_;
     std::unordered_map<int32_t, std::string> eventMap_;
 };
 } // DrmStandard

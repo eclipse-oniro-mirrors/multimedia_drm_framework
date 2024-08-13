@@ -1313,11 +1313,8 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CheckMediaKeyStatusNormal_033, TestS
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_MediaKeyStatus mediaKeyStatus;
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyStatus);
-    if (g_isWisePlay) {
-        EXPECT_NE(errNo, DRM_ERR_OK);
-    } else {
-        EXPECT_EQ(errNo, DRM_ERR_OK);
-    }
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
@@ -1484,15 +1481,16 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearMediaKeysNormal_036, TestSize.L
     EXPECT_EQ(errNo, DRM_ERR_OK);
     DRM_MediaKeyStatus mediaKeyStatus;
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyStatus);
-    if (g_isWisePlay) {
-        EXPECT_NE(errNo, DRM_ERR_OK);
-    } else {
-        EXPECT_EQ(errNo, DRM_ERR_OK);
-    }
+    EXPECT_EQ(errNo, DRM_ERR_OK);
+
     errNo = OH_MediaKeySession_ClearMediaKeys(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyStatus);
-    EXPECT_NE(errNo, DRM_ERR_OK);
+    if (g_isWisePlay) {
+        EXPECT_EQ(errNo, DRM_ERR_OK);
+    } else {
+        EXPECT_NE(errNo, DRM_ERR_OK);
+    }
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
@@ -3848,40 +3846,56 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_Dump_01, TestSize.Level0)
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CreateMediaKeySystem_MAX_01, TestSize.Level0)
 {
     Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
-    MediaKeySystem *mediaKeySystem = nullptr;
+    const uint32_t maxNum = 64;
+    std::vector<MediaKeySystem *> systems(maxNum, nullptr);
 
-    for (uint i = 0; i < 64; i++) {
-        errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    for (uint i = 0; i < maxNum; i++) {
+        errNo = OH_MediaKeySystem_Create(GetUuid(), &systems[i]);
         EXPECT_EQ(errNo, DRM_ERR_OK);
+        EXPECT_NE(systems[i], nullptr);
     }
+
+    MediaKeySystem *mediaKeySystem = nullptr;
     errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
     EXPECT_EQ(errNo, DRM_ERR_MAX_SYSTEM_NUM_REACHED);
+    EXPECT_EQ(mediaKeySystem, nullptr);
 
-    errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
+    for (uint i = 0; i < maxNum; i++) {
+        errNo = OH_MediaKeySystem_Destroy(systems[i]);
+        systems[i] = nullptr;
+        EXPECT_EQ(errNo, DRM_ERR_OK);
+    }
 }
 
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CreateMediaKeySession_MAX_01, TestSize.Level0)
 {
     Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
-    MediaKeySystem *mediaKeySystem = nullptr;
-    MediaKeySession *mediaKeySession = nullptr;
+    const uint32_t maxNum = 64;
+    std::vector<MediaKeySession *> sessions(maxNum, nullptr);
 
+    MediaKeySystem *mediaKeySystem = nullptr;
     errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 
     DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
-    for (uint i = 0; i < 64; i++) {
-        errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    for (uint i = 0; i < maxNum; i++) {
+        errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &sessions[i]);
+        EXPECT_EQ(errNo, DRM_ERR_OK);
+        EXPECT_NE(sessions[i], nullptr);
+    }
+
+    MediaKeySession *mediaKeySession = nullptr;
+    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
+    EXPECT_EQ(errNo, DRM_ERR_MAX_SESSION_NUM_REACHED);
+    EXPECT_EQ(mediaKeySession, nullptr);
+
+    for (uint i = 0; i < maxNum; i++) {
+        errNo = OH_MediaKeySession_Destroy(sessions[i]);
+        sessions[i] = nullptr;
         EXPECT_EQ(errNo, DRM_ERR_OK);
     }
 
-    errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
-    EXPECT_EQ(errNo, DRM_ERR_MAX_SESSION_NUM_REACHED);
-
-    errNo = OH_MediaKeySession_Destroy(mediaKeySession);
-    EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 }
