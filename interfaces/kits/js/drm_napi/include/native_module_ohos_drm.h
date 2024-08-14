@@ -19,7 +19,6 @@
 #include "media_key_system_napi.h"
 #include "media_key_system_callback_napi.h"
 #include "key_session_napi.h"
-#include "drm_napi.h"
 #include "drm_enum_napi.h"
 
 #endif /* NATIVE_MODULE_OHOS_DRM_H_ */

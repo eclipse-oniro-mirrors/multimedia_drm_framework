@@ -135,8 +135,6 @@ bool OH_MediaKeySystem_IsSupported3(const char *name, const char *mimeType,
  * @brief Creates a media key system instance from the name.
  * @param name Secifies which drm system will be created by name.
  * @param mediaKeySystem Media key system instance.
- * @return DRM_ERR_INVALID_VAL when the params checked failure, return DRM_ERR_OK when function called successfully,
- * return DRM_ERR_MAX_SYSTEM_NUM_REACHED when max num media key system reached.
  * @return {@link DRM_ERR_OK} 0 - Success.
  *         {@link DRM_ERR_INVALID_VAL} 24700503 - Probably caused by:
  *         1. the name is nullptr or the length of name is zero.
@@ -155,6 +153,7 @@ Drm_ErrCode OH_MediaKeySystem_Create(const char *name, MediaKeySystem **mediaKey
  * @param value Configuration vaule string to be set.
  * @return {@link DRM_ERR_OK} 0 - Success.
  *         {@link DRM_ERR_INVALID_VAL} 24700503 - The parameter passed in is a null pointer or invalid.
+ *         {@link DRM_ERR_UNKNOWN} 24700506 - Internal error occurred, it is recommended to check the logs.
  * @since 11
  * @version 1.0
  */
