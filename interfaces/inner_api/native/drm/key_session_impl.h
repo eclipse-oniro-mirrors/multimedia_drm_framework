@@ -88,7 +88,7 @@ public:
     {
         InitEventMap();
     };
-    explicit MediaKeySessionServiceCallback(const sptr<MediaKeySessionImpl> &keySessionImpl)
+    explicit MediaKeySessionServiceCallback(MediaKeySessionImpl *keySessionImpl)
         : keySessionImpl_(keySessionImpl)
     {
         InitEventMap();
@@ -106,7 +106,7 @@ public:
         bool hasNewGoodLicense) override;
 
 private:
-    sptr<MediaKeySessionImpl> keySessionImpl_;
+    MediaKeySessionImpl *keySessionImpl_;
     std::unordered_map<int32_t, std::string> eventMap_;
 };
 } // DrmStandard

@@ -226,13 +226,16 @@ int32_t MediaKeySystemImpl::CreateMediaKeySession(IMediaKeySessionService::Conte
                 DRM_ERR_LOG("Failed to new MediaKeySessionImpl");
                 return DRM_SERVICE_FATAL_ERROR;
             }
+        } else if (ret == DRM_MAX_SESSION_NUM_REACHED) {
+            DRM_ERR_LOG("The number of MediaKeySession is greater than 64");
+            return DRM_MAX_SESSION_NUM_REACHED;
         } else {
-            DRM_ERR_LOG("Failed to CreateMediaKeySessionImpl with session is null");
-            return DRM_UNKNOWN_ERROR;
+            DRM_ERR_LOG("Service faltal error");
+            return DRM_SERVICE_FATAL_ERROR;
         }
     } else {
         DRM_ERR_LOG("Failed to get session object from mediakeysystem service!, %{public}d", ret);
-        return DRM_SERVICE_FATAL_ERROR;
+        return ret;
     }
     *keySessionImpl = localMediaKeySessionImpl;
     return DRM_OK;
@@ -268,7 +271,6 @@ int32_t MediaKeySystemImpl::GetMaxContentProtectionLevel(IMediaKeySessionService
     }
     ret =
         serviceProxy_->GetMaxContentProtectionLevel((IMediaKeySessionService::ContentProtectionLevel *)securityLevel);
-    DRM_ERR_LOG("GetMaxContentProtectionLevel 277");
     if (ret != DRM_OK) {
         DRM_ERR_LOG("GetMaxContentProtectionLevel failed, ret: %{public}d", ret);
         return DRM_SERVICE_ERROR;

@@ -38,6 +38,7 @@
 #define OHOS_DRM_NATIVE_MEDIA_KEY_SESSION_H
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include "native_drm_err.h"
 #include "native_drm_common.h"

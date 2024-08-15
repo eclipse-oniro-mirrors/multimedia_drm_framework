@@ -95,7 +95,6 @@
                     "//foundation/multimedia/drm_framework/interfaces/kits/js/drm_napi/include"
                  ],
                 "header_files": [
-                  "drm_napi.h",
                   "key_session_napi.h",
                   "media_key_system_napi.h",
                   "media_key_system_callback_napi.h",

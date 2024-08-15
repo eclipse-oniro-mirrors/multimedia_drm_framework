@@ -277,7 +277,7 @@ Drm_ErrCode OH_MediaKeySession_GetContentProtectionLevel(MediaKeySession *mediaK
         "OH_MediaKeySession_GetContentProtectionLevel get level fail!");
     *contentProtectionLevel = static_cast<DRM_ContentProtectionLevel>(level);
     if (*contentProtectionLevel < CONTENT_PROTECTION_LEVEL_UNKNOWN ||
-        *contentProtectionLevel > CONTENT_PROTECTION_LEVEL_MAX) {
+        *contentProtectionLevel >= CONTENT_PROTECTION_LEVEL_MAX) {
         DRM_ERR_LOG("OH_MediaKeySession_GetContentProtectionLevel the level obtained is beyond reasonable range!");
         return DRM_ERR_UNKNOWN;
     }
