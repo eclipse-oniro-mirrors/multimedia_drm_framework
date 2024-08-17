@@ -147,6 +147,7 @@ private:
     std::map<std::string, std::string> mediaKeySystemDescription_;
     std::map<sptr<IMediaKeySystem>, sptr<IMediaKeySystemFactory>> hdiMediaKeySystemAndFactoryMap;
     std::map<sptr<IMediaKeySystemFactory>, std::string> hdiMediaKeySystemFactoryAndPluginNameMap;
+    sptr<DrmHostDeathRecipient> drmHostDeathRecipient;
 };
 } // DrmStandard
 } // OHOS
