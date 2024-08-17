@@ -330,7 +330,7 @@ void DrmHostManager::OnReceive(const HDI::ServiceManager::V1_0::ServiceStatus &s
 
 std::string DrmHostManager::StringTrim(const std::string &str)
 {
-    DRM_INFO_LOG("StringTrim enter.");
+    DRM_DEBUG_LOG("StringTrim enter.");
     size_t first = str.find_first_not_of(" \t\n\r");
     if (first == std::string::npos)
         return "";
