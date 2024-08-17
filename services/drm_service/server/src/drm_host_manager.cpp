@@ -196,7 +196,7 @@ void DrmHostManager::ReleaseHandleAndKeySystemMap(void *handle)
         ReleaseMediaKeySystem(hdiMediaKeySystem);
         hdiMediaKeySystem->Destroy();
         hdiMediaKeySystem = nullptr;
-        DRM_DEBUGLOG("ReleaseHandleAndKeySystemMap ReleaseMediaKeySystem end");
+        DRM_DEBUG_LOG("ReleaseHandleAndKeySystemMap ReleaseMediaKeySystem end");
     } else {
         DRM_INFO_LOG("ReleaseHandleAndKeySystemMap handle not found");
     }
@@ -206,7 +206,7 @@ void DrmHostManager::ReleaseHandleAndKeySystemMap(void *handle)
         loadedLibs.erase(std::remove(loadedLibs.begin(), loadedLibs.end(), handle), loadedLibs.end());
         dlclose(handle);
         handle = nullptr;
-        DRM_DEBUGLOG("ReleaseHandleAndKeySystemMap handle closed");
+        DRM_DEBUG_LOG("ReleaseHandleAndKeySystemMap handle closed");
     }
 }
 
