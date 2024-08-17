@@ -29,10 +29,18 @@ MediaDecryptModuleServiceStub::MediaDecryptModuleServiceStub()
 
 MediaDecryptModuleServiceStub::~MediaDecryptModuleServiceStub()
 {
+    DRM_INFO_LOG("~MediaDecryptModuleServiceStub");
 }
 
 void MediaDecryptModuleServiceStub::MediaDecryptModuleClientDied(pid_t pid)
 {
+    DRM_ERR_LOG("MediaDecryptModule client has died, pid:%{public}d", pid);
+    if (clientListener_ != nullptr && clientListener_->AsObject() != nullptr && deathRecipient_ != nullptr) {
+        DRM_DEBUG_LOG("MediaDecryptModuleServiceStub release listener!");
+        (void)clientListener_->AsObject()->RemoveDeathRecipient(deathRecipient_);
+        deathRecipient_ = nullptr;
+        clientListener_ = nullptr;
+    }
 }
 
 int32_t MediaDecryptModuleServiceStub::SetListenerObject(const sptr<IRemoteObject> &object)
