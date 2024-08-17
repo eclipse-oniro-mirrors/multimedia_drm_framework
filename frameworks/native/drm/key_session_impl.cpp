@@ -83,7 +83,12 @@ int32_t MediaKeySessionImpl::Release()
 {
     DRM_INFO_LOG("MediaKeySessionImpl Release enter.");
     int32_t ret = DRM_UNKNOWN_ERROR;
-    if (keySessionServiceProxy_) {
+    if (keySessionServiceProxy_ != nullptr) {
+        sptr<IRemoteObject> object = serviceProxy_->AsObject();
+        if (object != nullptr && deathRecipient_ != nullptr) {
+            object->RemoveDeathRecipient(deathRecipient_);
+            deathRecipient_ = nullptr;
+        }
         ret = keySessionServiceProxy_->Release();
         if (ret != DRM_OK) {
             DRM_ERR_LOG("Failed to Release key session!, %{public}d", ret);
@@ -307,7 +312,7 @@ int32_t MediaKeySessionImpl::SetCallback(const sptr<MediaKeySessionImplCallback>
 
 void MediaKeySessionServiceCallback::InitEventMap()
 {
-    DRM_INFO_LOG("KeySessionImpl::InitEventMap");
+    DRM_INFO_LOG("InitEventMap enter");
     eventMap_[static_cast<int32_t>(DRM_EVENT_KEY_NEEDED)] = MediaKeySessionEvent::EVENT_STR_KEY_NEEDED;
     eventMap_[static_cast<int32_t>(DRM_EVENT_KEY_EXPIRED)] = MediaKeySessionEvent::EVENT_STR_KEY_EXPIRED;
     eventMap_[static_cast<int32_t>(DRM_EVENT_EXPIRATION_UPDATED)] = MediaKeySessionEvent::EVENT_STR_EXPIRATION_UPDATED;
@@ -317,7 +322,7 @@ void MediaKeySessionServiceCallback::InitEventMap()
 
 std::string MediaKeySessionServiceCallback::GetEventName(DrmEventType event)
 {
-    DRM_INFO_LOG("MediaKeySessionServiceCallback::GetEventName");
+    DRM_INFO_LOG("GetEventName enter");
     std::string eventName = "";
     int32_t eventType = static_cast<int32_t>(event);
     if (eventMap_.find(eventType) == eventMap_.end()) {
@@ -328,7 +333,7 @@ std::string MediaKeySessionServiceCallback::GetEventName(DrmEventType event)
 
 int32_t MediaKeySessionServiceCallback::SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> data)
 {
-    DRM_INFO_LOG("MediaKeySessionServiceCallback SendEvent");
+    DRM_INFO_LOG("SendEvent enter");
     std::string eventName = GetEventName(event);
     if (keySessionImpl_ != nullptr && eventName.length() != 0) {
         sptr<MediaKeySessionImplCallback> applicationCallback = keySessionImpl_->GetApplicationCallback();
@@ -337,14 +342,14 @@ int32_t MediaKeySessionServiceCallback::SendEvent(DrmEventType event, int32_t ex
             return DRM_OK;
         }
     }
-    DRM_ERR_LOG("MediaKeySessionServiceCallback:: SendEvent failed.");
+    DRM_DEBUG_LOG("SendEvent failed.");
     return DRM_ERROR;
 }
 
 int32_t MediaKeySessionServiceCallback::SendEventKeyChanged(
     std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> statusTable, bool hasNewGoodLicense)
 {
-    DRM_INFO_LOG("MediaKeySessionServiceCallback::SendEventKeyChanged enter.");
+    DRM_INFO_LOG("SendEventKeyChanged enter.");
     if (keySessionImpl_ != nullptr) {
         sptr<MediaKeySessionImplCallback> callback = keySessionImpl_->GetApplicationCallback();
         if (callback != nullptr) {
@@ -352,7 +357,7 @@ int32_t MediaKeySessionServiceCallback::SendEventKeyChanged(
             return DRM_OK;
         }
     }
-    DRM_ERR_LOG("MediaKeySessionServiceCallback:: SendEventKeyChanged failed.");
+    DRM_DEBUG_LOG("SendEventKeyChanged failed.");
     return DRM_ERROR;
 }
 } // DrmStandard
