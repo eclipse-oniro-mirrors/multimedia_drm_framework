@@ -55,14 +55,14 @@ void MediaKeySystemImpl::MediaKeySystemServerDied(pid_t pid)
     if (serviceProxy_ != nullptr && serviceProxy_->AsObject() != nullptr) {
         (void)serviceProxy_->AsObject()->RemoveDeathRecipient(deathRecipient_);
         serviceProxy_ = nullptr;
+        deathRecipient_ = nullptr;
     }
     listenerStub_ = nullptr;
-    deathRecipient_ = nullptr;
 }
 
 int32_t MediaKeySystemImpl::CreateListenerObject()
 {
-    DRM_INFO_LOG("MediaKeySystemImpl::CreateListenerObject");
+    DRM_INFO_LOG("CreateListenerObject");
     listenerStub_ = new(std::nothrow) DrmListenerStub();
     DRM_CHECK_AND_RETURN_RET_LOG(listenerStub_ != nullptr, DRM_MEMORY_ERROR,
         "failed to new DrmListenerStub object");
@@ -77,9 +77,14 @@ int32_t MediaKeySystemImpl::CreateListenerObject()
 
 int32_t MediaKeySystemImpl::Release()
 {
-    DRM_INFO_LOG("MediaKeySystemImpl::Release enter.");
+    DRM_INFO_LOG("Release enter.");
     int32_t ret = DRM_UNKNOWN_ERROR;
     if (serviceProxy_ != nullptr) {
+        sptr<IRemoteObject> object = serviceProxy_->AsObject();
+        if (object != nullptr && deathRecipient_ != nullptr) {
+            object->RemoveDeathRecipient(deathRecipient_);
+            deathRecipient_ = nullptr;
+        }
         ret = serviceProxy_->Release();
         if (ret != DRM_OK) {
             DRM_ERR_LOG("Failed to Release keySystem!, errCode:%{public}d", ret);
@@ -408,7 +413,7 @@ std::string MediaKeySystemCallback::GetEventName(DrmEventType event)
 
 int32_t MediaKeySystemCallback::SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> data)
 {
-    DRM_INFO_LOG("MediaKeySystemCallback SendEvent");
+    DRM_INFO_LOG("SendEvent enter");
     std::string eventName = GetEventName(event);
     if (systemImpl_ != nullptr && eventName.length() != 0) {
         sptr<MediaKeySystemImplCallback> applicationCallback = systemImpl_->GetApplicationCallback();
@@ -417,7 +422,7 @@ int32_t MediaKeySystemCallback::SendEvent(DrmEventType event, int32_t extra, con
             return DRM_OK;
         }
     }
-    DRM_ERR_LOG("MediaKeySystemCallback:: SendEvent failed.");
+    DRM_DEBUG_LOG("SendEvent failed");
     return DRM_ERROR;
 }
 } // namespace DrmStandard
