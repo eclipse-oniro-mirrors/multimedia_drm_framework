@@ -71,7 +71,8 @@ void MediaKeySessionImpl::MediaKeySessionServerDied(pid_t pid)
 {
     DRM_ERR_LOG("MediaKeySession server has died, pid:%{public}d!", pid);
 
-    if (keySessionServiceProxy_ != nullptr && keySessionServiceProxy_->AsObject() != nullptr) {
+    if (keySessionServiceProxy_ != nullptr && keySessionServiceProxy_->AsObject() != nullptr
+        && deathRecipient_ != nullptr) {
         (void)keySessionServiceProxy_->AsObject()->RemoveDeathRecipient(deathRecipient_);
         keySessionServiceProxy_ = nullptr;
     }
@@ -84,7 +85,7 @@ int32_t MediaKeySessionImpl::Release()
     DRM_INFO_LOG("MediaKeySessionImpl Release enter.");
     int32_t ret = DRM_UNKNOWN_ERROR;
     if (keySessionServiceProxy_ != nullptr) {
-        sptr<IRemoteObject> object = serviceProxy_->AsObject();
+        sptr<IRemoteObject> object = keySessionServiceProxy_->AsObject();
         if (object != nullptr && deathRecipient_ != nullptr) {
             object->RemoveDeathRecipient(deathRecipient_);
             deathRecipient_ = nullptr;
