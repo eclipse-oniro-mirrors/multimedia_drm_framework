@@ -67,6 +67,7 @@ void MediaKeySystemFactoryService::OnDrmPluginDied(std::string &name)
 MediaKeySystemFactoryService::MediaKeySystemFactoryService(int32_t systemAbilityId, bool runOnCreate)
     : SystemAbility(systemAbilityId, runOnCreate)
 {
+    DRM_INFO_LOG("MediaKeySystemFactoryService enter.");
     drmHostManager_ = new (std::nothrow) DrmHostManager(this);
     if (drmHostManager_ == nullptr) {
         DRM_ERR_LOG("create drmHostManager_ failed.");
@@ -76,16 +77,18 @@ MediaKeySystemFactoryService::MediaKeySystemFactoryService(int32_t systemAbility
 
 MediaKeySystemFactoryService::~MediaKeySystemFactoryService()
 {
+    DRM_INFO_LOG("~MediaKeySystemFactoryService enter.");
 }
 
 void MediaKeySystemFactoryService::OnStart()
 {
+    DRM_INFO_LOG("OnStart enter.");
     if (drmHostManager_ == nullptr || drmHostManager_->Init() != DRM_OK) {
         DRM_ERR_LOG("OnStart failed to init drm host manager.");
     }
     bool res = Publish(this);
     if (res) {
-        DRM_INFO_LOG("MediaKeySystemFactoryService OnStart res=%{public}d", res);
+        DRM_DEBUG_LOG("MediaKeySystemFactoryService OnStart res=%{public}d", res);
     }
     AddSystemAbilityListener(MEMORY_MANAGER_SA_ID);
     ReportServiceBehaviorEvent("DRM_SERVICE", "start");
