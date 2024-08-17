@@ -39,7 +39,7 @@ const uint32_t TOP_THD = 2;
 MediaDecryptModuleService::MediaDecryptModuleService(
     sptr<OHOS::HDI::Drm::V1_0::IMediaDecryptModule> hdiMediaDecryptModule)
 {
-    DRM_INFO_LOG("0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
+    DRM_INFO_LOG("MediaDecryptModuleService 0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
     hdiMediaDecryptModule_ = hdiMediaDecryptModule;
     instanceId_ = HiTraceChain::GetId().GetChainId();
 }
@@ -48,7 +48,7 @@ MediaDecryptModuleService::MediaDecryptModuleService(
     sptr<OHOS::HDI::Drm::V1_0::IMediaDecryptModule> hdiMediaDecryptModule,
     StatisticsInfo statisticsInfo)
 {
-    DRM_INFO_LOG("0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
+    DRM_INFO_LOG("MediaDecryptModuleService 0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
     std::lock_guard<std::mutex> lock(moduleLock_);
     hdiMediaDecryptModule_ = hdiMediaDecryptModule;
     statisticsInfo_ = statisticsInfo;
@@ -57,7 +57,7 @@ MediaDecryptModuleService::MediaDecryptModuleService(
 
 MediaDecryptModuleService::~MediaDecryptModuleService()
 {
-    DRM_INFO_LOG("0x%{public}06" PRIXPTR " Instances destroy.", FAKE_POINTER(this));
+    DRM_INFO_LOG("~MediaDecryptModuleService 0x%{public}06" PRIXPTR " Instances destroy.", FAKE_POINTER(this));
     std::lock_guard<std::mutex> lock(moduleLock_);
     if (hdiMediaDecryptModule_ != nullptr) {
         Release();
