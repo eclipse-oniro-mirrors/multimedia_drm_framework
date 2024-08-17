@@ -210,7 +210,7 @@ int32_t MediaKeySystemFactoryImpl::CreateMediaKeySystem(std::string &name, sptr<
     sptr<MediaKeySystemImpl> localMediaKeySystemImpl = nullptr;
     int32_t ret = DRM_OK;
     if (mediaKeySystemImpl == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemImpl:: mediaKeySystemImpl is nullptr");
+        DRM_ERR_LOG("mediaKeySystemImpl is nullptr");
         return DRM_INVALID_PARAM;
     }
 
