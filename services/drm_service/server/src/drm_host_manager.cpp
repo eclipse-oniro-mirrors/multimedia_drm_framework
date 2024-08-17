@@ -50,7 +50,7 @@ DrmHostManager::DrmHostDeathRecipient::DrmHostDeathRecipient(
 
 DrmHostManager::DrmHostDeathRecipient::~DrmHostDeathRecipient()
 {
-    DRM_DEBUG_LOG("DrmHostManager::~DrmHostDeathRecipient");
+    DRM_DEBUG_LOG("~DrmHostDeathRecipient");
 }
 void DrmHostManager::OnDrmPluginDied(std::string &name)
 {
@@ -181,7 +181,7 @@ void DrmHostManager::ProcessMessage()
             if (!serviceThreadRunning) {
                 break;
             }
-            DRM_DEBUG_LOG("DrmHostManager::ProcessMessage lazy unload start.");
+            DRM_DEBUG_LOG("ProcessMessage lazy unload start.");
             DelayedLazyUnLoad();
         }
     }).detach();
@@ -196,9 +196,9 @@ void DrmHostManager::ReleaseHandleAndKeySystemMap(void *handle)
         ReleaseMediaKeySystem(hdiMediaKeySystem);
         hdiMediaKeySystem->Destroy();
         hdiMediaKeySystem = nullptr;
-        DRM_INFO_LOG("ReleaseHandleAndKeySystemMap ReleaseMediaKeySystem end");
+        DRM_DEBUGLOG("ReleaseHandleAndKeySystemMap ReleaseMediaKeySystem end");
     } else {
-        DRM_INFO_LOG("ReleaseHandleAndKeySystemMap handle not found.");
+        DRM_INFO_LOG("ReleaseHandleAndKeySystemMap handle not found");
     }
     handleAndKeySystemMap.erase(handle);
 
@@ -206,7 +206,7 @@ void DrmHostManager::ReleaseHandleAndKeySystemMap(void *handle)
         loadedLibs.erase(std::remove(loadedLibs.begin(), loadedLibs.end(), handle), loadedLibs.end());
         dlclose(handle);
         handle = nullptr;
-        DRM_INFO_LOG("ReleaseHandleAndKeySystemMap handle closed");
+        DRM_DEBUGLOG("ReleaseHandleAndKeySystemMap handle closed");
     }
 }
 
@@ -429,6 +429,11 @@ void DrmHostManager::ReleaseSevices(sptr<IMediaKeySystemFactory> drmHostServiePr
 {
     DRM_INFO_LOG("ReleaseSevices enter.");
     std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
+    const sptr<IRemoteObject> &remote = OHOS::HDI::hdi_objcast<IMediaKeySystemFactory>(drmHostServieProxy);
+    if (remote != nullptr && drmHostDeathRecipient != nullptr) {
+        remote->RemoveDeathRecipient(drmHostDeathRecipient);
+        drmHostDeathRecipient = nullptr;
+    }
     std::string name = hdiMediaKeySystemFactoryAndPluginNameMap[drmHostServieProxy];
     /* No need to release non lazy loading */
     if (lazyLoadPluginInfoMap.count(name) <= 0) {
@@ -496,7 +501,7 @@ int32_t DrmHostManager::ProcessLazyLoadPlugin(std::string &name, std::vector<std
         }
     }
     if (serviceName.empty()) {
-        DRM_INFO_LOG("ProcessLazyLoadPlugin exit, No DRM driver service named:%{public}s configured.",
+        DRM_DEBUG_LOG("No DRM driver service named:%{public}s configured.",
             name.c_str());
         return DRM_SERVICE_ERROR;
     }
@@ -507,13 +512,13 @@ int32_t DrmHostManager::ProcessLazyLoadInfomation(std::string &name, sptr<IMedia
     sptr<IMediaKeySystemFactory> &drmHostServieProxys)
 {
     DRM_INFO_LOG("ProcessLazyLoadInfomation enter, name:%{public}s.", name.c_str());
-    drmHostServieProxys = drmHostServieProxy;
-    sptr<DrmHostDeathRecipient> drmHostDeathRecipient = nullptr;
     drmHostDeathRecipient = new DrmHostDeathRecipient(this, name);
+    drmHostServieProxys = drmHostServieProxy;
     const sptr<IRemoteObject> &remote = OHOS::HDI::hdi_objcast<IMediaKeySystemFactory>(drmHostServieProxys);
-    if (remote != nullptr) {
+    if (remote != nullptr && drmHostDeathRecipient != nullptr) {
         bool result = remote->AddDeathRecipient(drmHostDeathRecipient);
         if (!result) {
+            drmHostDeathRecipient = nullptr;
             ReleaseSevices(drmHostServieProxys);
             DRM_ERR_LOG("AddDeathRecipient for drm Host failed.");
             return DRM_HOST_ERROR;
@@ -525,7 +530,6 @@ int32_t DrmHostManager::ProcessLazyLoadInfomation(std::string &name, sptr<IMedia
         DRM_DEBUG_LOG("Lazy load plugin name:%{public}s,count:%{public}d",
             name.c_str(), lazyLoadPluginCountMap[name]);
     }
-    DRM_INFO_LOG("ProcessLazyLoadInfomation exit.");
     return DRM_OK;
 }
 
@@ -625,8 +629,6 @@ int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &name, std::string
         DRM_ERR_LOG("IsMediaKeySystemSupported return Code:%{public}d.", ret);
     }
     ReleaseSevices(drmHostServieProxys);
-    DRM_INFO_LOG(
-        "IsMediaKeySystemSupported two parameters exit, isSurpported:%{public}d.", *isSurpported);
     return DRM_OK;
 }
 
