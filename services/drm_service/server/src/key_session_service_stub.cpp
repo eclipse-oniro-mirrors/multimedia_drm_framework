@@ -105,12 +105,6 @@ static int32_t ProcessRleaseKeySession(MediaKeySessionServiceStub *stub, Message
     MessageOption &option)
 {
     DRM_INFO_LOG("ProcessRleaseKeySession enter.");
-    if (clientListener_ != nullptr && clientListener_->AsObject() != nullptr && deathRecipient_ != nullptr) {
-        DRM_DEBUG_LOG("This MediaKeySessionServiceStub has already set listener!");
-        (void)clientListener_->AsObject()->RemoveDeathRecipient(deathRecipient_);
-        deathRecipient_ = nullptr;
-        clientListener_ = nullptr;
-    }
     int32_t ret = stub->Release();
     return ret;
 }
