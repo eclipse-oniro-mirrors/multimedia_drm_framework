@@ -120,7 +120,7 @@ int32_t MediaKeySessionService::GenerateMediaKeyRequest(
     generationDuration_ = CalculateTimeDiff(timeBefore, std::chrono::system_clock::now());
     if (ret != DRM_OK) {
         generationResult_ = "failed";
-        DRM_ERR_LOG("MediaKeySessionService::GenerateMediaKeyRequest failed.");
+        DRM_ERR_LOG("GenerateMediaKeyRequest failed.");
         ReportFaultEvent(ret, "GenerateMediaKeyRequest failed", "");
         return ret;
     }
