@@ -46,7 +46,7 @@ MediaKeySessionService::MediaKeySessionService(sptr<OHOS::HDI::Drm::V1_0::IMedia
 
 MediaKeySessionService::~MediaKeySessionService()
 {
-    DRM_INFO_LOG("0x%{public}06" PRIXPTR " Instances destroy.", FAKE_POINTER(this));
+    DRM_INFO_LOG("~MediaKeySessionService 0x%{public}06" PRIXPTR " Instances destroy.", FAKE_POINTER(this));
     std::lock_guard<std::mutex> lock(sessionMutex_);
     if (sessionOperatorsCallback_ != nullptr) {
         sessionOperatorsCallback_ = nullptr;
