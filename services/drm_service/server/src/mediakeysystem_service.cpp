@@ -48,7 +48,7 @@ MediaKeySystemService::MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKe
 
 MediaKeySystemService::~MediaKeySystemService()
 {
-    DRM_INFO_LOG("MediaKeySystemService 0x%{public}06" PRIXPTR " Instances destroy.", FAKE_POINTER(this));
+    DRM_INFO_LOG("~MediaKeySystemService 0x%{public}06" PRIXPTR " Instances destroy.", FAKE_POINTER(this));
     std::lock_guard<std::mutex> lock(mutex_);
     keySystemOperatoersCallback_ = nullptr;
     if (hdiKeySystem_ != nullptr) {
