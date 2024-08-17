@@ -61,7 +61,7 @@ void MediaKeySystemService::OnDrmPluginDied(std::string &name)
 
 int32_t MediaKeySystemService::CloseMediaKeySystemServiceByCallback()
 {
-    DRM_INFO_LOG("MediaKeySystemService::CloseMediaKeySystemServiceByCallback enter.");
+    DRM_INFO_LOG("CloseMediaKeySystemServiceByCallback enter.");
     int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemService GetCallingPID: %{public}d", currentPid);
     {
@@ -82,19 +82,17 @@ int32_t MediaKeySystemService::CloseMediaKeySystemServiceByCallback()
         hdiKeySystem_ = nullptr;
     }
     keySystemOperatoersCallback_ = nullptr;
-    DRM_INFO_LOG("MediaKeySystemService::CloseMediaKeySystemServiceByCallback exit.");
     return DRM_OK;
 }
 
 int32_t MediaKeySystemService::Release()
 {
-    DRM_INFO_LOG("MediaKeySystemService::Release enter.");
+    DRM_INFO_LOG("Release enter.");
     int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemService GetCallingPID: %{public}d", currentPid);
     if (keySystemOperatoersCallback_ != nullptr) {
         keySystemOperatoersCallback_->CloseMediaKeySystemService(this);
     }
-    DRM_INFO_LOG("MediaKeySystemService::Release exit.");
     return DRM_OK;
 }
 
@@ -112,7 +110,7 @@ int32_t MediaKeySystemService::SetMediaKeySystemServiceOperatorsCallback(
 int32_t MediaKeySystemService::GenerateKeySystemRequest(std::vector<uint8_t> &request, std::string &defaultUrl)
 {
     DrmTrace trace("MediaKeySystemService::GenerateKeySystemRequest");
-    DRM_INFO_LOG("MediaKeySystemService::GenerateKeySystemRequest enter.");
+    DRM_INFO_LOG("GenerateKeySystemRequest enter.");
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
         "hdiKeySystem_ is nullptr!");
@@ -120,20 +118,19 @@ int32_t MediaKeySystemService::GenerateKeySystemRequest(std::vector<uint8_t> &re
     ret = hdiKeySystem_->GenerateKeySystemRequest(defaultUrl, request);
     generationDuration_ = CalculateTimeDiff(timeBefore, std::chrono::system_clock::now());
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemService::GenerateKeySystemRequest failed.");
+        DRM_ERR_LOG("GenerateKeySystemRequest failed.");
         ReportFaultEvent(ret, "GenerateKeySystemRequest failed", "");
         generationResult_ = "failed";
         return ret;
     }
     generationResult_ = "success";
-    DRM_INFO_LOG("MediaKeySystemService::GenerateKeySystemRequest exit.");
     return ret;
 }
 
 int32_t MediaKeySystemService::ProcessKeySystemResponse(const std::vector<uint8_t> &response)
 {
     DrmTrace trace("MediaKeySystemService::ProcessKeySystemResponse");
-    DRM_INFO_LOG("MediaKeySystemService::ProcessKeySystemResponse enter.");
+    DRM_INFO_LOG("ProcessKeySystemResponse enter.");
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
         "hdiKeySystem_ is nullptr!");
@@ -141,12 +138,11 @@ int32_t MediaKeySystemService::ProcessKeySystemResponse(const std::vector<uint8_
     ret = hdiKeySystem_->ProcessKeySystemResponse(response);
     uint32_t processDuration = CalculateTimeDiff(timeBefore, std::chrono::system_clock::now());
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemService::ProcessKeySystemResponse failed.");
+        DRM_ERR_LOG("ProcessKeySystemResponse failed.");
         std::string responseString = std::string(reinterpret_cast<const char*>(response.data()), response.size());
         ReportFaultEvent(ret, "ProcessKeySystemResponse failed", responseString);
         return ret;
     }
-    DRM_INFO_LOG("MediaKeySystemService::ProcessKeySystemResponse exit.");
     struct DownLoadInfo downLoadInfo = InitDownLoadInfo(generationDuration_, generationResult_, processDuration,
         "success");
     ReportCertificateBehaviorEvent(statisticsInfo_, downLoadInfo, 0, 0, "");
@@ -155,39 +151,37 @@ int32_t MediaKeySystemService::ProcessKeySystemResponse(const std::vector<uint8_
 
 int32_t MediaKeySystemService::SetConfigurationString(std::string &configName, std::string &value)
 {
-    DRM_INFO_LOG("MediaKeySystemService::SetConfiguration enter, configName:%{public}s, value:%{public}s.",
+    DRM_INFO_LOG("SetConfiguration enter, configName:%{public}s, value:%{public}s.",
         configName.c_str(), value.c_str());
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
         "hdiKeySystem_ is nullptr!");
     ret = hdiKeySystem_->SetConfigurationString(configName, value);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemService::SetConfiguration failed.");
+        DRM_ERR_LOG("SetConfiguration failed.");
         return ret;
     }
-    DRM_INFO_LOG("MediaKeySystemService::SetConfiguration exit.");
     return ret;
 }
 
 int32_t MediaKeySystemService::GetConfigurationString(std::string &configName, std::string &value)
 {
-    DRM_INFO_LOG("MediaKeySystemService::GetConfiguration enter, configName:%{public}s.", configName.c_str());
+    DRM_INFO_LOG("GetConfiguration enter, configName:%{public}s.", configName.c_str());
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
         "hdiKeySystem_ is nullptr!");
 
     ret = hdiKeySystem_->GetConfigurationString(configName, value);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemService::GetConfiguration failed.");
+        DRM_ERR_LOG("GetConfiguration failed.");
         return ret;
     }
-    DRM_INFO_LOG("MediaKeySystemService::GetConfiguration exit, value:%{public}s.", value.c_str());
     return ret;
 }
 
 int32_t MediaKeySystemService::SetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value)
 {
-    DRM_INFO_LOG("MediaKeySystemService::SetConfiguration enter, configName:%{public}s.", configName.c_str());
+    DRM_INFO_LOG("SetConfiguration enter, configName:%{public}s.", configName.c_str());
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
         "hdiKeySystem_ is nullptr!");
@@ -195,23 +189,22 @@ int32_t MediaKeySystemService::SetConfigurationByteArray(std::string &configName
     valueVec.assign(value.begin(), value.end());
     ret = hdiKeySystem_->SetConfigurationByteArray(configName, valueVec);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemService::SetConfiguration failed.");
+        DRM_ERR_LOG("SetConfiguration failed.");
         return ret;
     }
-    DRM_INFO_LOG("MediaKeySystemService::SetConfiguration exit.");
     return ret;
 }
 
 int32_t MediaKeySystemService::GetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value)
 {
-    DRM_INFO_LOG("MediaKeySystemService::GetConfiguration enter, configName:%{public}s.", configName.c_str());
+    DRM_INFO_LOG("GetConfiguration enter, configName:%{public}s.", configName.c_str());
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
         "hdiKeySystem_ is nullptr!");
     std::vector<uint8_t> valueVec;
     ret = hdiKeySystem_->GetConfigurationByteArray(configName, valueVec);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemService::GetConfiguration failed.");
+        DRM_ERR_LOG("GetConfiguration failed.");
         return ret;
     }
     value.assign(valueVec.begin(), valueVec.end());
@@ -222,7 +215,7 @@ int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::Co
     sptr<IMediaKeySessionService> &keySessionProxy)
 {
     DrmTrace trace("MediaKeySystemService::CreateMediaKeySession");
-    DRM_INFO_LOG("MediaKeySystemService::CreateMediaKeySession enter, securityLevel:%{public}d.", securityLevel);
+    DRM_INFO_LOG("CreateMediaKeySession enter, securityLevel:%{public}d.", securityLevel);
     int32_t ret = DRM_OK;
     std::lock_guard<std::mutex> lock(mutex_);
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
@@ -242,7 +235,7 @@ int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::Co
     }
     keySessionService = new (std::nothrow) MediaKeySessionService(hdiMediaKeySession, statisticsInfo_);
     if (keySessionService == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemService::CreateMediaKeySession allocation failed.");
+        DRM_ERR_LOG("CreateMediaKeySession allocation failed.");
         ReportFaultEvent(DRM_ALLOC_ERROR, "CreateMediaKeySession failed", "");
         return DRM_ALLOC_ERROR;
     }
@@ -258,13 +251,12 @@ int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::Co
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " is Current keySessionService", FAKE_POINTER(keySessionService.GetRefPtr()));
     keySessionProxy = keySessionService;
     currentKeySessionNumber++;
-    DRM_INFO_LOG("MediaKeySystemService::CreateMediaKeySession exit.");
     return ret;
 }
 
 int32_t MediaKeySystemService::CloseMediaKeySessionService(sptr<MediaKeySessionService> sessionService)
 {
-    DRM_INFO_LOG("MediaKeySystemService::CloseMediaKeySessionService enter.");
+    DRM_INFO_LOG("CloseMediaKeySessionService enter.");
     int32_t ret = DRM_OK;
     int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemService GetCallingPID: %{public}d", currentPid);
@@ -281,20 +273,19 @@ int32_t MediaKeySystemService::CloseMediaKeySessionService(sptr<MediaKeySessionS
         }
     }
     sessionService = nullptr;
-    DRM_INFO_LOG("MediaKeySystemService::CloseMediaKeySessionService exit.");
     return ret;
 }
 
 int32_t MediaKeySystemService::GetStatistics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics)
 {
-    DRM_INFO_LOG("MediaKeySystemService::GetStatistics enter");
+    DRM_INFO_LOG("GetStatistics enter");
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
         "hdiKeySystem_ is nullptr!");
     std::map<std::string, std::string> tmpStatistics;
     ret = hdiKeySystem_->GetStatistics(tmpStatistics);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemService::GetStatistics failed.");
+        DRM_ERR_LOG("GetStatistics failed.");
         return ret;
     }
     for (auto it = tmpStatistics.begin(); it != tmpStatistics.end(); it++) {
@@ -304,17 +295,16 @@ int32_t MediaKeySystemService::GetStatistics(std::vector<IMediaKeySystemService:
         metrics.push_back(keyValue);
     }
     if (metrics.size() == 0) {
-        DRM_ERR_LOG("MediaKeySystemService::GetStatistics failed.");
+        DRM_ERR_LOG("GetStatistics failed.");
         return DRM_ERROR;
     }
-    DRM_INFO_LOG("MediaKeySystemService::GetStatistics exit");
     return ret;
 }
 
 int32_t MediaKeySystemService::GetMaxContentProtectionLevel(
     IMediaKeySessionService::ContentProtectionLevel *securityLevel)
 {
-    DRM_INFO_LOG("MediaKeySystemService::GetMaxContentProtectionLevel enter.");
+    DRM_INFO_LOG("GetMaxContentProtectionLevel enter.");
     int32_t ret = DRM_OK;
     OHOS::HDI::Drm::V1_0::ContentProtectionLevel level;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
@@ -322,17 +312,16 @@ int32_t MediaKeySystemService::GetMaxContentProtectionLevel(
 
     ret = hdiKeySystem_->GetMaxContentProtectionLevel(level);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemService::GetMaxContentProtectionLevel failed.");
+        DRM_ERR_LOG("GetMaxContentProtectionLevel failed.");
         return ret;
     }
     *securityLevel = (IMediaKeySessionService::ContentProtectionLevel)level;
-    DRM_INFO_LOG("MediaKeySystemService::GetMaxContentProtectionLevel exit.");
     return ret;
 }
 
 int32_t MediaKeySystemService::GetCertificateStatus(IMediaKeySystemService::CertificateStatus *certStatus)
 {
-    DRM_INFO_LOG("MediaKeySystemService::GetCertificateStatus enter.");
+    DRM_INFO_LOG("GetCertificateStatus enter.");
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
         "hdiKeySystem_ is nullptr!");
@@ -340,36 +329,34 @@ int32_t MediaKeySystemService::GetCertificateStatus(IMediaKeySystemService::Cert
     OHOS::HDI::Drm::V1_0::CertificateStatus tmpStatus;
     ret = hdiKeySystem_->GetOemCertificateStatus(tmpStatus);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemService::GetCertificateStatus failed.");
+        DRM_ERR_LOG("GetCertificateStatus failed.");
         return ret;
     }
     *certStatus = (IMediaKeySystemService::CertificateStatus)tmpStatus;
 
-    DRM_INFO_LOG("MediaKeySystemService::GetCertificateStatus exit.");
     return ret;
 }
 
 int32_t MediaKeySystemService::GetOfflineMediaKeyIds(std::vector<std::vector<uint8_t>> &licenseIds)
 {
-    DRM_INFO_LOG("MediaKeySystemService::GetOfflineMediaKeyIds enter.");
+    DRM_INFO_LOG("GetOfflineMediaKeyIds enter.");
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
         "hdiKeySystem_ is nullptr!");
 
     ret = hdiKeySystem_->GetOfflineMediaKeyIds(licenseIds);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemService::GetOfflineMediaKeyIds failed.");
+        DRM_ERR_LOG("GetOfflineMediaKeyIds failed.");
         return ret;
     }
 
-    DRM_INFO_LOG("MediaKeySystemService::GetOfflineMediaKeyIds exit.");
     return ret;
 }
 
 int32_t MediaKeySystemService::GetOfflineMediaKeyStatus(std::vector<uint8_t> &licenseId,
     IMediaKeySessionService::OfflineMediaKeyStatus &status)
 {
-    DRM_INFO_LOG("MediaKeySystemService::GetOfflineMediaKeyStatus enter.");
+    DRM_INFO_LOG("GetOfflineMediaKeyStatus enter.");
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
         "hdiKeySystem_ is nullptr!");
@@ -377,41 +364,39 @@ int32_t MediaKeySystemService::GetOfflineMediaKeyStatus(std::vector<uint8_t> &li
     OHOS::HDI::Drm::V1_0::OfflineMediaKeyStatus offlineMediaKeyStatus;
     ret = hdiKeySystem_->GetOfflineMediaKeyStatus(licenseId, offlineMediaKeyStatus);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemService::GetOfflineMediaKeyStatus failed.");
+        DRM_ERR_LOG("GetOfflineMediaKeyStatus failed.");
         return ret;
     }
     status = (IMediaKeySessionService::OfflineMediaKeyStatus)offlineMediaKeyStatus;
 
-    DRM_ERR_LOG("MediaKeySystemService::GetOfflineMediaKeyStatus exit.");
     return ret;
 }
 
 int32_t MediaKeySystemService::ClearOfflineMediaKeys(std::vector<uint8_t> &licenseId)
 {
-    DRM_INFO_LOG("MediaKeySystemService::ClearOfflineMediaKeys enter.");
+    DRM_INFO_LOG("ClearOfflineMediaKeys enter.");
     int32_t ret = DRM_OK;
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
         "hdiKeySystem_ is nullptr!");
 
     ret = hdiKeySystem_->ClearOfflineMediaKeys(licenseId);
     if (ret != DRM_OK) {
-        DRM_ERR_LOG("MediaKeySystemService::ClearOfflineMediaKeys failed.");
+        DRM_ERR_LOG("ClearOfflineMediaKeys failed.");
         return ret;
     }
 
-    DRM_INFO_LOG("MediaKeySystemService::ClearOfflineMediaKeys exit.");
     return ret;
 }
 
 int32_t MediaKeySystemService::SetCallback(sptr<IMeidaKeySystemServiceCallback> &callback)
 {
-    DRM_INFO_LOG("MediaKeySystemService:: SetCallback.");
+    DRM_INFO_LOG("SetCallback enter");
     int32_t ret = DRM_ERROR;
     std::lock_guard<std::mutex> lock(mutex_);
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
         "hdiKeySystem_ is nullptr!");
     if (callback == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemService::SetCallback callback is nullptr , failed.");
+        DRM_ERR_LOG("SetCallback callback is nullptr.");
         return ret;
     }
     callback_ = callback;
@@ -419,19 +404,19 @@ int32_t MediaKeySystemService::SetCallback(sptr<IMeidaKeySystemServiceCallback> 
     if (hdiKeySystem_ != nullptr) {
         return hdiKeySystem_->SetCallback(this);
     }
-    DRM_ERR_LOG("MediaKeySystemService::SetCallback hdiKeySystem_ is nullptr , failed.");
+    DRM_ERR_LOG("SetCallback hdiKeySystem_ is nullptr.");
     return ret;
 }
 
 int32_t MediaKeySystemService::SendEvent(OHOS::HDI::Drm::V1_0::EventType eventType, int32_t extra,
     const std::vector<uint8_t> &data)
 {
-    DRM_INFO_LOG("MediaKeySystemService:: SendEvent.");
+    DRM_INFO_LOG("SendEvent enter.");
     DrmEventType event = static_cast<DrmEventType>(eventType);
     if (callback_ != nullptr) {
         return callback_->SendEvent(event, extra, data);
     }
-    DRM_INFO_LOG("MediaKeySystemService:: SendEvent failed because callback is nullptr");
+    DRM_INFO_LOG("SendEvent failed because callback is nullptr");
     return DRM_OPERATION_NOT_ALLOWED;
 }
 
@@ -442,7 +427,7 @@ std::string MediaKeySystemService::GetPluginName()
 
 std::string MediaKeySystemService::GetSessionsDumpInfo()
 {
-    DRM_INFO_LOG("MediaKeySystemService:: GetSessionsDumpInfo.");
+    DRM_INFO_LOG("GetSessionsDumpInfo enter");
     std::string dumpInfo;
     std::lock_guard<std::mutex> lock(sessionsSetMutex_);
     dumpInfo += "Total MediaKeySession Num: " + std::to_string(sessionsSet_.size()) + "\n";
