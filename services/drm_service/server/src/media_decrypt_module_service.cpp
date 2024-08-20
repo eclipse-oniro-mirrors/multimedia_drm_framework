@@ -83,7 +83,7 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
     IMediaDecryptModuleService::DrmBuffer &dstBuffer)
 {
     DrmTrace trace("DecryptMediaData");
-    DRM_INFO_LOG("DecryptMediaData enter.");
+    DRM_DEBUG_LOG("DecryptMediaData enter.");
     int32_t ret = DRM_OK;
     uint32_t bufLen = 0;
     OHOS::HDI::Drm::V1_0::CryptoInfo cryptInfoTmp;
@@ -130,7 +130,7 @@ void MediaDecryptModuleService::SetDrmBufferInfo(OHOS::HDI::Drm::V1_0::DrmBuffer
     OHOS::HDI::Drm::V1_0::DrmBuffer* drmDstBuffer, IMediaDecryptModuleService::DrmBuffer &srcBuffer,
     IMediaDecryptModuleService::DrmBuffer &dstBuffer, uint32_t bufLen)
 {
-    DRM_INFO_LOG("SetDrmBufferInfo");
+    DRM_DEBUG_LOG("SetDrmBufferInfo enter");
     drmSrcBuffer->bufferType = srcBuffer.bufferType;
     drmSrcBuffer->fd = srcBuffer.fd;
     drmSrcBuffer->bufferLen = bufLen;
@@ -175,7 +175,7 @@ void MediaDecryptModuleService::UpdateDecryptionStatistics(int32_t decryptionRes
 
 const std::string MediaDecryptModuleService::GetTopThreeDecryptionDurations()
 {
-    DRM_INFO_LOG("GetTopThreeDecryptionDurations");
+    DRM_DEBUG_LOG("GetTopThreeDecryptionDurations");
     std::vector<uint32_t> topThreeDurations(TOP_THREE_SIZE, 0);
     std::lock_guard<std::mutex> statisticsLock(statisticsMutex_);
     uint32_t currentTopThreeSize = decryptStatistics_.topThree.size();
@@ -194,7 +194,7 @@ const std::string MediaDecryptModuleService::GetTopThreeDecryptionDurations()
 
 std::string MediaDecryptModuleService::GetDumpInfo()
 {
-    DRM_INFO_LOG("GetDumpInfo");
+    DRM_DEBUG_LOG("GetDumpInfo");
     std::string dumpInfo = "Total Decryption Times: " + std::to_string(decryptStatistics_.decryptTimes) + "\n"
                            "Error Decryption Times: " + std::to_string(decryptStatistics_.errorDecryptTimes) + "\n"
                            "Top3 Decryption Duration: " + GetTopThreeDecryptionDurations();
