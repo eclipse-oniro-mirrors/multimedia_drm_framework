@@ -430,9 +430,9 @@ void DrmHostManager::ReleaseSevices(sptr<IMediaKeySystemFactory> drmHostServiePr
     DRM_INFO_LOG("ReleaseSevices enter.");
     std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
     const sptr<IRemoteObject> &remote = OHOS::HDI::hdi_objcast<IMediaKeySystemFactory>(drmHostServieProxy);
-    if (remote != nullptr && drmHostDeathRecipient != nullptr) {
-        remote->RemoveDeathRecipient(drmHostDeathRecipient);
-        drmHostDeathRecipient = nullptr;
+    if (remote != nullptr && drmHostDeathRecipientMap[drmHostServieProxy] != nullptr) {
+        remote->RemoveDeathRecipient(drmHostDeathRecipientMap[drmHostServieProxy]);
+        drmHostDeathRecipientMap[drmHostServieProxy] = nullptr;
     }
     std::string name = hdiMediaKeySystemFactoryAndPluginNameMap[drmHostServieProxy];
     /* No need to release non lazy loading */
@@ -445,7 +445,9 @@ void DrmHostManager::ReleaseSevices(sptr<IMediaKeySystemFactory> drmHostServiePr
         DRM_DEBUG_LOG("ReleaseSevices PluginCountMap is empty");
         return;
     }
-    lazyLoadPluginCountMap[name]--;
+    if (lazyLoadPluginCountMap[name] > 0) {
+        lazyLoadPluginCountMap[name]--;
+    }
     DRM_DEBUG_LOG("Lazy unLoad plugin name:%{public}s,count:%{public}d", name.c_str(), lazyLoadPluginCountMap[name]);
     if (lazyLoadPluginCountMap[name] == 0) {
         lazyLoadPluginTimeoutMap[name] = LAZY_UNLOAD_TIME_IN_MINUTES;
@@ -508,25 +510,23 @@ int32_t DrmHostManager::ProcessLazyLoadPlugin(std::string &name, std::vector<std
     return DRM_OK;
 }
 
-int32_t DrmHostManager::ProcessLazyLoadInfomation(std::string &name, sptr<IMediaKeySystemFactory> &drmHostServieProxy,
-    sptr<IMediaKeySystemFactory> &drmHostServieProxys)
+int32_t DrmHostManager::ProcessLazyLoadInfomation(std::string &name, sptr<IMediaKeySystemFactory> &drmHostServieProxy)
 {
     DRM_INFO_LOG("ProcessLazyLoadInfomation enter, name:%{public}s.", name.c_str());
-    drmHostDeathRecipient = new DrmHostDeathRecipient(this, name);
-    drmHostServieProxys = drmHostServieProxy;
-    const sptr<IRemoteObject> &remote = OHOS::HDI::hdi_objcast<IMediaKeySystemFactory>(drmHostServieProxys);
-    if (remote != nullptr && drmHostDeathRecipient != nullptr) {
-        bool result = remote->AddDeathRecipient(drmHostDeathRecipient);
+    drmHostDeathRecipientMap[drmHostServieProxy] = new DrmHostDeathRecipient(this, name);
+    const sptr<IRemoteObject> &remote = OHOS::HDI::hdi_objcast<IMediaKeySystemFactory>(drmHostServieProxy);
+    if (remote != nullptr && drmHostDeathRecipientMap[drmHostServieProxy] != nullptr) {
+        bool result = remote->AddDeathRecipient(drmHostDeathRecipientMap[drmHostServieProxy]);
         if (!result) {
-            drmHostDeathRecipient = nullptr;
-            ReleaseSevices(drmHostServieProxys);
+            drmHostDeathRecipientMap[drmHostServieProxy] = nullptr;
+            ReleaseSevices(drmHostServieProxy);
             DRM_ERR_LOG("AddDeathRecipient for drm Host failed.");
             return DRM_HOST_ERROR;
         }
     }
     if (!lazyLoadPluginCountMap.empty()) {
         lazyLoadPluginCountMap[name]++;
-        hdiMediaKeySystemFactoryAndPluginNameMap[drmHostServieProxys] = name;
+        hdiMediaKeySystemFactoryAndPluginNameMap[drmHostServieProxy] = name;
         DRM_DEBUG_LOG("Lazy load plugin name:%{public}s,count:%{public}d",
             name.c_str(), lazyLoadPluginCountMap[name]);
     }
@@ -569,7 +569,7 @@ int32_t DrmHostManager::GetServices(std::string &name, bool *isSurpported,
             DRM_ERR_LOG("IsMediaKeySystemSupported return Code:%{public}d", ret);
             continue;
         } else if (*isSurpported) {
-            ret = ProcessLazyLoadInfomation(name, drmHostServieProxy, drmHostServieProxys);
+            ret = ProcessLazyLoadInfomation(name, drmHostServieProxy);
             if (ret != DRM_OK) {
                 DRM_ERR_LOG("GetServices ProcessLazyLoadInfomation faild, return Code:%{public}d", ret);
                 return ret;
