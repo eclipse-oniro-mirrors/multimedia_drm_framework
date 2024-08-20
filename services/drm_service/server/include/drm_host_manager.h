@@ -116,8 +116,7 @@ private:
     void ServiceThreadMain();
     void GetOemLibraryPath(std::vector<std::string> &libsToLoad);
     void OemCertificateManager();
-    int32_t ProcessLazyLoadInfomation(std::string &name, sptr<IMediaKeySystemFactory> &drmHostServieProxy,
-    sptr<IMediaKeySystemFactory> &drmHostServieProxys);
+    int32_t ProcessLazyLoadInfomation(std::string &name, sptr<IMediaKeySystemFactory> &drmHostServieProxy);
     int32_t ProcessLazyLoadPlugin(std::string &name, std::vector<std::string> &serviceName,
         sptr<IDeviceManager> &deviceMgr, sptr<IServiceManager> &servmgr);
     int32_t GetServices(std::string &name, bool *isSurpported, sptr<IMediaKeySystemFactory> &drmHostServieProxys);
@@ -147,7 +146,7 @@ private:
     std::map<std::string, std::string> mediaKeySystemDescription_;
     std::map<sptr<IMediaKeySystem>, sptr<IMediaKeySystemFactory>> hdiMediaKeySystemAndFactoryMap;
     std::map<sptr<IMediaKeySystemFactory>, std::string> hdiMediaKeySystemFactoryAndPluginNameMap;
-    sptr<DrmHostDeathRecipient> drmHostDeathRecipient;
+    std::map<sptr<IMediaKeySystemFactory>, sptr<DrmHostDeathRecipient>> drmHostDeathRecipientMap;
 };
 } // DrmStandard
 } // OHOS
