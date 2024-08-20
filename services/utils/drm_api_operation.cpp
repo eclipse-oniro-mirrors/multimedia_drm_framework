@@ -204,12 +204,12 @@ void ConfigParser::ParseApiOperationManagement(std::istringstream &stream, ApiRe
 
 int64_t ConfigParser::AddProcessor()
 {
-    DRM_INFO_LOG("ConfigParser::AddProcessor enter.");
+    DRM_INFO_LOG("AddProcessor enter.");
     ApiReportConfig reportConfig;
     ApiEventConfig eventConfig;
     std::lock_guard<std::mutex> lock(g_apiOperationMutex);
     if (g_processorId != -1) {
-        DRM_DEBUG_LOG("ConfigParser::AddProcessor exit");
+        DRM_DEBUG_LOG("AddProcessor exit");
         return g_processorId;
     }
     if (g_processorId == APP_FLAG) {
@@ -217,7 +217,7 @@ int64_t ConfigParser::AddProcessor()
         return g_processorId;
     }
     if (LoadConfigurationFile(DRM_API_OPERATION_CONFIG_PATH) != true) {
-        DRM_ERR_LOG("ConfigParser::AddProcessor LoadConfigurationFile error!");
+        DRM_ERR_LOG("AddProcessor LoadConfigurationFile error!");
         return DRM_OPERATION_NOT_ALLOWED;
     }
     GetConfigurationParams(reportConfig, eventConfig);
@@ -244,13 +244,12 @@ int64_t ConfigParser::AddProcessor()
     event3.isRealTime = eventConfig.event3.isRealTime;
     config.eventConfigs.push_back(event3);
     g_processorId = HiviewDFX::HiAppEvent::AppEventProcessorMgr::AddProcessor(config);
-    DRM_INFO_LOG("ConfigParser::AddProcessor exit.");
     return g_processorId;
 }
 
 void ConfigParser::WriteEndEvent(const int result, const int errCode, std::string apiName, int64_t beginTime)
 {
-    DRM_INFO_LOG("ConfigParser::WriteEndEvent enter.");
+    DRM_INFO_LOG("WriteEndEvent enter.");
     (void)AddProcessor();
     std::string transId = std::string("traceId_") + std::to_string(std::rand());
     int64_t endTime = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -265,7 +264,6 @@ void ConfigParser::WriteEndEvent(const int result, const int errCode, std::strin
     event.AddParam("result", result);
     event.AddParam("error_code", errCode);
     HiviewDFX::HiAppEvent::Write(event);
-    DRM_INFO_LOG("ConfigParser::WriteEndEvent exit.");
 }
 }  // namespace DrmStandard
 }  // namespace OHOS

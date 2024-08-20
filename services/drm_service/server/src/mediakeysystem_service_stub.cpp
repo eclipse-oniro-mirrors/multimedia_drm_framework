@@ -99,10 +99,12 @@ static struct ProcessRemoteRequestFuncArray g_mediaKeySystemServiceStubRequestPr
 
 MediaKeySystemServiceStub::MediaKeySystemServiceStub()
 {
+    DRM_INFO_LOG("MediaKeySystemServiceStub enter.");
 }
 
 MediaKeySystemServiceStub::~MediaKeySystemServiceStub()
 {
+    DRM_INFO_LOG("~MediaKeySystemServiceStub enter.");
     sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
     sptr<IDrmListener> clientListener_ = nullptr;
 }
