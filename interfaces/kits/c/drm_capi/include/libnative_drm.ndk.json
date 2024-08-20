@@ -116,12 +116,16 @@
         "name": "OH_MediaKeySession_Destroy"
     },
     {
+        "first_introduced": "11",
+        "name": "OH_MediaKeySession_SetMediaKeySessionCallback"
+    },
+    {
         "first_introduced": "12",
         "name": "OH_MediaKeySystem_GetMediaKeySystems"
     },
     {
         "first_introduced": "12",
-        "name": "OH_MediaKeySession_SetMediaKeySessionCallback"
+        "name": "OH_MediaKeySession_SetCallback"
     },
     {
         "first_introduced": "12",
