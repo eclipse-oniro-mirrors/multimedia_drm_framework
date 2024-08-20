@@ -358,7 +358,7 @@ int32_t MediaKeySessionServiceCallback::SendEventKeyChanged(
             return DRM_OK;
         }
     }
-    DRM_DEBUG_LOG("SendEventKeyChanged failed.");
+    DRM_ERR_LOG("SendEventKeyChanged failed.");
     return DRM_ERROR;
 }
 } // DrmStandard
