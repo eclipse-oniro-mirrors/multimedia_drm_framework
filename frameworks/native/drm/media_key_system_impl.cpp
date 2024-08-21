@@ -51,7 +51,7 @@ MediaKeySystemImpl::~MediaKeySystemImpl()
 void MediaKeySystemImpl::MediaKeySystemServerDied(pid_t pid)
 {
     DRM_ERR_LOG("MediaKeySystem server has died, pid:%{public}d!", pid);
-
+    std::lock_guard<std::mutex> lock(mutex_);
     if (serviceProxy_ != nullptr && serviceProxy_->AsObject() != nullptr) {
         (void)serviceProxy_->AsObject()->RemoveDeathRecipient(deathRecipient_);
         serviceProxy_ = nullptr;
@@ -63,6 +63,7 @@ void MediaKeySystemImpl::MediaKeySystemServerDied(pid_t pid)
 int32_t MediaKeySystemImpl::CreateListenerObject()
 {
     DRM_INFO_LOG("CreateListenerObject");
+    std::lock_guard<std::mutex> lock(mutex_);
     listenerStub_ = new(std::nothrow) DrmListenerStub();
     DRM_CHECK_AND_RETURN_RET_LOG(listenerStub_ != nullptr, DRM_MEMORY_ERROR,
         "failed to new DrmListenerStub object");
@@ -78,6 +79,7 @@ int32_t MediaKeySystemImpl::CreateListenerObject()
 int32_t MediaKeySystemImpl::Release()
 {
     DRM_INFO_LOG("Release enter.");
+    std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = DRM_UNKNOWN_ERROR;
     if (serviceProxy_ != nullptr) {
         sptr<IRemoteObject> object = serviceProxy_->AsObject();
