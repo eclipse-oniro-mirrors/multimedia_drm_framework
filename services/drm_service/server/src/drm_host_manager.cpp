@@ -574,6 +574,7 @@ int32_t DrmHostManager::GetServices(std::string &name, bool *isSurpported,
                 DRM_ERR_LOG("GetServices ProcessLazyLoadInfomation faild, return Code:%{public}d", ret);
                 return ret;
             }
+            drmHostServieProxys = drmHostServieProxy;
             break;
         }
     }
