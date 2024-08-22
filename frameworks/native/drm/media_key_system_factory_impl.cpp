@@ -111,9 +111,9 @@ void MediaKeySystemFactoryImpl::MediaKeySystemFactoryServerDied(pid_t pid)
             (void)privateServiceProxy_->AsObject()->RemoveDeathRecipient(deathRecipient_);
             privateServiceProxy_ = nullptr;
         }
+        listenerStub_ = nullptr;
+        deathRecipient_ = nullptr;
     }
-    listenerStub_ = nullptr;
-    deathRecipient_ = nullptr;
 
     int32_t retry = RETRY_TIMES;
     sptr<IMediaKeySystemFactoryService> serviceProxy = nullptr;

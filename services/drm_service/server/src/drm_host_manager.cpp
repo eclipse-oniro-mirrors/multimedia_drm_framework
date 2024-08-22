@@ -445,9 +445,7 @@ void DrmHostManager::ReleaseSevices(sptr<IMediaKeySystemFactory> drmHostServiePr
         DRM_DEBUG_LOG("ReleaseSevices PluginCountMap is empty");
         return;
     }
-    if (lazyLoadPluginCountMap[name] > 0) {
-        lazyLoadPluginCountMap[name]--;
-    }
+    lazyLoadPluginCountMap[name]--;
     DRM_DEBUG_LOG("Lazy unLoad plugin name:%{public}s,count:%{public}d", name.c_str(), lazyLoadPluginCountMap[name]);
     if (lazyLoadPluginCountMap[name] == 0) {
         lazyLoadPluginTimeoutMap[name] = LAZY_UNLOAD_TIME_IN_MINUTES;
@@ -574,6 +572,7 @@ int32_t DrmHostManager::GetServices(std::string &name, bool *isSurpported,
                 DRM_ERR_LOG("GetServices ProcessLazyLoadInfomation faild, return Code:%{public}d", ret);
                 return ret;
             }
+            drmHostServieProxys = drmHostServieProxy;
             break;
         }
     }
