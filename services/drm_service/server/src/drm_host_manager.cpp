@@ -124,7 +124,7 @@ void DrmHostManager::StopServiceThread()
 
 void DrmHostManager::DelayedLazyUnLoad()
 {
-    DRM_INFO_LOG("DelayedLazyUnLoad enter.");
+    DRM_DEBUG_LOG("DelayedLazyUnLoad enter.");
     sptr<IDeviceManager> deviceMgr = IDeviceManager::Get();
     if (deviceMgr == nullptr || lazyLoadPluginInfoMap.empty()) {
         return;
