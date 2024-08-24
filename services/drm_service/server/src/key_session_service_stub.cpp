@@ -32,7 +32,7 @@ struct ProcessRemoteRequestFuncArray {
 static int32_t ProcessGetMediaDecryptModule(MediaKeySessionServiceStub *stub, MessageParcel &data,
     MessageParcel &reply, MessageOption &option);
 
-static int32_t ProcessRleaseKeySession(MediaKeySessionServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessReleaseKeySession(MediaKeySessionServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
 static int32_t ProcessMediaKeyRequest(MediaKeySessionServiceStub *stub, MessageParcel &data, MessageParcel &reply,
@@ -70,7 +70,7 @@ static int32_t ProcessSetListenerObject(MediaKeySessionServiceStub *stub, Messag
 
 static struct ProcessRemoteRequestFuncArray g_mediaKeySessionServiceStubRequestProcessFunc[] = {
     {GET_MEDIA_DECRYPT_MODULE, ProcessGetMediaDecryptModule},
-    {KEY_SESSION_RELEASE, ProcessRleaseKeySession},
+    {KEY_SESSION_RELEASE, ProcessReleaseKeySession},
     {MEDIA_KEY_SESSION_GENERATE_LICENSE_REQUEST, ProcessMediaKeyRequest},
     {MEDIA_KEY_SESSION_PROCESS_LICENSE_RESPONSE, ProcessMediaKeyResponse},
     {MEDIA_KEY_SESSION_GENERATE_OFFLINE_RELEASE_REQUEST, ProcessOfflineReleaseRequest},
@@ -101,10 +101,10 @@ static int32_t ProcessGetMediaDecryptModule(MediaKeySessionServiceStub *stub, Me
     return DRM_OK;
 }
 
-static int32_t ProcessRleaseKeySession(MediaKeySessionServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessReleaseKeySession(MediaKeySessionServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    DRM_INFO_LOG("ProcessRleaseKeySession enter.");
+    DRM_INFO_LOG("ProcessReleaseKeySession enter.");
     int32_t ret = stub->Release();
     return ret;
 }
