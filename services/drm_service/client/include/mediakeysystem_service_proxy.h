@@ -47,7 +47,7 @@ public:
         IMediaKeySessionService::OfflineMediaKeyStatus &status) override;
     int32_t ClearOfflineMediaKeys(std::vector<uint8_t> &licenseId) override;
     int32_t SetListenerObject(const sptr<IRemoteObject> &object) override;
-    int32_t SetCallback(sptr<IMeidaKeySystemServiceCallback> &callback) override;
+    int32_t SetCallback(sptr<IMediaKeySystemServiceCallback> &callback) override;
 
 private:
     static inline BrokerDelegator<MediaKeySystemServiceProxy> delegator_;

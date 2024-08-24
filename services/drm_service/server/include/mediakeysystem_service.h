@@ -70,7 +70,7 @@ public:
 
     int32_t CloseMediaKeySessionService(sptr<MediaKeySessionService> sessionService) override;
     int32_t GetStatistics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics) override;
-    int32_t SetCallback(sptr<IMeidaKeySystemServiceCallback> &callback) override;
+    int32_t SetCallback(sptr<IMediaKeySystemServiceCallback> &callback) override;
     std::string GetPluginName();
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> getMediaKeySystem();
     
@@ -82,7 +82,7 @@ public:
 private:
     void OnDrmPluginDied(std::string &name) override;
     std::mutex mutex_;
-    sptr<IMeidaKeySystemServiceCallback> callback_;
+    sptr<IMediaKeySystemServiceCallback> callback_;
     wptr<IMediaKeySystemServiceOperatorsCallback> keySystemOperatoersCallback_;
     std::mutex sessionsSetMutex_;
     std::set<sptr<MediaKeySessionService>> sessionsSet_;

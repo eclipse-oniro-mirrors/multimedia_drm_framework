@@ -19,10 +19,10 @@
 namespace OHOS {
 namespace DrmStandard {
 MediaKeySystemServiceCallbackProxy::MediaKeySystemServiceCallbackProxy(const sptr<IRemoteObject> &impl)
-    : IRemoteProxy<IMeidaKeySystemServiceCallback>(impl) {};
+    : IRemoteProxy<IMediaKeySystemServiceCallback>(impl) {};
 
 int32_t MediaKeySystemServiceCallbackProxy::SendEvent(DrmEventType event, int32_t extra,
-    const std::vector<uint8_t> data)
+    const std::vector<uint8_t> &data)
 {
     MessageParcel parcelData;
     MessageParcel reply;

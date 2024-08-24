@@ -24,7 +24,7 @@ MediaKeySessionServiceCallbackProxy::MediaKeySessionServiceCallbackProxy(const s
     : IRemoteProxy<IMediaKeySessionServiceCallback>(impl) {};
 
 int32_t MediaKeySessionServiceCallbackProxy::SendEvent(DrmEventType event, int32_t extra,
-    const std::vector<uint8_t> data)
+    const std::vector<uint8_t> &data)
 {
     MessageParcel parcelData;
     MessageParcel reply;

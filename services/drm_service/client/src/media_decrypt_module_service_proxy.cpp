@@ -116,7 +116,7 @@ int32_t MediaDecryptModuleServiceProxy::DecryptMediaData(bool secureDecodrtState
 
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.keyId.size()), IPC_PROXY_ERR,
         "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.keyId size failed.");
-    DRM_CHECK_AND_RETURN_RET_LOG(cryptInfo.keyId.size() < KEYID_MAX_LEN, DRM_MEMORY_ERROR,
+    DRM_CHECK_AND_RETURN_RET_LOG(cryptInfo.keyId.size() <= KEYID_MAX_LEN, DRM_MEMORY_ERROR,
         "The size of keyId is too large.");
     if (cryptInfo.keyId.size() != 0) {
         DRM_CHECK_AND_RETURN_RET_LOG(data.WriteBuffer(cryptInfo.keyId.data(), cryptInfo.keyId.size()), IPC_PROXY_ERR,
@@ -125,7 +125,7 @@ int32_t MediaDecryptModuleServiceProxy::DecryptMediaData(bool secureDecodrtState
 
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.iv.size()), IPC_PROXY_ERR,
         "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.iv size failed.");
-    DRM_CHECK_AND_RETURN_RET_LOG(cryptInfo.iv.size() < IV_MAX_LEN, DRM_MEMORY_ERROR, "The size of iv is too large.");
+    DRM_CHECK_AND_RETURN_RET_LOG(cryptInfo.iv.size() <= IV_MAX_LEN, DRM_MEMORY_ERROR, "The size of iv is too large.");
 
     if (cryptInfo.iv.size() != 0) {
         DRM_CHECK_AND_RETURN_RET_LOG(data.WriteBuffer(cryptInfo.iv.data(), cryptInfo.iv.size()), IPC_PROXY_ERR,

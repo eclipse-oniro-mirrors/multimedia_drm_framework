@@ -467,7 +467,7 @@ int32_t MediaKeySystemServiceProxy::ClearOfflineMediaKeys(std::vector<uint8_t> &
     return ret;
 }
 
-int32_t MediaKeySystemServiceProxy::SetCallback(sptr<IMeidaKeySystemServiceCallback> &callback)
+int32_t MediaKeySystemServiceProxy::SetCallback(sptr<IMediaKeySystemServiceCallback> &callback)
 {
     DRM_INFO_LOG("SetCallback enter.");
     MessageParcel data;

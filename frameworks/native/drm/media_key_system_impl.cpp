@@ -350,7 +350,6 @@ int32_t MediaKeySystemImpl::GetCertificateStatus(IMediaKeySystemService::Certifi
         return DRM_SERVICE_ERROR;
     }
     ret = serviceProxy_->GetCertificateStatus((IMediaKeySystemService::CertificateStatus *)certStatus);
-    DRM_ERR_LOG("GetCertificateStatus 277");
     if (ret != DRM_OK) {
         DRM_ERR_LOG("GetCertificateStatus failed, ret: %{public}d", ret);
         return DRM_SERVICE_ERROR;
@@ -413,7 +412,7 @@ std::string MediaKeySystemCallback::GetEventName(DrmEventType event)
     return eventMap_[eventType];
 }
 
-int32_t MediaKeySystemCallback::SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> data)
+int32_t MediaKeySystemCallback::SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> &data)
 {
     DRM_INFO_LOG("SendEvent enter");
     std::string eventName = GetEventName(event);
