@@ -23,7 +23,7 @@ namespace OHOS {
 namespace DrmStandard {
 class IMediaKeySystemServiceCallback : public IRemoteBroker {
 public:
-    virtual int32_t SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> data) = 0;
+    virtual int32_t SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> &data) = 0;
 
     DECLARE_INTERFACE_DESCRIPTOR(u"IMediaKeySystemServiceCallback");
 };
