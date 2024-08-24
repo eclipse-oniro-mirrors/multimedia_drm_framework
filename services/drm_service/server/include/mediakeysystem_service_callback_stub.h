@@ -21,10 +21,10 @@
 
 namespace OHOS {
 namespace DrmStandard {
-class MeidaKeySystemServiceCallbackStub : public IRemoteStub<IMeidaKeySystemServiceCallback> {
+class MediaKeySystemServiceCallbackStub : public IRemoteStub<IMediaKeySystemServiceCallback> {
 public:
-    MeidaKeySystemServiceCallbackStub() = default;
-    ~MeidaKeySystemServiceCallbackStub() = default;
+    MediaKeySystemServiceCallbackStub() = default;
+    ~MediaKeySystemServiceCallbackStub() = default;
     virtual int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
         MessageOption &option) override;
 

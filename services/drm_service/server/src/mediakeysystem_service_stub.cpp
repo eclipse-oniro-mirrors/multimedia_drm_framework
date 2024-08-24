@@ -99,10 +99,12 @@ static struct ProcessRemoteRequestFuncArray g_mediaKeySystemServiceStubRequestPr
 
 MediaKeySystemServiceStub::MediaKeySystemServiceStub()
 {
+    DRM_INFO_LOG("MediaKeySystemServiceStub enter.");
 }
 
 MediaKeySystemServiceStub::~MediaKeySystemServiceStub()
 {
+    DRM_INFO_LOG("~MediaKeySystemServiceStub enter.");
     sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
     sptr<IDrmListener> clientListener_ = nullptr;
 }
@@ -423,7 +425,7 @@ static int32_t ProcessSetCallabck(MediaKeySystemServiceStub *stub, MessageParcel
         DRM_ERR_LOG("ProcessSetCallabck remote is null");
         return IPC_STUB_INVALID_DATA_ERR;
     }
-    auto callback = iface_cast<IMeidaKeySystemServiceCallback>(remoteObject);
+    auto callback = iface_cast<IMediaKeySystemServiceCallback>(remoteObject);
     if (callback == nullptr) {
         DRM_ERR_LOG("ProcessSetCallabck iface_cast nullptr");
         return IPC_STUB_INVALID_DATA_ERR;

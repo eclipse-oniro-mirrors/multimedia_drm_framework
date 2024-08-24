@@ -21,7 +21,7 @@
 
 namespace OHOS {
 namespace DrmStandard {
-class MediaKeySystemServiceCallbackProxy : public IRemoteProxy<IMeidaKeySystemServiceCallback> {
+class MediaKeySystemServiceCallbackProxy : public IRemoteProxy<IMediaKeySystemServiceCallback> {
 public:
     explicit MediaKeySystemServiceCallbackProxy(const sptr<IRemoteObject> &impl);
     virtual ~MediaKeySystemServiceCallbackProxy() = default;

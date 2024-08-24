@@ -39,7 +39,6 @@ int32_t MediaKeySystemServiceProxy::SetListenerObject(const sptr<IRemoteObject> 
         DRM_ERR_LOG("Set listener obj failed, errcode: %{public}d", ret);
         return IPC_PROXY_ERR;
     }
-    DRM_INFO_LOG("SetListenerObject exit.");
     return reply.ReadInt32();
 }
 
@@ -59,7 +58,6 @@ int32_t MediaKeySystemServiceProxy::Release()
         DRM_ERR_LOG("Release failed, ret: %{public}d", ret);
         return ret;
     }
-    DRM_INFO_LOG("Release exit.");
     return ret;
 }
 
@@ -469,7 +467,7 @@ int32_t MediaKeySystemServiceProxy::ClearOfflineMediaKeys(std::vector<uint8_t> &
     return ret;
 }
 
-int32_t MediaKeySystemServiceProxy::SetCallback(sptr<IMeidaKeySystemServiceCallback> &callback)
+int32_t MediaKeySystemServiceProxy::SetCallback(sptr<IMediaKeySystemServiceCallback> &callback)
 {
     DRM_INFO_LOG("SetCallback enter.");
     MessageParcel data;

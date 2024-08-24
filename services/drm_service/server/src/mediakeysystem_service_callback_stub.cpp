@@ -20,7 +20,7 @@
 
 namespace OHOS {
 namespace DrmStandard {
-int32_t MeidaKeySystemServiceCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
+int32_t MediaKeySystemServiceCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
     int32_t ret = DRM_ERROR;
@@ -30,19 +30,19 @@ int32_t MeidaKeySystemServiceCallbackStub::OnRemoteRequest(uint32_t code, Messag
     }
     switch (code) {
         case MEDIA_KEY_SYSTEM_SERVICE_CALLBACK_SEND_EVENT:
-            ret = MeidaKeySystemServiceCallbackStub::HandleSendEvent(data);
+            ret = MediaKeySystemServiceCallbackStub::HandleSendEvent(data);
             break;
         default:
-            DRM_ERR_LOG("MeidaKeySystemServiceCallbackStub request code %{public}u not handled", code);
+            DRM_ERR_LOG("MediaKeySystemServiceCallbackStub request code %{public}u not handled", code);
             ret = IPCObjectStub::OnRemoteRequest(code, data, reply, option);
             break;
     }
     return ret;
 }
 
-int32_t MeidaKeySystemServiceCallbackStub::HandleSendEvent(MessageParcel &data)
+int32_t MediaKeySystemServiceCallbackStub::HandleSendEvent(MessageParcel &data)
 {
-    DRM_INFO_LOG("MeidaKeySystemServiceCallbackStub HandleSendEvent enter.");
+    DRM_INFO_LOG("MediaKeySystemServiceCallbackStub HandleSendEvent enter.");
     int32_t event = data.ReadInt32();
     int32_t extra = data.ReadInt32();
     uint32_t dataSize = data.ReadUint32();
