@@ -90,7 +90,7 @@ public:
     ~MediaKeySystemCallback();
     void InitEventMap();
     std::string GetEventName(DrmEventType event);
-    int32_t SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> data) override;
+    int32_t SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> &data) override;
 
 private:
     MediaKeySystemImpl *systemImpl_;
