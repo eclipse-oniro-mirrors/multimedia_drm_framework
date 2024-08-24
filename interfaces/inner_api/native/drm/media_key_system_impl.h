@@ -72,12 +72,12 @@ private:
     std::mutex mutex_;
     sptr<IMediaKeySystemService> serviceProxy_;
     sptr<MediaKeySystemImplCallback> mediaKeySystemApplicationCallback_;
-    sptr<IMeidaKeySystemServiceCallback> serviceCallback_;
+    sptr<IMediaKeySystemServiceCallback> serviceCallback_;
     sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
     sptr<DrmListenerStub> listenerStub_ = nullptr;
 };
 
-class MediaKeySystemCallback : public MeidaKeySystemServiceCallbackStub {
+class MediaKeySystemCallback : public MediaKeySystemServiceCallbackStub {
 public:
     MediaKeySystemCallback() : systemImpl_(nullptr)
     {

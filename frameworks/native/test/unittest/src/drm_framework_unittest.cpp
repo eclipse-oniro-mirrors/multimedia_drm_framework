@@ -3060,7 +3060,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_DecryptModuleNormal_066, TestSize.Le
     }
     if (mediaKeySystem) {
         MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-        sptr<IMeidaKeySystemServiceCallback> serviceCallback =
+        sptr<IMediaKeySystemServiceCallback> serviceCallback =
             new (std::nothrow) MediaKeySystemCallback(systemObject->systemImpl_);
         sptr<MediaKeySystemCallback> Callback = new (std::nothrow) MediaKeySystemCallback(systemObject->systemImpl_);
         const std::vector<uint8_t> data = { 0x01 };
