@@ -29,10 +29,18 @@ MediaDecryptModuleServiceStub::MediaDecryptModuleServiceStub()
 
 MediaDecryptModuleServiceStub::~MediaDecryptModuleServiceStub()
 {
+    DRM_INFO_LOG("~MediaDecryptModuleServiceStub");
 }
 
 void MediaDecryptModuleServiceStub::MediaDecryptModuleClientDied(pid_t pid)
 {
+    DRM_ERR_LOG("MediaDecryptModule client has died, pid:%{public}d", pid);
+    if (clientListener_ != nullptr && clientListener_->AsObject() != nullptr && deathRecipient_ != nullptr) {
+        DRM_DEBUG_LOG("MediaDecryptModuleServiceStub release listener!");
+        (void)clientListener_->AsObject()->RemoveDeathRecipient(deathRecipient_);
+        deathRecipient_ = nullptr;
+        clientListener_ = nullptr;
+    }
 }
 
 int32_t MediaDecryptModuleServiceStub::SetListenerObject(const sptr<IRemoteObject> &object)
@@ -64,14 +72,14 @@ int32_t MediaDecryptModuleServiceStub::SetListenerObject(const sptr<IRemoteObjec
 int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    DRM_INFO_LOG("OnRemoteRequest, cmd = %{public}u", code);
+    DRM_DEBUG_LOG("OnRemoteRequest, cmd = %{public}u", code);
     if (data.ReadInterfaceToken() != GetDescriptor()) {
         DRM_ERR_LOG("MediaDecryptModuleServiceStub: ReadInterfaceToken failed.");
         return -1;
     }
     switch (code) {
         case DECRYPT_MODULE_DECRYPT_DATA: {
-            DRM_INFO_LOG("DECRYPT_MODULE_DECRYPT_DATA enter.");
+            DRM_DEBUG_LOG("DECRYPT_MODULE_DECRYPT_DATA enter.");
             IMediaDecryptModuleService::CryptInfo cryptInfo;
             bool secureDecodrtState = data.ReadBool();
             cryptInfo.type = (OHOS::DrmStandard::IMediaDecryptModuleService::CryptAlgorithmType)data.ReadUint32();

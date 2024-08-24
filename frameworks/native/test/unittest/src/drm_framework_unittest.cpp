@@ -3060,7 +3060,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_DecryptModuleNormal_066, TestSize.Le
     }
     if (mediaKeySystem) {
         MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-        sptr<IMeidaKeySystemServiceCallback> serviceCallback =
+        sptr<IMediaKeySystemServiceCallback> serviceCallback =
             new (std::nothrow) MediaKeySystemCallback(systemObject->systemImpl_);
         sptr<MediaKeySystemCallback> Callback = new (std::nothrow) MediaKeySystemCallback(systemObject->systemImpl_);
         const std::vector<uint8_t> data = { 0x01 };
@@ -3848,15 +3848,15 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CreateMediaKeySystem_MAX_01, TestSiz
     Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
     const uint32_t maxNum = 64;
     std::vector<MediaKeySystem *> systems(maxNum, nullptr);
-
+    const char *name = GetUuid();
     for (uint i = 0; i < maxNum; i++) {
-        errNo = OH_MediaKeySystem_Create(GetUuid(), &systems[i]);
+        errNo = OH_MediaKeySystem_Create(name, &systems[i]);
         EXPECT_EQ(errNo, DRM_ERR_OK);
         EXPECT_NE(systems[i], nullptr);
     }
 
     MediaKeySystem *mediaKeySystem = nullptr;
-    errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
+    errNo = OH_MediaKeySystem_Create(name, &mediaKeySystem);
     EXPECT_EQ(errNo, DRM_ERR_MAX_SYSTEM_NUM_REACHED);
     EXPECT_EQ(mediaKeySystem, nullptr);
 

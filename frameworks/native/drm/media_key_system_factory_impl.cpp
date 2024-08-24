@@ -111,9 +111,9 @@ void MediaKeySystemFactoryImpl::MediaKeySystemFactoryServerDied(pid_t pid)
             (void)privateServiceProxy_->AsObject()->RemoveDeathRecipient(deathRecipient_);
             privateServiceProxy_ = nullptr;
         }
+        listenerStub_ = nullptr;
+        deathRecipient_ = nullptr;
     }
-    listenerStub_ = nullptr;
-    deathRecipient_ = nullptr;
 
     int32_t retry = RETRY_TIMES;
     sptr<IMediaKeySystemFactoryService> serviceProxy = nullptr;
@@ -210,7 +210,7 @@ int32_t MediaKeySystemFactoryImpl::CreateMediaKeySystem(std::string &name, sptr<
     sptr<MediaKeySystemImpl> localMediaKeySystemImpl = nullptr;
     int32_t ret = DRM_OK;
     if (mediaKeySystemImpl == nullptr) {
-        DRM_ERR_LOG("MediaKeySystemImpl:: mediaKeySystemImpl is nullptr");
+        DRM_ERR_LOG("mediaKeySystemImpl is nullptr");
         return DRM_INVALID_PARAM;
     }
 

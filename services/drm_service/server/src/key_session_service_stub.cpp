@@ -32,7 +32,7 @@ struct ProcessRemoteRequestFuncArray {
 static int32_t ProcessGetMediaDecryptModule(MediaKeySessionServiceStub *stub, MessageParcel &data,
     MessageParcel &reply, MessageOption &option);
 
-static int32_t ProcessRleaseKeySession(MediaKeySessionServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessReleaseKeySession(MediaKeySessionServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
 static int32_t ProcessMediaKeyRequest(MediaKeySessionServiceStub *stub, MessageParcel &data, MessageParcel &reply,
@@ -50,7 +50,7 @@ static int32_t ProcessOfflineReleaseResponse(MediaKeySessionServiceStub *stub, M
 static int32_t ProcessCheckMediaKeyStatus(MediaKeySessionServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
-static int32_t ProcessrestoreOfflineMediaKey(MediaKeySessionServiceStub *stub, MessageParcel &data,
+static int32_t ProcessRestoreOfflineMediaKey(MediaKeySessionServiceStub *stub, MessageParcel &data,
     MessageParcel &reply, MessageOption &option);
 
 static int32_t ProcessClearMediaKeys(MediaKeySessionServiceStub *stub, MessageParcel &data, MessageParcel &reply,
@@ -70,13 +70,13 @@ static int32_t ProcessSetListenerObject(MediaKeySessionServiceStub *stub, Messag
 
 static struct ProcessRemoteRequestFuncArray g_mediaKeySessionServiceStubRequestProcessFunc[] = {
     {GET_MEDIA_DECRYPT_MODULE, ProcessGetMediaDecryptModule},
-    {KEY_SESSION_RELEASE, ProcessRleaseKeySession},
+    {KEY_SESSION_RELEASE, ProcessReleaseKeySession},
     {MEDIA_KEY_SESSION_GENERATE_LICENSE_REQUEST, ProcessMediaKeyRequest},
     {MEDIA_KEY_SESSION_PROCESS_LICENSE_RESPONSE, ProcessMediaKeyResponse},
     {MEDIA_KEY_SESSION_GENERATE_OFFLINE_RELEASE_REQUEST, ProcessOfflineReleaseRequest},
     {MEDIA_KEY_SESSION_PROCESS_OFFLINE_RELEASE_RESPONSE, ProcessOfflineReleaseResponse},
     {MEDIA_KEY_SESSION_GENERATE_CHECK_LICENSE_STATUS, ProcessCheckMediaKeyStatus},
-    {MEDIA_KEY_SESSION_RESTORE_OFFLINEKEYS, ProcessrestoreOfflineMediaKey},
+    {MEDIA_KEY_SESSION_RESTORE_OFFLINEKEYS, ProcessRestoreOfflineMediaKey},
     {MEDIA_KEY_SESSION_REMOVE_LICENSE, ProcessClearMediaKeys},
     {MEDIA_KEY_SESSION_SET_CALLBACK, ProcessSetCallback},
     {MEDIA_KEY_SESSION_REQUIRE_SECURE_DECODER, ProcessRequireSecureDecoder},
@@ -101,10 +101,10 @@ static int32_t ProcessGetMediaDecryptModule(MediaKeySessionServiceStub *stub, Me
     return DRM_OK;
 }
 
-static int32_t ProcessRleaseKeySession(MediaKeySessionServiceStub *stub, MessageParcel &data, MessageParcel &reply,
+static int32_t ProcessReleaseKeySession(MediaKeySessionServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    DRM_INFO_LOG("ProcessRleaseKeySession enter.");
+    DRM_INFO_LOG("ProcessReleaseKeySession enter.");
     int32_t ret = stub->Release();
     return ret;
 }
@@ -276,10 +276,10 @@ static int32_t ProcessCheckMediaKeyStatus(MediaKeySessionServiceStub *stub, Mess
     return ret;
 }
 
-static int32_t ProcessrestoreOfflineMediaKey(MediaKeySessionServiceStub *stub, MessageParcel &data,
+static int32_t ProcessRestoreOfflineMediaKey(MediaKeySessionServiceStub *stub, MessageParcel &data,
     MessageParcel &reply, MessageOption &option)
 {
-    DRM_INFO_LOG("ProcessrestoreOfflineMediaKey enter.");
+    DRM_INFO_LOG("ProcessRestoreOfflineMediaKey enter.");
     std::vector<uint8_t> licenseId;
     int32_t licenseIdSize = data.ReadInt32();
     DRM_CHECK_AND_RETURN_RET_LOG(licenseIdSize < LICENSEID_MAX_LEN, DRM_MEMORY_ERROR,
@@ -287,7 +287,7 @@ static int32_t ProcessrestoreOfflineMediaKey(MediaKeySessionServiceStub *stub, M
     if (licenseIdSize != 0) {
         const uint8_t *licenseIdBuf = static_cast<const uint8_t *>(data.ReadUnpadBuffer(licenseIdSize));
         if (licenseIdBuf == nullptr) {
-            DRM_ERR_LOG("ProcessrestoreOfflineMediaKey read licenseId failed.");
+            DRM_ERR_LOG("ProcessRestoreOfflineMediaKey read licenseId failed.");
             return IPC_STUB_WRITE_PARCEL_ERR;
         }
         licenseId.assign(licenseIdBuf, licenseIdBuf + licenseIdSize);
@@ -340,6 +340,12 @@ static int32_t ProcessRequireSecureDecoder(MediaKeySessionServiceStub *stub, Mes
 void MediaKeySessionServiceStub::MediaKeySessionClientDied(pid_t pid)
 {
     DRM_ERR_LOG("MediaKeySession client has died, pid:%{public}d", pid);
+    if (clientListener_ != nullptr && clientListener_->AsObject() != nullptr && deathRecipient_ != nullptr) {
+        DRM_DEBUG_LOG("This MediaKeySessionServiceStub has already set listener!");
+        (void)clientListener_->AsObject()->RemoveDeathRecipient(deathRecipient_);
+        deathRecipient_ = nullptr;
+        clientListener_ = nullptr;
+    }
 }
 
 int32_t MediaKeySessionServiceStub::SetListenerObject(const sptr<IRemoteObject> &object)

@@ -21,11 +21,11 @@
 
 namespace OHOS {
 namespace DrmStandard {
-class MediaKeySystemServiceCallbackProxy : public IRemoteProxy<IMeidaKeySystemServiceCallback> {
+class MediaKeySystemServiceCallbackProxy : public IRemoteProxy<IMediaKeySystemServiceCallback> {
 public:
     explicit MediaKeySystemServiceCallbackProxy(const sptr<IRemoteObject> &impl);
     virtual ~MediaKeySystemServiceCallbackProxy() = default;
-    int32_t SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> data) override;
+    int32_t SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> &data) override;
 
 private:
     static inline BrokerDelegator<MediaKeySystemServiceCallbackProxy> delegator_;
