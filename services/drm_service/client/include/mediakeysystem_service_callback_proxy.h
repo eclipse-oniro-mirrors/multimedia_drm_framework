@@ -25,7 +25,7 @@ class MediaKeySystemServiceCallbackProxy : public IRemoteProxy<IMediaKeySystemSe
 public:
     explicit MediaKeySystemServiceCallbackProxy(const sptr<IRemoteObject> &impl);
     virtual ~MediaKeySystemServiceCallbackProxy() = default;
-    int32_t SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> data) override;
+    int32_t SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> &data) override;
 
 private:
     static inline BrokerDelegator<MediaKeySystemServiceCallbackProxy> delegator_;
