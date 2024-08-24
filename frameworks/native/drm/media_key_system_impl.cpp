@@ -350,7 +350,6 @@ int32_t MediaKeySystemImpl::GetCertificateStatus(IMediaKeySystemService::Certifi
         return DRM_SERVICE_ERROR;
     }
     ret = serviceProxy_->GetCertificateStatus((IMediaKeySystemService::CertificateStatus *)certStatus);
-    DRM_ERR_LOG("GetCertificateStatus 277");
     if (ret != DRM_OK) {
         DRM_ERR_LOG("GetCertificateStatus failed, ret: %{public}d", ret);
         return DRM_SERVICE_ERROR;
