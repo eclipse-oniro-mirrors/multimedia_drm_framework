@@ -26,6 +26,7 @@ int32_t MediaKeySystemServiceCallbackStub::OnRemoteRequest(uint32_t code, Messag
     int32_t ret = DRM_ERROR;
 
     if (data.ReadInterfaceToken() != GetDescriptor()) {
+        DRM_ERR_LOG("GetDescriptor faild, error code: %{public}d", ret);
         return ret;
     }
     switch (code) {
