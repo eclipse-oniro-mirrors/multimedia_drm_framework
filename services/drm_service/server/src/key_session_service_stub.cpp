@@ -340,12 +340,6 @@ static int32_t ProcessRequireSecureDecoder(MediaKeySessionServiceStub *stub, Mes
 void MediaKeySessionServiceStub::MediaKeySessionClientDied(pid_t pid)
 {
     DRM_ERR_LOG("MediaKeySession client has died, pid:%{public}d", pid);
-    if (clientListener_ != nullptr && clientListener_->AsObject() != nullptr && deathRecipient_ != nullptr) {
-        DRM_DEBUG_LOG("This MediaKeySessionServiceStub has already set listener!");
-        (void)clientListener_->AsObject()->RemoveDeathRecipient(deathRecipient_);
-        deathRecipient_ = nullptr;
-        clientListener_ = nullptr;
-    }
 }
 
 int32_t MediaKeySessionServiceStub::SetListenerObject(const sptr<IRemoteObject> &object)
