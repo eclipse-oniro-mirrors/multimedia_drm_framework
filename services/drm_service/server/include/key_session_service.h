@@ -67,7 +67,7 @@ public:
     std::string GetDecryptModuleDumpInfo();
 
 private:
-    std::mutex sessionMutex_;
+    std::recursive_mutex sessionMutex_;
     sptr<IMediaKeySessionServiceCallback> callback_;
     wptr<IMediaKeySessionServiceOperatorsCallback> sessionOperatorsCallback_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySession> hdiMediaKeySession_;

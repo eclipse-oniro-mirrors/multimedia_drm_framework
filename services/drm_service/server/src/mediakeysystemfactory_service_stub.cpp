@@ -39,6 +39,7 @@ MediaKeySystemFactoryServiceStub::~MediaKeySystemFactoryServiceStub()
 void MediaKeySystemFactoryServiceStub::MediaKeySystemFactoryClientDied(pid_t pid)
 {
     DRM_ERR_LOG("MediaKeySystemFactory client has died, pid:%{public}d", pid);
+    std::lock_guard<std::recursive_mutex> lock(factoryServiceStubMutex_);
     if (clientListenerMap_.find(pid) != clientListenerMap_.end()) {
         if (clientListenerMap_[pid] != nullptr && clientListenerMap_[pid]->AsObject() != nullptr &&
             deathRecipientMap_.find(pid) != deathRecipientMap_.end() && deathRecipientMap_[pid] != nullptr) {
@@ -53,6 +54,7 @@ void MediaKeySystemFactoryServiceStub::MediaKeySystemFactoryClientDied(pid_t pid
 int32_t MediaKeySystemFactoryServiceStub::SetListenerObject(const sptr<IRemoteObject> &object)
 {
     pid_t pid = IPCSkeleton::GetCallingPid();
+    std::lock_guard<std::recursive_mutex> lock(factoryServiceStubMutex_);
     if (clientListenerMap_.find(pid) != clientListenerMap_.end()) {
         if (clientListenerMap_[pid] != nullptr && clientListenerMap_[pid]->AsObject() != nullptr &&
             deathRecipientMap_.find(pid) != deathRecipientMap_.end() && deathRecipientMap_[pid] != nullptr) {

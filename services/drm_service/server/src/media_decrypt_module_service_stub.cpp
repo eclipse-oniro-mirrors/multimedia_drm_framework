@@ -35,6 +35,7 @@ MediaDecryptModuleServiceStub::~MediaDecryptModuleServiceStub()
 void MediaDecryptModuleServiceStub::MediaDecryptModuleClientDied(pid_t pid)
 {
     DRM_ERR_LOG("MediaDecryptModule client has died, pid:%{public}d", pid);
+    std::lock_guard<std::recursive_mutex> lock(decryptModuleStubMutex_);
     if (clientListener_ != nullptr && clientListener_->AsObject() != nullptr && deathRecipient_ != nullptr) {
         DRM_DEBUG_LOG("MediaDecryptModuleServiceStub release listener!");
         (void)clientListener_->AsObject()->RemoveDeathRecipient(deathRecipient_);
@@ -46,6 +47,7 @@ void MediaDecryptModuleServiceStub::MediaDecryptModuleClientDied(pid_t pid)
 int32_t MediaDecryptModuleServiceStub::SetListenerObject(const sptr<IRemoteObject> &object)
 {
     pid_t pid = IPCSkeleton::GetCallingPid();
+    std::lock_guard<std::recursive_mutex> lock(decryptModuleStubMutex_);
     if (clientListener_ != nullptr && clientListener_->AsObject() != nullptr && deathRecipient_ != nullptr) {
         DRM_DEBUG_LOG("This MediaDecryptModuleServiceStub has already set listener!");
         (void)clientListener_->AsObject()->RemoveDeathRecipient(deathRecipient_);

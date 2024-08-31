@@ -77,7 +77,7 @@ private:
     sptr<MediaKeySessionImplCallback> keySessionApplicationCallback_;
     sptr<IMediaKeySessionServiceCallback> keySessionServiceCallback_;
     sptr<OHOS::DrmStandard::IMediaKeySessionService> keySessionServiceProxy_;
-    std::mutex mutex_;
+    std::recursive_mutex mutex_;
     sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
     sptr<DrmListenerStub> listenerStub_ = nullptr;
 };
@@ -96,6 +96,7 @@ public:
 
     ~MediaKeySessionServiceCallback()
     {
+        std::lock_guard<std::recursive_mutex> lock(mutex_);
         keySessionImpl_ = nullptr;
     }
 
@@ -106,6 +107,7 @@ public:
         bool hasNewGoodLicense) override;
 
 private:
+    std::recursive_mutex mutex_;
     MediaKeySessionImpl *keySessionImpl_;
     std::unordered_map<int32_t, std::string> eventMap_;
 };
