@@ -344,6 +344,7 @@ void MediaKeySessionServiceStub::MediaKeySessionClientDied(pid_t pid)
 
 int32_t MediaKeySessionServiceStub::SetListenerObject(const sptr<IRemoteObject> &object)
 {
+    std::lock_guard<std::recursive_mutex> lock(drmSessionStubMutex_);
     pid_t pid = IPCSkeleton::GetCallingPid();
     if (clientListener_ != nullptr && clientListener_->AsObject() != nullptr && deathRecipient_ != nullptr) {
         DRM_DEBUG_LOG("This MediaKeySessionServiceStub has already set listener!");

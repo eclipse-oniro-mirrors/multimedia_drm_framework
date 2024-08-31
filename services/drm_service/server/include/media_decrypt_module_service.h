@@ -49,10 +49,10 @@ private:
     void UpdateDecryptionStatistics(int32_t decryptionResult, uint32_t bufLen, uint32_t curDuration);
     const std::string GetTopThreeDecryptionDurations();
 
-    std::mutex moduleLock_;
+    std::recursive_mutex moduleLock_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaDecryptModule> hdiMediaDecryptModule_;
     StatisticsInfo statisticsInfo_;
-    std::mutex statisticsMutex_;
+    std::recursive_mutex statisticsMutex_;
     DecryptionStatistics decryptStatistics_;
     uint64_t instanceId_;
 };
