@@ -95,6 +95,7 @@ DrmHostManager::DrmHostManager(StatusCallback *statusCallback) : statusCallback_
 DrmHostManager::~DrmHostManager()
 {
     DRM_INFO_LOG("~DrmHostManager enter.");
+    std::lock_guard<std::recursive_mutex> lock(drmHostMapMutex);
     statusCallback_ = nullptr;
     if (serviceThreadRunning) {
         StopServiceThread();
@@ -126,10 +127,10 @@ void DrmHostManager::DelayedLazyUnLoad()
 {
     DRM_DEBUG_LOG("DelayedLazyUnLoad enter.");
     sptr<IDeviceManager> deviceMgr = IDeviceManager::Get();
+    std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
     if (deviceMgr == nullptr || lazyLoadPluginInfoMap.empty()) {
         return;
     }
-    std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
     for (auto pluginInfoIt = lazyLoadPluginInfoMap.begin(); pluginInfoIt != lazyLoadPluginInfoMap.end();
         pluginInfoIt++) {
         DRM_DEBUG_LOG("ProcessMessage check lazy unload, name:%{public}s, Count:%{public}d,"
@@ -375,6 +376,7 @@ void DrmHostManager::parseLazyLoadService(
 int32_t DrmHostManager::LoadPluginInfo(const std::string &filePath)
 {
     DRM_INFO_LOG("LoadPluginInfo enter.");
+    std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
     lazyLoadPluginInfoMap.clear();
     int fd = open(filePath.c_str(), O_RDONLY);
     if (fd == -1) {
@@ -725,6 +727,7 @@ int32_t DrmHostManager::GetMediaKeySystemUuid(std::string &name, std::string &uu
 int32_t DrmHostManager::GetMediaKeySystems(std::map<std::string, std::string> &mediaKeySystemDescription)
 {
     DRM_INFO_LOG("GetMediaKeySystems enter.");
+    std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
     mediaKeySystemDescription.clear();
     mediaKeySystemDescription.insert(mediaKeySystemDescription_.begin(), mediaKeySystemDescription_.end());
     DRM_DEBUG_LOG("GetMediaKeySystems size:%{public}zu\n", mediaKeySystemDescription.size());

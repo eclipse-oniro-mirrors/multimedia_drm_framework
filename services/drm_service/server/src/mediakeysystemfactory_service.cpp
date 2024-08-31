@@ -83,6 +83,7 @@ MediaKeySystemFactoryService::~MediaKeySystemFactoryService()
 void MediaKeySystemFactoryService::OnStart()
 {
     DRM_INFO_LOG("OnStart enter.");
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (drmHostManager_ == nullptr || drmHostManager_->Init() != DRM_OK) {
         DRM_ERR_LOG("OnStart failed to init drm host manager.");
     }

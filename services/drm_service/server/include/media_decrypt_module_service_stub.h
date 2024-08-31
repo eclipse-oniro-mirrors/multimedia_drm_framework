@@ -39,6 +39,7 @@ public:
 
 private:
     void MediaDecryptModuleClientDied(pid_t pid);
+    std::recursive_mutex decryptModuleStubMutex_;
     sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
     sptr<IDrmListener> clientListener_ = nullptr;
 };

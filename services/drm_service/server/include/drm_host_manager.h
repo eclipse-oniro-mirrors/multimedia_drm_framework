@@ -130,7 +130,6 @@ private:
     void UnloadAllServices();
 
     StatusCallback *statusCallback_;
-    std::string service_name_ = "drm_interface_service";
     std::map<void *, sptr<IMediaKeySystem>> handleAndKeySystemMap;
     std::thread serviceThread;
     bool serviceThreadRunning = false;

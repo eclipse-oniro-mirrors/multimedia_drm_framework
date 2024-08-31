@@ -38,6 +38,7 @@ public:
     virtual void DistroyForClientDied(pid_t pid) = 0;
 
 private:
+    std::recursive_mutex factoryServiceStubMutex_;
     void MediaKeySystemFactoryClientDied(pid_t pid);
     std::map<pid_t, sptr<DrmDeathRecipient>> deathRecipientMap_;
     std::map<pid_t, sptr<IDrmListener>> clientListenerMap_;

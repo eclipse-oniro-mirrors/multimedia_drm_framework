@@ -69,7 +69,7 @@ public:
 private:
     void MediaKeySystemServerDied(pid_t pid);
     int32_t CreateListenerObject();
-    std::mutex mutex_;
+    std::recursive_mutex mutex_;
     sptr<IMediaKeySystemService> serviceProxy_;
     sptr<MediaKeySystemImplCallback> mediaKeySystemApplicationCallback_;
     sptr<IMediaKeySystemServiceCallback> serviceCallback_;
@@ -93,6 +93,7 @@ public:
     int32_t SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> &data) override;
 
 private:
+    std::recursive_mutex mutex_;
     MediaKeySystemImpl *systemImpl_;
     std::unordered_map<int32_t, std::string> eventMap_;
 };

@@ -45,13 +45,14 @@ MediaKeySystemImpl::MediaKeySystemImpl(sptr<IMediaKeySystemService> &mediaKeysys
 
 MediaKeySystemImpl::~MediaKeySystemImpl()
 {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     serviceProxy_ = nullptr;
 }
 
 void MediaKeySystemImpl::MediaKeySystemServerDied(pid_t pid)
 {
     DRM_ERR_LOG("MediaKeySystem server has died, pid:%{public}d!", pid);
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (serviceProxy_ != nullptr && serviceProxy_->AsObject() != nullptr) {
         (void)serviceProxy_->AsObject()->RemoveDeathRecipient(deathRecipient_);
         serviceProxy_ = nullptr;
@@ -63,7 +64,7 @@ void MediaKeySystemImpl::MediaKeySystemServerDied(pid_t pid)
 int32_t MediaKeySystemImpl::CreateListenerObject()
 {
     DRM_INFO_LOG("CreateListenerObject");
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     listenerStub_ = new(std::nothrow) DrmListenerStub();
     DRM_CHECK_AND_RETURN_RET_LOG(listenerStub_ != nullptr, DRM_MEMORY_ERROR,
         "failed to new DrmListenerStub object");
@@ -79,7 +80,7 @@ int32_t MediaKeySystemImpl::CreateListenerObject()
 int32_t MediaKeySystemImpl::Release()
 {
     DRM_INFO_LOG("Release enter.");
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = DRM_UNKNOWN_ERROR;
     if (serviceProxy_ != nullptr) {
         sptr<IRemoteObject> object = serviceProxy_->AsObject();
@@ -104,7 +105,7 @@ int32_t MediaKeySystemImpl::GenerateKeySystemRequest(std::vector<uint8_t> &reque
 {
     DrmTrace trace("MediaKeySystemImpl::GenerateKeySystemRequest");
     DRM_INFO_LOG("GenerateKeySystemRequest enter.");
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = DRM_OK;
 
     if (serviceProxy_ == nullptr) {
@@ -123,7 +124,7 @@ int32_t MediaKeySystemImpl::ProcessKeySystemResponse(const std::vector<uint8_t> 
 {
     DrmTrace trace("MediaKeySystemImpl::ProcessKeySystemResponse");
     DRM_INFO_LOG("ProcessKeySystemResponse enter.");
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = DRM_OK;
 
     if (serviceProxy_ == nullptr) {
@@ -142,7 +143,7 @@ int32_t MediaKeySystemImpl::SetConfigurationString(std::string &configName, std:
 {
     DRM_INFO_LOG("SetConfiguration enter, configName:%{public}s, value:%{public}s.",
         configName.c_str(), value.c_str());
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = DRM_OK;
 
     if (serviceProxy_ == nullptr) {
@@ -160,7 +161,7 @@ int32_t MediaKeySystemImpl::SetConfigurationString(std::string &configName, std:
 int32_t MediaKeySystemImpl::GetConfigurationString(std::string &configName, std::string &value)
 {
     DRM_INFO_LOG("GetConfiguration enter, configName:%{public}s.", configName.c_str());
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = DRM_OK;
 
     if (serviceProxy_ == nullptr) {
@@ -178,7 +179,7 @@ int32_t MediaKeySystemImpl::GetConfigurationString(std::string &configName, std:
 int32_t MediaKeySystemImpl::SetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value)
 {
     DRM_INFO_LOG("SetConfiguration enter, configName:%{public}s.", configName.c_str());
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = DRM_OK;
 
     if (serviceProxy_ == nullptr) {
@@ -196,7 +197,7 @@ int32_t MediaKeySystemImpl::SetConfigurationByteArray(std::string &configName, s
 int32_t MediaKeySystemImpl::GetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value)
 {
     DRM_INFO_LOG("GetConfiguration enter, configName:%{public}s.", configName.c_str());
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = DRM_OK;
 
     if (serviceProxy_ == nullptr) {
@@ -217,6 +218,7 @@ int32_t MediaKeySystemImpl::CreateMediaKeySession(IMediaKeySessionService::Conte
 {
     DrmTrace trace("MediaKeySystemImpl::CreateMediaKeySession");
     DRM_INFO_LOG("CreateMediaKeySession enter.");
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     sptr<IMediaKeySessionService> keySessionProxy = nullptr;
     sptr<MediaKeySessionImpl> localMediaKeySessionImpl = nullptr;
     int32_t ret = DRM_OK;
@@ -251,7 +253,7 @@ int32_t MediaKeySystemImpl::CreateMediaKeySession(IMediaKeySessionService::Conte
 int32_t MediaKeySystemImpl::GetStatistics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics)
 {
     DRM_INFO_LOG("GetStatistics enter.");
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = DRM_OK;
 
     if (serviceProxy_ == nullptr) {
@@ -269,7 +271,7 @@ int32_t MediaKeySystemImpl::GetStatistics(std::vector<IMediaKeySystemService::Me
 int32_t MediaKeySystemImpl::GetMaxContentProtectionLevel(IMediaKeySessionService::ContentProtectionLevel *securityLevel)
 {
     DRM_INFO_LOG("GetMaxContentProtectionLevel enter.");
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = DRM_OK;
 
     if (serviceProxy_ == nullptr) {
@@ -288,7 +290,7 @@ int32_t MediaKeySystemImpl::GetMaxContentProtectionLevel(IMediaKeySessionService
 int32_t MediaKeySystemImpl::GetOfflineMediaKeyIds(std::vector<std::vector<uint8_t>> &licenseIds)
 {
     DRM_INFO_LOG("GetOfflineMediaKeyIds enter.");
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = DRM_OK;
 
     if (serviceProxy_ == nullptr) {
@@ -307,7 +309,7 @@ int32_t MediaKeySystemImpl::GetOfflineMediaKeyStatus(std::vector<uint8_t> &licen
     IMediaKeySessionService::OfflineMediaKeyStatus &status)
 {
     DRM_INFO_LOG("GetOfflineMediaKeyStatus enter.");
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = DRM_OK;
 
     if (serviceProxy_ == nullptr) {
@@ -325,7 +327,7 @@ int32_t MediaKeySystemImpl::GetOfflineMediaKeyStatus(std::vector<uint8_t> &licen
 int32_t MediaKeySystemImpl::ClearOfflineMediaKeys(std::vector<uint8_t> &licenseId)
 {
     DRM_INFO_LOG("ClearOfflineMediaKeys enter.");
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = DRM_OK;
     if (serviceProxy_ == nullptr) {
         DRM_ERR_LOG("ClearOfflineMediaKeys serviceProxy_ is null");
@@ -342,7 +344,7 @@ int32_t MediaKeySystemImpl::ClearOfflineMediaKeys(std::vector<uint8_t> &licenseI
 int32_t MediaKeySystemImpl::GetCertificateStatus(IMediaKeySystemService::CertificateStatus *certStatus)
 {
     DRM_INFO_LOG("GetCertificateStatus enter.");
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = DRM_OK;
 
     if (serviceProxy_ == nullptr) {
@@ -361,6 +363,7 @@ int32_t MediaKeySystemImpl::SetCallback(const sptr<MediaKeySystemImplCallback> &
 {
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " SetCallback in", FAKE_POINTER(this));
     DRM_CHECK_AND_RETURN_RET_LOG(callback != nullptr, DRM_INVALID_ARG, "callback is nullptr");
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     mediaKeySystemApplicationCallback_ = callback;
 
     int32_t ret = DRM_ERROR;
@@ -370,7 +373,6 @@ int32_t MediaKeySystemImpl::SetCallback(const sptr<MediaKeySystemImplCallback> &
         return ret;
     }
 
-    std::lock_guard<std::mutex> lock(mutex_);
     if (serviceProxy_ == nullptr) {
         DRM_ERR_LOG("SetCallback serviceProxy_ is null");
         return DRM_SERVICE_ERROR;
@@ -386,18 +388,21 @@ int32_t MediaKeySystemImpl::SetCallback(const sptr<MediaKeySystemImplCallback> &
 sptr<MediaKeySystemImplCallback> MediaKeySystemImpl::GetApplicationCallback()
 {
     DRM_INFO_LOG("GetApplicationCallback");
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     return mediaKeySystemApplicationCallback_;
 }
 
 MediaKeySystemCallback::~MediaKeySystemCallback()
 {
     DRM_INFO_LOG("~MediaKeySystemCallback");
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     systemImpl_ = nullptr;
 }
 
 void MediaKeySystemCallback::InitEventMap()
 {
     DRM_INFO_LOG("MediaKeySystemCallback InitEventMap");
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     eventMap_[static_cast<int32_t>(DRM_EVENT_PROVISION_REQUIRED)] = MediaKeySystemEvent::EVENT_STR_PROVISION_REQUIRED;
 }
 
@@ -405,6 +410,7 @@ std::string MediaKeySystemCallback::GetEventName(DrmEventType event)
 {
     DRM_INFO_LOG("MediaKeySystemCallback GetEventName");
     std::string eventName = "";
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t eventType = static_cast<int32_t>(event);
     if (eventMap_.find(eventType) == eventMap_.end()) {
         return eventName;
@@ -416,6 +422,7 @@ int32_t MediaKeySystemCallback::SendEvent(DrmEventType event, int32_t extra, con
 {
     DRM_INFO_LOG("SendEvent enter");
     std::string eventName = GetEventName(event);
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (systemImpl_ != nullptr && eventName.length() != 0) {
         sptr<MediaKeySystemImplCallback> applicationCallback = systemImpl_->GetApplicationCallback();
         if (applicationCallback != nullptr) {
