@@ -170,7 +170,7 @@ void DrmHostManager::ProcessMessage()
                 auto message = messageQueue.front();
                 DRM_DEBUG_LOG("ProcessMessage message type:%{public}d.", message.type);
                 messageQueue.pop();
-                queueMutexLock.unlock();                
+                queueMutexLock.unlock();
                 if (message.type == Message::UnLoadOEMCertifaicateService) {
                     std::lock_guard<std::recursive_mutex> lock(drmHostMapMutex);
                     void *libHandle = pluginNameAndHandleMap[message.name];
