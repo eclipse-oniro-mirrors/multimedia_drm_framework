@@ -39,6 +39,7 @@ config("drm_framework_drivers_config") {
 }
 
 ohos_shared_library("drm_framework") {
+  branch_protector_ret = "pac_ret"
   install_enable = true
   sources = [
     "./../../services/drm_service/client/src/key_session_service_proxy.cpp",
