@@ -339,6 +339,8 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
     napi_value argv[ARGS_ONE] = {0};
     napi_value thisVar = nullptr;
     int32_t jsContentProtectionLevel = 0;
+    IMediaKeySessionService::ContentProtectionLevel securityLevel =
+        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN;
     sptr<MediaKeySessionImpl> keySessionImpl = nullptr;
     MediaKeySystemNapi *mediaKeySystemNapi = nullptr;
     napi_get_undefined(env, &result);
@@ -350,7 +352,7 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
             NapiDrmError::ThrowError(env, "napi_get_value_int32 failed", DRM_UNKNOWN_ERROR);
             return result;
         }
-        IMediaKeySessionService::ContentProtectionLevel securityLevel =
+        securityLevel =
             static_cast<IMediaKeySessionService::ContentProtectionLevel>(jsContentProtectionLevel);
         if (securityLevel <= IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN ||
             securityLevel >= IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_MAX) {
@@ -358,8 +360,6 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
             DRM_ERR_LOG("securityLevel is error!");
             return result;
         }
-    } else {
-        jsContentProtectionLevel = IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN;
     }
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
     if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
