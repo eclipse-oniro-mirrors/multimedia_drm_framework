@@ -132,6 +132,7 @@ private:
     StatusCallback *statusCallback_;
     std::map<void *, sptr<IMediaKeySystem>> handleAndKeySystemMap;
     std::thread serviceThread;
+    std::thread messageQueueThread;
     bool serviceThreadRunning = false;
     std::vector<void *> loadedLibs;
     std::recursive_mutex drmHostMapMutex;

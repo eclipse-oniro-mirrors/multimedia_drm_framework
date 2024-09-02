@@ -106,7 +106,6 @@ void MediaKeySystemFactoryService::OnStop()
 
     if (drmHostManager_) {
         drmHostManager_->DeInit();
-        delete drmHostManager_;
         drmHostManager_ = nullptr;
     }
 
