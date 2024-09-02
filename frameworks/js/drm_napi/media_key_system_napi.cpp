@@ -356,7 +356,8 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
             static_cast<IMediaKeySessionService::ContentProtectionLevel>(jsContentProtectionLevel);
         if (securityLevel <= IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN ||
             securityLevel >= IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_MAX) {
-            NapiDrmError::ThrowError(env, "The param ContentProtectionLevel exceeds reasonable range.", DRM_INVALID_PARAM);
+            NapiDrmError::ThrowError(env, "The param ContentProtectionLevel exceeds reasonable range.",
+                DRM_INVALID_PARAM);
             DRM_ERR_LOG("securityLevel is error!");
             return result;
         }
