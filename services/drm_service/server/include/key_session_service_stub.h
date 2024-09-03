@@ -36,6 +36,7 @@ public:
 
 private:
     void MediaKeySessionClientDied(pid_t pid);
+    std::recursive_mutex drmSessionStubMutex_;
     sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
     sptr<IDrmListener> clientListener_ = nullptr;
 };

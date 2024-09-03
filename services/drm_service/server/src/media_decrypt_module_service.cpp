@@ -49,7 +49,7 @@ MediaDecryptModuleService::MediaDecryptModuleService(
     StatisticsInfo statisticsInfo)
 {
     DRM_INFO_LOG("MediaDecryptModuleService 0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
-    std::lock_guard<std::mutex> lock(moduleLock_);
+    std::lock_guard<std::recursive_mutex> lock(moduleLock_);
     hdiMediaDecryptModule_ = hdiMediaDecryptModule;
     statisticsInfo_ = statisticsInfo;
     instanceId_ = HiTraceChain::GetId().GetChainId();
@@ -58,11 +58,11 @@ MediaDecryptModuleService::MediaDecryptModuleService(
 MediaDecryptModuleService::~MediaDecryptModuleService()
 {
     DRM_INFO_LOG("~MediaDecryptModuleService 0x%{public}06" PRIXPTR " Instances destroy.", FAKE_POINTER(this));
-    std::lock_guard<std::mutex> lock(moduleLock_);
+    std::lock_guard<std::recursive_mutex> lock(moduleLock_);
     if (hdiMediaDecryptModule_ != nullptr) {
         Release();
     }
-    std::lock_guard<std::mutex> statisticsLock(statisticsMutex_);
+    std::lock_guard<std::recursive_mutex> statisticsLock(statisticsMutex_);
     ReportDecryptionStatisticsEvent(instanceId_, statisticsInfo_.bundleName, decryptStatistics_);
 }
 
@@ -71,6 +71,7 @@ int32_t MediaDecryptModuleService::Release()
     DrmTrace trace("Release");
     DRM_INFO_LOG("Release enter.");
     int32_t errCode = DRM_OK;
+    std::lock_guard<std::recursive_mutex> lock(moduleLock_);
     if (hdiMediaDecryptModule_ != nullptr) {
         DRM_INFO_LOG("hdiMediaDecryptModule_ call Close");
         hdiMediaDecryptModule_ = nullptr;
@@ -94,7 +95,7 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
     memset_s(&drmDstBuffer, sizeof(drmSrcBuffer), 0, sizeof(drmDstBuffer));
     SetDrmBufferInfo(&drmSrcBuffer, &drmDstBuffer, srcBuffer, dstBuffer, bufLen);
     auto timeBefore = std::chrono::system_clock::now();
-    std::lock_guard<std::mutex> lock(moduleLock_);
+    std::lock_guard<std::recursive_mutex> lock(moduleLock_);
     ret = hdiMediaDecryptModule_->DecryptMediaData(secureDecodrtState, cryptInfoTmp, drmSrcBuffer, drmDstBuffer);
     uint32_t decryptDuration = CalculateTimeDiff(timeBefore, std::chrono::system_clock::now());
     UpdateDecryptionStatistics(ret, bufLen, decryptDuration);
@@ -151,7 +152,7 @@ void MediaDecryptModuleService::SetDrmBufferInfo(OHOS::HDI::Drm::V1_0::DrmBuffer
 void MediaDecryptModuleService::UpdateDecryptionStatistics(int32_t decryptionResult,
     uint32_t bufLen, uint32_t curDuration)
 {
-    std::lock_guard<std::mutex> statisticsLock(statisticsMutex_);
+    std::lock_guard<std::recursive_mutex> statisticsLock(statisticsMutex_);
     decryptStatistics_.topThree.push(curDuration);
     if (decryptStatistics_.topThree.size() > TOP_THREE_SIZE) {
         decryptStatistics_.topThree.pop();
@@ -177,7 +178,7 @@ const std::string MediaDecryptModuleService::GetTopThreeDecryptionDurations()
 {
     DRM_DEBUG_LOG("GetTopThreeDecryptionDurations");
     std::vector<uint32_t> topThreeDurations(TOP_THREE_SIZE, 0);
-    std::lock_guard<std::mutex> statisticsLock(statisticsMutex_);
+    std::lock_guard<std::recursive_mutex> statisticsLock(statisticsMutex_);
     uint32_t currentTopThreeSize = decryptStatistics_.topThree.size();
     for (uint32_t i = 0; i < currentTopThreeSize; i++) {
         uint32_t tmp = decryptStatistics_.topThree.top();
@@ -195,6 +196,7 @@ const std::string MediaDecryptModuleService::GetTopThreeDecryptionDurations()
 std::string MediaDecryptModuleService::GetDumpInfo()
 {
     DRM_DEBUG_LOG("GetDumpInfo");
+    std::lock_guard<std::recursive_mutex> statisticsLock(statisticsMutex_);
     std::string dumpInfo = "Total Decryption Times: " + std::to_string(decryptStatistics_.decryptTimes) + "\n"
                            "Error Decryption Times: " + std::to_string(decryptStatistics_.errorDecryptTimes) + "\n"
                            "Top3 Decryption Duration: " + GetTopThreeDecryptionDurations();
