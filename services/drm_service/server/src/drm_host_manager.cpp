@@ -109,6 +109,9 @@ void DrmHostManager::StopServiceThread()
     if (serviceThread.joinable()) {
         serviceThread.join();
     }
+    if (messageQueueThread.joinable()) {
+        messageQueueThread.join();
+    }
     for (auto libHandle : loadedLibs) {
         StopThreadFuncType StopThread = (StopThreadFuncType)dlsym(libHandle, "StopThread");
         if (StopThread) {
@@ -157,7 +160,7 @@ void DrmHostManager::DelayedLazyUnLoad()
 void DrmHostManager::ProcessMessage()
 {
     DRM_INFO_LOG("ProcessMessage enter.");
-    std::thread([this] {
+    messageQueueThread = std::thread([this] {
         while (serviceThreadRunning) {
             std::unique_lock<std::mutex> queueMutexLock(queueMutex);
             cv.wait_for(queueMutexLock, std::chrono::minutes{LAZY_UNLOAD_TIME_CHECK_IN_MINUTES}, [this] {
@@ -167,6 +170,7 @@ void DrmHostManager::ProcessMessage()
                 auto message = messageQueue.front();
                 DRM_DEBUG_LOG("ProcessMessage message type:%{public}d.", message.type);
                 messageQueue.pop();
+                queueMutexLock.unlock();
                 if (message.type == Message::UnLoadOEMCertifaicateService) {
                     std::lock_guard<std::recursive_mutex> lock(drmHostMapMutex);
                     void *libHandle = pluginNameAndHandleMap[message.name];
@@ -177,6 +181,7 @@ void DrmHostManager::ProcessMessage()
                         DRM_DEBUG_LOG("ProcessMessage UnLoadOEMCertifaicateService success.");
                     }
                 }
+                queueMutexLock.lock();
             }
             queueMutexLock.unlock();
             if (!serviceThreadRunning) {
@@ -185,7 +190,7 @@ void DrmHostManager::ProcessMessage()
             DRM_DEBUG_LOG("ProcessMessage lazy unload start.");
             DelayedLazyUnLoad();
         }
-    }).detach();
+    });
 }
 
 void DrmHostManager::ReleaseHandleAndKeySystemMap(void *handle)
@@ -234,7 +239,6 @@ void DrmHostManager::GetOemLibraryPath(std::vector<std::string> &libsToLoad)
 void DrmHostManager::ServiceThreadMain() __attribute__((no_sanitize("cfi")))
 {
     DRM_INFO_LOG("ServiceThreadMain enter.");
-    std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
     std::vector<std::string> libsToLoad;
     GetOemLibraryPath(libsToLoad);
     for (const auto &libpath : libsToLoad) {
@@ -242,7 +246,10 @@ void DrmHostManager::ServiceThreadMain() __attribute__((no_sanitize("cfi")))
         if (handle == nullptr) {
             continue;
         }
-        loadedLibs.push_back(handle);
+        {
+            std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
+            loadedLibs.push_back(handle);
+        }
         auto QueryMediaKeySystemName = (QueryMediaKeySystemNameFuncType)dlsym(handle, "QueryMediaKeySystemName");
         auto IsProvisionRequired = (IsProvisionRequiredFuncType)dlsym(handle, "IsProvisionRequired");
         auto SetMediaKeySystem = (SetMediaKeySystemFuncType)dlsym(handle, "SetMediaKeySystem");
@@ -264,8 +271,11 @@ void DrmHostManager::ServiceThreadMain() __attribute__((no_sanitize("cfi")))
                 DRM_ERR_LOG("CreateMediaKeySystem error!");
                 continue;
             }
-            pluginNameAndHandleMap[pluginName] = handle;
-            handleAndKeySystemMap[handle] = hdiMediaKeySystem;
+            {
+                std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
+                pluginNameAndHandleMap[pluginName] = handle;
+                handleAndKeySystemMap[handle] = hdiMediaKeySystem;
+            }
             ret = SetMediaKeySystem(hdiMediaKeySystem);
             if (ret != DRM_OK) {
                 ReleaseHandleAndKeySystemMap(handle);
