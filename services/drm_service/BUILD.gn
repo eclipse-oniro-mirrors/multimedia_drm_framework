@@ -33,6 +33,7 @@ ohos_shared_library("drm_service") {
     "./../utils/drm_dfx.cpp",
     "./../utils/drm_dfx_utils.cpp",
     "./../utils/drm_trace.cpp",
+    "./../utils/hdi_err_convertor.cpp",
     "./client/src/drm_listener_proxy.cpp",
     "./client/src/key_session_service_callback_proxy.cpp",
     "./client/src/mediakeysystem_service_callback_proxy.cpp",

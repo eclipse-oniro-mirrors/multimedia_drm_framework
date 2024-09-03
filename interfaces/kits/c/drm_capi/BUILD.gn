@@ -66,6 +66,7 @@ ohos_shared_library("native_drm") {
   }
 
   sources = [
+    "./../../../../frameworks/c/drm_capi/native_err_convertor.cpp",
     "./../../../../frameworks/c/drm_capi/native_mediakeysession.cpp",
     "./../../../../frameworks/c/drm_capi/native_mediakeysystem.cpp",
     "./../../../../services/utils/drm_api_operation.cpp",

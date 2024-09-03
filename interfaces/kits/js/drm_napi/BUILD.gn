@@ -44,12 +44,12 @@ ohos_shared_library("drm_napi") {
   ]
   sources = [
     "./../../../../frameworks/js/drm_napi/drm_enum_napi.cpp",
-    "./../../../../frameworks/js/drm_napi/drm_error_code.cpp",
     "./../../../../frameworks/js/drm_napi/key_session_callback_napi.cpp",
     "./../../../../frameworks/js/drm_napi/key_session_napi.cpp",
     "./../../../../frameworks/js/drm_napi/media_key_system_callback_napi.cpp",
     "./../../../../frameworks/js/drm_napi/media_key_system_napi.cpp",
     "./../../../../frameworks/js/drm_napi/napi_async_work.cpp",
+    "./../../../../frameworks/js/drm_napi/napi_err_convertor.cpp",
     "./../../../../frameworks/js/drm_napi/napi_param_utils.cpp",
     "./../../../../frameworks/js/drm_napi/native_module_ohos_drm.cpp",
     "./../../../../services/utils/drm_api_operation.cpp",
