@@ -183,7 +183,6 @@ void DrmHostManager::ProcessMessage()
                 }
                 queueMutexLock.lock();
             }
-            queueMutexLock.unlock();
             if (!serviceThreadRunning) {
                 break;
             }
