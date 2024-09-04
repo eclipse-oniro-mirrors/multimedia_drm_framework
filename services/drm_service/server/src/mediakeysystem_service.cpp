@@ -157,6 +157,8 @@ int32_t MediaKeySystemService::SetConfigurationString(std::string &configName, s
 {
     DRM_INFO_LOG("SetConfiguration enter, configName:%{public}s, value:%{public}s.",
         configName.c_str(), value.c_str());
+    DRM_CHECK_AND_RETURN_RET_LOG(configName != "bundleName", DRM_INVALID_ARG,
+        "configuration name is not support");
     int32_t ret = DRM_OK;
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
@@ -172,6 +174,8 @@ int32_t MediaKeySystemService::SetConfigurationString(std::string &configName, s
 int32_t MediaKeySystemService::GetConfigurationString(std::string &configName, std::string &value)
 {
     DRM_INFO_LOG("GetConfiguration enter, configName:%{public}s.", configName.c_str());
+    DRM_CHECK_AND_RETURN_RET_LOG(configName != "bundleName", DRM_INVALID_ARG,
+        "configuration name is not support");
     int32_t ret = DRM_OK;
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
@@ -188,6 +192,8 @@ int32_t MediaKeySystemService::GetConfigurationString(std::string &configName, s
 int32_t MediaKeySystemService::SetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value)
 {
     DRM_INFO_LOG("SetConfiguration enter, configName:%{public}s.", configName.c_str());
+    DRM_CHECK_AND_RETURN_RET_LOG(configName != "bundleName", DRM_INVALID_ARG,
+        "configuration name is not support");
     int32_t ret = DRM_OK;
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
@@ -205,6 +211,8 @@ int32_t MediaKeySystemService::SetConfigurationByteArray(std::string &configName
 int32_t MediaKeySystemService::GetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value)
 {
     DRM_INFO_LOG("GetConfiguration enter, configName:%{public}s.", configName.c_str());
+    DRM_CHECK_AND_RETURN_RET_LOG(configName != "bundleName", DRM_INVALID_ARG,
+        "configuration name is not support");
     int32_t ret = DRM_OK;
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
@@ -259,6 +267,20 @@ int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::Co
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " is Current keySessionService", FAKE_POINTER(keySessionService.GetRefPtr()));
     keySessionProxy = keySessionService;
     currentKeySessionNumber++;
+    return ret;
+}
+
+int32_t MediaKeySystemService::SetBundleName()
+{
+    DRM_INFO_LOG("SetBundleName");
+    int32_t ret = DRM_OK;
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_SERVICE_FATAL_ERROR,
+        "hdiKeySystem_ is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(!statisticsInfo_.bundleName.empty(), DRM_UNKNOWN_ERROR,
+        "bundle name is empty!");
+    ret = hdiKeySystem_->SetConfigurationString("bundleName", statisticsInfo_.bundleName);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "SetBundleName failed.");
     return ret;
 }
 

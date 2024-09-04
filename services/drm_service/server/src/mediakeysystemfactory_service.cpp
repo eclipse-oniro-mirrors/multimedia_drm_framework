@@ -181,6 +181,7 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
         ReportFaultEvent(DRM_SERVICE_ERROR, "CreateMediaKeySystem failed", "");
         return DRM_SERVICE_ERROR;
     }
+
     StatisticsInfo statisticsInfo;
     InitStatisticsInfo(hdiMediaKeySystem, name, statisticsInfo);
     mediaKeySystemService = new(std::nothrow) MediaKeySystemService(hdiMediaKeySystem, statisticsInfo);
@@ -190,6 +191,8 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
         return DRM_ALLOC_ERROR;
     }
     mediaKeySystemService->SetMediaKeySystemServiceOperatorsCallback(this);
+    (void)mediaKeySystemService->SetBundleName();
+
     int32_t pid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("CreateMediaKeySystem GetCallingPID: %{public}d.", pid);
     mediaKeySystemForPid_[pid].insert(mediaKeySystemService);
