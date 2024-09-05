@@ -73,7 +73,8 @@ public:
     int32_t SetCallback(sptr<IMediaKeySystemServiceCallback> &callback) override;
     std::string GetPluginName();
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> getMediaKeySystem();
-    
+    int32_t SetBundleName();
+
     // for hdi callback
     int32_t SendEvent(OHOS::HDI::Drm::V1_0::EventType eventType, int32_t extra,
         const std::vector<uint8_t> &data) override;
