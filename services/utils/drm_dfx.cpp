@@ -43,7 +43,6 @@ void DrmEvent::WriteServiceEvent(std::string eventName, OHOS::HiviewDFX::HiSysEv
     int32_t res = DRM_ERR_OK;
     res = HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName, type,
         "MODULE", info.module,
-        "TIME", info.currentTime,
         "SERVICE_NAME", info.serviceName,
         "ACTION", info.action,
         "MEMORY", info.memoryUsage);
@@ -60,7 +59,6 @@ void DrmEvent::WriteLicenseEvent(std::string eventName, OHOS::HiviewDFX::HiSysEv
     int32_t res = DRM_ERR_OK;
     res = HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName, type,
         "MODULE", info.module,
-        "TIME", info.currentTime,
         "APP_NAME", info.appName,
         "INSTANCE_ID", info.instanceId,
         "DRM_NAME", info.drmName,
@@ -84,7 +82,6 @@ void DrmEvent::WriteCertificateEvent(std::string eventName, OHOS::HiviewDFX::HiS
     int32_t res = DRM_ERR_OK;
     res = HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName, type,
         "MODULE", info.module,
-        "TIME", info.currentTime,
         "APP_NAME", info.appName,
         "INSTANCE_ID", info.instanceId,
         "DRM_NAME", info.drmName,
