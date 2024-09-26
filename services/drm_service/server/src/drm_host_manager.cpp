@@ -95,27 +95,30 @@ DrmHostManager::DrmHostManager(StatusCallback *statusCallback) : statusCallback_
 DrmHostManager::~DrmHostManager()
 {
     DRM_INFO_LOG("~DrmHostManager enter.");
-    std::lock_guard<std::recursive_mutex> lock(drmHostMapMutex);
-    statusCallback_ = nullptr;
-    if (serviceThreadRunning) {
-        StopServiceThread();
+    {
+        std::lock_guard<std::recursive_mutex> lock(drmHostMapMutex);
+        statusCallback_ = nullptr;
     }
+    StopServiceThread();
 }
 
 void DrmHostManager::StopServiceThread()
 {
     DRM_INFO_LOG("StopServiceThread enter.");
-    {
-        std::lock_guard<std::mutex> lock(queueMutex);
-        serviceThreadRunning = false;
+    std::unique_lock<std::mutex> queueMutexLock(queueMutex);
+    if (!serviceThreadRunning) {
+        return;
     }
+    serviceThreadRunning = false;
     cv.notify_all();
+    queueMutexLock.unlock();
     if (serviceThread.joinable()) {
         serviceThread.join();
     }
     if (messageQueueThread.joinable()) {
         messageQueueThread.join();
     }
+    std::lock_guard<std::recursive_mutex> lock(drmHostMapMutex);
     for (auto libHandle : loadedLibs) {
         StopThreadFuncType StopThread = (StopThreadFuncType)dlsym(libHandle, "StopThread");
         if (StopThread) {
@@ -165,19 +168,21 @@ void DrmHostManager::ProcessMessage()
 {
     DRM_INFO_LOG("ProcessMessage enter.");
     messageQueueThread = std::thread([this] {
-        while (serviceThreadRunning) {
+        while (true) {
             std::unique_lock<std::mutex> queueMutexLock(queueMutex);
             cv.wait_for(queueMutexLock, std::chrono::minutes{LAZY_UNLOAD_TIME_CHECK_IN_MINUTES}, [this] {
                 return (!this->messageQueue.empty() || !this->serviceThreadRunning);
             });
-
+            if (!serviceThreadRunning && messageQueue.empty()) {
+                break;
+            }
             std::queue<Message> localQueue;
             localQueue.swap(messageQueue);
             queueMutexLock.unlock();
             while (!localQueue.empty()) {
                 auto message = localQueue.front();
-                DRM_DEBUG_LOG("ProcessMessage message type:%{public}d.", message.type);
                 localQueue.pop();
+                DRM_DEBUG_LOG("ProcessMessage message type:%{public}d.", message.type);
                 if (message.type == Message::UnLoadOEMCertifaicateService) {
                     std::lock_guard<std::recursive_mutex> lock(drmHostMapMutex);
                     void *libHandle = pluginNameAndHandleMap[message.name];
@@ -188,9 +193,6 @@ void DrmHostManager::ProcessMessage()
                         DRM_DEBUG_LOG("ProcessMessage UnLoadOEMCertifaicateService success.");
                     }
                 }
-            }
-            if (!serviceThreadRunning && messageQueue.empty()) {
-                break;
             }
             DRM_DEBUG_LOG("ProcessMessage lazy unload start.");
             DelayedLazyUnLoad();
@@ -311,18 +313,19 @@ void DrmHostManager::ServiceThreadMain() __attribute__((no_sanitize("cfi")))
 void DrmHostManager::UnLoadOEMCertifaicateService(std::string &name, ExtraInfo info)
 {
     DRM_INFO_LOG("UnLoadOEMCertifaicateService enter.");
-    {
-        std::unique_lock<std::mutex> queueMutexLock(queueMutex);
-        Message message(Message::UnLoadOEMCertifaicateService, name, info);
-        messageQueue.push(message);
-    }
+    std::unique_lock<std::mutex> queueMutexLock(queueMutex);
+    Message message(Message::UnLoadOEMCertifaicateService, name, info);
+    messageQueue.push(message);
     cv.notify_all();
 }
 
 void DrmHostManager::OemCertificateManager()
 {
     DRM_INFO_LOG("OemCertificateManager enter.");
-    serviceThreadRunning = true;
+    {
+        std::unique_lock<std::mutex> queueMutexLock(queueMutex);
+        serviceThreadRunning = true;
+    }
     serviceThread = std::thread([this] {
         this->ServiceThreadMain();
     });
