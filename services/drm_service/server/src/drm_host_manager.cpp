@@ -37,8 +37,10 @@ std::mutex DrmHostManager::queueMutex;
 std::condition_variable DrmHostManager::cv;
 
 const int32_t LAZY_UNLOAD_TIME_CHECK_IN_MINUTES = 1;
+const int32_t LAZY_UNLOAD_WAIT_IN_MILMINUTES = 10;
 const int32_t LAZY_UNLOAD_TIME_IN_MINUTES = 3;
 const int32_t NOT_LAZY_LOADDED = -65536;
+const int32_t TIME_IN_MS = 60000;
 
 DrmHostManager::DrmHostDeathRecipient::DrmHostDeathRecipient(
     const sptr<DrmHostManager> &drmHostManager, std::string &name)
@@ -105,13 +107,11 @@ DrmHostManager::~DrmHostManager()
 void DrmHostManager::StopServiceThread()
 {
     DRM_INFO_LOG("StopServiceThread enter.");
-    std::unique_lock<std::mutex> queueMutexLock(queueMutex);
     if (!serviceThreadRunning) {
         return;
     }
     serviceThreadRunning = false;
     cv.notify_all();
-    queueMutexLock.unlock();
     if (serviceThread.joinable()) {
         serviceThread.join();
     }
@@ -168,14 +168,12 @@ void DrmHostManager::ProcessMessage()
 {
     DRM_INFO_LOG("ProcessMessage enter.");
     messageQueueThread = std::thread([this] {
-        while (true) {
+        int32_t counter = TIME_IN_MS;
+        while (serviceThreadRunning) {
             std::unique_lock<std::mutex> queueMutexLock(queueMutex);
-            cv.wait_for(queueMutexLock, std::chrono::minutes{LAZY_UNLOAD_TIME_CHECK_IN_MINUTES}, [this] {
+            cv.wait_for(queueMutexLock, std::chrono::milliseconds(LAZY_UNLOAD_WAIT_IN_MILMINUTES), [this] {
                 return (!this->messageQueue.empty() || !this->serviceThreadRunning);
             });
-            if (!serviceThreadRunning && messageQueue.empty()) {
-                break;
-            }
             std::queue<Message> localQueue;
             localQueue.swap(messageQueue);
             queueMutexLock.unlock();
@@ -194,8 +192,12 @@ void DrmHostManager::ProcessMessage()
                     }
                 }
             }
-            DRM_DEBUG_LOG("ProcessMessage lazy unload start.");
-            DelayedLazyUnLoad();
+            counter -= LAZY_UNLOAD_WAIT_IN_MILMINUTES;
+            if (counter <= 0) {
+                DRM_DEBUG_LOG("ProcessMessage lazy unload start.");
+                DelayedLazyUnLoad();
+                counter = TIME_IN_MS;
+            }
         }
     });
 }
@@ -322,10 +324,7 @@ void DrmHostManager::UnLoadOEMCertifaicateService(std::string &name, ExtraInfo i
 void DrmHostManager::OemCertificateManager()
 {
     DRM_INFO_LOG("OemCertificateManager enter.");
-    {
-        std::unique_lock<std::mutex> queueMutexLock(queueMutex);
-        serviceThreadRunning = true;
-    }
+    serviceThreadRunning = true;
     serviceThread = std::thread([this] {
         this->ServiceThreadMain();
     });
