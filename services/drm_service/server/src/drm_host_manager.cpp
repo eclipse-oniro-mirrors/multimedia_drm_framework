@@ -192,6 +192,9 @@ void DrmHostManager::ProcessMessage()
                     }
                 }
             }
+            if (!serviceThreadRunning) {
+                break;
+            }
             counter -= LAZY_UNLOAD_WAIT_IN_MILMINUTES;
             if (counter <= 0) {
                 DRM_DEBUG_LOG("ProcessMessage lazy unload start.");
