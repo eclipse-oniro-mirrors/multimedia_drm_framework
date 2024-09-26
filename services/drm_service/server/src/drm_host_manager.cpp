@@ -105,7 +105,11 @@ DrmHostManager::~DrmHostManager()
 void DrmHostManager::StopServiceThread()
 {
     DRM_INFO_LOG("StopServiceThread enter.");
-    serviceThreadRunning = false;
+    {
+        std::lock_guard<std::mutex> lock(queueMutex);
+        serviceThreadRunning = false;
+    }
+    cv.notify_all();
     if (serviceThread.joinable()) {
         serviceThread.join();
     }
@@ -164,13 +168,16 @@ void DrmHostManager::ProcessMessage()
         while (serviceThreadRunning) {
             std::unique_lock<std::mutex> queueMutexLock(queueMutex);
             cv.wait_for(queueMutexLock, std::chrono::minutes{LAZY_UNLOAD_TIME_CHECK_IN_MINUTES}, [this] {
-                return (!this->messageQueue.empty() || !serviceThreadRunning);
+                return (!this->messageQueue.empty() || !this->serviceThreadRunning);
             });
-            while (!messageQueue.empty()) {
-                auto message = messageQueue.front();
+
+            std::queue<Message> localQueue;
+            localQueue.swap(messageQueue);
+            queueMutexLock.unlock();
+            while (!localQueue.empty()) {
+                auto message = localQueue.front();
                 DRM_DEBUG_LOG("ProcessMessage message type:%{public}d.", message.type);
-                messageQueue.pop();
-                queueMutexLock.unlock();
+                localQueue.pop();
                 if (message.type == Message::UnLoadOEMCertifaicateService) {
                     std::lock_guard<std::recursive_mutex> lock(drmHostMapMutex);
                     void *libHandle = pluginNameAndHandleMap[message.name];
@@ -181,10 +188,8 @@ void DrmHostManager::ProcessMessage()
                         DRM_DEBUG_LOG("ProcessMessage UnLoadOEMCertifaicateService success.");
                     }
                 }
-                queueMutexLock.lock();
             }
-            queueMutexLock.unlock();
-            if (!serviceThreadRunning) {
+            if (!serviceThreadRunning && messageQueue.empty()) {
                 break;
             }
             DRM_DEBUG_LOG("ProcessMessage lazy unload start.");
@@ -306,9 +311,11 @@ void DrmHostManager::ServiceThreadMain() __attribute__((no_sanitize("cfi")))
 void DrmHostManager::UnLoadOEMCertifaicateService(std::string &name, ExtraInfo info)
 {
     DRM_INFO_LOG("UnLoadOEMCertifaicateService enter.");
-    std::lock_guard<std::mutex> lock(queueMutex);
-    Message message(Message::UnLoadOEMCertifaicateService, name, info);
-    messageQueue.push(message);
+    {
+        std::unique_lock<std::mutex> queueMutexLock(queueMutex);
+        Message message(Message::UnLoadOEMCertifaicateService, name, info);
+        messageQueue.push(message);
+    }
     cv.notify_all();
 }
 
