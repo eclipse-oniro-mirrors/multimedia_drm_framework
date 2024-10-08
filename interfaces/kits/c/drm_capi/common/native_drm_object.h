@@ -111,7 +111,12 @@ public:
             dataInfo = (unsigned char *)malloc(data.size());
             DRM_CHECK_AND_RETURN_LOG(dataInfo != nullptr, "malloc faild!");
             errno_t ret = memcpy_s(dataInfo, data.size(), data.data(), data.size());
-            DRM_CHECK_AND_RETURN_LOG(ret == EOK, "memcpy_s faild!");
+            if (ret != EOK) {
+                DRM_ERR_LOG("memcpy_s faild!");
+                free(dataInfo);
+                dataInfo = nullptr;
+                return;
+            }
         }
 
         if (callback_ != nullptr) {
@@ -200,7 +205,12 @@ public:
             dataInfo = (unsigned char *)malloc(data.size());
             DRM_CHECK_AND_RETURN_LOG(dataInfo != nullptr, "malloc faild!");
             errno_t ret = memcpy_s(dataInfo, data.size(), data.data(), data.size());
-            DRM_CHECK_AND_RETURN_LOG(ret == EOK, "memcpy_s faild!");
+            if (ret != EOK) {
+                DRM_ERR_LOG("memcpy_s faild!");
+                free(dataInfo);
+                dataInfo = nullptr;
+                return;
+            }
         }
 
         if (callback_.eventCallback != nullptr) {
