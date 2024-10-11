@@ -37,7 +37,7 @@ std::mutex DrmHostManager::queueMutex;
 std::condition_variable DrmHostManager::cv;
 
 const int32_t LAZY_UNLOAD_TIME_CHECK_IN_MINUTES = 1;
-const int32_t LAZY_UNLOAD_WAIT_IN_MILMINUTES = 10;
+const int32_t LAZY_UNLOAD_WAIT_IN_MILMINUTES = 100;
 const int32_t LAZY_UNLOAD_TIME_IN_MINUTES = 3;
 const int32_t NOT_LAZY_LOADDED = -65536;
 const int32_t TIME_IN_MS = 60000;
