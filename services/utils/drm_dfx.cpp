@@ -122,7 +122,8 @@ public:
         DrmDecryptionInfo &info);
 };
 
-__attribute__((visibility("default"))) int32_t ReportServiceBehaviorEvent(std::string serviceName, std::string action);
+__attribute__((visibility("default"))) int32_t ReportServiceBehaviorEvent(std::string serviceName,
+    std::string action);
 __attribute__((visibility("default"))) int32_t ReportLicenseBehaviorEvent(StatisticsInfo statisticsInfo,
     std::string licenseType, DownLoadInfo downLoadInfo);
 __attribute__((visibility("default"))) int32_t ReportCertificateBehaviorEvent(StatisticsInfo statisticsInfo,
