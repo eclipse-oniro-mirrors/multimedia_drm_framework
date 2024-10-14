@@ -37,7 +37,7 @@ DrmEvent& DrmEvent::GetInstance()
     return instance;
 }
 
-void DrmEvent::WriteServiceEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
+int32_t DrmEvent::WriteServiceEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
     DrmServiveInfo &info)
 {
     int32_t res = DRM_ERR_OK;
@@ -48,12 +48,14 @@ void DrmEvent::WriteServiceEvent(std::string eventName, OHOS::HiviewDFX::HiSysEv
         "MEMORY", info.memoryUsage);
     if (res != DRM_ERR_OK) {
         DRM_ERR_LOG("EventWrite failed, res = %d", res);
+        return res;
     } else {
         DRM_INFO_LOG("EventWrite success");
     }
+    return DRM_ERR_OK;
 }
 
-void DrmEvent::WriteLicenseEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
+int32_t DrmEvent::WriteLicenseEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
     DrmLicenseInfo &info)
 {
     int32_t res = DRM_ERR_OK;
@@ -71,12 +73,14 @@ void DrmEvent::WriteLicenseEvent(std::string eventName, OHOS::HiviewDFX::HiSysEv
         "PROCESS_RESULT", info.processResult);
     if (res != DRM_ERR_OK) {
         DRM_ERR_LOG("EventWrite failed, res = %d", res);
+        return res;
     } else {
         DRM_INFO_LOG("EventWrite success");
     }
+    return DRM_ERR_OK;
 }
 
-void DrmEvent::WriteCertificateEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
+int32_t DrmEvent::WriteCertificateEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
     DrmCertificateInfo &info)
 {
     int32_t res = DRM_ERR_OK;
@@ -96,12 +100,14 @@ void DrmEvent::WriteCertificateEvent(std::string eventName, OHOS::HiviewDFX::HiS
         "SERVER_RESULT", info.serverResult);
     if (res != DRM_ERR_OK) {
         DRM_ERR_LOG("EventWrite failed, res = %d", res);
+        return res;
     } else {
         DRM_INFO_LOG("EventWrite success");
     }
+    return DRM_ERR_OK;
 }
 
-void DrmEvent::WriteFaultEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type, DrmFaultInfo &info)
+int32_t DrmEvent::WriteFaultEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type, DrmFaultInfo &info)
 {
     int32_t res = DRM_ERR_OK;
     res = HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName, type,
@@ -113,12 +119,14 @@ void DrmEvent::WriteFaultEvent(std::string eventName, OHOS::HiviewDFX::HiSysEven
         "EXTRA_MESG", info.extraMesg);
     if (res != DRM_ERR_OK) {
         DRM_ERR_LOG("EventWrite failed, res = %d", res);
+        return res;
     } else {
         DRM_INFO_LOG("EventWrite success");
     }
+    return DRM_ERR_OK;
 }
 
-void DrmEvent::WriteDecryptionEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
+int32_t DrmEvent::WriteDecryptionEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
     DrmDecryptionInfo &info)
 {
     int32_t res = DRM_ERR_OK;
@@ -134,12 +142,14 @@ void DrmEvent::WriteDecryptionEvent(std::string eventName, OHOS::HiviewDFX::HiSy
         "DECRYPT_IV", info.decryptIv);
     if (res != DRM_ERR_OK) {
         DRM_ERR_LOG("EventWrite failed, res = %d", res);
+        return res;
     } else {
         DRM_INFO_LOG("EventWrite success");
     }
+    return DRM_ERR_OK;
 }
 
-void ReportServiceBehaviorEvent(std::string serviceName, std::string action)
+int32_t ReportServiceBehaviorEvent(std::string serviceName, std::string action)
 {
     DrmEvent event;
     OHOS::HiviewDFX::DumpUsage dumpUse;
@@ -151,10 +161,10 @@ void ReportServiceBehaviorEvent(std::string serviceName, std::string action)
         action,
         memoryUsage,
     };
-    event.WriteServiceEvent("DRM_SERVICE_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR, drmServiveInfo);
+    return event.WriteServiceEvent("DRM_SERVICE_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR, drmServiveInfo);
 }
 
-void ReportLicenseBehaviorEvent(StatisticsInfo statisticsInfo, std::string licenseType, DownLoadInfo downLoadInfo)
+int32_t ReportLicenseBehaviorEvent(StatisticsInfo statisticsInfo, std::string licenseType, DownLoadInfo downLoadInfo)
 {
     DrmEvent event;
     struct DrmLicenseInfo drmLicenseInfo = {
@@ -171,11 +181,11 @@ void ReportLicenseBehaviorEvent(StatisticsInfo statisticsInfo, std::string licen
         downLoadInfo.processDuration,
         downLoadInfo.processResult,
     };
-    event.WriteLicenseEvent("DRM_LICENSE_DOWNLOAD_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+    return event.WriteLicenseEvent("DRM_LICENSE_DOWNLOAD_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
         drmLicenseInfo);
 }
 
-void ReportCertificateBehaviorEvent(StatisticsInfo statisticsInfo, DownLoadInfo downLoadInfo, uint32_t callServerTime,
+int32_t ReportCertificateBehaviorEvent(StatisticsInfo statisticsInfo, DownLoadInfo downLoadInfo, uint32_t callServerTime,
     uint32_t serverCostDuration, std::string serverResult)
 {
     DrmEvent event;
@@ -195,11 +205,11 @@ void ReportCertificateBehaviorEvent(StatisticsInfo statisticsInfo, DownLoadInfo 
         serverCostDuration,
         serverResult,
     };
-    event.WriteCertificateEvent("DRM_CERTIFICATE_DOWNLOAD_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+    return event.WriteCertificateEvent("DRM_CERTIFICATE_DOWNLOAD_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
         drmCertificateInfo);
 }
 
-void ReportFaultEvent(uint32_t errorCode, std::string errorMesg, std::string extraMesg)
+int32_t ReportFaultEvent(uint32_t errorCode, std::string errorMesg, std::string extraMesg)
 {
     DrmEvent event;
     struct DrmFaultInfo drmFaultInfo = {
@@ -210,10 +220,10 @@ void ReportFaultEvent(uint32_t errorCode, std::string errorMesg, std::string ext
         errorMesg,
         extraMesg,
     };
-    event.WriteFaultEvent("DRM_COMMON_FAILURE", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT, drmFaultInfo);
+    return event.WriteFaultEvent("DRM_COMMON_FAILURE", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT, drmFaultInfo);
 }
 
-void ReportDecryptionFaultEvent(int32_t errorCode, std::string errorMesg, std::string decryptAlgo,
+int32_t ReportDecryptionFaultEvent(int32_t errorCode, std::string errorMesg, std::string decryptAlgo,
     std::string decryptKeyid, std::string decryptIv)
 {
     DrmEvent event;
@@ -227,7 +237,7 @@ void ReportDecryptionFaultEvent(int32_t errorCode, std::string errorMesg, std::s
         decryptKeyid,
         decryptIv,
     };
-    event.WriteDecryptionEvent("DRM_DECRYPTION_FAILURE", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+    return event.WriteDecryptionEvent("DRM_DECRYPTION_FAILURE", OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
         drmDecryptionInfo);
 }
 
