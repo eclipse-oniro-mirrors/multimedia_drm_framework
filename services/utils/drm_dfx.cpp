@@ -107,7 +107,8 @@ int32_t DrmEvent::WriteCertificateEvent(std::string eventName, OHOS::HiviewDFX::
     return DRM_ERR_OK;
 }
 
-int32_t DrmEvent::WriteFaultEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type, DrmFaultInfo &info)
+int32_t DrmEvent::WriteFaultEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
+    DrmFaultInfo &info)
 {
     int32_t res = DRM_ERR_OK;
     res = HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName, type,
@@ -161,7 +162,8 @@ int32_t ReportServiceBehaviorEvent(std::string serviceName, std::string action)
         action,
         memoryUsage,
     };
-    return event.WriteServiceEvent("DRM_SERVICE_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR, drmServiveInfo);
+    return event.WriteServiceEvent("DRM_SERVICE_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+        drmServiveInfo);
 }
 
 int32_t ReportLicenseBehaviorEvent(StatisticsInfo statisticsInfo, std::string licenseType, DownLoadInfo downLoadInfo)
@@ -185,8 +187,8 @@ int32_t ReportLicenseBehaviorEvent(StatisticsInfo statisticsInfo, std::string li
         drmLicenseInfo);
 }
 
-int32_t ReportCertificateBehaviorEvent(StatisticsInfo statisticsInfo, DownLoadInfo downLoadInfo, uint32_t callServerTime,
-    uint32_t serverCostDuration, std::string serverResult)
+int32_t ReportCertificateBehaviorEvent(StatisticsInfo statisticsInfo, DownLoadInfo downLoadInfo,
+    uint32_t callServerTime, uint32_t serverCostDuration, std::string serverResult)
 {
     DrmEvent event;
     struct DrmCertificateInfo drmCertificateInfo = {
@@ -205,8 +207,8 @@ int32_t ReportCertificateBehaviorEvent(StatisticsInfo statisticsInfo, DownLoadIn
         serverCostDuration,
         serverResult,
     };
-    return event.WriteCertificateEvent("DRM_CERTIFICATE_DOWNLOAD_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
-        drmCertificateInfo);
+    return event.WriteCertificateEvent("DRM_CERTIFICATE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR, drmCertificateInfo);
 }
 
 int32_t ReportFaultEvent(uint32_t errorCode, std::string errorMesg, std::string extraMesg)
