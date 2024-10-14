@@ -123,7 +123,8 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportDecryptionFaultEvent, TestSize
     std::string decryptAlgo = "decryptAlgo";
     std::string decryptKeyid = "decryptKeyid";
     std::string decryptIv = "decryptIv";
-    Drm_ErrCode errNo = (Drm_ErrCode)ReportDecryptionFaultEvent(errorCode, errorMesg, decryptAlgo, decryptKeyid, decryptIv);
+    Drm_ErrCode errNo = (Drm_ErrCode)ReportDecryptionFaultEvent(errorCode, errorMesg, decryptAlgo, decryptKeyid,
+        decryptIv);
     EXPECT_NE(errNo, 0);
 }
 
@@ -164,7 +165,8 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportCertificateBehaviorEvent, Test
         "clearplay_v1",
         "bundleName",
     };
-    Drm_ErrCode errNo = (Drm_ErrCode)ReportCertificateBehaviorEvent(statisticsInfo, downLoadInfo, callServerTime, serverCostDuration,
+    Drm_ErrCode errNo = (Drm_ErrCode)ReportCertificateBehaviorEvent(statisticsInfo, downLoadInfo, callServerTime,
+        serverCostDuration,
         serverResult);
     EXPECT_NE(errNo, 0);
 }
