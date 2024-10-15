@@ -567,11 +567,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RequireSecureDecoderModuleAbNormal_0
     EXPECT_EQ(errNo, DRM_ERR_OK);
     bool requireSecureDecoder = false;
     errNo = OH_MediaKeySession_RequireSecureDecoderModule(mediaKeySession, "asdssadadsa", &requireSecureDecoder);
-    if (g_isWisePlay) {
-        EXPECT_NE(errNo, DRM_ERR_OK);
-    } else {
-        EXPECT_EQ(errNo, DRM_ERR_OK);
-    }
+    EXPECT_EQ(errNo, DRM_ERR_OK);
     EXPECT_EQ(requireSecureDecoder, false);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
@@ -1486,11 +1482,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearMediaKeysNormal_036, TestSize.L
     errNo = OH_MediaKeySession_ClearMediaKeys(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyStatus);
-    if (g_isWisePlay) {
-        EXPECT_EQ(errNo, DRM_ERR_OK);
-    } else {
-        EXPECT_NE(errNo, DRM_ERR_OK);
-    }
+    EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
