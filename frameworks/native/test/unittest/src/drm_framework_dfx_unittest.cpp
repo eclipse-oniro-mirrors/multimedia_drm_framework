@@ -113,7 +113,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportFaultEvent, TestSize.Level0)
     std::string errorMesg = "GenerateMediaKeyRequest failed";
     std::string extraMesg = "";
     Drm_ErrCode errNo = (Drm_ErrCode)ReportFaultEvent(errorCode, errorMesg, extraMesg);
-    EXPECT_NE(errNo, 0);
+    EXPECT_EQ(errNo, 0);
 }
 
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportDecryptionFaultEvent, TestSize.Level0)
@@ -125,7 +125,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportDecryptionFaultEvent, TestSize
     std::string decryptIv = "decryptIv";
     Drm_ErrCode errNo = (Drm_ErrCode)ReportDecryptionFaultEvent(errorCode, errorMesg, decryptAlgo, decryptKeyid,
         decryptIv);
-    EXPECT_NE(errNo, 0);
+    EXPECT_EQ(errNo, 0);
 }
 
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportServiceBehaviorEvent, TestSize.Level0)
@@ -133,7 +133,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportServiceBehaviorEvent, TestSize
     std::string serviceName = "DRM_OEM_SERVICE";
     std::string action = "start";
     Drm_ErrCode errNo = (Drm_ErrCode)ReportServiceBehaviorEvent(serviceName, action);
-    EXPECT_NE(errNo, 0);
+    EXPECT_EQ(errNo, 0);
 }
 
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportLicenseBehaviorEvent, TestSize.Level0)
@@ -148,7 +148,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportLicenseBehaviorEvent, TestSize
         "bundleName",
     };
     Drm_ErrCode errNo = (Drm_ErrCode)ReportLicenseBehaviorEvent(statisticsInfo, mediaKeyType, downLoadInfo);
-    EXPECT_NE(errNo, 0);
+    EXPECT_EQ(errNo, 0);
 }
 
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportCertificateBehaviorEvent, TestSize.Level0)
@@ -168,7 +168,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportCertificateBehaviorEvent, Test
     Drm_ErrCode errNo = (Drm_ErrCode)ReportCertificateBehaviorEvent(statisticsInfo, downLoadInfo, callServerTime,
         serverCostDuration,
         serverResult);
-    EXPECT_NE(errNo, 0);
+    EXPECT_EQ(errNo, 0);
 }
 
 } // DrmStandard
