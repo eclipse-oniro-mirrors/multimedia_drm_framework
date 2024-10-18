@@ -222,6 +222,10 @@ void DrmHostManager::ReleaseHandleAndKeySystemMap(void *handle)
 
     if (handle != nullptr) {
         loadedLibs.erase(std::remove(loadedLibs.begin(), loadedLibs.end(), handle), loadedLibs.end());
+        StopThreadFuncType StopThread = (StopThreadFuncType)dlsym(handle, "StopThread");
+        if (StopThread) {
+            StopThread();
+        }
         dlclose(handle);
         handle = nullptr;
         DRM_DEBUG_LOG("ReleaseHandleAndKeySystemMap handle closed");
