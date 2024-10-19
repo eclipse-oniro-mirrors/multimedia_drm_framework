@@ -113,23 +113,23 @@ struct DecryptionStatistics {
 class DrmEvent {
 public:
     static DrmEvent& GetInstance();
-    void WriteServiceEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type, DrmServiveInfo &info);
-    void WriteLicenseEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type, DrmLicenseInfo &info);
-    void WriteCertificateEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
+    int32_t WriteServiceEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type, DrmServiveInfo &info);
+    int32_t WriteLicenseEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type, DrmLicenseInfo &info);
+    int32_t WriteCertificateEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
         DrmCertificateInfo &info);
-    void WriteFaultEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type, DrmFaultInfo &info);
-    void WriteDecryptionEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
+    int32_t WriteFaultEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type, DrmFaultInfo &info);
+    int32_t WriteDecryptionEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
         DrmDecryptionInfo &info);
 };
 
-__attribute__((visibility("default"))) void ReportServiceBehaviorEvent(std::string serviceName, std::string action);
-__attribute__((visibility("default"))) void ReportLicenseBehaviorEvent(StatisticsInfo statisticsInfo,
+__attribute__((visibility("default"))) int32_t ReportServiceBehaviorEvent(std::string serviceName, std::string action);
+__attribute__((visibility("default"))) int32_t ReportLicenseBehaviorEvent(StatisticsInfo statisticsInfo,
     std::string licenseType, DownLoadInfo downLoadInfo);
-__attribute__((visibility("default"))) void ReportCertificateBehaviorEvent(StatisticsInfo statisticsInfo,
+__attribute__((visibility("default"))) int32_t ReportCertificateBehaviorEvent(StatisticsInfo statisticsInfo,
     DownLoadInfo downLoadInfo, uint32_t callServerTime, uint32_t serverCostDuration, std::string serverResult);
-__attribute__((visibility("default"))) void ReportFaultEvent(uint32_t errorCode, std::string errorMesg,
+__attribute__((visibility("default"))) int32_t ReportFaultEvent(uint32_t errorCode, std::string errorMesg,
     std::string extraMesg);
-__attribute__((visibility("default"))) void ReportDecryptionFaultEvent(int32_t errorCode, std::string errorMesg,
+__attribute__((visibility("default"))) int32_t ReportDecryptionFaultEvent(int32_t errorCode, std::string errorMesg,
     std::string decryptAlgo, std::string decryptKeyid, std::string decryptIv);
 __attribute__((visibility("default"))) DownLoadInfo InitDownLoadInfo(uint32_t generationDuration,
     std::string generationResult, uint32_t processDuration, std::string processResult);
