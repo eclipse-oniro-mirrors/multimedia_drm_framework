@@ -353,11 +353,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySystemIsSupported2AbNormal_0
     supported = OH_MediaKeySystem_IsSupported2(nullptr, "video/mp4");
     EXPECT_EQ(supported, false);
     supported = OH_MediaKeySystem_IsSupported2(GetUuid(), "ideo/mp4");
-    if (g_isWisePlay) {
-        EXPECT_EQ(supported, true);
-    } else {
-        EXPECT_EQ(supported, false);
-    }
+    EXPECT_EQ(supported, false);
     supported = OH_MediaKeySystem_IsSupported2(GetUuid(), "");
     EXPECT_EQ(supported, false);
     supported = OH_MediaKeySystem_IsSupported2(GetUuid(), nullptr);
@@ -382,11 +378,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySystemIsSupported3AbNormal_0
     supported = OH_MediaKeySystem_IsSupported3(nullptr, "video/mp4", CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
     EXPECT_EQ(supported, false);
     supported = OH_MediaKeySystem_IsSupported3(GetUuid(), "ideo/mp4", CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
-    if (g_isWisePlay) {
-        EXPECT_EQ(supported, true);
-    } else {
-        EXPECT_EQ(supported, false);
-    }
+    EXPECT_EQ(supported, false);
     supported = OH_MediaKeySystem_IsSupported3(GetUuid(), "", CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
     EXPECT_EQ(supported, false);
     supported = OH_MediaKeySystem_IsSupported3(GetUuid(), nullptr, CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
