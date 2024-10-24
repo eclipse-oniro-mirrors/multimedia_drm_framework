@@ -73,7 +73,6 @@ private:
     sptr<MediaKeySystemImplCallback> mediaKeySystemApplicationCallback_;
     sptr<IMediaKeySystemServiceCallback> serviceCallback_;
     sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
-    sptr<DrmListenerStub> listenerStub_ = nullptr;
 };
 
 class MediaKeySystemCallback : public MediaKeySystemServiceCallbackStub {
