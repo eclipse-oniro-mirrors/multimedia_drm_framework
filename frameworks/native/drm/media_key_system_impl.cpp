@@ -39,8 +39,6 @@ MediaKeySystemImpl::MediaKeySystemImpl(sptr<IMediaKeySystemService> &mediaKeysys
         DRM_ERR_LOG("failed to add deathRecipient");
         return;
     }
-
-    CreateListenerObject();
 }
 
 MediaKeySystemImpl::~MediaKeySystemImpl()
@@ -59,22 +57,6 @@ void MediaKeySystemImpl::MediaKeySystemServerDied(pid_t pid)
         deathRecipient_ = nullptr;
     }
     listenerStub_ = nullptr;
-}
-
-int32_t MediaKeySystemImpl::CreateListenerObject()
-{
-    DRM_INFO_LOG("CreateListenerObject");
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
-    listenerStub_ = new(std::nothrow) DrmListenerStub();
-    DRM_CHECK_AND_RETURN_RET_LOG(listenerStub_ != nullptr, DRM_MEMORY_ERROR,
-        "failed to new DrmListenerStub object");
-    DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy_ != nullptr, DRM_MEMORY_ERROR,
-        "Drm service does not exist.");
-
-    sptr<IRemoteObject> object = listenerStub_->AsObject();
-    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_MEMORY_ERROR, "listener object is nullptr.");
-
-    return serviceProxy_->SetListenerObject(object);
 }
 
 int32_t MediaKeySystemImpl::Release()
