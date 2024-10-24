@@ -78,7 +78,6 @@ private:
     sptr<OHOS::DrmStandard::IMediaKeySessionService> keySessionServiceProxy_;
     std::recursive_mutex mutex_;
     sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
-    sptr<DrmListenerStub> listenerStub_ = nullptr;
 };
 
 class MediaKeySessionServiceCallback : public MediaKeySessionServiceCallbackStub {
