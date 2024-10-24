@@ -39,24 +39,6 @@ MediaKeySessionImpl::MediaKeySessionImpl(sptr<IMediaKeySessionService> &keySessi
         DRM_ERR_LOG("failed to add deathRecipient");
         return;
     }
-
-    CreateListenerObject();
-}
-
-int32_t MediaKeySessionImpl::CreateListenerObject()
-{
-    DRM_INFO_LOG("CreateListenerObject");
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
-    listenerStub_ = new(std::nothrow) DrmListenerStub();
-    DRM_CHECK_AND_RETURN_RET_LOG(listenerStub_ != nullptr, DRM_MEMORY_ERROR,
-        "failed to new DrmListenerStub object");
-    DRM_CHECK_AND_RETURN_RET_LOG(keySessionServiceProxy_ != nullptr, DRM_MEMORY_ERROR,
-        "Drm service does not exist.");
-
-    sptr<IRemoteObject> object = listenerStub_->AsObject();
-    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_MEMORY_ERROR, "listener object is nullptr.");
-
-    return keySessionServiceProxy_->SetListenerObject(object);
 }
 
 MediaKeySessionImpl::~MediaKeySessionImpl()
