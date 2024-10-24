@@ -72,7 +72,6 @@ public:
     int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status);
 
 private:
-    int32_t CreateListenerObject();
     void MediaKeySessionServerDied(pid_t pid);
     sptr<MediaKeySessionImplCallback> keySessionApplicationCallback_;
     sptr<IMediaKeySessionServiceCallback> keySessionServiceCallback_;
