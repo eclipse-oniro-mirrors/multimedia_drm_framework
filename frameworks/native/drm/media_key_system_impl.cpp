@@ -56,7 +56,6 @@ void MediaKeySystemImpl::MediaKeySystemServerDied(pid_t pid)
         serviceProxy_ = nullptr;
         deathRecipient_ = nullptr;
     }
-    listenerStub_ = nullptr;
 }
 
 int32_t MediaKeySystemImpl::Release()
