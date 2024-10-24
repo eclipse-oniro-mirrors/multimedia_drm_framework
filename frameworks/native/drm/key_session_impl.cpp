@@ -60,7 +60,6 @@ void MediaKeySessionImpl::MediaKeySessionServerDied(pid_t pid)
         (void)keySessionServiceProxy_->AsObject()->RemoveDeathRecipient(deathRecipient_);
         keySessionServiceProxy_ = nullptr;
     }
-    listenerStub_ = nullptr;
     deathRecipient_ = nullptr;
 }
 
