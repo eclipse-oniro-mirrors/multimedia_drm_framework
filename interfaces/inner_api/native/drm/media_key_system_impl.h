@@ -68,7 +68,6 @@ public:
 
 private:
     void MediaKeySystemServerDied(pid_t pid);
-    int32_t CreateListenerObject();
     std::recursive_mutex mutex_;
     sptr<IMediaKeySystemService> serviceProxy_;
     sptr<MediaKeySystemImplCallback> mediaKeySystemApplicationCallback_;
