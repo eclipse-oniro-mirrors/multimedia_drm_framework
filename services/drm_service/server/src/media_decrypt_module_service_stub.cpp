@@ -44,33 +44,6 @@ void MediaDecryptModuleServiceStub::MediaDecryptModuleClientDied(pid_t pid)
     }
 }
 
-int32_t MediaDecryptModuleServiceStub::SetListenerObject(const sptr<IRemoteObject> &object)
-{
-    pid_t pid = IPCSkeleton::GetCallingPid();
-    std::lock_guard<std::recursive_mutex> lock(decryptModuleStubMutex_);
-    if (clientListener_ != nullptr && clientListener_->AsObject() != nullptr && deathRecipient_ != nullptr) {
-        DRM_DEBUG_LOG("This MediaDecryptModuleServiceStub has already set listener!");
-        (void)clientListener_->AsObject()->RemoveDeathRecipient(deathRecipient_);
-        deathRecipient_ = nullptr;
-        clientListener_ = nullptr;
-    }
-
-    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_MEMORY_ERROR, "set listener object is nullptr");
-    sptr<IDrmListener> clientListener_ = iface_cast<IDrmListener>(object);
-    DRM_CHECK_AND_RETURN_RET_LOG(
-        clientListener_ != nullptr, DRM_MEMORY_ERROR, "failed to convert IDrmListener");
-    deathRecipient_ = new (std::nothrow) DrmDeathRecipient(pid);
-    DRM_CHECK_AND_RETURN_RET_LOG(deathRecipient_ != nullptr, DRM_MEMORY_ERROR, "failed to new DrmDeathRecipient");
-    deathRecipient_->SetNotifyCb([this] (pid_t pid) {
-        this->MediaDecryptModuleClientDied(pid);
-    });
-    if (clientListener_->AsObject() != nullptr) {
-        (void)clientListener_->AsObject()->AddDeathRecipient(deathRecipient_);
-    }
-    DRM_DEBUG_LOG("MediaDecryptModule client pid:%{public}d", pid);
-    return DRM_OK;
-}
-
 int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
@@ -137,12 +110,6 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
                 DRM_ERR_LOG("DecryptMediaData faild.");
                 return ret;
             }
-            return ret;
-        }
-        case DECRYPT_MODULE_SET_LISTENER_OBJ: {
-            DRM_INFO_LOG("DECRYPT_MODULE_SET_LISTENER_OBJ enter.");
-            sptr<IRemoteObject> object = data.ReadRemoteObject();
-            int32_t ret = SetListenerObject(object);
             return ret;
         }
         case DECRYPT_MODULE_RELEASE: {

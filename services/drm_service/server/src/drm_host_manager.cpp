@@ -462,6 +462,7 @@ void DrmHostManager::ReleaseSevices(sptr<IMediaKeySystemFactory> drmHostServiePr
         remote->RemoveDeathRecipient(drmHostDeathRecipientMap[drmHostServieProxy]);
         drmHostDeathRecipientMap[drmHostServieProxy] = nullptr;
     }
+    drmHostDeathRecipientMap.erase(drmHostServieProxy);
     std::string name = hdiMediaKeySystemFactoryAndPluginNameMap[drmHostServieProxy];
     /* No need to release non lazy loading */
     if (lazyLoadPluginInfoMap.count(name) <= 0) {
