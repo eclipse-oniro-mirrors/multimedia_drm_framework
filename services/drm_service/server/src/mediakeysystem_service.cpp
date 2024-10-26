@@ -48,9 +48,12 @@ MediaKeySystemService::MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKe
 
 MediaKeySystemService::~MediaKeySystemService()
 {
-    DRM_INFO_LOG("~MediaKeySystemService 0x%{public}06" PRIXPTR " Instances destroy.", FAKE_POINTER(this));
+    DRM_INFO_LOG("~MediaKeySystemService 0x%{public}06" PRIXPTR " Instances destroy.", FAKE_POINTER(this));    
+    {
+        std::lock_guard<std::recursive_mutex> lock(callbackMutex_);
+        keySystemOperatoersCallback_ = nullptr;
+    }
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    keySystemOperatoersCallback_ = nullptr;
     if (hdiKeySystem_ != nullptr) {
         DRM_ERR_LOG("hdiKeySystem != nullptr");
     }
@@ -74,6 +77,10 @@ int32_t MediaKeySystemService::CloseMediaKeySystemServiceByCallback()
         }
         sessionsSet_.clear();
     }
+    {
+        std::lock_guard<std::recursive_mutex> lock(callbackMutex_);
+        keySystemOperatoersCallback_ = nullptr;
+    }
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     // release itself
     if (hdiKeySystem_ != nullptr) {
@@ -81,7 +88,6 @@ int32_t MediaKeySystemService::CloseMediaKeySystemServiceByCallback()
         hdiKeySystem_->Destroy();
         hdiKeySystem_ = nullptr;
     }
-    keySystemOperatoersCallback_ = nullptr;
     return DRM_OK;
 }
 
@@ -90,7 +96,7 @@ int32_t MediaKeySystemService::Release()
     DRM_INFO_LOG("Release enter.");
     int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemService GetCallingPID: %{public}d", currentPid);
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(callbackMutex_);
     if (keySystemOperatoersCallback_ != nullptr) {
         keySystemOperatoersCallback_->CloseMediaKeySystemService(this);
     }
@@ -100,7 +106,7 @@ int32_t MediaKeySystemService::Release()
 int32_t MediaKeySystemService::SetMediaKeySystemServiceOperatorsCallback(
     wptr<IMediaKeySystemServiceOperatorsCallback> callback)
 {
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    std::lock_guard<std::recursive_mutex> lock(callbackMutex_);
     if (callback.promote() == nullptr) {
         DRM_ERR_LOG("SetMediaKeySystemServiceOperatorsCallback callback is null");
         return DRM_INVALID_ARG;
