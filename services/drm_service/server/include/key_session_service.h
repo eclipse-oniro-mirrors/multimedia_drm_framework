@@ -68,6 +68,7 @@ public:
 
 private:
     std::recursive_mutex sessionMutex_;
+    std::recursive_mutex callbackMutex_;
     sptr<IMediaKeySessionServiceCallback> callback_;
     wptr<IMediaKeySessionServiceOperatorsCallback> sessionOperatorsCallback_;
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySession> hdiMediaKeySession_;
