@@ -83,6 +83,7 @@ public:
 private:
     void OnDrmPluginDied(std::string &name) override;
     std::recursive_mutex mutex_;
+    std::recursive_mutex callbackMutex_;
     sptr<IMediaKeySystemServiceCallback> callback_;
     wptr<IMediaKeySystemServiceOperatorsCallback> keySystemOperatoersCallback_;
     std::mutex sessionsSetMutex_;
