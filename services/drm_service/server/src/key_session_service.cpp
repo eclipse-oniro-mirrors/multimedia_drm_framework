@@ -64,7 +64,7 @@ int32_t MediaKeySessionService::CloseMediaKeySessionServiceByCallback()
     {
         std::lock_guard<std::recursive_mutex> lock(callbackMutex_);
         if (sessionOperatorsCallback_ != nullptr) {
-           sessionOperatorsCallback_ = nullptr;
+            sessionOperatorsCallback_ = nullptr;
         }
     }
     std::lock_guard<std::recursive_mutex> lock(sessionMutex_);
