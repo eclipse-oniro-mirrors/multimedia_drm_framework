@@ -169,7 +169,7 @@ void DrmFrameworkUnitTest::SetUp()
             EXPECT_EQ(rett, 0);
         } else {
             KeySystemResponseLen = 50; // 50 is the length of system response
-        }        
+        }
         errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, 0);
         EXPECT_NE(errNo, DRM_ERR_OK);
         errNo = OH_MediaKeySystem_ProcessKeySystemResponse(mediaKeySystem, KeySystemResponse, KeySystemResponseLen);

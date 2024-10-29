@@ -63,8 +63,7 @@ enum MediaKeySessionServiceRequestCode {
 
 enum MediaDecryptModuleServiceRequestCode {
     DECRYPT_MODULE_DECRYPT_DATA = 0,
-    DECRYPT_MODULE_SET_LISTENER_OBJ = 1,
-    DECRYPT_MODULE_RELEASE = 2,
+    DECRYPT_MODULE_RELEASE = 1,
 };
 
 enum MediaKeySessionServiceCallbackRequestCode {

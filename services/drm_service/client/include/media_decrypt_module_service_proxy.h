@@ -28,7 +28,6 @@ public:
     explicit MediaDecryptModuleServiceProxy(const sptr<IRemoteObject> &impl);
     virtual ~MediaDecryptModuleServiceProxy() = default;
     int32_t Release() override;
-    int32_t SetListenerObject(const sptr<IRemoteObject> &object) override;
     int32_t DecryptMediaData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo,
         IMediaDecryptModuleService::DrmBuffer &srcBuffer, IMediaDecryptModuleService::DrmBuffer &dstBuffer) override;
 
