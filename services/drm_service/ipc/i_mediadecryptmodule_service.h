@@ -64,7 +64,6 @@ public:
 
     virtual ~IMediaDecryptModuleService() = default;
     virtual int32_t Release() = 0;
-    virtual int32_t SetListenerObject(const sptr<IRemoteObject> &object) = 0;
     virtual int32_t DecryptMediaData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo,
         DrmBuffer &srcBuffer, DrmBuffer &dstBuffer) = 0;
     DECLARE_INTERFACE_DESCRIPTOR(u"IMediaDecryptModuleService");
