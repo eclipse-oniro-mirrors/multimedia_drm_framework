@@ -17,9 +17,7 @@
 #define OHOS_DRM_MEDIA_KEY_SYSTEMP_IMPL_H
 
 #include "ipc_skeleton.h"
-#include "iservice_registry.h"
 #include "nocopyable.h"
-#include "system_ability_definition.h"
 #include "drm_log.h"
 #include "drm_death_recipient.h"
 #include "key_session_impl.h"

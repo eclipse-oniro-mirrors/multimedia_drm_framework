@@ -30,7 +30,6 @@
 #include "cstdbool"
 #include "drm_types.h"
 #include "drm_framework_unittest.h"
-#include "system_ability_definition.h"
 #include "drm_log.h"
 #include "drm_death_recipient.h"
 #include "key_session_impl.h"
@@ -45,7 +44,6 @@
 #include <unordered_map>
 #include "nocopyable.h"
 #include "ipc_skeleton.h"
-#include "iservice_registry.h"
 #include "i_keysession_service.h"
 #include "i_keysession_service_callback.h"
 #include "key_session_service_callback_stub.h"

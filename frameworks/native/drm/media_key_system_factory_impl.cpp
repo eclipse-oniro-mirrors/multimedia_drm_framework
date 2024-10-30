@@ -17,6 +17,8 @@
 #include "i_mediakeysystem_service.h"
 #include "drm_error_code.h"
 #include "napi_param_utils.h"
+#include "iservice_registry.h"
+#include "system_ability_definition.h"
 
 namespace OHOS {
 namespace DrmStandard {
