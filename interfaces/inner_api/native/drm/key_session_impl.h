@@ -20,7 +20,6 @@
 #include <unordered_map>
 #include "nocopyable.h"
 #include "ipc_skeleton.h"
-#include "iservice_registry.h"
 #include "i_keysession_service.h"
 #include "i_keysession_service_callback.h"
 #include "drm_listener_stub.h"

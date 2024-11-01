@@ -15,9 +15,7 @@
 
 #include <unordered_set>
 #include <securec.h>
-#include "system_ability_definition.h"
 #include "ipc_skeleton.h"
-#include "iservice_registry.h"
 #include "drm_dfx_utils.h"
 #include "drm_host_manager.h"
 #include "drm_log.h"

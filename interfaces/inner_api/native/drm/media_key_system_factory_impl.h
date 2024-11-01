@@ -17,9 +17,7 @@
 #define OHOS_DRM_MEDIA_KEY_SYSTEMP_FACTORY_IMPL_H
 
 #include "media_key_system_impl.h"
-#include "system_ability_definition.h"
 #include "ipc_skeleton.h"
-#include "iservice_registry.h"
 #include "nocopyable.h"
 #include "i_mediakeysystemfactory_service.h"
 #include "drm_death_recipient.h"
