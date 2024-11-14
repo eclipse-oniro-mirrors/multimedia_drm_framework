@@ -33,14 +33,19 @@ int32_t MediaKeySystemFactoryServiceProxy::SetListenerObject(const sptr<IRemoteO
     MessageOption option;
 
     data.WriteInterfaceToken(GetDescriptor());
-    (void)data.WriteRemoteObject(object);
+
+    if (!data.WriteRemoteObject(object)) {
+        DRM_ERR_LOG("WriteRemoteObject failed.");
+        return IPC_PROXY_ERR;
+    }
+
     int ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_SET_LISTENER_OBJ, data, reply, option);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("Set listener obj failed, error: %{public}d", ret);
         return IPC_PROXY_ERR;
     }
     DRM_INFO_LOG("SetListenerObject exit.");
-    return reply.ReadInt32();
+    return DRM_OK;
 }
 
 int32_t MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported(std::string &uuid, bool *isSurpported)
