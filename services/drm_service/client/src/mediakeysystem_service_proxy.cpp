@@ -33,7 +33,7 @@ int32_t MediaKeySystemServiceProxy::SetListenerObject(const sptr<IRemoteObject> 
     MessageOption option;
 
     data.WriteInterfaceToken(GetDescriptor());
-    if (!data.WriteRemoteObject(object))) {
+    if (!data.WriteRemoteObject(object)) {
         DRM_ERR_LOG("WriteRemoteObject failed.");
         return IPC_PROXY_ERR;
     }
