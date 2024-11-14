@@ -20,14 +20,12 @@
 #include "mem_mgr_client.h"
 #include "mem_mgr_proxy.h"
 #include "ipc_skeleton.h"
-#include "iservice_registry.h"
 #include "drm_dfx_utils.h"
 #include "drm_log.h"
 #include "drm_dfx.h"
 #include "drm_error_code.h"
 #include "dump_usage.h"
 #include "hitrace/tracechain.h"
-#include "iservice_registry.h"
 #include "mediakeysystem_service.h"
 #include "mediakeysystemfactory_service.h"
 
@@ -357,7 +355,10 @@ int32_t MediaKeySystemFactoryService::WriteDumpInfo(int32_t fd, std::string &dum
     }
     dumpString += SPLIT_LINE;
     if (fd != -1) {
-        write(fd, dumpString.c_str(), dumpString.size());
+        ssize_t writeLen = write(fd, dumpString.c_str(), dumpString.size());
+        if (writeLen == -1) {
+            DRM_ERR_LOG("Dump write error!");;
+        }
     } else {
         DRM_INFO_LOG("%{public}s", dumpString.c_str());
     }
