@@ -105,8 +105,8 @@ MediaKeySystemServiceStub::MediaKeySystemServiceStub()
 MediaKeySystemServiceStub::~MediaKeySystemServiceStub()
 {
     DRM_INFO_LOG("~MediaKeySystemServiceStub enter.");
-    sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
-    sptr<IDrmListener> clientListener_ = nullptr;
+    deathRecipient_ = nullptr;
+    clientListener_ = nullptr;
 }
 
 static int32_t ProcessCreatekeySession(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
