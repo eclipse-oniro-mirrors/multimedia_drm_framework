@@ -30,7 +30,6 @@
 #include "cstdbool"
 #include "drm_types.h"
 #include "drm_framework_unittest.h"
-#include "system_ability_definition.h"
 #include "drm_log.h"
 #include "drm_death_recipient.h"
 #include "key_session_impl.h"
@@ -45,7 +44,6 @@
 #include <unordered_map>
 #include "nocopyable.h"
 #include "ipc_skeleton.h"
-#include "iservice_registry.h"
 #include "i_keysession_service.h"
 #include "i_keysession_service_callback.h"
 #include "key_session_service_callback_stub.h"
@@ -353,7 +351,11 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySystemIsSupported2AbNormal_0
     supported = OH_MediaKeySystem_IsSupported2(nullptr, "video/mp4");
     EXPECT_EQ(supported, false);
     supported = OH_MediaKeySystem_IsSupported2(GetUuid(), "ideo/mp4");
-    EXPECT_EQ(supported, false);
+    if (g_isWisePlay) {
+        EXPECT_EQ(supported, true);
+    } else {
+        EXPECT_EQ(supported, false);
+    }
     supported = OH_MediaKeySystem_IsSupported2(GetUuid(), "");
     EXPECT_EQ(supported, false);
     supported = OH_MediaKeySystem_IsSupported2(GetUuid(), nullptr);
@@ -378,7 +380,11 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_MediaKeySystemIsSupported3AbNormal_0
     supported = OH_MediaKeySystem_IsSupported3(nullptr, "video/mp4", CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
     EXPECT_EQ(supported, false);
     supported = OH_MediaKeySystem_IsSupported3(GetUuid(), "ideo/mp4", CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
-    EXPECT_EQ(supported, false);
+    if (g_isWisePlay) {
+        EXPECT_EQ(supported, true);
+    } else {
+        EXPECT_EQ(supported, false);
+    }
     supported = OH_MediaKeySystem_IsSupported3(GetUuid(), "", CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
     EXPECT_EQ(supported, false);
     supported = OH_MediaKeySystem_IsSupported3(GetUuid(), nullptr, CONTENT_PROTECTION_LEVEL_HW_CRYPTO);
@@ -1474,7 +1480,11 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearMediaKeysNormal_036, TestSize.L
     errNo = OH_MediaKeySession_ClearMediaKeys(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyStatus);
-    EXPECT_NE(errNo, DRM_ERR_OK);
+    if (g_isWisePlay) {
+        EXPECT_EQ(errNo, DRM_ERR_OK);
+    } else {
+        EXPECT_NE(errNo, DRM_ERR_OK);
+    }
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
