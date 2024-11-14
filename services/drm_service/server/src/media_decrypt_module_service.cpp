@@ -18,7 +18,6 @@
 #include <securec.h>
 #include <algorithm>
 #include "ashmem.h"
-#include "system_ability_definition.h"
 #include "mem_mgr_client.h"
 #include "mem_mgr_proxy.h"
 #include "drm_trace.h"
@@ -92,7 +91,7 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
     OHOS::HDI::Drm::V1_0::DrmBuffer drmSrcBuffer;
     OHOS::HDI::Drm::V1_0::DrmBuffer drmDstBuffer;
     memset_s(&drmSrcBuffer, sizeof(drmSrcBuffer), 0, sizeof(drmSrcBuffer));
-    memset_s(&drmDstBuffer, sizeof(drmSrcBuffer), 0, sizeof(drmDstBuffer));
+    memset_s(&drmDstBuffer, sizeof(drmDstBuffer), 0, sizeof(drmDstBuffer));
     SetDrmBufferInfo(&drmSrcBuffer, &drmDstBuffer, srcBuffer, dstBuffer, bufLen);
     auto timeBefore = std::chrono::system_clock::now();
     std::lock_guard<std::recursive_mutex> lock(moduleLock_);
