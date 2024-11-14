@@ -54,7 +54,7 @@ MediaKeySessionService::~MediaKeySessionService()
     }
     std::lock_guard<std::recursive_mutex> lock(sessionMutex_);
     if (hdiMediaKeySession_ != nullptr) {
-        DRM_ERR_LOG("hdiMediaKeySession_ != nullptr");
+        hdiMediaKeySession_ = nullptr;
     }
 }
 

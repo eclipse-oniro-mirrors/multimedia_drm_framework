@@ -404,7 +404,7 @@ int32_t MediaKeySessionServiceProxy::RequireSecureDecoderModule(std::string &mim
 
 int32_t MediaKeySessionServiceProxy::SetListenerObject(const sptr<IRemoteObject> &object)
 {
-    DRM_INFO_LOG("RequireSecureDecoderModule enter.");
+    DRM_INFO_LOG("SetListenerObject enter.");
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
