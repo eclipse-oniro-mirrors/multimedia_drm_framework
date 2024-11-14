@@ -357,7 +357,7 @@ int32_t MediaKeySystemFactoryService::WriteDumpInfo(int32_t fd, std::string &dum
     if (fd != -1) {
         ssize_t writeLen = write(fd, dumpString.c_str(), dumpString.size());
         if (writeLen == -1) {
-            DRM_ERR_LOG("Dump write error!");;
+            DRM_ERR_LOG("Dump write error!");
         }
     } else {
         DRM_INFO_LOG("%{public}s", dumpString.c_str());
