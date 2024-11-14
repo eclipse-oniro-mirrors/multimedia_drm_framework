@@ -105,7 +105,6 @@ napi_status NapiParamUtils::SetValueUint8Array(const napi_env &env, const std::v
         DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "napi_create_int32 failed.");
         status = napi_set_element(env, result, i, item);
         DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "napi_set_element failed.");
-
     }
     return status;
 }
