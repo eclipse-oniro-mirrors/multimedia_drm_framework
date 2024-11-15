@@ -19,6 +19,7 @@
 #include "system_ability_definition.h"
 #include "mem_mgr_client.h"
 #include "mem_mgr_proxy.h"
+#include "iservice_registry.h"
 #include "ipc_skeleton.h"
 #include "drm_dfx_utils.h"
 #include "drm_log.h"
