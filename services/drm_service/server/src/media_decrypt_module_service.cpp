@@ -19,6 +19,7 @@
 #include <algorithm>
 #include "ashmem.h"
 #include "mem_mgr_client.h"
+#include "system_ability_definition.h"
 #include "mem_mgr_proxy.h"
 #include "drm_trace.h"
 #include "drm_dfx_utils.h"
