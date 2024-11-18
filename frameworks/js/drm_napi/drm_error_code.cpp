@@ -15,6 +15,7 @@
 
 #include "drm_error_code.h"
 #include "common_napi.h"
+#include "napi_param_utils.h"
 
 namespace OHOS {
 namespace DrmStandard {
