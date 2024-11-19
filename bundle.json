@@ -13,7 +13,7 @@
         "name": "drm_framework",
         "subsystem": "multimedia",
         "syscap": ["SystemCapability.Multimedia.Drm.Core"],
-        "features": [],
+        "features": [ "drm_framework_service_support_lazy_loading" ],
         "adapted_system_type": [ "standard" ],
         "rom": "",
         "ram": "",
