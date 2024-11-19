@@ -35,11 +35,11 @@ bool OH_MediaKeySystem_IsSupported(const char *uuid)
     DRM_INFO_LOG("OH_MediaKeySystem_IsSupported enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(uuid != nullptr, false, "MediaKeySystem uuid is nullptr!");
     std::string uuidPtr(uuid);
-    bool isSurooprtted = false;
+    bool isSupported = false;
     DRM_CHECK_AND_RETURN_RET_LOG(uuidPtr.size() != 0, false, "MediaKeySystem uuidPtr.size is nullptr!");
     OHOS::sptr<MediaKeySystemFactoryImpl> fatory = MediaKeySystemFactoryImpl::GetInstance();
-    isSurooprtted = fatory->IsMediaKeySystemSupported(uuidPtr);
-    return isSurooprtted;
+    isSupported = fatory->IsMediaKeySystemSupported(uuidPtr);
+    return isSupported;
 }
 
 bool OH_MediaKeySystem_IsSupported2(const char *uuid, const char *mimeType)
@@ -47,15 +47,15 @@ bool OH_MediaKeySystem_IsSupported2(const char *uuid, const char *mimeType)
     DRM_INFO_LOG("OH_MediaKeySystem_IsSupported2 enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(((uuid != nullptr) && (mimeType != nullptr)), false,
         "OH_MediaKeySystem_IsSupported2 uuid is nullptr!");
-    bool isSurooprtted = false;
+    bool isSupported = false;
     std::string uuidPtr(uuid);
     DRM_CHECK_AND_RETURN_RET_LOG(uuidPtr.size() != 0, false, "MediaKeySystem uuidPtr.size is nullptr!");
     std::string mimeTypePtr = std::string(mimeType);
     DRM_CHECK_AND_RETURN_RET_LOG(mimeTypePtr.size() != 0, false, "MediaKeySystem mimeTypePtr.size is nullptr!");
 
     OHOS::sptr<MediaKeySystemFactoryImpl> fatory = MediaKeySystemFactoryImpl::GetInstance();
-    isSurooprtted = fatory->IsMediaKeySystemSupported(uuidPtr, mimeTypePtr);
-    return isSurooprtted;
+    isSupported = fatory->IsMediaKeySystemSupported(uuidPtr, mimeTypePtr);
+    return isSupported;
 }
 
 bool OH_MediaKeySystem_IsSupported3(const char *uuid, const char *mimeType,
@@ -64,7 +64,7 @@ bool OH_MediaKeySystem_IsSupported3(const char *uuid, const char *mimeType,
     DRM_INFO_LOG("OH_MediaKeySystem_IsSupported3 enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(((uuid != nullptr) && (mimeType != nullptr)), false,
         "OH_MediaKeySystem_IsSupported3 uuid is nullptr!");
-    bool isSurooprtted = false;
+    bool isSupported = false;
     std::string uuidPtr(uuid);
     DRM_CHECK_AND_RETURN_RET_LOG(uuidPtr.size() != 0, false, "MediaKeySystem Uuid.size is nullptr!");
     std::string mimeTypePtr = std::string(mimeType);
@@ -79,8 +79,8 @@ bool OH_MediaKeySystem_IsSupported3(const char *uuid, const char *mimeType,
         DRM_ERR_LOG("ContentProtectionLevel is invalid");
         return false;
     }
-    isSurooprtted = fatory->IsMediaKeySystemSupported(uuidPtr, mimeTypePtr, securityLevel);
-    return isSurooprtted;
+    isSupported = fatory->IsMediaKeySystemSupported(uuidPtr, mimeTypePtr, securityLevel);
+    return isSupported;
 }
 
 Drm_ErrCode OH_MediaKeySystem_GetMediaKeySystems(DRM_MediaKeySystemDescription *description, uint32_t *count)
@@ -292,7 +292,7 @@ static Drm_ErrCode vectorToClist(std::vector<IMediaKeySystemService::MetircKeyVa
     DRM_CHECK_AND_RETURN_RET_LOG((statistics->statisticsCount <= MAX_STATISTICS_COUNT), DRM_ERR_NO_MEMORY,
         "statisticsCount err!");
     for (size_t i = 0; i < metrics.size(); i++) {
-        if (metrics[i].name.size() == 0) {
+        if (metrics[i].name.size() == 0 || metrics[i].name.size() > sizeof(statistics->statisticsName[i])) {
             continue;
         }
         int32_t ret = memcpy_s(statistics->statisticsName[i],

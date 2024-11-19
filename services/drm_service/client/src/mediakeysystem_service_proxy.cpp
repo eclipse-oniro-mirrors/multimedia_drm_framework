@@ -33,7 +33,10 @@ int32_t MediaKeySystemServiceProxy::SetListenerObject(const sptr<IRemoteObject> 
     MessageOption option;
 
     data.WriteInterfaceToken(GetDescriptor());
-    (void)data.WriteRemoteObject(object);
+    if (!data.WriteRemoteObject(object)) {
+        DRM_ERR_LOG("WriteRemoteObject failed.");
+        return IPC_PROXY_ERR;
+    }
     int ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_SET_LISTENER_OBJ, data, reply, option);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("Set listener obj failed, errcode: %{public}d", ret);

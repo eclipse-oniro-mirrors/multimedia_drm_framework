@@ -15,6 +15,7 @@
 
 #include "drm_error_code.h"
 #include "common_napi.h"
+#include "napi_param_utils.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -23,11 +24,16 @@ napi_status NapiDrmError::ThrowError(napi_env env, const char *napiMessage, int3
     napi_value message = nullptr;
     napi_value code = nullptr;
     napi_value result = nullptr;
-    napi_create_string_utf8(env, napiMessage, NAPI_AUTO_LENGTH, &message);
-    napi_create_error(env, nullptr, message, &result);
-    napi_create_int32(env, napiCode, &code);
-    napi_set_named_property(env, result, "code", code);
-    napi_throw(env, result);
+    napi_status status = napi_create_string_utf8(env, napiMessage, NAPI_AUTO_LENGTH, &message);
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "ThrowError napi_create_string_utf8 failed.");
+    status = napi_create_error(env, nullptr, message, &result);
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "ThrowError napi_create_error failed.");
+    status = napi_create_int32(env, napiCode, &code);
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "ThrowError napi_create_int32 failed.");
+    status = napi_set_named_property(env, result, "code", code);
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "ThrowError napi_set_named_property failed.");
+    status = napi_throw(env, result);
+    DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "ThrowError napi_throw failed.");
     return napi_ok;
 }
 
