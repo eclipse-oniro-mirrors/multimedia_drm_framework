@@ -55,7 +55,10 @@ const sptr<IMediaKeySystemFactoryService> MediaKeySystemFactoryImpl::GetServiceP
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     DRM_CHECK_AND_RETURN_RET_LOG(samgr != nullptr, nullptr,
         "Failed to get System ability manager!");
-    object = samgr->GetSystemAbility(MEDIA_KEY_SYSTEM_SERVICE_ID);
+    object = samgr->CheckSystemAbility(MEDIA_KEY_SYSTEM_SERVICE_ID);
+    if (object == nullptr) {
+        object = samgr->LoadSystemAbility(MEDIA_KEY_SYSTEM_SERVICE_ID, 30); // 30: timeout
+    }
     DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, nullptr,
         "the object returned by GetSystemAbility is nullptr!");
     sptr<IMediaKeySystemFactoryService> tmpProxy = iface_cast<IMediaKeySystemFactoryService>(object);

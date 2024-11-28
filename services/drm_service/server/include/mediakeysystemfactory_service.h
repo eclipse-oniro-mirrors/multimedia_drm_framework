@@ -52,6 +52,7 @@ public:
     void OnDump() override;
     void OnStart() override;
     void OnStop() override;
+    int32_t OnIdle(const SystemAbilityOnDemandReason& idleReason) override;
     int32_t Dump(int32_t fd, const std::vector<std::u16string>& args) override;
     int32_t IsMediaKeySystemSupported(std::string &name, bool *isSurpported) override;
     int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, bool *isSurpported) override;

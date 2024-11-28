@@ -12,8 +12,13 @@
 # limitations under the License.
 
 import("//build/ohos/sa_profile/sa_profile.gni")
+import("//foundation/multimedia/drm_framework/config.gni")
 
 ohos_sa_profile("drm_service_sa_profile") {
-  sources = [ "3012.json" ]
+  if (drm_framework_service_support_lazy_loading) {
+    sources = [ "./lazy_loading/3012.json" ]
+  } else {
+    sources = [ "./resident/3012.json" ]
+  }
   part_name = "drm_framework"
 }

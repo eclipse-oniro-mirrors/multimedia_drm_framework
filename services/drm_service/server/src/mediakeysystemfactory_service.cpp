@@ -114,6 +114,17 @@ void MediaKeySystemFactoryService::OnStop()
     ReportServiceBehaviorEvent("DRM_SERVICE", "end");
 }
 
+int32_t MediaKeySystemFactoryService::OnIdle(const SystemAbilityOnDemandReason& idleReason)
+{
+    (void)idleReason;
+    DRM_INFO_LOG("OnIdle enter.");
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    if (!mediaKeySystemForPid_.empty()) {
+        return -1; // -1:reject unload
+    }
+    return 0;
+}
+
 void MediaKeySystemFactoryService::OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId)
 {
     DRM_INFO_LOG("OnAddSystemAbility enter.");
@@ -166,6 +177,10 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
 {
     DRM_INFO_LOG("CreateMediaKeySystem enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
+    if (GetAbilityState() == SystemAbilityState::IDLE) {
+        bool result = CancelIdle();
+        DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_SERVICE_ERROR, "CancelIdle failed");
+    }
     sptr<MediaKeySystemService> mediaKeySystemService = nullptr;
     sptr<IMediaKeySystem> hdiMediaKeySystem = nullptr;
     if (currentMediaKeySystemNum_[name] >= KEY_SYSTEM_MAX_NUMBER) {
@@ -235,6 +250,10 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &nam
 {
     DRM_INFO_LOG("IsMediaKeySystemSupported one parameters enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
+    if (GetAbilityState() == SystemAbilityState::IDLE) {
+        bool result = CancelIdle();
+        DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_SERVICE_ERROR, "CancelIdle failed");
+    }
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, isSurpported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed.");
@@ -248,6 +267,10 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &nam
 {
     DRM_INFO_LOG("IsMediaKeySystemSupported two parameters enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
+    if (GetAbilityState() == SystemAbilityState::IDLE) {
+        bool result = CancelIdle();
+        DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_SERVICE_ERROR, "CancelIdle failed");
+    }
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, mimeType, isSurpported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed.");
@@ -261,6 +284,10 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &nam
 {
     DRM_INFO_LOG("IsMediaKeySystemSupported three parameters enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
+    if (GetAbilityState() == SystemAbilityState::IDLE) {
+        bool result = CancelIdle();
+        DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_SERVICE_ERROR, "CancelIdle failed");
+    }
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, mimeType, securityLevel, isSurpported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed.");
@@ -273,6 +300,10 @@ int32_t MediaKeySystemFactoryService::GetMediaKeySystems(std::map<std::string, s
 {
     DRM_INFO_LOG("GetMediaKeySystems enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
+    if (GetAbilityState() == SystemAbilityState::IDLE) {
+        bool result = CancelIdle();
+        DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_SERVICE_ERROR, "CancelIdle failed");
+    }
     int32_t ret = drmHostManager_->GetMediaKeySystems(mediaKeySystemNames);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("GetMediaKeySystems failed.");
@@ -285,6 +316,10 @@ int32_t MediaKeySystemFactoryService::GetMediaKeySystemUuid(std::string &name, s
 {
     DRM_INFO_LOG("GetMediaKeySystemUuid enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
+    if (GetAbilityState() == SystemAbilityState::IDLE) {
+        bool result = CancelIdle();
+        DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_SERVICE_ERROR, "CancelIdle failed");
+    }
     int32_t ret = drmHostManager_->GetMediaKeySystemUuid(name, uuid);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("GetMediaKeySystemUuid failed.");
