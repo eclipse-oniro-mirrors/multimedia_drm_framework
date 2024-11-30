@@ -36,10 +36,10 @@ public:
     };
 
     virtual ~IMediaKeySystemFactoryService() = default;
-    virtual int32_t IsMediaKeySystemSupported(std::string &name, bool *isSurpported) = 0;
-    virtual int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, bool *isSurpported) = 0;
+    virtual int32_t IsMediaKeySystemSupported(std::string &name, bool *isSupported) = 0;
+    virtual int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, bool *isSupported) = 0;
     virtual int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, int32_t securityLevel,
-        bool *isSurpported) = 0;
+        bool *isSupported) = 0;
     virtual int32_t GetMediaKeySystems(std::map<std::string, std::string> &keySystemNames) = 0;
     virtual int32_t GetMediaKeySystemUuid(std::string &name, std::string &uuid) = 0;
     virtual int32_t CreateMediaKeySystem(std::string &name, sptr<IMediaKeySystemService> &mediaKeySystemProxy) = 0;
