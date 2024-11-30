@@ -98,14 +98,13 @@ Drm_ErrCode OH_MediaKeySystem_GetMediaKeySystems(DRM_MediaKeySystemDescription *
         "GetMediaKeySystems call Failed!");
     for (auto it = keySystemNames.begin(); it != keySystemNames.end(); it++) {
         if (it->first.size() != 0) {
-            ret = memcpy_s(description[times].name, sizeof(description[times].name), it->first.c_str(),
-                it->first.size());
+            ret = strcpy_s(description[times].name, sizeof(description[times].name) - 1, it->first.c_str());
             if (ret != 0) {
                 DRM_ERR_LOG("OH_MediaKeySystem_GetMediaKeySystems memcpy_s description faild!");
                 return DRM_ERR_NO_MEMORY;
             }
         }
-        if (it->second.size() != 0) {
+        if (it->second.size() == (sizeof(description[times].uuid) * BASE_CONVERSION_OPERATOR)) {
             for (size_t i = 0; i < sizeof(description[times].uuid) * BASE_CONVERSION_OPERATOR;
                 i += BASE_CONVERSION_OPERATOR) {
                 std::string byteStr = it->second.substr(i, BASE_CONVERSION_OPERATOR);

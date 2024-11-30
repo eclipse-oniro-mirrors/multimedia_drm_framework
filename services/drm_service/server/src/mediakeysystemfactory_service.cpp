@@ -183,7 +183,7 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
     }
     sptr<MediaKeySystemService> mediaKeySystemService = nullptr;
     sptr<IMediaKeySystem> hdiMediaKeySystem = nullptr;
-    if (currentMediaKeySystemNum_[name] >= KEY_SYSTEM_MAX_NUMBER) {
+    if (currentMediaKeySystemNum_[name] >= KEY_SYSTEM_INSTANCES_MAX_NUMBER) {
         DRM_ERR_LOG("The number of MediaKeySystem is greater than 64");
         return DRM_MAX_SYSTEM_NUM_REACHED;
     }
@@ -246,7 +246,7 @@ int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySy
     return DRM_OK;
 }
 
-int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &name, bool *isSurpported)
+int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &name, bool *isSupported)
 {
     DRM_INFO_LOG("IsMediaKeySystemSupported one parameters enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
@@ -254,7 +254,7 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &nam
         bool result = CancelIdle();
         DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_SERVICE_ERROR, "CancelIdle failed");
     }
-    int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, isSurpported);
+    int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, isSupported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed.");
         return ret;
@@ -263,7 +263,7 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &nam
 }
 
 int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &name, std::string &mimeType,
-    bool *isSurpported)
+    bool *isSupported)
 {
     DRM_INFO_LOG("IsMediaKeySystemSupported two parameters enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
@@ -271,7 +271,7 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &nam
         bool result = CancelIdle();
         DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_SERVICE_ERROR, "CancelIdle failed");
     }
-    int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, mimeType, isSurpported);
+    int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, mimeType, isSupported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed.");
         return ret;
@@ -280,7 +280,7 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &nam
 }
 
 int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &name, std::string &mimeType,
-    int32_t securityLevel, bool *isSurpported)
+    int32_t securityLevel, bool *isSupported)
 {
     DRM_INFO_LOG("IsMediaKeySystemSupported three parameters enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
@@ -288,7 +288,7 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &nam
         bool result = CancelIdle();
         DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_SERVICE_ERROR, "CancelIdle failed");
     }
-    int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, mimeType, securityLevel, isSurpported);
+    int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, mimeType, securityLevel, isSupported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed.");
         return ret;

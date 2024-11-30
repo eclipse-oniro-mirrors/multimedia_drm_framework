@@ -104,33 +104,33 @@ static int32_t ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServic
     MessageParcel &reply, MessageOption &option)
 {
     int32_t paramNum = data.ReadInt32();
-    bool isSurpported = false;
+    bool isSupported = false;
 
     DRM_CHECK_AND_RETURN_RET_LOG((paramNum <= (int32_t)ARGS_NUM_THREE) && (paramNum >= (int32_t)ARGS_NUM_ONE),
         IPC_STUB_WRITE_PARCEL_ERR, "paramNum is invalid");
     std::string name = data.ReadString();
     if (paramNum == ARGS_NUM_ONE) {
-        int32_t ret = stub->IsMediaKeySystemSupported(name, &isSurpported);
+        int32_t ret = stub->IsMediaKeySystemSupported(name, &isSupported);
         DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "IsMediaKeySystemSupported faild, errCode:%{public}d", ret);
-        DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteBool(isSurpported), IPC_STUB_WRITE_PARCEL_ERR,
-            "Write isSurpported failed.");
+        DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteBool(isSupported), IPC_STUB_WRITE_PARCEL_ERR,
+            "Write isSupported failed.");
         return ret;
     }
     std::string mimeType = data.ReadString();
     if (paramNum == ARGS_NUM_TWO) {
-        int32_t ret = stub->IsMediaKeySystemSupported(name, mimeType, &isSurpported);
+        int32_t ret = stub->IsMediaKeySystemSupported(name, mimeType, &isSupported);
         DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "IsMediaKeySystemSupported faild, errCode:%{public}d", ret);
-        DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteBool(isSurpported), IPC_STUB_WRITE_PARCEL_ERR,
-            "Write isSurpported failed.");
+        DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteBool(isSupported), IPC_STUB_WRITE_PARCEL_ERR,
+            "Write isSupported failed.");
         return ret;
     }
 
     int32_t securityLevel = data.ReadInt32();
     if (paramNum == ARGS_NUM_THREE) {
-        int32_t ret = stub->IsMediaKeySystemSupported(name, mimeType, securityLevel, &isSurpported);
+        int32_t ret = stub->IsMediaKeySystemSupported(name, mimeType, securityLevel, &isSupported);
         DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "IsMediaKeySystemSupported faild, errCode:%{public}d", ret);
-        DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteBool(isSurpported), IPC_STUB_WRITE_PARCEL_ERR,
-            "Write isSurpported failed.");
+        DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteBool(isSupported), IPC_STUB_WRITE_PARCEL_ERR,
+            "Write isSupported failed.");
         return ret;
     }
     return DRM_OK;
@@ -190,12 +190,12 @@ int32_t MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, Message
     }
 
     switch (code) {
-        case MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED: {
-            DRM_INFO_LOG("IS_MEDIA_KEY_SYSTEM_SURPPORTED enter.");
+        case MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SUPPORTED: {
+            DRM_INFO_LOG("IS_MEDIA_KEY_SYSTEM_SUPPORTED enter.");
             return ProcessMediaKeySystemSupportedRequest(this, data, reply, option);
         }
         case MEDIA_KEY_SYSTEM_FACTORY_CREATE_MEDIA_KEYSYSTEM: {
-            DRM_INFO_LOG("IS_MEDIA_KEY_SYSTEM_SURPPORTED enter.");
+            DRM_INFO_LOG("IS_MEDIA_KEY_SYSTEM_SUPPORTED enter.");
             return ProcessCreateMediaKeySystem(this, data, reply, option);
         }
         case MEDIA_KEY_SYSTEM_FACTORY_SET_LISTENER_OBJ: {

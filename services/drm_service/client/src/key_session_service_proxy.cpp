@@ -313,6 +313,8 @@ int32_t MediaKeySessionServiceProxy::CheckMediaKeyStatus(std::map<std::string, s
         return ret;
     }
     int32_t licenseStatusMapSize = reply.ReadInt32();
+    DRM_CHECK_AND_RETURN_RET_LOG(licenseStatusMapSize <= MAX_MEDIA_KEY_STATUS_NUMBER, DRM_MEMORY_ERROR,
+        "The number of license status is too large.");
     for (int32_t i = 0; i < licenseStatusMapSize; i++) {
         std::string name = reply.ReadString();
         std::string status = reply.ReadString();

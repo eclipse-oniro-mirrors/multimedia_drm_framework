@@ -97,10 +97,10 @@ public:
     int32_t Init(void);
     void DeInit(void);
     void OnReceive(const HDI::ServiceManager::V1_0::ServiceStatus &status) override;
-    int32_t IsMediaKeySystemSupported(std::string &name, bool *isSurpported);
-    int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, bool *isSurpported);
+    int32_t IsMediaKeySystemSupported(std::string &name, bool *isSupported);
+    int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, bool *isSupported);
     int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, int32_t securityLevel,
-        bool *isSurpported);
+        bool *isSupported);
     int32_t CreateMediaKeySystem(std::string &name, sptr<IMediaKeySystem> &hdiMediaKeySystem);
     int32_t GetMediaKeySystems(std::map<std::string, std::string> &mediaKeySystemDescription);
     int32_t GetMediaKeySystemUuid(std::string &name, std::string &uuid);
@@ -119,7 +119,7 @@ private:
     int32_t ProcessLazyLoadInfomation(std::string &name, sptr<IMediaKeySystemFactory> &drmHostServieProxy);
     int32_t ProcessLazyLoadPlugin(std::string &name, std::vector<std::string> &serviceName,
         sptr<IDeviceManager> &deviceMgr, sptr<IServiceManager> &servmgr);
-    int32_t GetServices(std::string &name, bool *isSurpported, sptr<IMediaKeySystemFactory> &drmHostServieProxys);
+    int32_t GetServices(std::string &name, bool *isSupported, sptr<IMediaKeySystemFactory> &drmHostServieProxys);
     void ReleaseHandleAndKeySystemMap(void *handle);
     std::string StringTrim(const std::string& str);
     int32_t LazyLoadPlugin(std::string &name, std::vector<std::string> &serviceName,

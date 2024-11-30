@@ -560,7 +560,7 @@ int32_t DrmHostManager::ProcessLazyLoadInfomation(std::string &name, sptr<IMedia
     return DRM_OK;
 }
 
-int32_t DrmHostManager::GetServices(std::string &name, bool *isSurpported,
+int32_t DrmHostManager::GetServices(std::string &name, bool *isSupported,
     sptr<IMediaKeySystemFactory> &drmHostServieProxys)
 {
     DRM_INFO_LOG("GetServices enter, name:%{public}s.", name.c_str());
@@ -591,11 +591,11 @@ int32_t DrmHostManager::GetServices(std::string &name, bool *isSurpported,
             DRM_ERR_LOG("GetServices failed.");
             continue;
         }
-        ret = drmHostServieProxy->IsMediaKeySystemSupported(name, "", SECURE_UNKNOWN, *isSurpported);
+        ret = drmHostServieProxy->IsMediaKeySystemSupported(name, "", SECURE_UNKNOWN, *isSupported);
         if (ret != DRM_OK) {
             DRM_ERR_LOG("IsMediaKeySystemSupported return Code:%{public}d", ret);
             continue;
-        } else if (*isSurpported) {
+        } else if (*isSupported) {
             ret = ProcessLazyLoadInfomation(name, drmHostServieProxy);
             if (ret != DRM_OK) {
                 DRM_ERR_LOG("GetServices ProcessLazyLoadInfomation faild, return Code:%{public}d", ret);
@@ -615,15 +615,15 @@ int32_t DrmHostManager::GetServices(std::string &name, bool *isSurpported,
     return DRM_OK;
 }
 
-int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &name, bool *isSurpported)
+int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &name, bool *isSupported)
 {
     DRM_INFO_LOG("IsMediaKeySystemSupported one parameter enter, name:%{public}s.", name.c_str());
     sptr<IMediaKeySystemFactory> drmHostServieProxys;
     /* Lock will be released when lock goes out of scope */
     std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
-    int32_t ret = GetServices(name, isSurpported, drmHostServieProxys);
+    int32_t ret = GetServices(name, isSupported, drmHostServieProxys);
     if (ret != DRM_OK || drmHostServieProxys == nullptr) {
-        *isSurpported = false;
+        *isSupported = false;
         DRM_ERR_LOG("IsMediaKeySystemSupported one parameter GetServices error");
         return DRM_SERVICE_ERROR;
     }
@@ -631,7 +631,7 @@ int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &name, bool *isSur
     return DRM_OK;
 }
 
-int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &name, std::string &mimeType, bool *isSurpported)
+int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &name, std::string &mimeType, bool *isSupported)
 {
     DRM_INFO_LOG(
         "IsMediaKeySystemSupported two parameters enter, name:%{public}s, mimeType:%{public}s.",
@@ -640,19 +640,19 @@ int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &name, std::string
     sptr<IMediaKeySystemFactory> drmHostServieProxys;
     /* Lock will be released when lock goes out of scope */
     std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
-    int32_t ret = GetServices(name, isSurpported, drmHostServieProxys);
+    int32_t ret = GetServices(name, isSupported, drmHostServieProxys);
     if (ret != DRM_OK || drmHostServieProxys == nullptr) {
-        *isSurpported = false;
+        *isSupported = false;
         DRM_ERR_LOG("IsMediaKeySystemSupported two parameters GetServices error.");
         return DRM_SERVICE_ERROR;
     }
     if (mimeType.length() == 0) {
-        *isSurpported = false;
+        *isSupported = false;
         ReleaseSevices(drmHostServieProxys);
         DRM_ERR_LOG("IsMediaKeySystemSupported mimeType is null!");
         return DRM_SERVICE_ERROR;
     }
-    ret = drmHostServieProxys->IsMediaKeySystemSupported(name, mimeType, SECURE_UNKNOWN, *isSurpported);
+    ret = drmHostServieProxys->IsMediaKeySystemSupported(name, mimeType, SECURE_UNKNOWN, *isSupported);
     if (ret != 0) {
         DRM_ERR_LOG("IsMediaKeySystemSupported return Code:%{public}d.", ret);
     }
@@ -661,7 +661,7 @@ int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &name, std::string
 }
 
 int32_t DrmHostManager::IsMediaKeySystemSupported(
-    std::string &name, std::string &mimeType, int32_t securityLevel, bool *isSurpported)
+    std::string &name, std::string &mimeType, int32_t securityLevel, bool *isSupported)
 {
     DRM_INFO_LOG("IsMediaKeySystemSupported three parameters enter, name:%{public}s, "
                  "mimeType:%{public}s, securityLevel:%{public}d.",
@@ -671,20 +671,20 @@ int32_t DrmHostManager::IsMediaKeySystemSupported(
     std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
     sptr<IMediaKeySystemFactory> drmHostServieProxys;
     /* Lock will be released when lock goes out of scope */
-    int32_t ret = GetServices(name, isSurpported, drmHostServieProxys);
+    int32_t ret = GetServices(name, isSupported, drmHostServieProxys);
     if (ret != DRM_OK || drmHostServieProxys == nullptr) {
-        *isSurpported = false;
+        *isSupported = false;
         DRM_ERR_LOG("IsMediaKeySystemSupported three parameters GetServices error");
         return DRM_SERVICE_ERROR;
     }
     if (mimeType.length() == 0) {
-        *isSurpported = false;
+        *isSupported = false;
         ReleaseSevices(drmHostServieProxys);
         DRM_ERR_LOG("IsMediaKeySystemSupported mimeType is null!");
         return DRM_SERVICE_ERROR;
     }
     ret = drmHostServieProxys->IsMediaKeySystemSupported(
-        name, mimeType, (OHOS::HDI::Drm::V1_0::ContentProtectionLevel)securityLevel, *isSurpported);
+        name, mimeType, (OHOS::HDI::Drm::V1_0::ContentProtectionLevel)securityLevel, *isSupported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported return Code:%{public}d", ret);
     }
@@ -710,9 +710,9 @@ int32_t DrmHostManager::CreateMediaKeySystem(std::string &name, sptr<IMediaKeySy
     DRM_INFO_LOG("CreateMediaKeySystem enter.");
     /* Lock will be released when lock goes out of scope */
     std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
-    bool isSurpported = false;
+    bool isSupported = false;
     sptr<IMediaKeySystemFactory> drmHostServieProxys;
-    int32_t ret = GetServices(name, &isSurpported, drmHostServieProxys);
+    int32_t ret = GetServices(name, &isSupported, drmHostServieProxys);
     if (ret != DRM_OK || drmHostServieProxys == nullptr) {
         DRM_ERR_LOG("CreateMediaKeySystem faild.");
         return DRM_HOST_ERROR;
@@ -732,11 +732,11 @@ int32_t DrmHostManager::CreateMediaKeySystem(std::string &name, sptr<IMediaKeySy
 int32_t DrmHostManager::GetMediaKeySystemUuid(std::string &name, std::string &uuid)
 {
     DRM_INFO_LOG("GetMediaKeySystemUuid enter.");
-    bool isSurpported = false;
+    bool isSupported = false;
     sptr<IMediaKeySystemFactory> drmHostServieProxys;
     /* Lock will be released when lock goes out of scope */
     std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
-    int32_t ret = GetServices(name, &isSurpported, drmHostServieProxys);
+    int32_t ret = GetServices(name, &isSupported, drmHostServieProxys);
     if (ret != DRM_OK || drmHostServieProxys == nullptr) {
         DRM_INFO_LOG("GetMediaKeySystemUuid faild.");
         return DRM_HOST_ERROR;

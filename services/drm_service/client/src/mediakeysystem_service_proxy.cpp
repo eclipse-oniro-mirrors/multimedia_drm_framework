@@ -84,6 +84,8 @@ int32_t MediaKeySystemServiceProxy::GenerateKeySystemRequest(std::vector<uint8_t
 
     defaultUrl = reply.ReadString();
     int32_t requestSize = reply.ReadInt32();
+    DRM_CHECK_AND_RETURN_RET_LOG(request.size() <= REQUEST_MAX_LEN, DRM_MEMORY_ERROR,
+        "The size of request is too large.");
     if (requestSize != 0) {
         const uint8_t *requestBuf = static_cast<const uint8_t *>(reply.ReadUnpadBuffer(requestSize));
         if (requestBuf == nullptr) {
@@ -359,6 +361,8 @@ int32_t MediaKeySystemServiceProxy::GetStatistics(std::vector<IMediaKeySystemSer
         return ret;
     }
     int32_t metricsSize = reply.ReadInt32();
+    DRM_CHECK_AND_RETURN_RET_LOG(metricsSize <= MAX_STATISTICS_NUMBER, DRM_MEMORY_ERROR,
+        "The amount of metric information is too large.");
     for (int32_t i = 0; i < metricsSize; i++) {
         IMediaKeySystemService::MetircKeyValue keyValue;
         keyValue.name = reply.ReadString();
@@ -385,6 +389,8 @@ int32_t MediaKeySystemServiceProxy::GetOfflineMediaKeyIds(std::vector<std::vecto
         return ret;
     }
     uint32_t licenseIdsSize = reply.ReadUint32();
+    DRM_CHECK_AND_RETURN_RET_LOG(licenseIdsSize <= MAX_OFFLINE_MEDIA_KEY_ID_NUMBER, DRM_MEMORY_ERROR,
+        "The amount of license is too large.");
     licenseIds.resize(licenseIdsSize);
     for (uint32_t i = 0; i < licenseIdsSize; i++) {
         uint32_t licenseIdSize = reply.ReadUint32();

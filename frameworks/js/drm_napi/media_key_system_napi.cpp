@@ -206,8 +206,8 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
         return result;
     }
     if (argc == ARGS_ONE) {
-        bool isSurpportted = MediaKeySystemFactoryImpl::GetInstance()->IsMediaKeySystemSupported(pluginName);
-        napi_get_boolean(env, isSurpportted, &result);
+        bool isSupported = MediaKeySystemFactoryImpl::GetInstance()->IsMediaKeySystemSupported(pluginName);
+        napi_get_boolean(env, isSupported, &result);
         return result;
     }
     buffer[0] = '\0';
@@ -218,8 +218,8 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
     }
     std::string mimeType = std::string(buffer);
     if (argc == ARGS_TWO && mimeType.length() != 0) {
-        bool isSurpportted = MediaKeySystemFactoryImpl::GetInstance()->IsMediaKeySystemSupported(pluginName, mimeType);
-        napi_get_boolean(env, isSurpportted, &result);
+        bool isSupported = MediaKeySystemFactoryImpl::GetInstance()->IsMediaKeySystemSupported(pluginName, mimeType);
+        napi_get_boolean(env, isSupported, &result);
         return result;
     }
     buffer[0] = '\0';
@@ -240,9 +240,9 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
     }
 
     if (argc == ARGS_THREE) {
-        bool isSurpportted =
+        bool isSupported =
             MediaKeySystemFactoryImpl::GetInstance()->IsMediaKeySystemSupported(pluginName, mimeType, securityLevel);
-        napi_get_boolean(env, isSurpportted, &result);
+        napi_get_boolean(env, isSupported, &result);
         return result;
     }
     napi_get_boolean(env, false, &result);

@@ -54,10 +54,10 @@ public:
     void OnStop() override;
     int32_t OnIdle(const SystemAbilityOnDemandReason& idleReason) override;
     int32_t Dump(int32_t fd, const std::vector<std::u16string>& args) override;
-    int32_t IsMediaKeySystemSupported(std::string &name, bool *isSurpported) override;
-    int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, bool *isSurpported) override;
+    int32_t IsMediaKeySystemSupported(std::string &name, bool *isSupported) override;
+    int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, bool *isSupported) override;
     int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, int32_t securityLevel,
-        bool *isSurpported) override;
+        bool *isSupported) override;
     int32_t CreateMediaKeySystem(std::string &name, sptr<IMediaKeySystemService> &mediaKeySystemProxy) override;
     int32_t CloseMediaKeySystemService(sptr<MediaKeySystemService> mediaKeySystemService) override;
     void DistroyForClientDied(pid_t pid) override;

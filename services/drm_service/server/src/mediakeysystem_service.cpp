@@ -242,7 +242,7 @@ int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::Co
         "hdiKeySystem_ is nullptr!");
     sptr<MediaKeySessionService> keySessionService = nullptr;
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySession> hdiMediaKeySession = nullptr;
-    if (currentKeySessionNumber >= KEY_SESSION_MAX_NUMBER) {
+    if (currentKeySessionNumber >= KEY_SESSION_INSTANCES_MAX_NUMBER) {
         DRM_ERR_LOG("The number of MediaKeySession is greater than 64");
         return DRM_MAX_SESSION_NUM_REACHED;
     }

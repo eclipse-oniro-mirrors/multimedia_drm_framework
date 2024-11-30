@@ -59,7 +59,7 @@ bool DrmServiceNdkFuzzer::DrmserviceIsMediaKeySystemSupportedV1Test(uint8_t *raw
     data.WriteInt32(ARGS_NUM_ONE);
     std::string uuid(reinterpret_cast<const char *>(rawData), size);
     data.WriteString(uuid);
-    mediaKeySystemFactoryServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED, data,
+    mediaKeySystemFactoryServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SUPPORTED, data,
         reply, option);
     return true;
 }
@@ -79,7 +79,7 @@ bool DrmServiceNdkFuzzer::DrmserviceIsMediaKeySystemSupportedV2Test(uint8_t *raw
     std::string mimeType(reinterpret_cast<const char *>(rawData), size);
     data.WriteString(uuid);
     data.WriteString(mimeType);
-    mediaKeySystemFactoryServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED, data,
+    mediaKeySystemFactoryServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SUPPORTED, data,
         reply, option);
     return true;
 }
@@ -101,7 +101,7 @@ bool DrmServiceNdkFuzzer::DrmserviceIsMediaKeySystemSupportedV3Test(uint8_t *raw
     data.WriteString(mimeType);
     int32_t securityLevel = *reinterpret_cast<const int32_t *>(rawData);
     data.WriteInt32(securityLevel);
-    mediaKeySystemFactoryServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED, data,
+    mediaKeySystemFactoryServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SUPPORTED, data,
         reply, option);
     return true;
 }
