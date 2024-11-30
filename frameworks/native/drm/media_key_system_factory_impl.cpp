@@ -139,29 +139,29 @@ bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &name)
 {
     DRM_INFO_LOG("IsMediaKeySystemSupported enter.");
     int32_t ret = DRM_OK;
-    bool isSurpported = false;
+    bool isSupported = false;
     const sptr<IMediaKeySystemFactoryService> serviceProxy = GetServiceProxy();
-    DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy != nullptr, isSurpported, "service proxy is nullptr!");
-    ret = serviceProxy->IsMediaKeySystemSupported(name, &isSurpported);
+    DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy != nullptr, isSupported, "service proxy is nullptr!");
+    ret = serviceProxy->IsMediaKeySystemSupported(name, &isSupported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed, ret: %{public}d", ret);
     }
-    return isSurpported;
+    return isSupported;
 }
 
 bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &name, std::string &mimeType)
 {
     DRM_INFO_LOG("IsMediaKeySystemSupported enter.");
     int32_t ret = DRM_OK;
-    bool isSurpported = false;
+    bool isSupported = false;
 
     const sptr<IMediaKeySystemFactoryService> serviceProxy = GetServiceProxy();
-    DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy != nullptr, isSurpported, "service proxy is nullptr!");
-    ret = serviceProxy->IsMediaKeySystemSupported(name, mimeType, &isSurpported);
+    DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy != nullptr, isSupported, "service proxy is nullptr!");
+    ret = serviceProxy->IsMediaKeySystemSupported(name, mimeType, &isSupported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed, ret: %{public}d", ret);
     }
-    return isSurpported;
+    return isSupported;
 }
 
 bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType,
@@ -169,15 +169,15 @@ bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &uuid, std
 {
     DRM_INFO_LOG("IsMediaKeySystemSupported enter.");
     int32_t ret = DRM_OK;
-    bool isSurpported = false;
+    bool isSupported = false;
 
     const sptr<IMediaKeySystemFactoryService> serviceProxy = GetServiceProxy();
-    DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy != nullptr, isSurpported, "service proxy is nullptr!");
-    ret = serviceProxy->IsMediaKeySystemSupported(uuid, mimeType, securityLevel, &isSurpported);
+    DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy != nullptr, isSupported, "service proxy is nullptr!");
+    ret = serviceProxy->IsMediaKeySystemSupported(uuid, mimeType, securityLevel, &isSupported);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed, ret: %{public}d", ret);
     }
-    return isSurpported;
+    return isSupported;
 }
 
 int32_t MediaKeySystemFactoryImpl::GetMediaKeySystems(std::map<std::string, std::string> &keySystemNames)
