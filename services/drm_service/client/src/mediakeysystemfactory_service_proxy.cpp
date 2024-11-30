@@ -181,7 +181,7 @@ int32_t MediaKeySystemFactoryServiceProxy::GetMediaKeySystems(std::map<std::stri
         return ret;
     }
     int32_t mediaKeySystemNameMapSize = reply.ReadInt32();
-    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystemNameMapSize < MAX_MEDIA_KEY_SYSTEM_NUMBER, DRM_MEMORY_ERROR,
+    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystemNameMapSize <= MAX_MEDIA_KEY_SYSTEM_NUMBER, DRM_MEMORY_ERROR,
         "The number of mediaKeySystem is too large.");
     for (int32_t i = 0; i < mediaKeySystemNameMapSize; i++) {
         std::string name = reply.ReadString();
