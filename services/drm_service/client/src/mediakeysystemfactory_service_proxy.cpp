@@ -48,7 +48,7 @@ int32_t MediaKeySystemFactoryServiceProxy::SetListenerObject(const sptr<IRemoteO
     return DRM_OK;
 }
 
-int32_t MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported(std::string &uuid, bool *isSurpported)
+int32_t MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported(std::string &uuid, bool *isSupported)
 {
     DRM_INFO_LOG("one param enter.");
     MessageParcel data;
@@ -71,18 +71,18 @@ int32_t MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported(std::string
         return IPC_PROXY_ERR;
     }
 
-    int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED, data, reply, option);
+    int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SUPPORTED, data, reply, option);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("SendRequest failed, errcode: %{public}d", ret);
         return ret;
     }
 
-    *isSurpported = reply.ReadBool();
+    *isSupported = reply.ReadBool();
     return ret;
 }
 
 int32_t MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType,
-    bool *isSurpported)
+    bool *isSupported)
 {
     DRM_INFO_LOG("Two param enter.");
     MessageParcel data;
@@ -109,18 +109,18 @@ int32_t MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported(std::string
         return IPC_PROXY_ERR;
     }
 
-    int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED, data, reply, option);
+    int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SUPPORTED, data, reply, option);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("SendRequest failed, errcode: %{public}d", ret);
         return ret;
     }
 
-    *isSurpported = reply.ReadBool();
+    *isSupported = reply.ReadBool();
     return ret;
 }
 
 int32_t MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType,
-    int32_t securityLevel, bool *isSurpported)
+    int32_t securityLevel, bool *isSupported)
 {
     DRM_INFO_LOG("Three param called, enter.");
     MessageParcel data;
@@ -152,13 +152,13 @@ int32_t MediaKeySystemFactoryServiceProxy::IsMediaKeySystemSupported(std::string
         return IPC_PROXY_ERR;
     }
 
-    int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SURPPORTED, data, reply, option);
+    int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SUPPORTED, data, reply, option);
     if (ret != DRM_OK) {
         DRM_ERR_LOG("SendRequest failed, errcode: %{public}d", ret);
         return ret;
     }
 
-    *isSurpported = reply.ReadBool();
+    *isSupported = reply.ReadBool();
     return ret;
 }
 
@@ -181,6 +181,8 @@ int32_t MediaKeySystemFactoryServiceProxy::GetMediaKeySystems(std::map<std::stri
         return ret;
     }
     int32_t mediaKeySystemNameMapSize = reply.ReadInt32();
+    DRM_CHECK_AND_RETURN_RET_LOG(mediaKeySystemNameMapSize < MAX_MEDIA_KEY_SYSTEM_NUMBER, DRM_MEMORY_ERROR,
+        "The number of mediaKeySystem is too large.");
     for (int32_t i = 0; i < mediaKeySystemNameMapSize; i++) {
         std::string name = reply.ReadString();
         std::string uuid = reply.ReadString();
