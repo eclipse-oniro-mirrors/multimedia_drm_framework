@@ -26,10 +26,10 @@ class MediaKeySystemFactoryServiceProxy : public IRemoteProxy<IMediaKeySystemFac
 public:
     explicit MediaKeySystemFactoryServiceProxy(const sptr<IRemoteObject> &impl);
     virtual ~MediaKeySystemFactoryServiceProxy() = default;
-    int32_t IsMediaKeySystemSupported(std::string &name, bool *isSurpported) override;
-    int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, bool *isSurpported) override;
+    int32_t IsMediaKeySystemSupported(std::string &name, bool *isSupported) override;
+    int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, bool *isSupported) override;
     int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, int32_t securityLevel,
-        bool *isSurpported) override;
+        bool *isSupported) override;
     int32_t GetMediaKeySystems(std::map<std::string, std::string> &keySystemNames) override;
     int32_t GetMediaKeySystemUuid(std::string &name, std::string &uuid) override;
     int32_t CreateMediaKeySystem(std::string &name, sptr<IMediaKeySystemService> &mediaKeySystemProxy) override;
