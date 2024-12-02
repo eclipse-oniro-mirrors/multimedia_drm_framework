@@ -47,6 +47,8 @@ int32_t MediaKeySessionServiceCallbackStub::HandleSendEvent(MessageParcel &data)
     int32_t event = data.ReadInt32();
     int32_t extra = data.ReadInt32();
     uint32_t dataSize = data.ReadUint32();
+    DRM_CHECK_AND_RETURN_RET_LOG(dataSize < MAX_EVENT_NAME_LEN, DRM_MEMORY_ERROR,
+        "The size of event name is too large.");
     std::vector<uint8_t> customizedData;
     if (dataSize != 0) {
         const uint8_t *dataBuf = static_cast<const uint8_t *>(data.ReadUnpadBuffer(dataSize));
@@ -71,7 +73,7 @@ int32_t MediaKeySessionServiceCallbackStub::HandleSendEventKeyChanged(MessagePar
     for (uint32_t index = 0; index < mapSize; index++) {
         std::vector<uint8_t> item;
         uint32_t idSize = data.ReadUint32();
-        if (idSize != 0) {
+        if (idSize > 0 && idSize <= MAX_KEY_ID_LEN) {
             const uint8_t *idBuf = static_cast<const uint8_t *>(data.ReadUnpadBuffer(idSize));
             if (idBuf == nullptr) {
                 DRM_ERR_LOG("HandleSendEventKeyChanged read data failed.");
