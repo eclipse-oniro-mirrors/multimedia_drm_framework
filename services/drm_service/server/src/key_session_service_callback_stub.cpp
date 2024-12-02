@@ -71,7 +71,7 @@ int32_t MediaKeySessionServiceCallbackStub::HandleSendEventKeyChanged(MessagePar
     for (uint32_t index = 0; index < mapSize; index++) {
         std::vector<uint8_t> item;
         uint32_t idSize = data.ReadUint32();
-        if (idSize != 0) {
+        if (idSize > 0 && idSize <= MAX_KEY_ID_LEN) {
             const uint8_t *idBuf = static_cast<const uint8_t *>(data.ReadUnpadBuffer(idSize));
             if (idBuf == nullptr) {
                 DRM_ERR_LOG("HandleSendEventKeyChanged read data failed.");
