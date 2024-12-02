@@ -404,16 +404,10 @@ int32_t DrmHostManager::LoadPluginInfo(const std::string &filePath)
     DRM_INFO_LOG("LoadPluginInfo enter.");
     std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
     lazyLoadPluginInfoMap.clear();
-    int fd = open(filePath.c_str(), O_RDONLY);
-    if (fd == -1) {
-        DRM_ERR_LOG("LoadPluginInfo unable to open file:%{public}s.", filePath.c_str());
-        return DRM_HOST_ERROR;
-    }
 
     std::ifstream file(filePath);
     if (!file.is_open()) {
         DRM_ERR_LOG("LoadPluginInfo unable to open file:%{public}s.", filePath.c_str());
-        close(fd);
         return DRM_HOST_ERROR;
     }
 
@@ -434,7 +428,6 @@ int32_t DrmHostManager::LoadPluginInfo(const std::string &filePath)
         }
     }
     file.close();
-    close(fd);
     return DRM_OK;
 }
 
