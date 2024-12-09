@@ -300,5 +300,6 @@ Drm_ErrCode OH_MediaKeySession_Destroy(MediaKeySession *mediaKeySession);
 #ifdef __cplusplus
 }
 #endif
+
 #endif // OHOS_DRM_NATIVE_MEDIA_KEY_SYSTEM_H
 /** @} */
