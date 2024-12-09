@@ -21,8 +21,6 @@
  * @kit DrmKit.
  * @since 11
  * @version 1.0
- *
- * @}
  */
 
 /**
@@ -114,3 +112,4 @@ typedef enum Drm_ErrCode {
 #endif
 
 #endif // NATIVE_DRM_ERR_H
+/** @} */
