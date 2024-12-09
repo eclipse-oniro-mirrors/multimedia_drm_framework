@@ -21,8 +21,6 @@
  * @kit DrmKit.
  * @since 11
  * @version 1.0
- *
- * @}
  */
 
 /**
@@ -539,3 +537,4 @@ typedef struct DRM_MediaKeySystemDescription {
 #endif
 
 #endif // NATIVE_DRM_COMMON_H
+/** @} */
