@@ -21,8 +21,6 @@
  * @kit DrmKit.
  * @since 11
  * @version 1.0
- *
- * @}
  */
 
 /**
@@ -364,3 +362,4 @@ Drm_ErrCode OH_MediaKeySystem_Destroy(MediaKeySystem *mediaKeySystem);
 #endif
 
 #endif // OHOS_DRM_NATIVE_MEDIA_KEY_SYSTEM_H
+/** @} */
