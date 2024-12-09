@@ -84,7 +84,7 @@ int32_t MediaKeySystemServiceProxy::GenerateKeySystemRequest(std::vector<uint8_t
 
     defaultUrl = reply.ReadString();
     int32_t requestSize = reply.ReadInt32();
-    DRM_CHECK_AND_RETURN_RET_LOG(request.size() <= REQUEST_MAX_LEN, DRM_MEMORY_ERROR,
+    DRM_CHECK_AND_RETURN_RET_LOG(requestSize <= REQUEST_MAX_LEN, DRM_MEMORY_ERROR,
         "The size of request is too large.");
     if (requestSize != 0) {
         const uint8_t *requestBuf = static_cast<const uint8_t *>(reply.ReadUnpadBuffer(requestSize));
