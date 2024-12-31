@@ -76,7 +76,6 @@ public:
     virtual int32_t GetOfflineMediaKeyStatus(std::vector<uint8_t> &licenseId,
         IMediaKeySessionService::OfflineMediaKeyStatus &status) = 0;
     virtual int32_t ClearOfflineMediaKeys(std::vector<uint8_t> &licenseId) = 0;
-    virtual int32_t SetListenerObject(const sptr<IRemoteObject> &object) = 0;
     virtual int32_t SetCallback(sptr<IMediaKeySystemServiceCallback> &callback) = 0;
     DECLARE_INTERFACE_DESCRIPTOR(u"IMediaKeySystemSystemService");
 };
