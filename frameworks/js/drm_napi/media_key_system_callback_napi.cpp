@@ -40,50 +40,6 @@ void MediaKeySystemCallbackNapi::ClearCallbackReference(const std::string eventT
     callbackMap_.erase(eventType);
 }
 
-void MediaKeySystemCallbackNapi::WorkCallbackInterruptDone(uv_work_t *work, int status)
-{
-    // Js Thread
-    std::shared_ptr<MediaKeySystemJsCallback> context(static_cast<MediaKeySystemJsCallback *>(work->data),
-        [work](MediaKeySystemJsCallback *ptr) {
-            delete ptr;
-            delete work;
-        });
-    DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(work != nullptr, "work is nullptr");
-    MediaKeySystemJsCallback *event = reinterpret_cast<MediaKeySystemJsCallback *>(work->data);
-    DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(event != nullptr, "event is nullptr");
-    std::string request = event->callbackName;
-
-    DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(event->callback != nullptr, "event is nullptr");
-    napi_env env = event->callback->env_;
-    napi_ref callback = event->callback->cb_;
-
-    napi_handle_scope scope = nullptr;
-    napi_open_handle_scope(env, &scope);
-    DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(scope != nullptr, "scope is nullptr");
-    DRM_DEBUG_LOG("JsCallBack %{public}s, uv_queue_work_with_qos start", request.c_str());
-    do {
-        DRM_NAPI_CHECK_AND_CLOSE_RETURN_VOID_LOG(status != UV_ECANCELED, "%{public}s cancelled", request.c_str());
-
-        napi_value jsCallback = nullptr;
-        napi_status nstatus = napi_get_reference_value(env, callback, &jsCallback);
-        DRM_NAPI_CHECK_AND_CLOSE_RETURN_VOID_LOG(nstatus == napi_ok && jsCallback != nullptr,
-            "%{public}s get reference value fail", request.c_str());
-
-        // Call back function
-        napi_value args[ARGS_ONE] = { nullptr };
-        nstatus = NapiParamUtils::SetDrmEventInfo(env, event->eventParame, args[PARAM0]);
-        DRM_NAPI_CHECK_AND_CLOSE_RETURN_VOID_LOG(nstatus == napi_ok && args[PARAM0] != nullptr,
-            "%{public}s fail to create keysystem callback", request.c_str());
-
-        const size_t argCount = ARGS_ONE;
-        napi_value result = nullptr;
-        nstatus = napi_call_function(env, nullptr, jsCallback, argCount, args, &result);
-        DRM_NAPI_CHECK_AND_CLOSE_RETURN_VOID_LOG(nstatus == napi_ok, "%{public}s fail to call Interrupt callback",
-            request.c_str());
-    } while (0);
-    napi_close_handle_scope(env, scope);
-}
-
 void MediaKeySystemCallbackNapi::SendEvent(const std::string &event, int32_t extra, const std::vector<uint8_t> &data)
 {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -98,25 +54,51 @@ void MediaKeySystemCallbackNapi::SendEvent(const std::string &event, int32_t ext
 
 void MediaKeySystemCallbackNapi::OnJsCallbackInterrupt(std::unique_ptr<MediaKeySystemJsCallback> &jsCb)
 {
-    uv_loop_s *loop = nullptr;
-    napi_get_uv_event_loop(env_, &loop);
-    DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(loop != nullptr, "loop nullptr, No memory");
-
-    uv_work_t *work = new (std::nothrow) uv_work_t;
-    DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(work != nullptr, "work nullptr, No memory");
-
     if (jsCb.get() == nullptr) {
-        DRM_DEBUG_LOG("OnJsCallBackInterrupt: jsCb.get() is null");
-        delete work;
+        DRM_ERR_LOG("OnJsCallbackInterrupt: jsCb.get() is null");
         return;
     }
-    work->data = reinterpret_cast<void *>(jsCb.get());
+    MediaKeySystemJsCallback *event = jsCb.get();
+    auto task = [event]() {
+        std::shared_ptr<MediaKeySystemJsCallback> context(
+            static_cast<MediaKeySystemJsCallback*>(event),
+            [](MediaKeySystemJsCallback* ptr) {
+                delete ptr;
+        });
 
-    int ret = uv_queue_work_with_qos(
-        loop, work, [](uv_work_t *work) {}, WorkCallbackInterruptDone, uv_qos_default);
-    if (ret != 0) {
-        DRM_DEBUG_LOG("Failed to execute libuv work queue");
-        delete work;
+        DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(event != nullptr, "event is nullptr");
+        std::string request = event->callbackName;
+
+        DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(event->callback != nullptr, "event is nullptr");
+        napi_env env = event->callback->env_;
+        napi_ref callback = event->callback->cb_;
+
+        napi_handle_scope scope = nullptr;
+        napi_open_handle_scope(env, &scope);
+        DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(scope != nullptr, "scope is nullptr");
+        DRM_DEBUG_LOG("JsCallBack %{public}s, doWork", request.c_str());
+       do {
+            napi_value jsCallback = nullptr;
+            napi_status nstatus = napi_get_reference_value(env, callback, &jsCallback);
+            DRM_NAPI_CHECK_AND_CLOSE_RETURN_VOID_LOG(nstatus == napi_ok && jsCallback != nullptr,
+                "%{public}s get reference value fail", request.c_str());
+
+            // Call back function
+            napi_value args[ARGS_ONE] = { nullptr };
+            nstatus = NapiParamUtils::SetDrmEventInfo(env, event->eventParame, args[PARAM0]);
+            DRM_NAPI_CHECK_AND_CLOSE_RETURN_VOID_LOG(nstatus == napi_ok && args[PARAM0] != nullptr,
+                "%{public}s fail to create keysystem callback", request.c_str());
+
+            const size_t argCount = ARGS_ONE;
+            napi_value result = nullptr;
+            nstatus = napi_call_function(env, nullptr, jsCallback, argCount, args, &result);
+            DRM_NAPI_CHECK_AND_CLOSE_RETURN_VOID_LOG(nstatus == napi_ok, "%{public}s fail to call Interrupt callback",
+                request.c_str());
+        } while (0);
+        napi_close_handle_scope(env, scope);
+    };
+    if (napi_status::napi_ok != napi_send_event(env_, task, napi_eprio_immediate)) {
+        DRM_ERR_LOG("OnJsCallbackInterrupt: Failed to SendEvent");
     } else {
         jsCb.release();
     }
