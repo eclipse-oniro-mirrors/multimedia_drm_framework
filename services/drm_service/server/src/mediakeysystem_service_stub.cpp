@@ -72,9 +72,6 @@ static int32_t ProcessGetOfflineMediaKeyStatus(MediaKeySystemServiceStub *stub, 
 static int32_t ProcessRemoveOfflineMediaKey(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
-static int32_t ProcessSetListenerObject(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
-    MessageOption &option);
-
 static int32_t ProcessSetCallabck(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
     MessageOption &option);
 
@@ -93,7 +90,6 @@ static struct ProcessRemoteRequestFuncArray g_mediaKeySystemServiceStubRequestPr
     {MEDIA_KEY_SYSTEM_GET_OFFLINELICENSEIDS, ProcessGetOfflineMediaKeyIds},
     {MEDIA_KEY_SYSTEM_GET_OFFLINEKEY_STATUS, ProcessGetOfflineMediaKeyStatus},
     {MEDIA_KEY_SYSTEM_REMOVE_OFFLINELICENSE, ProcessRemoveOfflineMediaKey},
-    {MEDIA_KEY_SYSTEM_SET_LISTENER_OBJ, ProcessSetListenerObject},
     {MEDIA_KEY_SYSTEM_SETCALLBACK, ProcessSetCallabck},
 };
 
@@ -377,43 +373,6 @@ static int32_t ProcessRemoveOfflineMediaKey(MediaKeySystemServiceStub *stub, Mes
 void MediaKeySystemServiceStub::MediaKeySystemClientDied(pid_t pid)
 {
     DRM_ERR_LOG("MediaKeySystemService client has died, pid:%{public}d", pid);
-}
-
-int32_t MediaKeySystemServiceStub::SetListenerObject(const sptr<IRemoteObject> &object)
-{
-    pid_t pid = IPCSkeleton::GetCallingPid();
-    if (clientListener_ != nullptr && clientListener_->AsObject() != nullptr && deathRecipient_ != nullptr) {
-        DRM_DEBUG_LOG("This MediaKeySystemServiceStub has already set listener!");
-        (void)clientListener_->AsObject()->RemoveDeathRecipient(deathRecipient_);
-        deathRecipient_ = nullptr;
-        clientListener_ = nullptr;
-    }
-
-    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_MEMORY_ERROR, "set listener object is nullptr");
-    sptr<IDrmListener> clientListener_ = iface_cast<IDrmListener>(object);
-    DRM_CHECK_AND_RETURN_RET_LOG(
-        clientListener_ != nullptr, DRM_MEMORY_ERROR, "failed to convert IDrmListener");
-    deathRecipient_ = new (std::nothrow) DrmDeathRecipient(pid);
-    DRM_CHECK_AND_RETURN_RET_LOG(deathRecipient_ != nullptr, DRM_MEMORY_ERROR, "failed to new DrmDeathRecipient");
-    deathRecipient_->SetNotifyCb([this] (pid_t pid) {
-        this->MediaKeySystemClientDied(pid);
-    });
-    if (clientListener_->AsObject() != nullptr) {
-        (void)clientListener_->AsObject()->AddDeathRecipient(deathRecipient_);
-    }
-    return DRM_OK;
-}
-
-static int32_t ProcessSetListenerObject(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
-    MessageOption &option)
-{
-    DRM_INFO_LOG("ProcessSetListenerObject.");
-    (void)reply;
-    sptr<IRemoteObject> object = data.ReadRemoteObject();
-    int32_t ret = stub->SetListenerObject(object);
-    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret,
-        "ProcessSetListenerObject faild, errCode:%{public}d", ret);
-    return ret;
 }
 
 static int32_t ProcessSetCallabck(MediaKeySystemServiceStub *stub, MessageParcel &data, MessageParcel &reply,
