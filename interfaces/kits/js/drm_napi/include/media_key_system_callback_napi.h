@@ -39,8 +39,6 @@ private:
         DrmEventParame eventParame;
     };
 
-    static void WorkCallbackStateChangeDone(uv_work_t *work, int status);
-    static void WorkCallbackInterruptDone(uv_work_t *work, int status);
     void OnJsCallbackInterrupt(std::unique_ptr<MediaKeySystemJsCallback> &jsCb);
     void OnJsCallbackStateChange(std::unique_ptr<MediaKeySystemJsCallback> &jsCb);
     napi_env env_ = nullptr;
