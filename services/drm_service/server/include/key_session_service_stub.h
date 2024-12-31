@@ -32,7 +32,6 @@ public:
     ~MediaKeySessionServiceStub() = default;
     virtual int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
         MessageOption &option) override;
-    int32_t SetListenerObject(const sptr<IRemoteObject> &object) override;
 
 private:
     void MediaKeySessionClientDied(pid_t pid);

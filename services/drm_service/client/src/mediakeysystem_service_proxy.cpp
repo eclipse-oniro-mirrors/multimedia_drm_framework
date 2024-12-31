@@ -25,26 +25,6 @@ MediaKeySystemServiceProxy::MediaKeySystemServiceProxy(const sptr<IRemoteObject>
 {
 }
 
-int32_t MediaKeySystemServiceProxy::SetListenerObject(const sptr<IRemoteObject> &object)
-{
-    DRM_INFO_LOG("SetListenerObject.");
-    MessageParcel data;
-    MessageParcel reply;
-    MessageOption option;
-
-    data.WriteInterfaceToken(GetDescriptor());
-    if (!data.WriteRemoteObject(object)) {
-        DRM_ERR_LOG("WriteRemoteObject failed.");
-        return IPC_PROXY_ERR;
-    }
-    int ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_SET_LISTENER_OBJ, data, reply, option);
-    if (ret != DRM_OK) {
-        DRM_ERR_LOG("Set listener obj failed, errcode: %{public}d", ret);
-        return IPC_PROXY_ERR;
-    }
-    return reply.ReadInt32();
-}
-
 int32_t MediaKeySystemServiceProxy::Release()
 {
     DRM_INFO_LOG("Release enter.");
