@@ -54,10 +54,7 @@ void MediaKeySystemCallbackNapi::SendEvent(const std::string &event, int32_t ext
 
 void MediaKeySystemCallbackNapi::OnJsCallbackInterrupt(std::unique_ptr<MediaKeySystemJsCallback> &jsCb)
 {
-    if (jsCb.get() == nullptr) {
-        DRM_ERR_LOG("OnJsCallbackInterrupt: jsCb.get() is null");
-        return;
-    }
+    DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(jsCb.get() != nullptr, "OnJsCallbackInterrupt: jsCb.get() is null");
     MediaKeySystemJsCallback *event = jsCb.get();
     auto task = [event]() {
         std::shared_ptr<MediaKeySystemJsCallback> context(
