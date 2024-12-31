@@ -58,7 +58,8 @@ void MediaKeySessionCallbackNapi::OnJsCallbackInterrupt(std::unique_ptr<MediaKey
     MediaKeySessionJsCallback *event = jsCb.get();
     auto task = [event]() {
         std::shared_ptr<MediaKeySessionJsCallback> context(static_cast<MediaKeySessionJsCallback*>(event),
-            [](MediaKeySessionJsCallback* ptr) { delete ptr; 
+            [](MediaKeySessionJsCallback* ptr) {
+            delete ptr;
         });
         DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(event != nullptr, "event is nullptr");
         std::string request = event->callbackName;
