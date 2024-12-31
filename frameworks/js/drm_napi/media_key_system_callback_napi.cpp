@@ -74,13 +74,12 @@ void MediaKeySystemCallbackNapi::OnJsCallbackInterrupt(std::unique_ptr<MediaKeyS
         napi_open_handle_scope(env, &scope);
         DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(scope != nullptr, "scope is nullptr");
         DRM_DEBUG_LOG("JsCallBack %{public}s, doWork", request.c_str());
-       do {
+        do {
             napi_value jsCallback = nullptr;
             napi_status nstatus = napi_get_reference_value(env, callback, &jsCallback);
             DRM_NAPI_CHECK_AND_CLOSE_RETURN_VOID_LOG(nstatus == napi_ok && jsCallback != nullptr,
                 "%{public}s get reference value fail", request.c_str());
 
-            // Call back function
             napi_value args[ARGS_ONE] = { nullptr };
             nstatus = NapiParamUtils::SetDrmEventInfo(env, event->eventParame, args[PARAM0]);
             DRM_NAPI_CHECK_AND_CLOSE_RETURN_VOID_LOG(nstatus == napi_ok && args[PARAM0] != nullptr,
