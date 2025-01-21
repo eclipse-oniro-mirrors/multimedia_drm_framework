@@ -656,10 +656,8 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_RequireSecureDecoderModuleAbNormal_0
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
     EXPECT_NE(mediaKeySession, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    bool requireSecureDecoder = false;
     errNo = OH_MediaKeySession_RequireSecureDecoderModule(mediaKeySession, "video/mp4", nullptr);
     EXPECT_NE(errNo, DRM_ERR_OK);
-    EXPECT_EQ(requireSecureDecoder, false);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
