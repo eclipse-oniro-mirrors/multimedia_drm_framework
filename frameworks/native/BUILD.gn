@@ -81,10 +81,7 @@ ohos_shared_library("drm_framework") {
     ":drm_framework_public_config",
   ]
 
-  include_dirs = [
-    "./drm",
-    "//foundation//arkui/napi/interfaces/kits",
-  ]
+  include_dirs = [ "./drm" ]
 
   deps = [ ":drm_api_operation" ]
 

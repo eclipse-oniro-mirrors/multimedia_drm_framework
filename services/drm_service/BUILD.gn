@@ -26,7 +26,6 @@ ohos_shared_library("drm_service") {
     "./../../interfaces/kits/c/drm_capi/common",
     "./../utils",
     "./../utils/include",
-    "//foundation//arkui/napi/interfaces/kits",
   ]
 
   sources = [

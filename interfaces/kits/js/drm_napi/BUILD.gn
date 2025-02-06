@@ -40,7 +40,6 @@ ohos_shared_library("drm_napi") {
     "./../../../../services/drm_service/server/include",
     "./../../../../services/drm_service/ipc",
     "./../../../../services/utils/include",
-    "//foundation//arkui/napi/interfaces/kits",
   ]
   sources = [
     "./../../../../frameworks/js/drm_napi/drm_enum_napi.cpp",
