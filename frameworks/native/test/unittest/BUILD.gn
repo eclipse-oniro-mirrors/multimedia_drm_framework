@@ -62,12 +62,12 @@ ohos_unittest("drm_framework_capi_unittest_v1_0") {
     "../../../../interfaces/kits/c/drm_capi:native_drm",
     "../../../../interfaces/kits/js/drm_napi:drm_napi",
     "../../../../services/drm_service:drm_service",
-    "//third_party/curl:curl_shared",
-    "//third_party/googletest:gmock_main",
   ]
 
   external_deps = [
     "c_utils:utils",
+    "curl:curl_shared",
+    "googletest:gmock_main",
     "hidumper:lib_dump_usage",
     "hilog:libhilog",
     "hisysevent:libhisysevent",

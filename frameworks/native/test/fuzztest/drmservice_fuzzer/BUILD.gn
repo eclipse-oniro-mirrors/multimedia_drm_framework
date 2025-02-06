@@ -28,7 +28,6 @@ config("drm_framework_capi_fuzztest_systenfactory_config") {
     "../../../../../interfaces/inner_api/native/drm",
     "../../../../../interfaces/kits/c/drm_capi/common",
     "../../../../../services/utils",
-    "//foundation//arkui/napi/interfaces/kits",
   ]
   cflags = [
     "-g",

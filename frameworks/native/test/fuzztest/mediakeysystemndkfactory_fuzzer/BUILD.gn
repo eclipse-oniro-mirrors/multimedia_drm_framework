@@ -62,11 +62,11 @@ ohos_fuzztest("mediakeysystemndkfactoryFuzzTest") {
     "../../../../../interfaces/kits/c/drm_capi:native_drm",
     "../../../../../interfaces/kits/js/drm_napi:drm_napi",
     "../../../../../services/drm_service:drm_service",
-    "//third_party/curl:curl_shared",
   ]
 
   external_deps = [
     "c_utils:utils",
+    "curl:curl_shared",
     "hilog:libhilog",
     "ipc:ipc_core",
   ]
