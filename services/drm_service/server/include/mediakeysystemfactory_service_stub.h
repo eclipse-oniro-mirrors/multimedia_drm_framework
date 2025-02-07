@@ -36,6 +36,7 @@ public:
         MessageOption &option) override;
     int32_t SetListenerObject(const sptr<IRemoteObject> &object) override;
     virtual void DistroyForClientDied(pid_t pid) = 0;
+    bool IsListenerObjectSet();
 
 private:
     std::recursive_mutex factoryServiceStubMutex_;

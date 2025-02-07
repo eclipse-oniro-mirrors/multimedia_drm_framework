@@ -83,9 +83,24 @@ int32_t MediaKeySystemFactoryServiceStub::SetListenerObject(const sptr<IRemoteOb
     return DRM_OK;
 }
 
+bool MediaKeySystemFactoryServiceStub::IsListenerObjectSet()
+{
+    std::lock_guard<std::recursive_mutex> lock(factoryServiceStubMutex_);
+    pid_t pid = IPCSkeleton::GetCallingPid();
+    if (clientListenerMap_.find(pid) != clientListenerMap_.end()) {
+        return true;
+    }
+    return false;
+}
+
 static int32_t ProcessCreateMediaKeySystem(MediaKeySystemFactoryServiceStub *stub, MessageParcel &data,
     MessageParcel &reply, MessageOption &option)
 {
+    bool res = stub->IsListenerObjectSet();
+    if (!res) {
+        DRM_ERR_LOG("Not Set Listener.");
+        return DRM_OPERATION_NOT_ALLOWED;
+    }
     sptr<IMediaKeySystemService> mediaKeysystemProxy = nullptr;
     std::string name = data.ReadString();
     int32_t ret = stub->CreateMediaKeySystem(name, mediaKeysystemProxy);
