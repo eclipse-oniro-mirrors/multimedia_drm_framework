@@ -14,3 +14,5 @@
 declare_args() {
   drm_framework_service_support_lazy_loading = false
 }
+
+drm_framework_root_dir = "//foundation/multimedia/drm_framework"

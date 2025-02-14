@@ -14,6 +14,7 @@
 # for ohos_shared_library("drm_framework")
 
 import("//build/ohos.gni")
+import("//foundation/multimedia/drm_framework/config.gni")
 
 config("drm_framework_public_config") {
   include_dirs = [
@@ -35,7 +36,7 @@ config("drm_framework_local_config") {
 }
 
 config("drm_framework_drivers_config") {
-  include_dirs = [ "./../../services/drm_service/ipc/" ]
+  include_dirs = [ "$drm_framework_root_dir/services/drm_service/ipc" ]
 }
 
 ohos_shared_library("drm_framework") {
