@@ -69,6 +69,7 @@ ohos_fuzztest("mediakeysystemndkFuzzTest") {
     "c_utils:utils",
     "curl:curl_shared",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
     "ipc:ipc_core",
   ]
   subsystem_name = "multimedia"

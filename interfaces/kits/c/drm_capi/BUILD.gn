@@ -78,6 +78,7 @@ ohos_shared_library("native_drm") {
     "c_utils:utils",
     "hiappevent:hiappevent_innerapi",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
     "hitrace:libhitracechain",
     "ipc:ipc_core",
   ]
