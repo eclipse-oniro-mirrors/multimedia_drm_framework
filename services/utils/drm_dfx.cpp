@@ -19,7 +19,7 @@
 #include "drm_log.h"
 #include "dump_usage.h"
 #include "nlohmann/json.hpp"
-#include "native_drm_err.h"
+#include "drm_error_code.h"
 #include "securec.h"
 #include "ipc_skeleton.h"
 #include "hitrace/tracechain.h"
@@ -40,25 +40,25 @@ DrmEvent& DrmEvent::GetInstance()
 int32_t DrmEvent::WriteServiceEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
     DrmServiveInfo &info)
 {
-    int32_t res = DRM_ERR_OK;
+    int32_t res = DRM_INNER_ERR_OK;
     res = HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName, type,
         "MODULE", info.module,
         "SERVICE_NAME", info.serviceName,
         "ACTION", info.action,
         "MEMORY", info.memoryUsage);
-    if (res != DRM_ERR_OK) {
+    if (res != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("EventWrite failed, res = %d", res);
         return res;
     } else {
         DRM_INFO_LOG("EventWrite success");
     }
-    return DRM_ERR_OK;
+    return DRM_INNER_ERR_OK;
 }
 
 int32_t DrmEvent::WriteLicenseEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
     DrmLicenseInfo &info)
 {
-    int32_t res = DRM_ERR_OK;
+    int32_t res = DRM_INNER_ERR_OK;
     res = HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName, type,
         "MODULE", info.module,
         "APP_NAME", info.appName,
@@ -71,19 +71,19 @@ int32_t DrmEvent::WriteLicenseEvent(std::string eventName, OHOS::HiviewDFX::HiSy
         "GENERATION_RESULT", info.generationResult,
         "PROCESS_DURATION", info.processDuration,
         "PROCESS_RESULT", info.processResult);
-    if (res != DRM_ERR_OK) {
+    if (res != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("EventWrite failed, res = %d", res);
         return res;
     } else {
         DRM_INFO_LOG("EventWrite success");
     }
-    return DRM_ERR_OK;
+    return DRM_INNER_ERR_OK;
 }
 
 int32_t DrmEvent::WriteCertificateEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
     DrmCertificateInfo &info)
 {
-    int32_t res = DRM_ERR_OK;
+    int32_t res = DRM_INNER_ERR_OK;
     res = HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName, type,
         "MODULE", info.module,
         "APP_NAME", info.appName,
@@ -98,19 +98,19 @@ int32_t DrmEvent::WriteCertificateEvent(std::string eventName, OHOS::HiviewDFX::
         "CALL_SERVER_TIME", info.callServerTime,
         "SERVER_COST_DURATION", info.serverCostDuration,
         "SERVER_RESULT", info.serverResult);
-    if (res != DRM_ERR_OK) {
+    if (res != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("EventWrite failed, res = %d", res);
         return res;
     } else {
         DRM_INFO_LOG("EventWrite success");
     }
-    return DRM_ERR_OK;
+    return DRM_INNER_ERR_OK;
 }
 
 int32_t DrmEvent::WriteFaultEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
     DrmFaultInfo &info)
 {
-    int32_t res = DRM_ERR_OK;
+    int32_t res = DRM_INNER_ERR_OK;
     res = HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName, type,
         "MODULE", info.module,
         "APP_NAME", info.appName,
@@ -118,19 +118,19 @@ int32_t DrmEvent::WriteFaultEvent(std::string eventName, OHOS::HiviewDFX::HiSysE
         "ERROR_CODE", info.errorCode,
         "ERROR_MESG", info.errorMesg,
         "EXTRA_MESG", info.extraMesg);
-    if (res != DRM_ERR_OK) {
+    if (res != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("EventWrite failed, res = %d", res);
         return res;
     } else {
         DRM_INFO_LOG("EventWrite success");
     }
-    return DRM_ERR_OK;
+    return DRM_INNER_ERR_OK;
 }
 
 int32_t DrmEvent::WriteDecryptionEvent(std::string eventName, OHOS::HiviewDFX::HiSysEvent::EventType type,
     DrmDecryptionInfo &info)
 {
-    int32_t res = DRM_ERR_OK;
+    int32_t res = DRM_INNER_ERR_OK;
 
     res = HiSysEventWrite(OHOS::HiviewDFX::HiSysEvent::Domain::MULTI_MEDIA, eventName, type,
         "MODULE", info.module,
@@ -141,13 +141,13 @@ int32_t DrmEvent::WriteDecryptionEvent(std::string eventName, OHOS::HiviewDFX::H
         "DECRYPT_ALGO", info.decryptAlgo,
         "DECRYPT_KEYID", info.decryptKeyid,
         "DECRYPT_IV", info.decryptIv);
-    if (res != DRM_ERR_OK) {
+    if (res != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("EventWrite failed, res = %d", res);
         return res;
     } else {
         DRM_INFO_LOG("EventWrite success");
     }
-    return DRM_ERR_OK;
+    return DRM_INNER_ERR_OK;
 }
 
 int32_t ReportServiceBehaviorEvent(std::string serviceName, std::string action)
@@ -260,7 +260,7 @@ void ReportDecryptionStatisticsEvent(uint64_t instanceId, std::string appName,
 {
     DRM_INFO_LOG("ReportDecryptionStatisticsEvent.");
 
-    int32_t res = DRM_ERR_OK;
+    int32_t res = DRM_INNER_ERR_OK;
     if (statistics.decryptTimes < MIN_DECRYPTION_TIMES) {
         return;
     }
@@ -279,7 +279,7 @@ void ReportDecryptionStatisticsEvent(uint64_t instanceId, std::string appName,
         "DECRYPT_AVG_DURATION", avgDuration,
         "DECRYPT_MAX_SIZE", statistics.decryptMaxSize,
         "DECRYPT_MAX_DURATION", statistics.decryptMaxDuration);
-    if (res != DRM_ERR_OK) {
+    if (res != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("DRM_STATISTICS Event Write failed, res = %d", res);
     } else {
         DRM_INFO_LOG("DRM_STATISTICS Event Write success");

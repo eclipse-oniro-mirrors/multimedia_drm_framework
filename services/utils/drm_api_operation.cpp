@@ -218,7 +218,7 @@ int64_t ConfigParser::AddProcessor()
     }
     if (LoadConfigurationFile(DRM_API_OPERATION_CONFIG_PATH) != true) {
         DRM_ERR_LOG("AddProcessor LoadConfigurationFile error!");
-        return DRM_OPERATION_NOT_ALLOWED;
+        return DRM_INNER_ERR_OPERATION_NOT_PERMITTED;
     }
     GetConfigurationParams(reportConfig, eventConfig);
     HiviewDFX::HiAppEvent::ReportConfig config;

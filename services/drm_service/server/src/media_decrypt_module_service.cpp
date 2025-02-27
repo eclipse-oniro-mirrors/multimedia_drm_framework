@@ -69,7 +69,7 @@ int32_t MediaDecryptModuleService::Release()
 {
     DrmTrace trace("Release");
     DRM_INFO_LOG("Release enter.");
-    int32_t errCode = DRM_OK;
+    int32_t errCode = DRM_INNER_ERR_OK;
     std::lock_guard<std::recursive_mutex> lock(moduleLock_);
     if (hdiMediaDecryptModule_ != nullptr) {
         DRM_INFO_LOG("hdiMediaDecryptModule_ call Close");
@@ -84,7 +84,7 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
 {
     DrmTrace trace("DecryptMediaData");
     DRM_DEBUG_LOG("DecryptMediaData enter.");
-    int32_t ret = DRM_OK;
+    int32_t ret = DRM_INNER_ERR_OK;
     uint32_t bufLen = 0;
     OHOS::HDI::Drm::V1_0::CryptoInfo cryptInfoTmp;
     SetCryptInfo(cryptInfoTmp, cryptInfo, bufLen);
@@ -98,7 +98,7 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
     ret = hdiMediaDecryptModule_->DecryptMediaData(secureDecodrtState, cryptInfoTmp, drmSrcBuffer, drmDstBuffer);
     uint32_t decryptDuration = CalculateTimeDiff(timeBefore, std::chrono::system_clock::now());
     UpdateDecryptionStatistics(ret, bufLen, decryptDuration);
-    if (ret != DRM_OK) {
+    if (ret != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("DecryptMediaData failed.");
         ReportDecryptionFaultEvent(ret, "DecryptMediaData failed",
             std::to_string(static_cast<int32_t>(cryptInfoTmp.type)),
@@ -160,7 +160,7 @@ void MediaDecryptModuleService::UpdateDecryptionStatistics(int32_t decryptionRes
     decryptStatistics_.decryptMaxSize = std::max(decryptStatistics_.decryptMaxSize, bufLen);
     decryptStatistics_.decryptMaxDuration = std::max(decryptStatistics_.decryptMaxDuration, curDuration);
 
-    if (decryptionResult != DRM_OK) {
+    if (decryptionResult != DRM_INNER_ERR_OK) {
         decryptStatistics_.errorDecryptTimes++;
     }
     if (decryptStatistics_.decryptTimes == UINT32_MAX) {

@@ -23,7 +23,7 @@ namespace DrmStandard {
 int32_t MediaKeySystemServiceCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    int32_t ret = DRM_ERROR;
+    int32_t ret = DRM_INNER_ERR_BASE;
 
     if (data.ReadInterfaceToken() != GetDescriptor()) {
         DRM_ERR_LOG("GetDescriptor faild, error code: %{public}d", ret);
@@ -47,7 +47,7 @@ int32_t MediaKeySystemServiceCallbackStub::HandleSendEvent(MessageParcel &data)
     int32_t event = data.ReadInt32();
     int32_t extra = data.ReadInt32();
     uint32_t dataSize = data.ReadUint32();
-    DRM_CHECK_AND_RETURN_RET_LOG(dataSize < DATA_MAX_LEN, DRM_MEMORY_ERROR,
+    DRM_CHECK_AND_RETURN_RET_LOG(dataSize < DATA_MAX_LEN, DRM_INNER_ERR_MEMORY_ERROR,
         "The size of event data is too large.");
     std::vector<uint8_t> customizedData;
     for (uint32_t i = 0; i < dataSize; i++) {

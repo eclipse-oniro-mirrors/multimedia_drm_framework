@@ -26,6 +26,10 @@ enum DrmNapiErrCode : int32_t {
      */
     DRM_NAPI_ERR_OK = 0,
     /**
+     * invalid argument.
+     */
+    DRM_NAPI_ERR_INVALID_VAL = 401,
+    /**
      * DRM_NAPI_ERR_BASE.
      */
     DRM_NAPI_ERR_BASE = 24700100,
@@ -33,10 +37,6 @@ enum DrmNapiErrCode : int32_t {
      * all unknown errors.
      */
     DRM_NAPI_ERR_UNKNOWN = DRM_NAPI_ERR_BASE + 1,
-    /**
-     * invalid argument.
-     */
-    DRM_NAPI_ERR_INVALID_VAL = DRM_NAPI_ERR_BASE + 2,
     /**
      * Meet max MediaKeySystem num limit.
      */
@@ -82,6 +82,8 @@ enum DrmNapiErrCode : int32_t {
 };
 
 __attribute__((visibility("default"))) DrmNapiErrCode DrmInnerErrToNapiErr(DrmInnerErrCode errCode);
+
+__attribute__((visibility("default"))) DrmNapiErrCode DrmInnerErrToNapiErrAPI12(DrmInnerErrCode errCode);
 
 } // namespace DrmStandard
 } // namespace OHOS

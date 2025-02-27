@@ -20,9 +20,16 @@
 namespace OHOS {
 namespace DrmStandard {
 
+const std::string DRM_NAPI_INVALID_PARAM_INFO = "input parameter value error";
+const std::string DRM_NAPI_SERVICE_FATAL_ERRO_INFO = "service error";
+const std::string DRM_NAPI_UNKNOWN_ERROR_INFO = "unknow error";
+const std::string DRM_NAPI_MAX_SYSTEM_NUM_REACHED_INFO = "mediaKeySystem number limited";
+const std::string DRM_NAPI_MAX_SESSION_NUM_REACHED_INFO = "mediaKeySession number limited";
+
 const std::unordered_map<DrmInnerErrCode, DrmNapiErrCode> INNERCODE_TO_NAPICODE = {
     {DRM_INNER_ERR_OK,                                                         DRM_NAPI_ERR_OK},
     {DRM_INNER_ERR_BASE,                                                     DRM_NAPI_ERR_BASE},
+    {DRM_INNER_ERR_UNKNOWN,                                               DRM_NAPI_ERR_UNKNOWN},
     {DRM_INNER_ERR_MAX_SYSTEM_NUM_REACHED,                 DRM_NAPI_ERR_MAX_SYSTEM_NUM_REACHED},
     {DRM_INNER_ERR_MAX_SESSION_NUM_REACHED,               DRM_NAPI_ERR_MAX_SESSION_NUM_REACHED},
     {DRM_INNER_ERR_INVALID_VAL,                                       DRM_NAPI_ERR_INVALID_VAL},
@@ -47,9 +54,10 @@ const std::unordered_map<DrmInnerErrCode, DrmNapiErrCode> INNERCODE_TO_NAPICODE 
 
 const std::unordered_map<DrmInnerErrCode, DrmNapiErrCode> INNERCODE_TO_API12_NAPICODE = {
     {DRM_INNER_ERR_OK,                                                         DRM_NAPI_ERR_OK},
-    {DRM_INNER_ERR_BASE,                                                     DRM_NAPI_ERR_BASE},
+    {DRM_INNER_ERR_UNKNOWN,                                               DRM_NAPI_ERR_UNKNOWN},
     {DRM_INNER_ERR_MAX_SYSTEM_NUM_REACHED,                 DRM_NAPI_ERR_MAX_SYSTEM_NUM_REACHED},
     {DRM_INNER_ERR_MAX_SESSION_NUM_REACHED,               DRM_NAPI_ERR_MAX_SESSION_NUM_REACHED},
+    {DRM_INNER_ERR_INVALID_VAL,                                       DRM_NAPI_ERR_INVALID_VAL},
     {DRM_INNER_ERR_SERVICE_DIED,                                    DRM_NAPI_ERR_SERVICE_FATAL},
     {DRM_INNER_ERR_SERVICE_FATAL_ERROR,                             DRM_NAPI_ERR_SERVICE_FATAL},
 };
@@ -93,24 +101,24 @@ std::string NapiDrmError::GetMessageByCode(int32_t &code)
 {
     std::string errMessage;
     switch (code) {
-        case DRM_INVALID_PARAM:
-            errMessage = DRM_INVALID_PARAM_INFO;
+        case DRM_NAPI_ERR_INVALID_VAL:
+            errMessage = DRM_NAPI_INVALID_PARAM_INFO;
             break;
-        case DRM_SERVICE_FATAL_ERROR:
-            errMessage = DRM_SERVICE_FATAL_ERRO_INFO;
+        case DRM_NAPI_ERR_SERVICE_FATAL:
+            errMessage = DRM_NAPI_SERVICE_FATAL_ERRO_INFO;
             break;
-        case DRM_UNKNOWN_ERROR:
-            errMessage = DRM_UNKNOWN_ERROR_INFO;
+        case DRM_NAPI_ERR_UNKNOWN:
+            errMessage = DRM_NAPI_UNKNOWN_ERROR_INFO;
             break;
-        case DRM_MAX_SYSTEM_NUM_REACHED:
-            errMessage = DRM_MAX_SYSTEM_NUM_REACHED_INFO;
+        case DRM_NAPI_ERR_MAX_SYSTEM_NUM_REACHED:
+            errMessage = DRM_NAPI_MAX_SYSTEM_NUM_REACHED_INFO;
             break;
-        case DRM_MAX_SESSION_NUM_REACHED:
-            errMessage = DRM_MAX_SESSION_NUM_REACHED_INFO;
+        case DRM_NAPI_ERR_MAX_SESSION_NUM_REACHED:
+            errMessage = DRM_NAPI_MAX_SESSION_NUM_REACHED_INFO;
             break;
         default:
-            errMessage = DRM_UNKNOWN_ERROR_INFO;
-            code = DRM_UNKNOWN_ERROR;
+            errMessage = DRM_NAPI_UNKNOWN_ERROR_INFO;
+            code = DRM_NAPI_ERR_UNKNOWN;
             break;
     }
     return errMessage;

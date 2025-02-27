@@ -64,13 +64,14 @@ int32_t MediaKeySystemFactoryServiceStub::SetListenerObject(const sptr<IRemoteOb
         clientListenerMap_.erase(pid);
     }
     DRM_CHECK_AND_RETURN_RET_LOG(clientListenerMap_.size() < MAX_LISTNER_NUM,
-        DRM_OPERATION_NOT_ALLOWED, "the number of listeners exceeds MAX_LISTNER_NUM: 64");
-    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_MEMORY_ERROR, "set listener object is nullptr");
+        DRM_INNER_ERR_OPERATION_NOT_PERMITTED, "the number of listeners exceeds MAX_LISTNER_NUM: 64");
+    DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_INNER_ERR_MEMORY_ERROR, "set listener object is nullptr");
     sptr<IDrmListener> clientListener = iface_cast<IDrmListener>(object);
     DRM_CHECK_AND_RETURN_RET_LOG(
-        clientListener != nullptr, DRM_MEMORY_ERROR, "failed to convert IDrmListener");
+        clientListener != nullptr, DRM_INNER_ERR_MEMORY_ERROR, "failed to convert IDrmListener");
     sptr<DrmDeathRecipient> deathRecipient = new (std::nothrow) DrmDeathRecipient(pid);
-    DRM_CHECK_AND_RETURN_RET_LOG(deathRecipient != nullptr, DRM_MEMORY_ERROR, "failed to new DrmDeathRecipient");
+    DRM_CHECK_AND_RETURN_RET_LOG(deathRecipient != nullptr, DRM_INNER_ERR_MEMORY_ERROR,
+        "failed to new DrmDeathRecipient");
     deathRecipient->SetNotifyCb([this] (pid_t pid) {
         this->MediaKeySystemFactoryClientDied(pid);
     });
@@ -80,7 +81,7 @@ int32_t MediaKeySystemFactoryServiceStub::SetListenerObject(const sptr<IRemoteOb
     DRM_DEBUG_LOG("MediaKeySystem client pid:%{public}d", pid);
     deathRecipientMap_[pid] = deathRecipient;
     clientListenerMap_[pid] = clientListener;
-    return DRM_OK;
+    return 0;
 }
 
 bool MediaKeySystemFactoryServiceStub::IsListenerObjectSet()
@@ -99,18 +100,18 @@ static int32_t ProcessCreateMediaKeySystem(MediaKeySystemFactoryServiceStub *stu
     bool res = stub->IsListenerObjectSet();
     if (!res) {
         DRM_ERR_LOG("Not Set Listener.");
-        return DRM_OPERATION_NOT_ALLOWED;
+        return DRM_INNER_ERR_OPERATION_NOT_PERMITTED;
     }
     sptr<IMediaKeySystemService> mediaKeysystemProxy = nullptr;
     std::string name = data.ReadString();
     int32_t ret = stub->CreateMediaKeySystem(name, mediaKeysystemProxy);
-    if (ret != DRM_OK) {
+    if (ret != 0) {
         DRM_ERR_LOG("CreateMediaKeySystem failed, errCode: %{public}d", ret);
         return ret;
     }
     if (!reply.WriteRemoteObject(mediaKeysystemProxy->AsObject())) {
         DRM_ERR_LOG("CreateMediaKeySystem Write MediaKeySession object failed.");
-        return DRM_OPERATION_NOT_ALLOWED;
+        return DRM_INNER_ERR_OPERATION_NOT_PERMITTED;
     }
     return ret;
 }
@@ -126,7 +127,7 @@ static int32_t ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServic
     std::string name = data.ReadString();
     if (paramNum == ARGS_NUM_ONE) {
         int32_t ret = stub->IsMediaKeySystemSupported(name, &isSupported);
-        DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "IsMediaKeySystemSupported faild, errCode:%{public}d", ret);
+        DRM_CHECK_AND_RETURN_RET_LOG(ret == 0, ret, "IsMediaKeySystemSupported faild, errCode:%{public}d", ret);
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteBool(isSupported), IPC_STUB_WRITE_PARCEL_ERR,
             "Write isSupported failed.");
         return ret;
@@ -134,7 +135,7 @@ static int32_t ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServic
     std::string mimeType = data.ReadString();
     if (paramNum == ARGS_NUM_TWO) {
         int32_t ret = stub->IsMediaKeySystemSupported(name, mimeType, &isSupported);
-        DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "IsMediaKeySystemSupported faild, errCode:%{public}d", ret);
+        DRM_CHECK_AND_RETURN_RET_LOG(ret == 0, ret, "IsMediaKeySystemSupported faild, errCode:%{public}d", ret);
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteBool(isSupported), IPC_STUB_WRITE_PARCEL_ERR,
             "Write isSupported failed.");
         return ret;
@@ -143,12 +144,12 @@ static int32_t ProcessMediaKeySystemSupportedRequest(MediaKeySystemFactoryServic
     int32_t securityLevel = data.ReadInt32();
     if (paramNum == ARGS_NUM_THREE) {
         int32_t ret = stub->IsMediaKeySystemSupported(name, mimeType, securityLevel, &isSupported);
-        DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "IsMediaKeySystemSupported faild, errCode:%{public}d", ret);
+        DRM_CHECK_AND_RETURN_RET_LOG(ret == 0, ret, "IsMediaKeySystemSupported faild, errCode:%{public}d", ret);
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteBool(isSupported), IPC_STUB_WRITE_PARCEL_ERR,
             "Write isSupported failed.");
         return ret;
     }
-    return DRM_OK;
+    return 0;
 }
 
 static int32_t ProcessSetListenerObject(MediaKeySystemFactoryServiceStub *stub, MessageParcel &data,
@@ -158,7 +159,7 @@ static int32_t ProcessSetListenerObject(MediaKeySystemFactoryServiceStub *stub, 
     (void)reply;
     sptr<IRemoteObject> object = data.ReadRemoteObject();
     int32_t ret = stub->SetListenerObject(object);
-    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret,
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == 0, ret,
         "ProcessSetListenerObject faild, errCode:%{public}d", ret);
     return ret;
 }
@@ -169,7 +170,7 @@ static int32_t ProcessGetMediaKeySystems(MediaKeySystemFactoryServiceStub *stub,
     DRM_INFO_LOG("ProcessGetMediaKeySystems enter.");
     std::map<std::string, std::string> mediaKeySystemNames;
     int32_t ret = stub->GetMediaKeySystems(mediaKeySystemNames);
-    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "GetMediaKeySystems faild, errCode:%{public}d", ret);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == 0, ret, "GetMediaKeySystems faild, errCode:%{public}d", ret);
     reply.WriteInt32(mediaKeySystemNames.size());
     for (auto mediaKeySystemName : mediaKeySystemNames) {
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteString(mediaKeySystemName.first), IPC_STUB_WRITE_PARCEL_ERR,
@@ -177,7 +178,7 @@ static int32_t ProcessGetMediaKeySystems(MediaKeySystemFactoryServiceStub *stub,
         DRM_CHECK_AND_RETURN_RET_LOG(reply.WriteString(mediaKeySystemName.second), IPC_STUB_WRITE_PARCEL_ERR,
             "Write mediaKeySystem uuid failed.");
     }
-    return DRM_OK;
+    return 0;
 }
 
 static int32_t ProcessGetMediaKeySystemUuid(MediaKeySystemFactoryServiceStub *stub, MessageParcel &data,
@@ -187,18 +188,18 @@ static int32_t ProcessGetMediaKeySystemUuid(MediaKeySystemFactoryServiceStub *st
     std::string name = data.ReadString();
     std::string uuid;
     int32_t ret = stub->GetMediaKeySystemUuid(name, uuid);
-    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, ret, "ProcessGetMediaKeySystemUuid faild, errCode:%{public}d", ret);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == 0, ret, "ProcessGetMediaKeySystemUuid faild, errCode:%{public}d", ret);
     if (!reply.WriteString(uuid)) {
         DRM_ERR_LOG("ProcessGetMediaKeySystemUuid write value failed.");
         return IPC_STUB_WRITE_PARCEL_ERR;
     }
-    return DRM_OK;
+    return 0;
 }
 
 int32_t MediaKeySystemFactoryServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    int32_t ret = DRM_OK;
+    int32_t ret = 0;
     if (data.ReadInterfaceToken() != GetDescriptor()) {
         DRM_DEBUG_LOG("ReadInterfaceToken failed.");
         return -1;

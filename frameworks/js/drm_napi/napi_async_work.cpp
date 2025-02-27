@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "drm_error_code.h"
+#include "drm_error_code_napi.h"
 #include "napi_async_work.h"
 
 namespace OHOS {
@@ -40,12 +40,12 @@ void ContextBase::GetCbInfo(napi_env envi, napi_callback_info info, NapiCbInfoPa
     size_t argc = ARGC_MAX;
     napi_value argv[ARGC_MAX] = {nullptr};
     status = napi_get_cb_info(env, info, &argc, argv, &self, nullptr);
-    NAPI_CHECK_STATUS_RETURN_VOID(this, "napi_get_cb_info failed!", DRM_INVALID_PARAM);
-    NAPI_CHECK_ARGS_RETURN_VOID(this, argc <= ARGC_MAX, "too many arguments!", DRM_INVALID_PARAM);
-    NAPI_CHECK_ARGS_RETURN_VOID(this, self != nullptr, "no JavaScript this argument!", DRM_INVALID_PARAM);
+    NAPI_CHECK_STATUS_RETURN_VOID(this, "napi_get_cb_info failed!", DRM_NAPI_ERR_INVALID_VAL);
+    NAPI_CHECK_ARGS_RETURN_VOID(this, argc <= ARGC_MAX, "too many arguments!", DRM_NAPI_ERR_INVALID_VAL);
+    NAPI_CHECK_ARGS_RETURN_VOID(this, self != nullptr, "no JavaScript this argument!", DRM_NAPI_ERR_INVALID_VAL);
     napi_create_reference(env, self, 1, &selfRef);
     status = napi_unwrap(env, self, &native);
-    NAPI_CHECK_STATUS_RETURN_VOID(this, "self unwrap failed!", DRM_INVALID_PARAM);
+    NAPI_CHECK_STATUS_RETURN_VOID(this, "self unwrap failed!", DRM_NAPI_ERR_INVALID_VAL);
 
     if (!sync && (argc > 0)) {
         // get the last arguments :: <callback>
@@ -54,7 +54,7 @@ void ContextBase::GetCbInfo(napi_env envi, napi_callback_info info, NapiCbInfoPa
         napi_status tyst = napi_typeof(env, argv[index], &type);
         if ((tyst == napi_ok) && (type == napi_function)) {
             status = napi_create_reference(env, argv[index], 1, &callbackRef);
-            NAPI_CHECK_STATUS_RETURN_VOID(this, "ref callback failed!", DRM_INVALID_PARAM);
+            NAPI_CHECK_STATUS_RETURN_VOID(this, "ref callback failed!", DRM_NAPI_ERR_INVALID_VAL);
             argc = index;
             DRM_DEBUG_LOG("async callback, no promise");
         } else {
@@ -65,7 +65,7 @@ void ContextBase::GetCbInfo(napi_env envi, napi_callback_info info, NapiCbInfoPa
     if (parser) {
         parser(argc, argv);
     } else {
-        NAPI_CHECK_ARGS_RETURN_VOID(this, argc == 0, "required no arguments!", DRM_INVALID_PARAM);
+        NAPI_CHECK_ARGS_RETURN_VOID(this, argc == 0, "required no arguments!", DRM_NAPI_ERR_INVALID_VAL);
     }
 }
 

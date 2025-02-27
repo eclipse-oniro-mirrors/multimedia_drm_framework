@@ -27,6 +27,7 @@
 #include "native_mediakeysystem.h"
 #include "drm_api_operation.h"
 #include "media_key_system_factory_impl.h"
+#include "drm_error_code.h"
 
 using namespace OHOS::DrmStandard;
 
@@ -127,10 +128,10 @@ Drm_ErrCode OH_MediaKeySystem_Create(const char *name, MediaKeySystem **mediaKey
     DRM_INFO_LOG("OH_MediaKeySystem_Create enter.");
     DrmTrace trace("OH_MediaKeySystem_Create");
     std::map<int32_t, Drm_ErrCode> errCodeMaps = {
-        {401, DRM_ERR_INVALID_VAL},
-        {24700201, DRM_ERR_SERVICE_DIED},
-        {24700103, DRM_ERR_MAX_SYSTEM_NUM_REACHED},
-        {24700101, DRM_ERR_UNKNOWN},
+        {static_cast<int32_t>(DRM_INNER_ERR_INVALID_VAL), DRM_ERR_INVALID_VAL},
+        {static_cast<int32_t>(DRM_INNER_ERR_SERVICE_FATAL_ERROR), DRM_ERR_SERVICE_DIED},
+        {static_cast<int32_t>(DRM_INNER_ERR_MAX_SYSTEM_NUM_REACHED), DRM_ERR_MAX_SYSTEM_NUM_REACHED},
+        {static_cast<int32_t>(DRM_INNER_ERR_UNKNOWN), DRM_ERR_UNKNOWN},
         {0, DRM_ERR_OK}
     };
     DRM_CHECK_AND_RETURN_RET_LOG(((name != nullptr) && (mediaKeySystem != nullptr)), DRM_ERR_INVALID_VAL,
@@ -457,9 +458,9 @@ Drm_ErrCode OH_MediaKeySystem_CreateMediaKeySession(MediaKeySystem *mediaKeySyst
     DRM_INFO_LOG("OH_MediaKeySystem_CreateMediaKeySession enter.");
     DrmTrace trace("OH_MediaKeySystem_CreateMediaKeySession");
     std::map<int32_t, Drm_ErrCode> errCodeMaps = {
-        {24700201, DRM_ERR_SERVICE_DIED},
-        {24700104, DRM_ERR_MAX_SESSION_NUM_REACHED},
-        {24700101, DRM_ERR_UNKNOWN},
+        {static_cast<int32_t>(DRM_INNER_ERR_SERVICE_FATAL_ERROR), DRM_ERR_SERVICE_DIED},
+        {static_cast<int32_t>(DRM_INNER_ERR_MAX_SESSION_NUM_REACHED), DRM_ERR_MAX_SESSION_NUM_REACHED},
+        {static_cast<int32_t>(DRM_INNER_ERR_UNKNOWN), DRM_ERR_UNKNOWN},
         {0, DRM_ERR_OK}
     };
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySystem != nullptr) && (level != nullptr) && (mediaKeySession != nullptr) &&
