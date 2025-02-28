@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 #include "drm_log.h"
-#include "drm_error_code.h"
 #include "key_session_callback_napi.h"
 
 namespace OHOS {

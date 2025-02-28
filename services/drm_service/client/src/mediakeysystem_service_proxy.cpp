@@ -37,7 +37,7 @@ int32_t MediaKeySystemServiceProxy::Release()
         return IPC_PROXY_ERR;
     }
     int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_RELEASE, data, reply, option);
-    if (ret != DRM_OK) {
+    if (ret != 0) {
         DRM_ERR_LOG("Release failed, ret: %{public}d", ret);
         return ret;
     }
@@ -57,14 +57,14 @@ int32_t MediaKeySystemServiceProxy::GenerateKeySystemRequest(std::vector<uint8_t
     }
 
     int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_GENERATE_KEYSYSTEM_REQUEST, data, reply, option);
-    if (ret != DRM_OK) {
+    if (ret != 0) {
         DRM_ERR_LOG("GenerateKeySystemRequest failed, errcode: %{public}d", ret);
         return ret;
     }
 
     defaultUrl = reply.ReadString();
     int32_t requestSize = reply.ReadInt32();
-    DRM_CHECK_AND_RETURN_RET_LOG(requestSize <= REQUEST_MAX_LEN, DRM_MEMORY_ERROR,
+    DRM_CHECK_AND_RETURN_RET_LOG(requestSize <= REQUEST_MAX_LEN, DRM_INNER_ERR_MEMORY_ERROR,
         "The size of request is too large.");
     if (requestSize != 0) {
         const uint8_t *requestBuf = static_cast<const uint8_t *>(reply.ReadUnpadBuffer(requestSize));
@@ -93,7 +93,7 @@ int32_t MediaKeySystemServiceProxy::ProcessKeySystemResponse(const std::vector<u
         DRM_ERR_LOG("ProcessKeySystemResponse Write response size failed.");
         return IPC_PROXY_ERR;
     }
-    DRM_CHECK_AND_RETURN_RET_LOG(response.size() < RESPONSE_MAX_LEN, DRM_MEMORY_ERROR,
+    DRM_CHECK_AND_RETURN_RET_LOG(response.size() < RESPONSE_MAX_LEN, DRM_INNER_ERR_MEMORY_ERROR,
         "The size of response is too large.");
     if (response.size() != 0) {
         if (!data.WriteBuffer(response.data(), response.size())) {
@@ -103,7 +103,7 @@ int32_t MediaKeySystemServiceProxy::ProcessKeySystemResponse(const std::vector<u
     }
 
     int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_PROCESS_KEYSYSTEM_RESPONSE, data, reply, option);
-    if (ret != DRM_OK) {
+    if (ret != 0) {
         DRM_ERR_LOG("ProcessKeySystemResponse failed, errcode: %{public}d", ret);
         return ret;
     }
@@ -124,7 +124,7 @@ int32_t MediaKeySystemServiceProxy::GetMaxContentProtectionLevel(
     }
 
     int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_GETMAXSECURITYLEVEL, data, reply, option);
-    if (ret != DRM_OK) {
+    if (ret != 0) {
         DRM_ERR_LOG("GetMaxContentProtectionLevel failed, ret: %{public}d", ret);
         return ret;
     }
@@ -147,7 +147,7 @@ int32_t MediaKeySystemServiceProxy::GetCertificateStatus(IMediaKeySystemService:
     }
 
     int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_GETCERTIFICATESTATUS, data, reply, option);
-    if (ret != DRM_OK) {
+    if (ret != 0) {
         DRM_ERR_LOG("GetCertificateStatus failed, errcode: %{public}d", ret);
         return ret;
     }
@@ -180,7 +180,7 @@ int32_t MediaKeySystemServiceProxy::SetConfigurationString(std::string &configNa
     }
 
     int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_SETCONFIGURATION_STRING, data, reply, option);
-    if (ret != DRM_OK) {
+    if (ret != 0) {
         DRM_ERR_LOG("SetConfiguration failed, errcode: %{public}d", ret);
         return ret;
     }
@@ -205,7 +205,7 @@ int32_t MediaKeySystemServiceProxy::GetConfigurationString(std::string &configNa
     }
 
     int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_GETCONFIGURATION_STRING, data, reply, option);
-    if (ret != DRM_OK) {
+    if (ret != 0) {
         DRM_ERR_LOG("GetConfiguration failed, errcode: %{public}d", ret);
         return ret;
     }
@@ -236,7 +236,7 @@ int32_t MediaKeySystemServiceProxy::SetConfigurationByteArray(std::string &confi
         DRM_ERR_LOG("SetConfiguration Write value.size size failed.");
         return IPC_PROXY_ERR;
     }
-    DRM_CHECK_AND_RETURN_RET_LOG(value.size() < DATA_MAX_LEN, DRM_MEMORY_ERROR,
+    DRM_CHECK_AND_RETURN_RET_LOG(value.size() < DATA_MAX_LEN, DRM_INNER_ERR_MEMORY_ERROR,
         "The size of configuration value is too large.");
     if (value.size() != 0) {
         if (!data.WriteBuffer(value.data(), value.size())) {
@@ -246,7 +246,7 @@ int32_t MediaKeySystemServiceProxy::SetConfigurationByteArray(std::string &confi
     }
 
     int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_SETCONFIGURATION_BYTEARRAY, data, reply, option);
-    if (ret != DRM_OK) {
+    if (ret != 0) {
         DRM_ERR_LOG("SetConfiguration failed, ret: %{public}d", ret);
         return ret;
     }
@@ -271,13 +271,13 @@ int32_t MediaKeySystemServiceProxy::GetConfigurationByteArray(std::string &confi
     }
 
     int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_GETCONFIGURATION_BYTEARRAY, data, reply, option);
-    if (ret != DRM_OK) {
+    if (ret != 0) {
         DRM_ERR_LOG("GetConfiguration failed, errcode: %{public}d", ret);
         return ret;
     }
 
     int32_t configSize = reply.ReadInt32();
-    DRM_CHECK_AND_RETURN_RET_LOG(configSize < DATA_MAX_LEN, DRM_MEMORY_ERROR,
+    DRM_CHECK_AND_RETURN_RET_LOG(configSize < DATA_MAX_LEN, DRM_INNER_ERR_MEMORY_ERROR,
         "The size of configuration value is too large.");
     if (configSize != 0) {
         const uint8_t *valueBuf = static_cast<const uint8_t *>(reply.ReadUnpadBuffer(configSize));
@@ -308,7 +308,7 @@ int32_t MediaKeySystemServiceProxy::CreateMediaKeySession(IMediaKeySessionServic
     }
 
     int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_CREATE_KEY_SESSION, data, reply, option);
-    if (ret != DRM_OK) {
+    if (ret != 0) {
         DRM_ERR_LOG("CreateMediaKeySession failed, errcode: %{public}d", ret);
         return ret;
     }
@@ -336,12 +336,12 @@ int32_t MediaKeySystemServiceProxy::GetStatistics(std::vector<IMediaKeySystemSer
     }
 
     int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_GETMETRIC, data, reply, option);
-    if (ret != DRM_OK) {
+    if (ret != 0) {
         DRM_ERR_LOG("GetStatistics failed, errcode: %{public}d", ret);
         return ret;
     }
     int32_t metricsSize = reply.ReadInt32();
-    DRM_CHECK_AND_RETURN_RET_LOG(metricsSize <= MAX_STATISTICS_NUMBER, DRM_MEMORY_ERROR,
+    DRM_CHECK_AND_RETURN_RET_LOG(metricsSize <= MAX_STATISTICS_NUMBER, DRM_INNER_ERR_MEMORY_ERROR,
         "The amount of metric information is too large.");
     for (int32_t i = 0; i < metricsSize; i++) {
         IMediaKeySystemService::MetircKeyValue keyValue;
@@ -364,12 +364,12 @@ int32_t MediaKeySystemServiceProxy::GetOfflineMediaKeyIds(std::vector<std::vecto
         return IPC_PROXY_ERR;
     }
     int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_GET_OFFLINELICENSEIDS, data, reply, option);
-    if (ret != DRM_OK) {
+    if (ret != 0) {
         DRM_ERR_LOG("GetOfflineMediaKeyIds failed, errcode: %{public}d", ret);
         return ret;
     }
     uint32_t licenseIdsSize = reply.ReadUint32();
-    DRM_CHECK_AND_RETURN_RET_LOG(licenseIdsSize <= MAX_OFFLINE_MEDIA_KEY_ID_NUMBER, DRM_MEMORY_ERROR,
+    DRM_CHECK_AND_RETURN_RET_LOG(licenseIdsSize <= MAX_OFFLINE_MEDIA_KEY_ID_NUMBER, DRM_INNER_ERR_MEMORY_ERROR,
         "The amount of license is too large.");
     licenseIds.resize(licenseIdsSize);
     for (uint32_t i = 0; i < licenseIdsSize; i++) {
@@ -405,7 +405,7 @@ int32_t MediaKeySystemServiceProxy::GetOfflineMediaKeyStatus(std::vector<uint8_t
         DRM_ERR_LOG("Write licenseId size failed.");
         return IPC_PROXY_ERR;
     }
-    DRM_CHECK_AND_RETURN_RET_LOG(licenseId.size() < LICENSEID_MAX_LEN, DRM_MEMORY_ERROR,
+    DRM_CHECK_AND_RETURN_RET_LOG(licenseId.size() < LICENSEID_MAX_LEN, DRM_INNER_ERR_MEMORY_ERROR,
         "The size of licenseId is too large.");
     if (licenseId.size() != 0) {
         if (!data.WriteBuffer(licenseId.data(), licenseId.size())) {
@@ -415,7 +415,7 @@ int32_t MediaKeySystemServiceProxy::GetOfflineMediaKeyStatus(std::vector<uint8_t
     }
 
     int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_GET_OFFLINEKEY_STATUS, data, reply, option);
-    if (ret != DRM_OK) {
+    if (ret != 0) {
         DRM_ERR_LOG("SendRequest failed, errcode: %{public}d", ret);
         return ret;
     }
@@ -439,7 +439,7 @@ int32_t MediaKeySystemServiceProxy::ClearOfflineMediaKeys(std::vector<uint8_t> &
         DRM_ERR_LOG("Write licenseId size failed.");
         return IPC_PROXY_ERR;
     }
-    DRM_CHECK_AND_RETURN_RET_LOG(licenseId.size() < LICENSEID_MAX_LEN, DRM_MEMORY_ERROR,
+    DRM_CHECK_AND_RETURN_RET_LOG(licenseId.size() < LICENSEID_MAX_LEN, DRM_INNER_ERR_MEMORY_ERROR,
         "The size of licenseId is too large.");
     if (licenseId.size() != 0) {
         if (!data.WriteBuffer(licenseId.data(), licenseId.size())) {
@@ -449,7 +449,7 @@ int32_t MediaKeySystemServiceProxy::ClearOfflineMediaKeys(std::vector<uint8_t> &
     }
 
     int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_REMOVE_OFFLINELICENSE, data, reply, option);
-    if (ret != DRM_OK) {
+    if (ret != 0) {
         DRM_ERR_LOG("SendRequest failed, errcode: %{public}d", ret);
         return ret;
     }
@@ -471,7 +471,7 @@ int32_t MediaKeySystemServiceProxy::SetCallback(sptr<IMediaKeySystemServiceCallb
     DRM_CHECK_AND_RETURN_RET_LOG(result, IPC_PROXY_ERR, "write CameraServiceCallback obj failed.");
 
     int32_t ret = Remote()->SendRequest(MEDIA_KEY_SYSTEM_SETCALLBACK, data, reply, option);
-    if (ret != DRM_OK) {
+    if (ret != 0) {
         DRM_ERR_LOG("SetCallback failed, errcode: %{public}d", ret);
     }
     return ret;

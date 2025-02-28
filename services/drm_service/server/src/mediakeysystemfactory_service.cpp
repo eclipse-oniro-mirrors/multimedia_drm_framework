@@ -82,7 +82,7 @@ void MediaKeySystemFactoryService::OnStart()
 {
     DRM_INFO_LOG("OnStart enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    if (drmHostManager_ == nullptr || drmHostManager_->Init() != DRM_OK) {
+    if (drmHostManager_ == nullptr || drmHostManager_->Init() != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("OnStart failed to init drm host manager.");
     }
     bool res = Publish(this);
@@ -179,19 +179,19 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (GetAbilityState() == SystemAbilityState::IDLE) {
         bool result = CancelIdle();
-        DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_SERVICE_ERROR, "CancelIdle failed");
+        DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_INNER_ERR_SERVICE_DIED, "CancelIdle failed");
     }
     sptr<MediaKeySystemService> mediaKeySystemService = nullptr;
     sptr<IMediaKeySystem> hdiMediaKeySystem = nullptr;
     if (currentMediaKeySystemNum_[name] >= KEY_SYSTEM_INSTANCES_MAX_NUMBER) {
         DRM_ERR_LOG("The number of MediaKeySystem is greater than 64");
-        return DRM_MAX_SYSTEM_NUM_REACHED;
+        return DRM_INNER_ERR_MAX_SYSTEM_NUM_REACHED;
     }
     int32_t ret = drmHostManager_->CreateMediaKeySystem(name, hdiMediaKeySystem);
-    if (hdiMediaKeySystem == nullptr || ret != DRM_OK) {
+    if (hdiMediaKeySystem == nullptr || ret != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("drmHostManager_ return hdiMediaKeySystem nullptr.");
-        ReportFaultEvent(DRM_SERVICE_ERROR, "CreateMediaKeySystem failed", "");
-        return DRM_SERVICE_ERROR;
+        ReportFaultEvent(7, "CreateMediaKeySystem failed", ""); // 7:SERVICE ERR
+        return DRM_INNER_ERR_INVALID_MEDIA_KEY_SYSTEM;
     }
 
     StatisticsInfo statisticsInfo;
@@ -199,8 +199,8 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
     mediaKeySystemService = new(std::nothrow) MediaKeySystemService(hdiMediaKeySystem, statisticsInfo);
     if (mediaKeySystemService == nullptr) {
         DRM_ERR_LOG("CreateMediaKeySystem allocation failed.");
-        ReportFaultEvent(DRM_ALLOC_ERROR, "CreateMediaKeySystem failed", "");
-        return DRM_ALLOC_ERROR;
+        ReportFaultEvent(1, "CreateMediaKeySystem failed", ""); // 1:ALLOC ERR
+        return DRM_INNER_ERR_NO_MEMORY;
     }
     mediaKeySystemService->SetMediaKeySystemServiceOperatorsCallback(this);
     (void)mediaKeySystemService->SetBundleName();
@@ -243,7 +243,7 @@ int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySy
         drmHostManager_->ReleaseMediaKeySystem(hdiMediaKeySystem);
     }
     mediaKeySystemService = nullptr;
-    return DRM_OK;
+    return DRM_INNER_ERR_OK;
 }
 
 int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &name, bool *isSupported)
@@ -252,10 +252,10 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &nam
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (GetAbilityState() == SystemAbilityState::IDLE) {
         bool result = CancelIdle();
-        DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_SERVICE_ERROR, "CancelIdle failed");
+        DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_INNER_ERR_SERVICE_DIED, "CancelIdle failed");
     }
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, isSupported);
-    if (ret != DRM_OK) {
+    if (ret != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed.");
         return ret;
     }
@@ -269,10 +269,10 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &nam
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (GetAbilityState() == SystemAbilityState::IDLE) {
         bool result = CancelIdle();
-        DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_SERVICE_ERROR, "CancelIdle failed");
+        DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_INNER_ERR_SERVICE_DIED, "CancelIdle failed");
     }
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, mimeType, isSupported);
-    if (ret != DRM_OK) {
+    if (ret != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed.");
         return ret;
     }
@@ -286,10 +286,10 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(std::string &nam
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (GetAbilityState() == SystemAbilityState::IDLE) {
         bool result = CancelIdle();
-        DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_SERVICE_ERROR, "CancelIdle failed");
+        DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_INNER_ERR_SERVICE_DIED, "CancelIdle failed");
     }
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(name, mimeType, securityLevel, isSupported);
-    if (ret != DRM_OK) {
+    if (ret != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed.");
         return ret;
     }
@@ -302,10 +302,10 @@ int32_t MediaKeySystemFactoryService::GetMediaKeySystems(std::map<std::string, s
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (GetAbilityState() == SystemAbilityState::IDLE) {
         bool result = CancelIdle();
-        DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_SERVICE_ERROR, "CancelIdle failed");
+        DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_INNER_ERR_SERVICE_DIED, "CancelIdle failed");
     }
     int32_t ret = drmHostManager_->GetMediaKeySystems(mediaKeySystemNames);
-    if (ret != DRM_OK) {
+    if (ret != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("GetMediaKeySystems failed.");
         return ret;
     }
@@ -318,10 +318,10 @@ int32_t MediaKeySystemFactoryService::GetMediaKeySystemUuid(std::string &name, s
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (GetAbilityState() == SystemAbilityState::IDLE) {
         bool result = CancelIdle();
-        DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_SERVICE_ERROR, "CancelIdle failed");
+        DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_INNER_ERR_SERVICE_DIED, "CancelIdle failed");
     }
     int32_t ret = drmHostManager_->GetMediaKeySystemUuid(name, uuid);
-    if (ret != DRM_OK) {
+    if (ret != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("GetMediaKeySystemUuid failed.");
         return ret;
     }

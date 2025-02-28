@@ -107,6 +107,7 @@ Drm_ErrCode OH_MediaKeySession_ProcessMediaKeyResponse(MediaKeySession *mediaKey
     std::vector<uint8_t> keyIdVec;
     int32_t ret = sessionObject->sessionImpl_->ProcessMediaKeyResponse(keyIdVec, licenseResponseVec);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_ERR_OK, DRM_ERR_UNKNOWN, "got licenseResponse null!");
+    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_ProcessMediaKeyResponse"), beginTime);
     if (keyIdVec.size() == 0) {
         DRM_DEBUG_LOG("keyIdVec.data() is nullptr!");
         return DRM_ERR_OK;
@@ -118,7 +119,6 @@ Drm_ErrCode OH_MediaKeySession_ProcessMediaKeyResponse(MediaKeySession *mediaKey
         return DRM_ERR_NO_MEMORY;
     }
     *offlineMediaKeyIdLen = keyIdVec.size();
-    ConfigParser::WriteEndEvent(0, 0, std::string("OH_MediaKeySession_ProcessMediaKeyResponse"), beginTime);
     return DRM_ERR_OK;
 }
 

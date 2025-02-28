@@ -22,7 +22,7 @@ namespace DrmStandard {
 int32_t MediaKeySessionServiceCallbackStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    int32_t ret = DRM_ERROR;
+    int32_t ret = DRM_INNER_ERR_BASE;
     if (data.ReadInterfaceToken() != GetDescriptor()) {
         return ret;
     }
@@ -47,7 +47,7 @@ int32_t MediaKeySessionServiceCallbackStub::HandleSendEvent(MessageParcel &data)
     int32_t event = data.ReadInt32();
     int32_t extra = data.ReadInt32();
     uint32_t dataSize = data.ReadUint32();
-    DRM_CHECK_AND_RETURN_RET_LOG(dataSize < MAX_EVENT_NAME_LEN, DRM_MEMORY_ERROR,
+    DRM_CHECK_AND_RETURN_RET_LOG(dataSize < MAX_EVENT_NAME_LEN, DRM_INNER_ERR_MEMORY_ERROR,
         "The size of event name is too large.");
     std::vector<uint8_t> customizedData;
     if (dataSize != 0) {
@@ -68,7 +68,7 @@ int32_t MediaKeySessionServiceCallbackStub::HandleSendEventKeyChanged(MessagePar
     DRM_INFO_LOG("HandleSendEventKeyChanged enter.");
     std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> statusTable;
     uint32_t mapSize = data.ReadUint32();
-    DRM_CHECK_AND_RETURN_RET_LOG(mapSize < DATA_MAX_LEN, DRM_MEMORY_ERROR,
+    DRM_CHECK_AND_RETURN_RET_LOG(mapSize < DATA_MAX_LEN, DRM_INNER_ERR_MEMORY_ERROR,
         "The size of event data is too large.");
     for (uint32_t index = 0; index < mapSize; index++) {
         std::vector<uint8_t> item;

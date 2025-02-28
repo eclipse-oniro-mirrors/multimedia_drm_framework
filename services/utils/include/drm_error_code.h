@@ -250,7 +250,7 @@ enum DrmInnerErrCode : int32_t {
      */
     DRM_INNER_ERR_MEMORY_ERROR = DRM_INNER_ERR_BASE + 55,
     /**
-     * tampler found.
+     * tamper found.
      */
     DRM_INNER_ERR_TAMPER_FOUND = DRM_INNER_ERR_BASE + 56,
     /**
@@ -262,27 +262,6 @@ enum DrmInnerErrCode : int32_t {
      */
     DRM_INNER_ERR_PLUGIN_ERROR = DRM_INNER_ERR_BASE + 58,
 };
-
-const int32_t DRM_ERROR = -1;
-const int32_t DRM_OK = 0;
-const int32_t DRM_ALLOC_ERROR = 1;
-const int32_t DRM_INVALID_ARG = 2;
-const int32_t DRM_INVALID_STATE = 3;
-const int32_t DRM_OPERATION_NOT_ALLOWED = 5;
-const int32_t DRM_HOST_ERROR = 6;
-const int32_t DRM_SERVICE_ERROR = 7;
-const int32_t DRM_MEMORY_ERROR = 8;
-const int32_t DRM_UNKNOWN_ERROR = 24700101;
-const int32_t DRM_MAX_SYSTEM_NUM_REACHED = 24700103;
-const int32_t DRM_MAX_SESSION_NUM_REACHED = 24700104;
-const int32_t DRM_SERVICE_FATAL_ERROR = 24700201;
-const int32_t DRM_INVALID_PARAM = 401;
-
-const std::string DRM_INVALID_PARAM_INFO = "input parameter value error";
-const std::string DRM_SERVICE_FATAL_ERRO_INFO = "service error";
-const std::string DRM_UNKNOWN_ERROR_INFO = "unknow error";
-const std::string DRM_MAX_SYSTEM_NUM_REACHED_INFO = "mediaKeySystem number limited";
-const std::string DRM_MAX_SESSION_NUM_REACHED_INFO = "mediaKeySession number limited";
 } // namespace DrmStandard
 } // namespace OHOS
 #endif // DRM_ERROR_CODE_H

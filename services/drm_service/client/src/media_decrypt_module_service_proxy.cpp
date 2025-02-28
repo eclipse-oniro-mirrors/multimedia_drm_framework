@@ -37,7 +37,7 @@ int32_t MediaDecryptModuleServiceProxy::Release()
     }
 
     int32_t ret = Remote()->SendRequest(DECRYPT_MODULE_RELEASE, data, reply, option);
-    if (ret != DRM_OK) {
+    if (ret != 0) {
         DRM_ERR_LOG("Release failed, errcode: %{public}d", ret);
         return ret;
     }
@@ -76,7 +76,7 @@ int32_t MediaDecryptModuleServiceProxy::ProcessDrmBuffer(MessageParcel &data,
         "MediaDecryptModuleServiceProxy DecryptMediaData Write dstBuffer.offset failed.");
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(dstBuffer.sharedMemType), IPC_PROXY_ERR,
         "MediaDecryptModuleServiceProxy DecryptMediaData Write dstBuffer.sharedMemType failed.");
-    return DRM_OK;
+    return 0;
 }
 
 int32_t MediaDecryptModuleServiceProxy::DecryptMediaData(bool secureDecodrtState,
@@ -99,7 +99,7 @@ int32_t MediaDecryptModuleServiceProxy::DecryptMediaData(bool secureDecodrtState
 
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.keyId.size()), IPC_PROXY_ERR,
         "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.keyId size failed.");
-    DRM_CHECK_AND_RETURN_RET_LOG(cryptInfo.keyId.size() <= KEYID_MAX_LEN, DRM_MEMORY_ERROR,
+    DRM_CHECK_AND_RETURN_RET_LOG(cryptInfo.keyId.size() <= KEYID_MAX_LEN, DRM_INNER_ERR_MEMORY_ERROR,
         "The size of keyId is too large.");
     if (cryptInfo.keyId.size() != 0) {
         DRM_CHECK_AND_RETURN_RET_LOG(data.WriteBuffer(cryptInfo.keyId.data(), cryptInfo.keyId.size()), IPC_PROXY_ERR,
@@ -108,7 +108,8 @@ int32_t MediaDecryptModuleServiceProxy::DecryptMediaData(bool secureDecodrtState
 
     DRM_CHECK_AND_RETURN_RET_LOG(data.WriteUint32(cryptInfo.iv.size()), IPC_PROXY_ERR,
         "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.iv size failed.");
-    DRM_CHECK_AND_RETURN_RET_LOG(cryptInfo.iv.size() <= IV_MAX_LEN, DRM_MEMORY_ERROR, "The size of iv is too large.");
+    DRM_CHECK_AND_RETURN_RET_LOG(cryptInfo.iv.size() <= IV_MAX_LEN, DRM_INNER_ERR_MEMORY_ERROR,
+        "The size of iv is too large.");
 
     if (cryptInfo.iv.size() != 0) {
         DRM_CHECK_AND_RETURN_RET_LOG(data.WriteBuffer(cryptInfo.iv.data(), cryptInfo.iv.size()), IPC_PROXY_ERR,
@@ -131,11 +132,11 @@ int32_t MediaDecryptModuleServiceProxy::DecryptMediaData(bool secureDecodrtState
             "MediaDecryptModuleServiceProxy DecryptMediaData Write cryptInfo.subSample.payLoadLen failed.");
     }
     int32_t ret = ProcessDrmBuffer(data, srcBuffer, dstBuffer);
-    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, IPC_PROXY_ERR,
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == 0, IPC_PROXY_ERR,
         "MediaDecryptModuleServiceProxy DecryptMediaData failed, errcode: %{public}d", ret);
 
     ret = Remote()->SendRequest(DECRYPT_MODULE_DECRYPT_DATA, data, reply, option);
-    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_OK, IPC_PROXY_ERR,
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == 0, IPC_PROXY_ERR,
         "MediaDecryptModuleServiceProxy DecryptMediaData failed, errcode: %{public}d", ret);
     return ret;
 }

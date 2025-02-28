@@ -22,6 +22,7 @@ namespace DrmStandard {
 const std::unordered_map<DrmInnerErrCode, Drm_ErrCode> INNERCODE_TO_NDKCODE = {
     {DRM_INNER_ERR_OK,                                                         DRM_ERR_OK},
     {DRM_INNER_ERR_BASE,                                                DRM_CAPI_ERR_BASE},
+    {DRM_INNER_ERR_UNKNOWN,                                               DRM_ERR_UNKNOWN},
     {DRM_INNER_ERR_OPERATION_NOT_PERMITTED,               DRM_ERR_OPERATION_NOT_PERMITTED},
     {DRM_INNER_ERR_MAX_SYSTEM_NUM_REACHED,                 DRM_ERR_MAX_SYSTEM_NUM_REACHED},
     {DRM_INNER_ERR_MAX_SESSION_NUM_REACHED,               DRM_ERR_MAX_SESSION_NUM_REACHED},

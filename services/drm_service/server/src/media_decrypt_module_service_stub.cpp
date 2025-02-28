@@ -59,7 +59,7 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
             bool secureDecodrtState = data.ReadBool();
             cryptInfo.type = (OHOS::DrmStandard::IMediaDecryptModuleService::CryptAlgorithmType)data.ReadUint32();
             uint32_t keyIdSize = data.ReadUint32();
-            DRM_CHECK_AND_RETURN_RET_LOG(keyIdSize < KEYID_MAX_LEN, DRM_MEMORY_ERROR,
+            DRM_CHECK_AND_RETURN_RET_LOG(keyIdSize < KEYID_MAX_LEN, DRM_INNER_ERR_MEMORY_ERROR,
                 "The size of keyId is too large.");
             if (keyIdSize != 0) {
                 const uint8_t *keyIdBuf = static_cast<const uint8_t *>(data.ReadUnpadBuffer(keyIdSize));
@@ -70,7 +70,8 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
                 cryptInfo.keyId.assign(keyIdBuf, keyIdBuf + keyIdSize);
             }
             uint32_t ivSize = data.ReadUint32();
-            DRM_CHECK_AND_RETURN_RET_LOG(ivSize < IV_MAX_LEN, DRM_MEMORY_ERROR, "The size of iv is too large.");
+            DRM_CHECK_AND_RETURN_RET_LOG(ivSize < IV_MAX_LEN, DRM_INNER_ERR_MEMORY_ERROR,
+                "The size of iv is too large.");
             if (ivSize != 0) {
                 const uint8_t *ivBuf = static_cast<const uint8_t *>(data.ReadUnpadBuffer(ivSize));
                 if (ivBuf == nullptr) {
@@ -82,7 +83,7 @@ int32_t MediaDecryptModuleServiceStub::OnRemoteRequest(uint32_t code, MessagePar
             cryptInfo.pattern.encryptBlocks = data.ReadUint32();
             cryptInfo.pattern.skipBlocks = data.ReadUint32();
             uint32_t subSampleNumber = data.ReadUint32();
-            DRM_CHECK_AND_RETURN_RET_LOG(subSampleNumber < SUBSAMPLE_MAX_NUM, DRM_MEMORY_ERROR,
+            DRM_CHECK_AND_RETURN_RET_LOG(subSampleNumber < SUBSAMPLE_MAX_NUM, DRM_INNER_ERR_MEMORY_ERROR,
                 "The number of subSample is too large.");
             cryptInfo.subSample.resize(subSampleNumber);
             for (uint32_t i = 0; i < subSampleNumber; i++) {

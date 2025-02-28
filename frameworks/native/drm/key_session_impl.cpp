@@ -67,7 +67,7 @@ int32_t MediaKeySessionImpl::Release()
 {
     DRM_INFO_LOG("MediaKeySessionImpl Release enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    int32_t ret = DRM_UNKNOWN_ERROR;
+    int32_t ret = DRM_INNER_ERR_UNKNOWN;
     if (keySessionServiceProxy_ != nullptr) {
         sptr<IRemoteObject> object = keySessionServiceProxy_->AsObject();
         if (object != nullptr && deathRecipient_ != nullptr) {
@@ -75,7 +75,7 @@ int32_t MediaKeySessionImpl::Release()
             deathRecipient_ = nullptr;
         }
         ret = keySessionServiceProxy_->Release();
-        if (ret != DRM_OK) {
+        if (ret != DRM_INNER_ERR_OK) {
             DRM_ERR_LOG("Failed to Release key session!, %{public}d", ret);
         }
     } else {
@@ -92,17 +92,17 @@ int32_t MediaKeySessionImpl::GenerateMediaKeyRequest(IMediaKeySessionService::Me
     DrmTrace trace("GenerateMediaKeyRequest");
     DRM_INFO_LOG("GenerateMediaKeyRequest enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    int32_t retCode = DRM_OK;
+    int32_t retCode = DRM_INNER_ERR_OK;
     if (keySessionServiceProxy_ == nullptr) {
         DRM_ERR_LOG("GenerateMediaKeyRequest keySessionServiceProxy_ is null");
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_INVALID_KEY_SESSION;
     }
     retCode = keySessionServiceProxy_->GenerateMediaKeyRequest(licenseRequestInfo, licenseRequest);
-    if (retCode != DRM_OK) {
+    if (retCode != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("GenerateMediaKeyRequest failed, retCode: %{public}d", retCode);
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_BASE;
     }
-    return DRM_OK;
+    return DRM_INNER_ERR_OK;
 }
 
 int32_t MediaKeySessionImpl::ProcessMediaKeyResponse(std::vector<uint8_t> &licenseId,
@@ -111,18 +111,18 @@ int32_t MediaKeySessionImpl::ProcessMediaKeyResponse(std::vector<uint8_t> &licen
     DrmTrace trace("MediaKeySessionImpl::ProcessMediaKeyResponse");
     DRM_INFO_LOG("ProcessMediaKeyResponse enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    int32_t retCode = DRM_OK;
+    int32_t retCode = DRM_INNER_ERR_OK;
 
     if (keySessionServiceProxy_ == nullptr) {
         DRM_ERR_LOG("ProcessMediaKeyResponse keySessionServiceProxy_ is null");
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_INVALID_KEY_SESSION;
     }
     retCode = keySessionServiceProxy_->ProcessMediaKeyResponse(licenseId, licenseResponse);
-    if (retCode != DRM_OK) {
+    if (retCode != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("ProcessMediaKeyResponse failed, retCode: %{public}d", retCode);
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_BASE;
     }
-    return DRM_OK;
+    return DRM_INNER_ERR_OK;
 }
 
 int32_t MediaKeySessionImpl::GenerateOfflineReleaseRequest(std::vector<uint8_t> &licenseId,
@@ -130,18 +130,18 @@ int32_t MediaKeySessionImpl::GenerateOfflineReleaseRequest(std::vector<uint8_t> 
 {
     DRM_INFO_LOG("GenerateOfflineReleaseRequest enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    int32_t retCode = DRM_OK;
+    int32_t retCode = DRM_INNER_ERR_OK;
     if (keySessionServiceProxy_ == nullptr) {
         DRM_ERR_LOG("GenerateOfflineReleaseRequest keySessionServiceProxy_ is null");
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_INVALID_KEY_SESSION;
     }
 
     retCode = keySessionServiceProxy_->GenerateOfflineReleaseRequest(licenseId, releaseRequest);
-    if (retCode != DRM_OK) {
+    if (retCode != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("GenerateOfflineReleaseRequest failed, retCode: %{public}d", retCode);
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_BASE;
     }
-    return DRM_OK;
+    return DRM_INNER_ERR_OK;
 }
 
 int32_t MediaKeySessionImpl::ProcessOfflineReleaseResponse(std::vector<uint8_t> &licenseId,
@@ -149,109 +149,109 @@ int32_t MediaKeySessionImpl::ProcessOfflineReleaseResponse(std::vector<uint8_t> 
 {
     DRM_INFO_LOG("ProcessOfflineReleaseResponse enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    int32_t retCode = DRM_OK;
+    int32_t retCode = DRM_INNER_ERR_OK;
 
     if (keySessionServiceProxy_ == nullptr) {
         DRM_ERR_LOG("ProcessOfflineReleaseResponse keySessionServiceProxy_ is null");
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_INVALID_KEY_SESSION;
     }
     retCode = keySessionServiceProxy_->ProcessOfflineReleaseResponse(licenseId, releaseResponse);
-    if (retCode != DRM_OK) {
+    if (retCode != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("ProcessOfflineReleaseResponse failed, retCode: %{public}d", retCode);
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_BASE;
     }
-    return DRM_OK;
+    return DRM_INNER_ERR_OK;
 }
 
 int32_t MediaKeySessionImpl::GetContentProtectionLevel(IMediaKeySessionService::ContentProtectionLevel *securityLevel)
 {
     DRM_INFO_LOG("GetContentProtectionLevel enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    int32_t retCode = DRM_OK;
+    int32_t retCode = DRM_INNER_ERR_OK;
 
     if (keySessionServiceProxy_ == nullptr) {
         DRM_ERR_LOG("GetContentProtectionLevel serviceProxy_ is null");
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_INVALID_KEY_SESSION;
     }
     retCode = keySessionServiceProxy_->GetContentProtectionLevel(
         (IMediaKeySessionService::ContentProtectionLevel *)securityLevel);
-    if (retCode != DRM_OK) {
+    if (retCode != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("GetContentProtectionLevel failed, retCode: %{public}d", retCode);
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_BASE;
     }
-    return DRM_OK;
+    return DRM_INNER_ERR_OK;
 }
 
 int32_t MediaKeySessionImpl::CheckMediaKeyStatus(std::map<std::string, std::string> &licenseStatus)
 {
     DRM_INFO_LOG("CheckMediaKeyStatus enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    int32_t retCode = DRM_OK;
+    int32_t retCode = DRM_INNER_ERR_OK;
 
     if (keySessionServiceProxy_ == nullptr) {
         DRM_ERR_LOG("CheckMediaKeyStatus keySessionServiceProxy_ is null");
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_INVALID_KEY_SESSION;
     }
     retCode = keySessionServiceProxy_->CheckMediaKeyStatus(licenseStatus);
-    if (retCode != DRM_OK) {
+    if (retCode != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("CheckMediaKeyStatus failed, retCode: %{public}d", retCode);
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_BASE;
     }
-    return DRM_OK;
+    return DRM_INNER_ERR_OK;
 }
 
 int32_t MediaKeySessionImpl::RestoreOfflineMediaKeys(std::vector<uint8_t> &licenseId)
 {
     DRM_INFO_LOG("RestoreOfflineMediaKeys enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    int32_t retCode = DRM_OK;
+    int32_t retCode = DRM_INNER_ERR_OK;
 
     if (keySessionServiceProxy_ == nullptr) {
         DRM_ERR_LOG("RestoreOfflineMediaKeys keySessionServiceProxy_ is null");
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_INVALID_KEY_SESSION;
     }
     retCode = keySessionServiceProxy_->RestoreOfflineMediaKeys(licenseId);
-    if (retCode != DRM_OK) {
+    if (retCode != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("RestoreOfflineMediaKeys failed, retCode: %{public}d", retCode);
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_BASE;
     }
-    return DRM_OK;
+    return DRM_INNER_ERR_OK;
 }
 
 int32_t MediaKeySessionImpl::ClearMediaKeys()
 {
     DRM_INFO_LOG("ClearMediaKeys enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    int32_t retCode = DRM_OK;
+    int32_t retCode = DRM_INNER_ERR_OK;
 
     if (keySessionServiceProxy_ == nullptr) {
         DRM_ERR_LOG("ClearMediaKeys keySessionServiceProxy_ is null");
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_INVALID_KEY_SESSION;
     }
     retCode = keySessionServiceProxy_->ClearMediaKeys();
-    if (retCode != DRM_OK) {
+    if (retCode != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("ClearMediaKeys failed, retCode: %{public}d", retCode);
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_BASE;
     }
-    return DRM_OK;
+    return DRM_INNER_ERR_OK;
 }
 
 int32_t MediaKeySessionImpl::RequireSecureDecoderModule(std::string &mimeType, bool *status)
 {
     DRM_INFO_LOG("RequireSecureDecoderModule enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    int32_t retCode = DRM_OK;
+    int32_t retCode = DRM_INNER_ERR_OK;
 
     if (keySessionServiceProxy_ == nullptr) {
         DRM_ERR_LOG("RequireSecureDecoderModule keySessionServiceProxy_ is null");
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_INVALID_KEY_SESSION;
     }
     retCode = keySessionServiceProxy_->RequireSecureDecoderModule(mimeType, status);
-    if (retCode != DRM_OK) {
+    if (retCode != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("status: %{public}d", *status);
         return retCode;
     }
-    return DRM_OK;
+    return DRM_INNER_ERR_OK;
 }
 
 sptr<IMediaKeySessionService> MediaKeySessionImpl::GetMediaKeySessionServiceProxy()
@@ -275,10 +275,10 @@ int32_t MediaKeySessionImpl::SetCallback(const sptr<MediaKeySessionImplCallback>
 {
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " SetCallback in", FAKE_POINTER(this));
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    DRM_CHECK_AND_RETURN_RET_LOG(callback != nullptr, DRM_INVALID_ARG, "callback is nullptr");
+    DRM_CHECK_AND_RETURN_RET_LOG(callback != nullptr, DRM_INNER_ERR_INVALID_VAL, "callback is nullptr");
     keySessionApplicationCallback_ = callback;
 
-    int32_t ret = DRM_ERROR;
+    int32_t ret = DRM_INNER_ERR_BASE;
     keySessionServiceCallback_ = new (std::nothrow) MediaKeySessionServiceCallback(this);
     if (keySessionServiceCallback_ == nullptr) {
         DRM_ERR_LOG("MediaKeySessionServiceCallback alloc failed.");
@@ -287,12 +287,12 @@ int32_t MediaKeySessionImpl::SetCallback(const sptr<MediaKeySessionImplCallback>
 
     if (keySessionServiceProxy_ == nullptr) {
         DRM_ERR_LOG("SetCallback keySessionServiceProxy_ is null");
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_INVALID_KEY_SESSION;
     }
     ret = keySessionServiceProxy_->SetCallback(keySessionServiceCallback_);
-    if (ret != DRM_OK) {
+    if (ret != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("SetCallback failed, retCode: %{public}d", ret);
-        return DRM_SERVICE_ERROR;
+        return DRM_INNER_ERR_BASE;
     }
     return ret;
 }
@@ -329,11 +329,11 @@ int32_t MediaKeySessionServiceCallback::SendEvent(DrmEventType event, int32_t ex
         sptr<MediaKeySessionImplCallback> applicationCallback = keySessionImpl_->GetApplicationCallback();
         if (applicationCallback != nullptr) {
             applicationCallback->SendEvent(eventName, extra, data);
-            return DRM_OK;
+            return DRM_INNER_ERR_OK;
         }
     }
     DRM_DEBUG_LOG("SendEvent failed.");
-    return DRM_ERROR;
+    return DRM_INNER_ERR_BASE;
 }
 
 int32_t MediaKeySessionServiceCallback::SendEventKeyChanged(
@@ -345,11 +345,11 @@ int32_t MediaKeySessionServiceCallback::SendEventKeyChanged(
         sptr<MediaKeySessionImplCallback> callback = keySessionImpl_->GetApplicationCallback();
         if (callback != nullptr) {
             callback->SendEventKeyChanged(statusTable, hasNewGoodLicense);
-            return DRM_OK;
+            return DRM_INNER_ERR_OK;
         }
     }
     DRM_ERR_LOG("SendEventKeyChanged failed.");
-    return DRM_ERROR;
+    return DRM_INNER_ERR_BASE;
 }
 } // DrmStandard
 } // OHOS

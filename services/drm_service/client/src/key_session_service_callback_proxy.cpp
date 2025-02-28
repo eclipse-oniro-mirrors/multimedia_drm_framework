@@ -46,7 +46,8 @@ int32_t MediaKeySessionServiceCallbackProxy::SendEvent(DrmEventType event, int32
         DRM_ERR_LOG("SendEvent Write data size failed.");
         return IPC_PROXY_ERR;
     }
-    DRM_CHECK_AND_RETURN_RET_LOG(data.size() < DATA_MAX_LEN, DRM_MEMORY_ERROR, "The size of data is too large.");
+    DRM_CHECK_AND_RETURN_RET_LOG(data.size() < DATA_MAX_LEN, DRM_INNER_ERR_MEMORY_ERROR,
+        "The size of data is too large.");
     if (data.size() != 0) {
         if (!parcelData.WriteBuffer(data.data(), data.size())) {
             DRM_ERR_LOG("SendEvent write data failed.");
@@ -55,7 +56,7 @@ int32_t MediaKeySessionServiceCallbackProxy::SendEvent(DrmEventType event, int32
     }
 
     int32_t ret = Remote()->SendRequest(MEDIA_KEY_SESSION_SERVICE_CALLBACK_SEND_EVENT, parcelData, reply, option);
-    if (ret != DRM_OK) {
+    if (ret != 0) {
         DRM_ERR_LOG("SendEvent failed, errorcode: %{public}d", ret);
     }
     return ret;
@@ -81,7 +82,8 @@ int32_t MediaKeySessionServiceCallbackProxy::SendEventKeyChanged(
     for (auto item : statusTable) {
         uint32_t idSize = item.first.size();
         (void)parcelData.WriteUint32(idSize);
-        DRM_CHECK_AND_RETURN_RET_LOG(idSize < DATA_MAX_LEN, DRM_MEMORY_ERROR, "The size of data is too large.");
+        DRM_CHECK_AND_RETURN_RET_LOG(idSize < DATA_MAX_LEN, DRM_INNER_ERR_MEMORY_ERROR,
+            "The size of data is too large.");
         if (idSize != 0) {
             if (!parcelData.WriteBuffer(item.first.data(), idSize)) {
                 DRM_ERR_LOG("write data failed.");
