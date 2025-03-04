@@ -38,7 +38,8 @@
               "drivers_interface_drm",
               "memmgr",
               "hiappevent",
-              "json"
+              "json",
+              "netmanager_base"
             ]
         },
         "build": {
