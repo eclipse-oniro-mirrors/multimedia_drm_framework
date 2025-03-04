@@ -27,11 +27,13 @@
 #include "drm_log.h"
 #include "drm_error_code.h"
 #include "napi_param_utils.h"
+#include "net_conn_client.h"
 #include "drm_host_manager.h"
 
 namespace OHOS {
 namespace DrmStandard {
 using namespace OHOS::HiviewDFX;
+using namespace NetManagerStandard;
 std::queue<Message> DrmHostManager::messageQueue;
 std::mutex DrmHostManager::queueMutex;
 std::condition_variable DrmHostManager::cv;
@@ -188,7 +190,7 @@ void DrmHostManager::ProcessMessage()
                         ReleaseHandleAndKeySystemMap(libHandle);
                         loadedLibs.erase(std::remove(loadedLibs.begin(), loadedLibs.end(), libHandle),
                             loadedLibs.end());
-                        DRM_DEBUG_LOG("ProcessMessage UnLoadOEMCertifaicateService success.");
+                        DRM_INFO_LOG("ProcessMessage UnLoadOEMCertifaicateService success.");
                     }
                 }
             }
@@ -228,7 +230,7 @@ void DrmHostManager::ReleaseHandleAndKeySystemMap(void *handle)
         }
         dlclose(handle);
         handle = nullptr;
-        DRM_DEBUG_LOG("ReleaseHandleAndKeySystemMap handle closed");
+        DRM_INFO_LOG("ReleaseHandleAndKeySystemMap handle closed");
     }
 }
 
@@ -269,6 +271,8 @@ void DrmHostManager::ServiceThreadMain() __attribute__((no_sanitize("cfi")))
         auto QueryMediaKeySystemName = (QueryMediaKeySystemNameFuncType)dlsym(handle, "QueryMediaKeySystemName");
         auto IsProvisionRequired = (IsProvisionRequiredFuncType)dlsym(handle, "IsProvisionRequired");
         auto SetMediaKeySystem = (SetMediaKeySystemFuncType)dlsym(handle, "SetMediaKeySystem");
+        auto ThreadGetHttpProxyParameter =
+            (ThreadGetHttpProxyParameterFuncType)dlsym(handle, "ThreadGetHttpProxyParameter");
         auto ThreadExitNotify = (ThreadExitNotifyFuncType)dlsym(handle, "ThreadExitNotify");
         auto StartThread = (StartThreadFuncType)dlsym(handle, "StartThread");
         if (QueryMediaKeySystemName && IsProvisionRequired && SetMediaKeySystem && ThreadExitNotify &&
@@ -303,6 +307,12 @@ void DrmHostManager::ServiceThreadMain() __attribute__((no_sanitize("cfi")))
                 DRM_DEBUG_LOG("Provision not required!");
                 continue;
             }
+            ret = ThreadGetHttpProxyParameter(DrmHostManager::GetHttpProxyParameter);
+            if (ret != DRM_INNER_ERR_OK) {
+                ReleaseHandleAndKeySystemMap(handle);
+                DRM_ERR_LOG("ThreadGetHttpProxyParameter error!");
+                continue;
+            }
             ret = ThreadExitNotify(DrmHostManager::UnLoadOEMCertifaicateService);
             if (ret != DRM_INNER_ERR_OK) {
                 ReleaseHandleAndKeySystemMap(handle);
@@ -326,6 +336,16 @@ void DrmHostManager::UnLoadOEMCertifaicateService(std::string &name, ExtraInfo i
     Message message(Message::UnLoadOEMCertifaicateService, name, info);
     messageQueue.push(message);
     cv.notify_all();
+}
+
+void DrmHostManager::GetHttpProxyParameter(std::string &host, int32_t &port, std::list<std::string> &exclusionList)
+{
+    DRM_INFO_LOG("GetHttpProxyParameter enter.");
+    NetManagerStandard::HttpProxy httpProxy;
+    NetConnClient::GetInstance().GetDefaultHttpProxy(httpProxy);
+    exclusionList = httpProxy.GetExclusionList();
+    host = httpProxy.GetHost();
+    port = httpProxy.GetPort();
 }
 
 void DrmHostManager::OemCertificateManager()
