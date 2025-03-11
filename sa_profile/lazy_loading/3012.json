@@ -13,7 +13,28 @@
                     {
                         "name": "usual.event.CONNECTIVITY_CHANGE",
                         "value": "3",
-                        "enable-once": true
+                        "enable-once": true,
+                        "conditions": [
+                            {
+                                "eventId": "param",
+                                "name": "bootevent.system.frs.ready",
+                                "value": "1"
+                            }
+                        ]
+                    }
+                ],
+                "param": [
+                    {
+                        "name": "bootevent.system.frs.ready",
+                        "value": "1",
+                        "enable-once": true,
+                        "conditions": [
+                            {
+                                "eventId": "commonevent",
+                                "name": "usual.event.CONNECTIVITY_CHANGE",
+                                "value": "3"
+                            }
+                        ]
                     }
                 ]
             },
