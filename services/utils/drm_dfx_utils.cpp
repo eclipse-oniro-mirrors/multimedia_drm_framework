@@ -57,6 +57,49 @@ std::string __attribute__((visibility("default"))) GetClientBundleName(int32_t u
     return bundleName;
 }
 
+uint8_t __attribute__((visibility("default"))) GetClientBundleInfoTargetVersion(const std::string &bundleName,
+    int32_t uid)
+{
+    if (bundleName.empty()) {
+        DRM_ERR_LOG("bundleName is empty.");
+        return 0;
+    }
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (samgr == nullptr) {
+        DRM_ERR_LOG("Get ability manager failed");
+        return 0;
+    }
+
+    sptr<IRemoteObject> object = samgr->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
+    if (object == nullptr) {
+        DRM_ERR_LOG("object is NULL.");
+        return 0;
+    }
+
+    sptr<OHOS::AppExecFwk::IBundleMgr> bms = iface_cast<OHOS::AppExecFwk::IBundleMgr>(object);
+    if (bms == nullptr) {
+        DRM_ERR_LOG("bundle manager service is NULL.");
+        return 0;
+    }
+
+    auto flags = (
+        static_cast<int32_t>(AppExecFwk::GetBundleInfoFlag::GET_BUNDLE_INFO_WITH_ABILITY) |
+        static_cast<int32_t>(AppExecFwk::GetBundleInfoFlag::GET_BUNDLE_INFO_WITH_APPLICATION) |
+        static_cast<int32_t>(AppExecFwk::GetBundleInfoFlag::GET_BUNDLE_INFO_WITH_HAP_MODULE));
+
+    AppExecFwk::BundleInfo bundleInfo;
+    auto result = bms->GetBundleInfoV9(bundleName, flags, bundleInfo, uid / AppExecFwk::Constants::BASE_USER_RANGE);
+    if (result != ERR_OK) {
+        DRM_ERR_LOG("GetBundleInfoV9 err:%{public}d, bundleName: %{public}s", result, bundleName.c_str());
+        return 0;
+    }
+    uint8_t targetVersion = static_cast<uint8_t>(bundleInfo.targetVersion % 100); // % 100 to get the real version
+
+    DRM_INFO_LOG("targetVersion: %{public}u", targetVersion);
+
+    return targetVersion;
+}
+
 std::string __attribute__((visibility("default"))) CastToHexString(std::vector<uint8_t> binaryData)
 {
     std::string hexString;

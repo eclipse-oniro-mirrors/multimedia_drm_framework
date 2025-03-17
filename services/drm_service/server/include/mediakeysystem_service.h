@@ -74,6 +74,7 @@ public:
     std::string GetPluginName();
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> getMediaKeySystem();
     int32_t SetBundleName();
+    int32_t SetApiTargetVersion();
 
     // for hdi callback
     int32_t SendEvent(OHOS::HDI::Drm::V1_0::EventType eventType, int32_t extra,

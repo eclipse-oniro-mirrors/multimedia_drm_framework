@@ -146,6 +146,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportLicenseBehaviorEvent, TestSize
         "vendor",
         "clearplay_v1",
         "bundleName",
+        0,
     };
     Drm_ErrCode errNo = (Drm_ErrCode)ReportLicenseBehaviorEvent(statisticsInfo, mediaKeyType, downLoadInfo);
     EXPECT_EQ(errNo, 0);
@@ -164,6 +165,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportCertificateBehaviorEvent, Test
         "vendor",
         "clearplay_v1",
         "bundleName",
+        0,
     };
     Drm_ErrCode errNo = (Drm_ErrCode)ReportCertificateBehaviorEvent(statisticsInfo, downLoadInfo, callServerTime,
         serverCostDuration,

@@ -204,6 +204,7 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(std::string &name,
     }
     mediaKeySystemService->SetMediaKeySystemServiceOperatorsCallback(this);
     (void)mediaKeySystemService->SetBundleName();
+    (void)mediaKeySystemService->SetApiTargetVersion();
 
     int32_t pid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("CreateMediaKeySystem GetCallingPID: %{public}d.", pid);
@@ -346,8 +347,10 @@ void MediaKeySystemFactoryService::InitStatisticsInfo(const sptr<IMediaKeySystem
         (void)hdiMediaKeySystem->GetConfigurationString("vendor", statisticsInfo.vendorName);
         (void)hdiMediaKeySystem->GetConfigurationString("version", statisticsInfo.versionName);
     }
-    DRM_INFO_LOG("uid: %{public}d, appName: %{public}s.",
-        IPCSkeleton::GetCallingUid(), statisticsInfo.bundleName.c_str());
+    statisticsInfo.targetVersion = GetClientBundleInfoTargetVersion(statisticsInfo.bundleName,
+        IPCSkeleton::GetCallingUid());
+    DRM_INFO_LOG("uid: %{public}d, appName: %{public}s, targetVersion: %{public}u.",
+        IPCSkeleton::GetCallingUid(), statisticsInfo.bundleName.c_str(), statisticsInfo.targetVersion);
     DRM_INFO_LOG("pluginName: %{public}s, pluginUUID: %{public}s",
         statisticsInfo.pluginName.c_str(), statisticsInfo.pluginUuid.c_str());
     DRM_INFO_LOG("vendorName: %{public}s, versionName: %{public}s",
