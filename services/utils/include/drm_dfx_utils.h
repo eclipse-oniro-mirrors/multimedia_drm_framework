@@ -26,8 +26,11 @@ namespace DrmStandard {
         std::string vendorName;
         std::string versionName;
         std::string bundleName;
+        uint8_t targetVersion;
     };
     std::string __attribute__((visibility("default"))) GetClientBundleName(int32_t uid);
+    uint8_t __attribute__((visibility("default"))) GetClientBundleInfoTargetVersion(const std::string &bundleName,
+        int32_t uid);
     std::string __attribute__((visibility("default"))) CastToHexString(std::vector<uint8_t> binaryData);
     uint32_t __attribute__((visibility("default"))) CalculateTimeDiff(std::chrono::system_clock::time_point timeBefore,
         std::chrono::system_clock::time_point timeAfter);

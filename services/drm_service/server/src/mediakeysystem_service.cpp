@@ -163,6 +163,8 @@ int32_t MediaKeySystemService::SetConfigurationString(std::string &configName, s
         configName.c_str(), value.c_str());
     DRM_CHECK_AND_RETURN_RET_LOG(configName != "bundleName", DRM_INNER_ERR_INVALID_VAL,
         "configuration name is not support");
+    DRM_CHECK_AND_RETURN_RET_LOG(configName != "apiTargetVersion", DRM_INNER_ERR_INVALID_VAL,
+        "configuration api target version is not support");
     int32_t ret = DRM_INNER_ERR_OK;
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_INNER_ERR_SERVICE_FATAL_ERROR,
@@ -180,6 +182,8 @@ int32_t MediaKeySystemService::GetConfigurationString(std::string &configName, s
     DRM_INFO_LOG("GetConfiguration enter, configName:%{public}s.", configName.c_str());
     DRM_CHECK_AND_RETURN_RET_LOG(configName != "bundleName", DRM_INNER_ERR_INVALID_VAL,
         "configuration name is not support");
+    DRM_CHECK_AND_RETURN_RET_LOG(configName != "apiTargetVersion", DRM_INNER_ERR_INVALID_VAL,
+        "configuration api target version is not support");
     int32_t ret = DRM_INNER_ERR_OK;
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_INNER_ERR_SERVICE_FATAL_ERROR,
@@ -198,6 +202,8 @@ int32_t MediaKeySystemService::SetConfigurationByteArray(std::string &configName
     DRM_INFO_LOG("SetConfiguration enter, configName:%{public}s.", configName.c_str());
     DRM_CHECK_AND_RETURN_RET_LOG(configName != "bundleName", DRM_INNER_ERR_INVALID_VAL,
         "configuration name is not support");
+    DRM_CHECK_AND_RETURN_RET_LOG(configName != "apiTargetVersion", DRM_INNER_ERR_INVALID_VAL,
+        "configuration api target version is not support");
     int32_t ret = DRM_INNER_ERR_OK;
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_INNER_ERR_SERVICE_FATAL_ERROR,
@@ -217,6 +223,8 @@ int32_t MediaKeySystemService::GetConfigurationByteArray(std::string &configName
     DRM_INFO_LOG("GetConfiguration enter, configName:%{public}s.", configName.c_str());
     DRM_CHECK_AND_RETURN_RET_LOG(configName != "bundleName", DRM_INNER_ERR_INVALID_VAL,
         "configuration name is not support");
+    DRM_CHECK_AND_RETURN_RET_LOG(configName != "apiTargetVersion", DRM_INNER_ERR_INVALID_VAL,
+        "configuration api target version is not support");
     int32_t ret = DRM_INNER_ERR_OK;
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_INNER_ERR_SERVICE_FATAL_ERROR,
@@ -285,6 +293,19 @@ int32_t MediaKeySystemService::SetBundleName()
         "bundle name is empty!");
     ret = hdiKeySystem_->SetConfigurationString("bundleName", statisticsInfo_.bundleName);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "SetBundleName failed.");
+    return ret;
+}
+
+int32_t MediaKeySystemService::SetApiTargetVersion()
+{
+    DRM_INFO_LOG("SetApiTargetVersion targetVersion: %{public}u", statisticsInfo_.targetVersion);
+    int32_t ret = DRM_INNER_ERR_OK;
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    DRM_CHECK_AND_RETURN_RET_LOG(hdiKeySystem_ != nullptr, DRM_INNER_ERR_SERVICE_FATAL_ERROR,
+        "hdiKeySystem_ is nullptr!");
+    ret = hdiKeySystem_->SetConfigurationString("apiTargetVersion",
+        std::to_string(static_cast<int>(statisticsInfo_.targetVersion)));
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "SetApiTargetVersion failed.");
     return ret;
 }
 
