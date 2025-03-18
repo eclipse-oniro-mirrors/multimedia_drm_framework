@@ -129,6 +129,13 @@ void DrmHostManager::StopServiceThread()
         dlclose(libHandle);
         libHandle = nullptr;
     }
+    for (auto it = hdiMediaKeySystemAndFactoryMap.begin(); it != hdiMediaKeySystemAndFactoryMap.end(); it++) {
+        if (it->second != nullptr) {
+            ReleaseSevices(it->second);
+        } else {
+            DRM_INFO_LOG("proxys not found.");
+        }
+    }
     UnloadAllServices();
     loadedLibs.clear();
 
@@ -474,6 +481,7 @@ void DrmHostManager::ReleaseSevices(sptr<IMediaKeySystemFactory> drmHostServiePr
     if (remote != nullptr && drmHostDeathRecipientMap[drmHostServieProxy] != nullptr) {
         remote->RemoveDeathRecipient(drmHostDeathRecipientMap[drmHostServieProxy]);
         drmHostDeathRecipientMap[drmHostServieProxy] = nullptr;
+        DRM_INFO_LOG("Release RemoveDeathRecipient.");
     }
     drmHostDeathRecipientMap.erase(drmHostServieProxy);
     std::string name = hdiMediaKeySystemFactoryAndPluginNameMap[drmHostServieProxy];
