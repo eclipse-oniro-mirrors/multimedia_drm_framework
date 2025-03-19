@@ -114,11 +114,11 @@ Drm_ErrCode OH_MediaKeySession_ProcessMediaKeyResponse(MediaKeySession *mediaKey
     }
     DRM_CHECK_AND_RETURN_RET_LOG((*offlineMediaKeyIdLen > 0), DRM_ERR_NO_MEMORY, "offlineMediaKeyIdLen err!");
     ret = memcpy_s(offlineMediaKeyId, *offlineMediaKeyIdLen, keyIdVec.data(), keyIdVec.size());
+    *offlineMediaKeyIdLen = keyIdVec.size();
     if (ret != 0) {
         DRM_ERR_LOG("memcpy_s offlineMediaKeyId faild!");
         return DRM_ERR_NO_MEMORY;
     }
-    *offlineMediaKeyIdLen = keyIdVec.size();
     return DRM_ERR_OK;
 }
 
@@ -212,11 +212,11 @@ Drm_ErrCode OH_MediaKeySession_GenerateOfflineReleaseRequest(MediaKeySession *me
     }
     DRM_CHECK_AND_RETURN_RET_LOG((*releaseRequestLen > 0), DRM_ERR_NO_MEMORY, "releaseRequestLen err!");
     int32_t ret = memcpy_s(releaseRequest, *releaseRequestLen, ReleaseRequest.data(), ReleaseRequest.size());
+    *releaseRequestLen = ReleaseRequest.size();
     if (ret != 0) {
         DRM_ERR_LOG("memcpy_s releaseRequest faild!");
         return DRM_ERR_NO_MEMORY;
     }
-    *releaseRequestLen = ReleaseRequest.size();
     return DRM_ERR_OK;
 }
 

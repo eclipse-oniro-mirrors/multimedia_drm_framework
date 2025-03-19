@@ -373,9 +373,9 @@ Drm_ErrCode OH_MediaKeySystem_GenerateKeySystemRequest(MediaKeySystem *mediaKeyS
     DRM_CHECK_AND_RETURN_RET_LOG(((result == DRM_ERR_OK) && (requestData.size() != 0)), DRM_ERR_UNKNOWN,
         "MediaKeySystemImpl GenerateKeySystemRequest failed!");
     int32_t ret = memcpy_s(request, *requestLen, requestData.data(), requestData.size());
+    *requestLen = requestData.size();
     DRM_CHECK_AND_RETURN_RET_LOG(ret == 0, DRM_ERR_NO_MEMORY,
         "OH_MediaKeySystem_GenerateKeySystemRequest memcpy_s request failed!");
-    *requestLen = requestData.size();
     ret = memset_s(defaultUrl, defaultUrlLen, 0, defaultUrlLen);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == 0, DRM_ERR_NO_MEMORY,
         "OH_MediaKeySystem_GenerateKeySystemRequest memset_s defaultUrl failed!");
