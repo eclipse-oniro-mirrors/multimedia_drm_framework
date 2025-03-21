@@ -22,7 +22,6 @@
 #include <refbase.h>
 #include "drm_dfx_utils.h"
 #include "nocopyable.h"
-#include "nlohmann/json.hpp"
 #include "hisysevent.h"
 #include "hitrace/tracechain.h"
 #include <chrono>

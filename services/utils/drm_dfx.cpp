@@ -18,7 +18,6 @@
 #include <unistd.h>
 #include "drm_log.h"
 #include "dump_usage.h"
-#include "nlohmann/json.hpp"
 #include "drm_error_code.h"
 #include "securec.h"
 #include "ipc_skeleton.h"
@@ -28,7 +27,6 @@
 namespace OHOS {
 namespace DrmStandard {
 using namespace OHOS::HiviewDFX;
-using json = nlohmann::json;
 constexpr uint32_t MIN_DECRYPTION_TIMES = 1000;
 
 DrmEvent& DrmEvent::GetInstance()
