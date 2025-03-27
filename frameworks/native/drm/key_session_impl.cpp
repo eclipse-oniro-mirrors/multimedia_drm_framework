@@ -267,7 +267,6 @@ sptr<IMediaKeySessionService> MediaKeySessionImpl::GetMediaKeySessionServiceProx
 sptr<MediaKeySessionImplCallback> MediaKeySessionImpl::GetApplicationCallback()
 {
     DRM_INFO_LOG("GetApplicationCallback enter.");
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
     return keySessionApplicationCallback_;
 }
 
