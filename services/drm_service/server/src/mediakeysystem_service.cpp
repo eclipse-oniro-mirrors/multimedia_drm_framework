@@ -475,7 +475,6 @@ int32_t MediaKeySystemService::SendEvent(OHOS::HDI::Drm::V1_0::EventType eventTy
 {
     DRM_INFO_LOG("SendEvent enter.");
     DrmEventType event = static_cast<DrmEventType>(eventType);
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (callback_ != nullptr) {
         return callback_->SendEvent(event, extra, data);
     }
