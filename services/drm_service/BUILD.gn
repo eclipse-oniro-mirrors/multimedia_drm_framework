@@ -39,7 +39,7 @@ ohos_shared_library("drm_service") {
   ]
   deps = [
     ":drm_plugin_lazyloding",
-    "//foundation/multimedia/drm_framework/services/drm_service/idls:idl_sa_stub"
+    "./idls:idl_sa_stub"
   ]
   external_deps = [
     "ability_base:want",
