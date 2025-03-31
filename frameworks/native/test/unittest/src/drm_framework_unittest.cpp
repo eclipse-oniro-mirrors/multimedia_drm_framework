@@ -24,7 +24,7 @@
 #include "gmock/gmock.h"
 #include "native_drm_base.h"
 #include "native_drm_object.h"
-#include "i_mediadecryptmodule_service.h"
+#include "imedia_decrypt_module_service.h"
 #include "native_mediakeysession.h"
 #include "native_mediakeysystem.h"
 #include "cstdbool"
@@ -33,9 +33,9 @@
 #include "drm_log.h"
 #include "drm_death_recipient.h"
 #include "key_session_impl.h"
-#include "i_mediakeysystem_service.h"
+#include "imedia_key_system_service.h"
 #include "media_key_system_factory_impl.h"
-#include "mediakeysystem_service_callback_stub.h"
+#include "media_key_system_service_callback_stub.h"
 #include "http.h"
 #include "ashmem.h"
 #include "media_decrypt_module_service_proxy.h"
@@ -44,9 +44,9 @@
 #include <unordered_map>
 #include "nocopyable.h"
 #include "ipc_skeleton.h"
-#include "i_keysession_service.h"
-#include "i_keysession_service_callback.h"
-#include "key_session_service_callback_stub.h"
+#include "imedia_key_session_service.h"
+#include "imedia_key_session_service_callback.h"
+#include "media_key_session_service_callback_stub.h"
 
 #define DRM_SAMPLE_CHECK_AND_RETURN_RET_LOG(cond, ret, fmt, ...) \
     do {                                                         \
@@ -3041,10 +3041,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_DecryptModuleNormal_066, TestSize.Le
         sptr<IMediaDecryptModuleService> decryptModule;
         SessionServiceProxy->GetMediaDecryptModule(decryptModule);
         MessageParcel data;
-        IMediaDecryptModuleService::DrmBuffer srcBuffer;
-        IMediaDecryptModuleService::DrmBuffer dstBuffer;
+        DrmBuffer srcBuffer;
+        DrmBuffer dstBuffer;
         bool secureDecodrtState = false;
-        IMediaDecryptModuleService::CryptInfo cryptInfo;
+        CryptInfo cryptInfo;
         decryptModule->DecryptMediaData(secureDecodrtState, cryptInfo, srcBuffer, dstBuffer);
         decryptModule->Release();
         sptr<MediaKeySessionImplCallback> callback = sessionObject->sessionImpl_->GetApplicationCallback();
@@ -3059,7 +3059,15 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_DecryptModuleNormal_066, TestSize.Le
         MessageParcel data1;
         MessageParcel reply;
         MessageOption option;
-        Callback->OnRemoteRequest(MEDIA_KEY_SYSTEM_SERVICE_CALLBACK_SEND_EVENT,  data1, reply, option);
+        data1.WriteInt32(static_cast<int32_t>(OHOS::DrmStandard::DrmEventType::DRM_EVENT_PROVISION_REQUIRED));
+        data1.WriteInt32(1);
+        data1.WriteInt32(data.size());
+        for (auto it = data.begin(); it != data.end(); ++it) {
+            int32_t ret = data1.WriteUint8((*it));
+            EXPECT_NE(ret, 0);
+        }
+        Callback->OnRemoteRequest(static_cast<uint32_t>(IMediaKeySystemServiceCallbackIpcCode::COMMAND_SEND_EVENT),
+            data1, reply, option);
         serviceCallback->SendEvent(OHOS::DrmStandard::DrmEventType::DRM_EVENT_PROVISION_REQUIRED,  1, data);
         OHOS::sptr<OHOS::DrmStandard::MediaKeySystemCallbackCapi> SystemCallbackCapi =
             new (std::nothrow) MediaKeySystemCallbackCapi();
@@ -3581,8 +3589,8 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CreateMediaKeySessionAbNormal_082, T
     EXPECT_EQ(errNo, DRM_ERR_OK);
     if (mediaKeySystem) {
         MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-        IMediaKeySessionService::ContentProtectionLevel securityLevel =
-            IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+        ContentProtectionLevel securityLevel =
+            ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
         OHOS::sptr<MediaKeySessionImpl> keySessionImpl = nullptr;
         systemObject->systemImpl_->~MediaKeySystemImpl();
         systemObject->systemImpl_->CreateMediaKeySession(securityLevel, &keySessionImpl);
@@ -3629,7 +3637,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_SessionImplAbNormal_083, TestSize.Le
         MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySession);
         MediaKeySessionServiceCallback *Object = new MediaKeySessionServiceCallback(sessionObject->sessionImpl_);
         std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> statusTable = { { { 0x01 },
-            MEDIA_KEY_SESSION_KEY_STATUS_USABLE } };
+            MediaKeySessionKeyStatus::MEDIA_KEY_SESSION_KEY_STATUS_USABLE } };
         bool hasNewGoodLicense = false;
         Object->SendEventKeyChanged(statusTable, hasNewGoodLicense);
     }
@@ -3645,7 +3653,7 @@ static void killclearplay(MediaKeySystem *mediaKeySystem, MediaKeySession *media
     Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
     std::vector<uint8_t> licenseIdVec = { 0x01 };
     std::vector<uint8_t> ReleaseRequest = { 0x01 };
-    IMediaKeySessionService::ContentProtectionLevel securityLevel;
+    ContentProtectionLevel securityLevel;
     system(GetDrmPlugin());
     if (mediaKeySession) {
         MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySession);
@@ -3819,10 +3827,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_Dump_01, TestSize.Level0)
         sptr<IMediaDecryptModuleService> decryptModule;
         SessionServiceProxy->GetMediaDecryptModule(decryptModule);
         MessageParcel data;
-        IMediaDecryptModuleService::DrmBuffer srcBuffer;
-        IMediaDecryptModuleService::DrmBuffer dstBuffer;
+        DrmBuffer srcBuffer;
+        DrmBuffer dstBuffer;
         bool secureDecodrtState = false;
-        IMediaDecryptModuleService::CryptInfo cryptInfo;
+        CryptInfo cryptInfo;
         decryptModule->DecryptMediaData(secureDecodrtState, cryptInfo, srcBuffer, dstBuffer);
         system("hidumper -s 3012");
         decryptModule->Release();

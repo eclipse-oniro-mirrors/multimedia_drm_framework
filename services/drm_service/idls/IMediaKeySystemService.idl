@@ -1,0 +1,36 @@
+/*
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package OHOS.DrmStandard;
+import DrmTypes;
+import IMediaKeySessionService;
+import IMediaKeySystemServiceCallback;
+interface IMediaKeySystemService{
+  void Release();
+  void GenerateKeySystemRequest([out] unsigned char[] request, [out] String defaultUrl);
+  void ProcessKeySystemResponse([in] unsigned char[] response);
+  void SetConfigurationString([in] String configName, [in] String value);
+  void GetConfigurationString([in] String configName, [out] String value);
+  void SetConfigurationByteArray([in] String configName, [in] unsigned char[] value);
+  void GetConfigurationByteArray([in] String configName, [out] unsigned char[] value);
+  void CreateMediaKeySession([in] ContentProtectionLevel securityLevel,[out] IMediaKeySessionService keySessionProxy);
+  void GetStatistics([out] MetircKeyValue[] metrics);
+  void GetMaxContentProtectionLevel([out] ContentProtectionLevel securityLevel);
+  void GetCertificateStatus([out] CertificateStatus certStatus);
+  void GetOfflineMediaKeyIds([out] List<unsigned char[]> licenseIds);
+  void GetOfflineMediaKeyStatus([in] unsigned char[] licenseId,[out] OfflineMediaKeyStatus status);
+  void ClearOfflineMediaKeys([in] unsigned char[] licenseId);
+  void SetCallback([in] IMediaKeySystemServiceCallback callbackFunc);
+}

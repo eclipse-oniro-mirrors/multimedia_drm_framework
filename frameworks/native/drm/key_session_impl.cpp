@@ -86,8 +86,8 @@ int32_t MediaKeySessionImpl::Release()
     return ret;
 }
 
-int32_t MediaKeySessionImpl::GenerateMediaKeyRequest(IMediaKeySessionService::MediaKeyRequestInfo &licenseRequestInfo,
-    IMediaKeySessionService::MediaKeyRequest &licenseRequest)
+int32_t MediaKeySessionImpl::GenerateMediaKeyRequest(MediaKeyRequestInfo &licenseRequestInfo,
+    MediaKeyRequest &licenseRequest)
 {
     DrmTrace trace("GenerateMediaKeyRequest");
     DRM_INFO_LOG("GenerateMediaKeyRequest enter.");
@@ -163,18 +163,19 @@ int32_t MediaKeySessionImpl::ProcessOfflineReleaseResponse(std::vector<uint8_t> 
     return DRM_INNER_ERR_OK;
 }
 
-int32_t MediaKeySessionImpl::GetContentProtectionLevel(IMediaKeySessionService::ContentProtectionLevel *securityLevel)
+int32_t MediaKeySessionImpl::GetContentProtectionLevel(ContentProtectionLevel *securityLevel)
 {
     DRM_INFO_LOG("GetContentProtectionLevel enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t retCode = DRM_INNER_ERR_OK;
+    ContentProtectionLevel protectionLevel;
 
     if (keySessionServiceProxy_ == nullptr) {
         DRM_ERR_LOG("GetContentProtectionLevel serviceProxy_ is null");
         return DRM_INNER_ERR_INVALID_KEY_SESSION;
     }
-    retCode = keySessionServiceProxy_->GetContentProtectionLevel(
-        (IMediaKeySessionService::ContentProtectionLevel *)securityLevel);
+    retCode = keySessionServiceProxy_->GetContentProtectionLevel(protectionLevel);
+    *securityLevel = protectionLevel;
     if (retCode != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("GetContentProtectionLevel failed, retCode: %{public}d", retCode);
         return DRM_INNER_ERR_BASE;
@@ -241,12 +242,14 @@ int32_t MediaKeySessionImpl::RequireSecureDecoderModule(std::string &mimeType, b
     DRM_INFO_LOG("RequireSecureDecoderModule enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t retCode = DRM_INNER_ERR_OK;
+    bool decoderModuleStatus;
 
     if (keySessionServiceProxy_ == nullptr) {
         DRM_ERR_LOG("RequireSecureDecoderModule keySessionServiceProxy_ is null");
         return DRM_INNER_ERR_INVALID_KEY_SESSION;
     }
-    retCode = keySessionServiceProxy_->RequireSecureDecoderModule(mimeType, status);
+    retCode = keySessionServiceProxy_->RequireSecureDecoderModule(mimeType, decoderModuleStatus);
+    *status = decoderModuleStatus;
     if (retCode != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("status: %{public}d", *status);
         return retCode;
@@ -300,11 +303,16 @@ void MediaKeySessionServiceCallback::InitEventMap()
 {
     DRM_INFO_LOG("InitEventMap enter");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    eventMap_[static_cast<int32_t>(DRM_EVENT_KEY_NEEDED)] = MediaKeySessionEvent::EVENT_STR_KEY_NEEDED;
-    eventMap_[static_cast<int32_t>(DRM_EVENT_KEY_EXPIRED)] = MediaKeySessionEvent::EVENT_STR_KEY_EXPIRED;
-    eventMap_[static_cast<int32_t>(DRM_EVENT_EXPIRATION_UPDATED)] = MediaKeySessionEvent::EVENT_STR_EXPIRATION_UPDATED;
-    eventMap_[static_cast<int32_t>(DRM_EVENT_KEY_CHANGED)] = MediaKeySessionEvent::EVENT_STR_KEY_CHANGED;
-    eventMap_[static_cast<int32_t>(DRM_EVENT_VENDOR_DEFINED)] = MediaKeySessionEvent::EVENT_STR_VENDOR_DEFINED;
+    eventMap_[static_cast<int32_t>(DrmEventType::DRM_EVENT_KEY_NEEDED)] =
+        MediaKeySessionEvent::EVENT_STR_KEY_NEEDED;
+    eventMap_[static_cast<int32_t>(DrmEventType::DRM_EVENT_KEY_EXPIRED)] =
+        MediaKeySessionEvent::EVENT_STR_KEY_EXPIRED;
+    eventMap_[static_cast<int32_t>(DrmEventType::DRM_EVENT_EXPIRATION_UPDATED)] =
+        MediaKeySessionEvent::EVENT_STR_EXPIRATION_UPDATED;
+    eventMap_[static_cast<int32_t>(DrmEventType::DRM_EVENT_KEY_CHANGED)] =
+        MediaKeySessionEvent::EVENT_STR_KEY_CHANGED;
+    eventMap_[static_cast<int32_t>(DrmEventType::DRM_EVENT_VENDOR_DEFINED)] =
+        MediaKeySessionEvent::EVENT_STR_VENDOR_DEFINED;
 }
 
 std::string MediaKeySessionServiceCallback::GetEventName(DrmEventType event)
@@ -336,7 +344,7 @@ int32_t MediaKeySessionServiceCallback::SendEvent(DrmEventType event, int32_t ex
 }
 
 int32_t MediaKeySessionServiceCallback::SendEventKeyChanged(
-    std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> statusTable, bool hasNewGoodLicense)
+    const std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> &statusTable, bool hasNewGoodLicense)
 {
     DRM_INFO_LOG("SendEventKeyChanged enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);

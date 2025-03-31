@@ -64,6 +64,7 @@ ohos_fuzztest("mediakeysessionndkFuzzTest") {
     "../../../../../interfaces/kits/c/drm_capi:native_drm",
     "../../../../../interfaces/kits/js/drm_napi:drm_napi",
     "../../../../../services/drm_service:drm_service",
+    "../../../../../services/drm_service/idls:idl_sa_proxy",
   ]
 
   external_deps = [

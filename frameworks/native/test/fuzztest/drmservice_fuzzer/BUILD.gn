@@ -21,9 +21,7 @@ config("drm_framework_capi_fuzztest_systenfactory_config") {
     "../../../../../frameworks/native/test/fuzztest/Drmservice_fuzzer",
     "../../../../../services/drm_service/server/include/v1_0",
     "../../../../../services/drm_service/server/include",
-    "../../../../../services/drm_service/ipc",
     "../../../../../services/utils/include",
-    "../../../../../services/drm_service/client/include",
     "../../../../../interfaces/inner_api/native",
     "../../../../../interfaces/inner_api/native/drm",
     "../../../../../interfaces/kits/c/drm_capi/common",
@@ -55,7 +53,10 @@ ohos_fuzztest("drmserviceFuzzTest") {
 
   sources = [ "../../../../../frameworks/native/test/fuzztest/drmservice_fuzzer/drmservice_fuzzer.cpp" ]
 
-  deps = [ "../../../../../services/drm_service:drm_service" ]
+  deps = [
+    "../../../../../services/drm_service:drm_service",
+    "../../../../../services/drm_service/idls:idl_sa_proxy",
+  ]
 
   external_deps = [
     "ability_base:want",

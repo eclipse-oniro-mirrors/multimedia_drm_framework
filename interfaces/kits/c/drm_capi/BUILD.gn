@@ -56,7 +56,10 @@ ohos_shared_library("native_drm") {
   install_enable = true
 
   public_configs = [ ":drm_capi_common_public_config" ]
-  configs = [ ":drm_capi_common_config" ]
+  configs = [
+    ":drm_capi_common_config",
+    "./../../../../services/drm_service/idls:drm_sa_idl_config",
+  ]
 
   sanitize = {
     cfi = true

@@ -17,10 +17,8 @@ ohos_shared_library("drm_service") {
   install_enable = true
 
   include_dirs = [
-    "./client/include",
     "./server/include",
     "./server/include/v1_0",
-    "./ipc",
     "./../../interfaces/inner_api/native",
     "./../../interfaces/inner_api/native/drm",
     "./../../interfaces/kits/c/drm_capi/common",
@@ -33,20 +31,16 @@ ohos_shared_library("drm_service") {
     "./../utils/drm_dfx_utils.cpp",
     "./../utils/drm_trace.cpp",
     "./../utils/hdi_err_convertor.cpp",
-    "./client/src/drm_listener_proxy.cpp",
-    "./client/src/key_session_service_callback_proxy.cpp",
-    "./client/src/mediakeysystem_service_callback_proxy.cpp",
     "./server/src/drm_host_manager.cpp",
     "./server/src/key_session_service.cpp",
-    "./server/src/key_session_service_stub.cpp",
     "./server/src/media_decrypt_module_service.cpp",
-    "./server/src/media_decrypt_module_service_stub.cpp",
     "./server/src/mediakeysystem_service.cpp",
-    "./server/src/mediakeysystem_service_stub.cpp",
     "./server/src/mediakeysystemfactory_service.cpp",
-    "./server/src/mediakeysystemfactory_service_stub.cpp",
   ]
-  deps = [ ":drm_plugin_lazyloding" ]
+  deps = [
+    ":drm_plugin_lazyloding",
+    "./idls:idl_sa_stub",
+  ]
   external_deps = [
     "ability_base:want",
     "ability_runtime:abilitykit_native",

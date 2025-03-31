@@ -255,7 +255,7 @@ napi_value MediaKeySessionNapi::GenerateMediaKeyRequest(napi_env env, napi_callb
         int32_t mediaKeyType = 0;
         context->status = NapiParamUtils::GetValueInt32(env, mediaKeyType, argv[PARAM2]);
         NAPI_CHECK_STATUS_RETURN_VOID(context, "generateMediaKeyRequest failed!", DRM_NAPI_ERR_INVALID_VAL);
-        context->mediaKeyRequestInfo.mediaKeyType = (IMediaKeySessionService::MediaKeyType)mediaKeyType;
+        context->mediaKeyRequestInfo.mediaKeyType = (MediaKeyType)mediaKeyType;
         if (argc == ARGS_FOUR) {
             context->status =
             NapiParamUtils::GetValueOptionsData(env, context->mediaKeyRequestInfo.optionalData, argv[PARAM3]);
@@ -579,7 +579,7 @@ napi_value MediaKeySessionNapi::GetContentProtectionLevel(napi_env env, napi_cal
 
     napi_get_undefined(env, &result);
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
-    IMediaKeySessionService::ContentProtectionLevel level = (IMediaKeySessionService::ContentProtectionLevel)0;
+    ContentProtectionLevel level = (ContentProtectionLevel)0;
     napi_status status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&keySessionNapi));
     if (status == napi_ok && keySessionNapi != nullptr && keySessionNapi->keySessionImpl_ != nullptr) {
         int32_t ret = keySessionNapi->keySessionImpl_->GetContentProtectionLevel(&level);

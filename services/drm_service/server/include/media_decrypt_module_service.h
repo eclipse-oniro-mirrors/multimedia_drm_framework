@@ -36,15 +36,15 @@ public:
         StatisticsInfo statisticsInfo);
     ~MediaDecryptModuleService();
     int32_t Release() override;
-    int32_t DecryptMediaData(bool secureDecodrtState, IMediaDecryptModuleService::CryptInfo &cryptInfo,
-        IMediaDecryptModuleService::DrmBuffer &srcBuffer, IMediaDecryptModuleService::DrmBuffer &dstBuffer) override;
+    int32_t DecryptMediaData(bool secureDecodrtState, const CryptInfo &cryptInfo,
+        const DrmBuffer &srcBuffer, const DrmBuffer &dstBuffer) override;
     std::string GetDumpInfo();
 
 private:
     void SetCryptInfo(OHOS::HDI::Drm::V1_0::CryptoInfo &cryptInfoTmp,
-        IMediaDecryptModuleService::CryptInfo &cryptInfo, uint32_t &bufLen);
+        const CryptInfo &cryptInfo, uint32_t &bufLen);
     void SetDrmBufferInfo(OHOS::HDI::Drm::V1_0::DrmBuffer* drmSrcBuffer, OHOS::HDI::Drm::V1_0::DrmBuffer* drmDstBuffer,
-        IMediaDecryptModuleService::DrmBuffer &srcBuffer, IMediaDecryptModuleService::DrmBuffer &dstBuffer,
+        const DrmBuffer &srcBuffer, const DrmBuffer &dstBuffer,
         uint32_t bufLen);
     void UpdateDecryptionStatistics(int32_t decryptionResult, uint32_t bufLen, uint32_t curDuration);
     const std::string GetTopThreeDecryptionDurations();

@@ -24,7 +24,7 @@
 #include <set>
 #include <unordered_set>
 #include <refbase.h>
-#include "mediakeysystem_service_stub.h"
+#include "media_key_system_service_stub.h"
 #include "key_session_service.h"
 #include "drm_dfx_utils.h"
 #include "drm_host_manager.h"
@@ -52,25 +52,25 @@ public:
     int32_t Release() override;
     int32_t SetMediaKeySystemServiceOperatorsCallback(wptr<IMediaKeySystemServiceOperatorsCallback> callback);
     int32_t CloseMediaKeySystemServiceByCallback();
-    int32_t SetConfigurationString(std::string &configName, std::string &value) override;
-    int32_t GetConfigurationString(std::string &configName, std::string &value) override;
-    int32_t SetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value) override;
-    int32_t GetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value) override;
-    int32_t GetMaxContentProtectionLevel(IMediaKeySessionService::ContentProtectionLevel *securityLevel) override;
-    int32_t CreateMediaKeySession(IMediaKeySessionService::ContentProtectionLevel securityLevel,
+    int32_t SetConfigurationString(const std::string &configName, const std::string &value) override;
+    int32_t GetConfigurationString(const std::string &configName, std::string &value) override;
+    int32_t SetConfigurationByteArray(const std::string &configName, const std::vector<uint8_t> &value) override;
+    int32_t GetConfigurationByteArray(const std::string &configName, std::vector<uint8_t> &value) override;
+    int32_t GetMaxContentProtectionLevel(ContentProtectionLevel &securityLevel) override;
+    int32_t CreateMediaKeySession(ContentProtectionLevel securityLevel,
         sptr<IMediaKeySessionService> &keySessionProxy) override;
     int32_t GenerateKeySystemRequest(std::vector<uint8_t> &request, std::string &defaultUrl) override;
     int32_t ProcessKeySystemResponse(const std::vector<uint8_t> &response) override;
-    int32_t GetCertificateStatus(IMediaKeySystemService::CertificateStatus *certStatus) override;
+    int32_t GetCertificateStatus(CertificateStatus &certStatus) override;
 
     int32_t GetOfflineMediaKeyIds(std::vector<std::vector<uint8_t>> &licenseIds) override;
-    int32_t GetOfflineMediaKeyStatus(std::vector<uint8_t> &licenseId,
-        IMediaKeySessionService::OfflineMediaKeyStatus &status) override;
-    int32_t ClearOfflineMediaKeys(std::vector<uint8_t> &licenseId) override;
+    int32_t GetOfflineMediaKeyStatus(const std::vector<uint8_t> &licenseId,
+        OfflineMediaKeyStatus &status) override;
+    int32_t ClearOfflineMediaKeys(const std::vector<uint8_t> &licenseId) override;
 
     int32_t CloseMediaKeySessionService(sptr<MediaKeySessionService> sessionService) override;
-    int32_t GetStatistics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics) override;
-    int32_t SetCallback(sptr<IMediaKeySystemServiceCallback> &callback) override;
+    int32_t GetStatistics(std::vector<MetircKeyValue> &metrics) override;
+    int32_t SetCallback(const sptr<IMediaKeySystemServiceCallback> &callback) override;
     std::string GetPluginName();
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> getMediaKeySystem();
     int32_t SetBundleName();

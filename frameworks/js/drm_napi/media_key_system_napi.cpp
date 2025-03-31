@@ -231,10 +231,10 @@ napi_value MediaKeySystemNapi::IsMediaKeySystemSupported(napi_env env, napi_call
         NapiDrmError::ThrowError(env, "Could not able to read securityLevel argument.", DRM_NAPI_ERR_UNKNOWN);
         return result;
     }
-    IMediaKeySessionService::ContentProtectionLevel securityLevel =
-        (IMediaKeySessionService::ContentProtectionLevel)jsContentProtectionLevel;
-    if ((securityLevel <= IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN) ||
-        (securityLevel >= IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_MAX)) {
+    ContentProtectionLevel securityLevel =
+        (ContentProtectionLevel)jsContentProtectionLevel;
+    if ((securityLevel <= ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN) ||
+        (securityLevel >= ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_MAX)) {
         DRM_ERR_LOG("ContentProtectionLevel is invalid");
         NapiDrmError::ThrowError(env, "param ContentProtectionLevel exceeds reasonable range!",
             DRM_NAPI_ERR_INVALID_VAL);
@@ -341,8 +341,8 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
     napi_value argv[ARGS_ONE] = {0};
     napi_value thisVar = nullptr;
     int32_t jsContentProtectionLevel = 0;
-    IMediaKeySessionService::ContentProtectionLevel securityLevel =
-        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN;
+    ContentProtectionLevel securityLevel =
+        ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN;
     sptr<MediaKeySessionImpl> keySessionImpl = nullptr;
     MediaKeySystemNapi *mediaKeySystemNapi = nullptr;
     napi_get_undefined(env, &result);
@@ -355,9 +355,9 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
             return result;
         }
         securityLevel =
-            static_cast<IMediaKeySessionService::ContentProtectionLevel>(jsContentProtectionLevel);
-        if (securityLevel <= IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN ||
-            securityLevel >= IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_MAX) {
+            static_cast<ContentProtectionLevel>(jsContentProtectionLevel);
+        if (securityLevel <= ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN ||
+            securityLevel >= ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_MAX) {
             NapiDrmError::ThrowError(env, "The param ContentProtectionLevel exceeds reasonable range.",
                 DRM_NAPI_ERR_INVALID_VAL);
             DRM_ERR_LOG("securityLevel is error!");
@@ -367,7 +367,7 @@ napi_value MediaKeySystemNapi::CreateMediaKeySession(napi_env env, napi_callback
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
     if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
         int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->CreateMediaKeySession(
-            (IMediaKeySessionService::ContentProtectionLevel)securityLevel, &keySessionImpl);
+            (ContentProtectionLevel)securityLevel, &keySessionImpl);
         if (ret != DRM_NAPI_ERR_OK) {
             NapiDrmError::ThrowError(env, "CreateMediaKeySession failed.",
                 DrmInnerErrToNapiErrAPI12(static_cast<DrmInnerErrCode>(ret)));
@@ -602,7 +602,7 @@ napi_value MediaKeySystemNapi::GetMaxContentProtectionLevel(napi_env env, napi_c
     napi_get_undefined(env, &result);
     DRM_NAPI_GET_JS_ARGS(env, info, argc, argv, thisVar);
     NAPI_ASSERT(env, argc <= ARGS_ONE, "requires one parameters maximum");
-    IMediaKeySessionService::ContentProtectionLevel level = IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN;
+    ContentProtectionLevel level = ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
     if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
         int32_t ret = mediaKeySystemNapi->mediaKeySystemImpl_->GetMaxContentProtectionLevel(&level);
@@ -715,7 +715,7 @@ napi_value MediaKeySystemNapi::ProcessKeySystemResponse(napi_env env, napi_callb
     return NapiAsyncWork::Enqueue(env, context, "ProcessKeySystemResponse", executor, complete);
 }
 
-static napi_value vectorToJsArray(napi_env env, std::vector<IMediaKeySystemService::MetircKeyValue> &metrics)
+static napi_value vectorToJsArray(napi_env env, std::vector<MetircKeyValue> &metrics)
 {
     DRM_INFO_LOG("vectorToJsArray enter.");
     napi_value jsArray;
@@ -743,7 +743,7 @@ napi_value MediaKeySystemNapi::GetStatistics(napi_env env, napi_callback_info in
     napi_value argv[ARGS_ZERO];
     napi_value thisVar = nullptr;
     napi_status status;
-    std::vector<IMediaKeySystemService::MetircKeyValue> metrics;
+    std::vector<MetircKeyValue> metrics;
     MediaKeySystemNapi *mediaKeySystemNapi = nullptr;
     napi_get_undefined(env, &result);
 
@@ -774,7 +774,7 @@ napi_value MediaKeySystemNapi::GetCertificateStatus(napi_env env, napi_callback_
     napi_value argv[ARGS_ZERO];
     napi_value thisVar = nullptr;
     napi_status status;
-    IMediaKeySystemService::CertificateStatus certStatus;
+    CertificateStatus certStatus;
     MediaKeySystemNapi *mediaKeySystemNapi = nullptr;
 
     napi_get_undefined(env, &result);
@@ -906,8 +906,8 @@ napi_value MediaKeySystemNapi::GetOfflineMediaKeyStatus(napi_env env, napi_callb
     }
     uint8_t *licenseIdPtr = reinterpret_cast<uint8_t *>(licenseId);
     std::vector<uint8_t> licenseIdVec(licenseIdPtr, licenseIdPtr + licenseIdLen);
-    IMediaKeySessionService::OfflineMediaKeyStatus offlineMediaKeyStatus =
-        IMediaKeySessionService::OFFLINELICENSESTATUS_UNKNOWN;
+    OfflineMediaKeyStatus offlineMediaKeyStatus =
+        OfflineMediaKeyStatus::OFFLINELICENSESTATUS_UNKNOWN;
     status = napi_unwrap(env, thisVar, reinterpret_cast<void **>(&mediaKeySystemNapi));
     if (status == napi_ok && mediaKeySystemNapi != nullptr && mediaKeySystemNapi->mediaKeySystemImpl_ != nullptr) {
         int32_t ret =

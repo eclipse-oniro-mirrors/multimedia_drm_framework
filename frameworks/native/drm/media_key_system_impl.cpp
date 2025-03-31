@@ -14,7 +14,7 @@
  */
 
 #include "media_key_system_impl.h"
-#include "i_mediakeysystem_service.h"
+#include "imedia_key_system_service.h"
 #include "drm_error_code.h"
 #include "drm_trace.h"
 #include "napi_param_utils.h"
@@ -194,7 +194,7 @@ int32_t MediaKeySystemImpl::GetConfigurationByteArray(std::string &configName, s
     return DRM_INNER_ERR_OK;
 }
 
-int32_t MediaKeySystemImpl::CreateMediaKeySession(IMediaKeySessionService::ContentProtectionLevel securityLevel,
+int32_t MediaKeySystemImpl::CreateMediaKeySession(ContentProtectionLevel securityLevel,
     sptr<MediaKeySessionImpl> *keySessionImpl)
 {
     DrmTrace trace("MediaKeySystemImpl::CreateMediaKeySession");
@@ -232,7 +232,7 @@ int32_t MediaKeySystemImpl::CreateMediaKeySession(IMediaKeySessionService::Conte
     return DRM_INNER_ERR_OK;
 }
 
-int32_t MediaKeySystemImpl::GetStatistics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics)
+int32_t MediaKeySystemImpl::GetStatistics(std::vector<MetircKeyValue> &metrics)
 {
     DRM_INFO_LOG("GetStatistics enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
@@ -250,18 +250,19 @@ int32_t MediaKeySystemImpl::GetStatistics(std::vector<IMediaKeySystemService::Me
     return DRM_INNER_ERR_OK;
 }
 
-int32_t MediaKeySystemImpl::GetMaxContentProtectionLevel(IMediaKeySessionService::ContentProtectionLevel *securityLevel)
+int32_t MediaKeySystemImpl::GetMaxContentProtectionLevel(ContentProtectionLevel *securityLevel)
 {
     DRM_INFO_LOG("GetMaxContentProtectionLevel enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = DRM_INNER_ERR_OK;
+    ContentProtectionLevel protectionLevel;
 
     if (serviceProxy_ == nullptr) {
         DRM_ERR_LOG("GetMaxContentProtectionLevel serviceProxy_ is null");
         return DRM_INNER_ERR_SERVICE_FATAL_ERROR;
     }
-    ret =
-        serviceProxy_->GetMaxContentProtectionLevel((IMediaKeySessionService::ContentProtectionLevel *)securityLevel);
+    ret = serviceProxy_->GetMaxContentProtectionLevel(protectionLevel);
+    *securityLevel = protectionLevel;
     if (ret != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("GetMaxContentProtectionLevel failed, ret: %{public}d", ret);
         return DRM_INNER_ERR_BASE;
@@ -288,7 +289,7 @@ int32_t MediaKeySystemImpl::GetOfflineMediaKeyIds(std::vector<std::vector<uint8_
 }
 
 int32_t MediaKeySystemImpl::GetOfflineMediaKeyStatus(std::vector<uint8_t> &licenseId,
-    IMediaKeySessionService::OfflineMediaKeyStatus &status)
+    OfflineMediaKeyStatus &status)
 {
     DRM_INFO_LOG("GetOfflineMediaKeyStatus enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
@@ -323,17 +324,19 @@ int32_t MediaKeySystemImpl::ClearOfflineMediaKeys(std::vector<uint8_t> &licenseI
     return DRM_INNER_ERR_OK;
 }
 
-int32_t MediaKeySystemImpl::GetCertificateStatus(IMediaKeySystemService::CertificateStatus *certStatus)
+int32_t MediaKeySystemImpl::GetCertificateStatus(CertificateStatus *certStatus)
 {
     DRM_INFO_LOG("GetCertificateStatus enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = DRM_INNER_ERR_OK;
+    CertificateStatus certificateStatus;
 
     if (serviceProxy_ == nullptr) {
         DRM_ERR_LOG("GetCertificateStatus serviceProxy_ is null");
         return DRM_INNER_ERR_SERVICE_FATAL_ERROR;
     }
-    ret = serviceProxy_->GetCertificateStatus((IMediaKeySystemService::CertificateStatus *)certStatus);
+    ret = serviceProxy_->GetCertificateStatus(certificateStatus);
+    *certStatus = certificateStatus;
     if (ret != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("GetCertificateStatus failed, ret: %{public}d", ret);
         return DRM_INNER_ERR_BASE;
@@ -384,7 +387,8 @@ void MediaKeySystemCallback::InitEventMap()
 {
     DRM_INFO_LOG("MediaKeySystemCallback InitEventMap");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    eventMap_[static_cast<int32_t>(DRM_EVENT_PROVISION_REQUIRED)] = MediaKeySystemEvent::EVENT_STR_PROVISION_REQUIRED;
+    eventMap_[static_cast<int32_t>(DrmEventType::DRM_EVENT_PROVISION_REQUIRED)] =
+        MediaKeySystemEvent::EVENT_STR_PROVISION_REQUIRED;
 }
 
 std::string MediaKeySystemCallback::GetEventName(DrmEventType event)
