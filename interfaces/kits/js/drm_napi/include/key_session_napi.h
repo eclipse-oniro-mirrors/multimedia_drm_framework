@@ -37,8 +37,8 @@ struct MediaKeySessionAsyncContext : public ContextBase {
     std::vector<uint8_t> restoreLicenseId;
     std::vector<uint8_t> releaseResponse;
     std::vector<uint8_t> releaseResponseLicenseId;
-    IMediaKeySessionService::MediaKeyRequestInfo mediaKeyRequestInfo;
-    IMediaKeySessionService::MediaKeyRequest mediaKeyRequest;
+    MediaKeyRequestInfo mediaKeyRequestInfo;
+    MediaKeyRequest mediaKeyRequest;
 };
 
 class MediaKeySessionNapi {

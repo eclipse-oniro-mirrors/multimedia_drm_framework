@@ -26,7 +26,7 @@
 #include "napi/native_node_api.h"
 #include "napi_base_context.h"
 #include "drm_log.h"
-#include "i_keysession_service.h"
+#include "imedia_key_session_service.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -243,7 +243,7 @@ public:
     static napi_status SetProvisionRequest(const napi_env &env, const NapiProvisionRequest &provisionRequest,
         napi_value &result);
     static napi_status SetMediaKeyRequest(const napi_env &env,
-        const IMediaKeySessionService::MediaKeyRequest &mediaKeyRequest, napi_value &result);
+        const MediaKeyRequest &mediaKeyRequest, napi_value &result);
     static napi_status SetDrmEventInfo(const napi_env &env, DrmEventParame &eventParame,
         napi_value &result);
     static napi_status SetDrmKeysChangeEventInfo(const napi_env &env, DrmKeysChangeEventParame &eventParame,

@@ -1,0 +1,14 @@
+package OHOS.DrmStandard;
+import DrmTypes;
+import IMediaKeySystemService;
+sequenceable OHOS.IRemoteObject;
+
+interface IMediaKeySystemFactoryService{
+  void IsMediaKeySystemSupported([in] String name, [out] boolean isSupported);
+  void IsMediaKeySystemSupported([in] String name, [in] String mimeType, [out] boolean isSupported);
+  void IsMediaKeySystemSupported([in] String name, [in] String mimeType, [in] int securityLevel,[out] boolean isSupported);
+  void GetMediaKeySystems([out] OrderedMap<String, String> keySystemNames);
+  void GetMediaKeySystemUuid([in] String name, [out] String uuid);
+  void CreateMediaKeySystem([in] String name, [out] IMediaKeySystemService mediaKeySystemProxy);
+  void SetListenerObject([in] IRemoteObject object);
+}

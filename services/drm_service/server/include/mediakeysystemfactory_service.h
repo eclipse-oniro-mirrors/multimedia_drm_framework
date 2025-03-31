@@ -29,8 +29,10 @@
 #include "system_ability.h"
 #include "drm_host_manager.h"
 #include "drm_log.h"
-#include "mediakeysystemfactory_service_stub.h"
+#include "media_key_system_factory_service_stub.h"
 #include "mediakeysystem_service.h"
+#include "idrm_listener.h"
+#include "drm_death_recipient.h"
 
 #include "v1_0/media_key_system_factory_proxy.h"
 #include "v1_0/media_key_system_proxy.h"
@@ -54,16 +56,17 @@ public:
     void OnStop() override;
     int32_t OnIdle(const SystemAbilityOnDemandReason& idleReason) override;
     int32_t Dump(int32_t fd, const std::vector<std::u16string>& args) override;
-    int32_t IsMediaKeySystemSupported(std::string &name, bool *isSupported) override;
-    int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, bool *isSupported) override;
-    int32_t IsMediaKeySystemSupported(std::string &name, std::string &mimeType, int32_t securityLevel,
-        bool *isSupported) override;
-    int32_t CreateMediaKeySystem(std::string &name, sptr<IMediaKeySystemService> &mediaKeySystemProxy) override;
+    int32_t IsMediaKeySystemSupported(const std::string &name, bool &isSupported) override;
+    int32_t IsMediaKeySystemSupported(const std::string &name, const std::string &mimeType,
+        bool &isSupported) override;
+    int32_t IsMediaKeySystemSupported(const std::string &name, const std::string &mimeType, int32_t securityLevel,
+        bool &isSupported) override;
+    int32_t CreateMediaKeySystem(const std::string &name, sptr<IMediaKeySystemService> &mediaKeySystemProxy) override;
     int32_t CloseMediaKeySystemService(sptr<MediaKeySystemService> mediaKeySystemService) override;
-    void DistroyForClientDied(pid_t pid) override;
     int32_t GetMediaKeySystems(std::map<std::string, std::string> &mediaKeySystemNames) override;
-    int32_t GetMediaKeySystemUuid(std::string &name, std::string &uuid) override;
+    int32_t GetMediaKeySystemUuid(const std::string &name, std::string &uuid) override;
     void OnDrmPluginDied(std::string &name) override;
+    int32_t SetListenerObject(const sptr<IRemoteObject>& object) override;
 
 private:
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
@@ -74,6 +77,12 @@ private:
     sptr<DrmHostManager> drmHostManager_;
     std::map<int32_t, std::set<sptr<MediaKeySystemService>>> mediaKeySystemForPid_;
     std::map<std::string, int32_t> currentMediaKeySystemNum_;
+    std::recursive_mutex factoryServiceMutex_;
+    void DistroyForClientDied(pid_t pid);
+    void MediaKeySystemFactoryClientDied(pid_t pid);
+    bool IsListenerObjectSet();
+    std::map<pid_t, sptr<DrmDeathRecipient>> deathRecipientMap_;
+    std::map<pid_t, sptr<IDrmListener>> clientListenerMap_;
 };
 } // DrmStandard
 } // OHOS

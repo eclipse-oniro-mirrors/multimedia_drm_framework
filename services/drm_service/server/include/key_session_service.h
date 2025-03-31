@@ -22,7 +22,7 @@
 #include "drm_dfx.h"
 #include "drm_log.h"
 #include "drm_host_manager.h"
-#include "key_session_service_stub.h"
+#include "media_key_session_service_stub.h"
 #include "media_decrypt_module_service.h"
 #include "v1_0/media_key_session_proxy.h"
 #include "v1_0/media_decrypt_module_proxy.h"
@@ -44,19 +44,20 @@ public:
     int32_t GetMediaDecryptModule(sptr<IMediaDecryptModuleService> &decryptModule) override;
     int32_t SetMediaKeySessionServiceOperatorsCallback(wptr<IMediaKeySessionServiceOperatorsCallback> callback);
     int32_t CloseMediaKeySessionServiceByCallback();
-    int32_t GenerateMediaKeyRequest(IMediaKeySessionService::MediaKeyRequestInfo &licenseRequestInfo,
-        IMediaKeySessionService::MediaKeyRequest &licenseRequest) override;
-    int32_t ProcessMediaKeyResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &licenseResponse) override;
-    int32_t GenerateOfflineReleaseRequest(std::vector<uint8_t> &licenseId,
+    int32_t GenerateMediaKeyRequest(const MediaKeyRequestInfo &licenseRequestInfo,
+        MediaKeyRequest &licenseRequest) override;
+    int32_t ProcessMediaKeyResponse(std::vector<uint8_t> &licenseId,
+        const std::vector<uint8_t> &licenseResponse) override;
+    int32_t GenerateOfflineReleaseRequest(const std::vector<uint8_t> &licenseId,
         std::vector<uint8_t> &releaseRequest) override;
-    int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &licenseId,
-        std::vector<uint8_t> &releaseResponse) override;
+    int32_t ProcessOfflineReleaseResponse(const std::vector<uint8_t> &licenseId,
+        const std::vector<uint8_t> &releaseResponse) override;
     int32_t CheckMediaKeyStatus(std::map<std::string, std::string> &licenseStatus) override;
-    int32_t RestoreOfflineMediaKeys(std::vector<uint8_t> &licenseId) override;
+    int32_t RestoreOfflineMediaKeys(const std::vector<uint8_t> &licenseId) override;
     int32_t ClearMediaKeys() override;
-    int32_t GetContentProtectionLevel(IMediaKeySessionService::ContentProtectionLevel *securityLevel) override;
-    int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status) override;
-    int32_t SetCallback(sptr<IMediaKeySessionServiceCallback> &callback) override;
+    int32_t GetContentProtectionLevel(ContentProtectionLevel &securityLevel) override;
+    int32_t RequireSecureDecoderModule(const std::string &mimeType, bool &status) override;
+    int32_t SetCallback(const sptr<IMediaKeySessionServiceCallback> &callback) override;
 
     // for hdi callback
     int32_t SendEvent(OHOS::HDI::Drm::V1_0::EventType eventType, int32_t extra,

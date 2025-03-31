@@ -14,7 +14,7 @@
  */
 
 #include "media_key_system_factory_impl.h"
-#include "i_mediakeysystem_service.h"
+#include "imedia_key_system_service.h"
 #include "drm_error_code.h"
 #include "napi_param_utils.h"
 #include "iservice_registry.h"
@@ -142,7 +142,7 @@ bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &name)
     bool isSupported = false;
     const sptr<IMediaKeySystemFactoryService> serviceProxy = GetServiceProxy();
     DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy != nullptr, isSupported, "service proxy is nullptr!");
-    ret = serviceProxy->IsMediaKeySystemSupported(name, &isSupported);
+    ret = serviceProxy->IsMediaKeySystemSupported(name, isSupported);
     if (ret != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed, ret: %{public}d", ret);
     }
@@ -157,7 +157,7 @@ bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &name, std
 
     const sptr<IMediaKeySystemFactoryService> serviceProxy = GetServiceProxy();
     DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy != nullptr, isSupported, "service proxy is nullptr!");
-    ret = serviceProxy->IsMediaKeySystemSupported(name, mimeType, &isSupported);
+    ret = serviceProxy->IsMediaKeySystemSupported(name, mimeType, isSupported);
     if (ret != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed, ret: %{public}d", ret);
     }
@@ -165,7 +165,7 @@ bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &name, std
 }
 
 bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &uuid, std::string &mimeType,
-    IMediaKeySessionService::ContentProtectionLevel securityLevel)
+    ContentProtectionLevel securityLevel)
 {
     DRM_INFO_LOG("IsMediaKeySystemSupported enter.");
     int32_t ret = DRM_INNER_ERR_OK;
@@ -173,7 +173,7 @@ bool MediaKeySystemFactoryImpl::IsMediaKeySystemSupported(std::string &uuid, std
 
     const sptr<IMediaKeySystemFactoryService> serviceProxy = GetServiceProxy();
     DRM_CHECK_AND_RETURN_RET_LOG(serviceProxy != nullptr, isSupported, "service proxy is nullptr!");
-    ret = serviceProxy->IsMediaKeySystemSupported(uuid, mimeType, securityLevel, &isSupported);
+    ret = serviceProxy->IsMediaKeySystemSupported(uuid, mimeType, static_cast<int32_t>(securityLevel), isSupported);
     if (ret != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("IsMediaKeySystemSupported failed, ret: %{public}d", ret);
     }

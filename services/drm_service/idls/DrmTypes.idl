@@ -1,0 +1,154 @@
+package OHOS.DrmStandard;
+
+    enum MediaKeySessionKeyStatus {
+    	MEDIA_KEY_SESSION_KEY_STATUS_USABLE = 0,
+    	MEDIA_KEY_SESSION_KEY_STATUS_EXPIRED = 1,
+    	MEDIA_KEY_SESSION_KEY_STATUS_OUTPUT_NOT_ALLOWED = 2,
+    	MEDIA_KEY_SESSION_KEY_STATUS_PENDING = 3,
+    	MEDIA_KEY_SESSION_KEY_STATUS_INTERNAL_ERROR = 4,
+    	MEDIA_KEY_SESSION_KEY_STATUS_USABLE_IN_FUTURE = 5,
+    };
+
+    enum DrmEventType {
+    	DRM_EVENT_PROVISION_REQUIRED = 0,
+    	DRM_EVENT_KEY_NEEDED,
+    	DRM_EVENT_KEY_EXPIRED,
+    	DRM_EVENT_VENDOR_DEFINED,
+    	DRM_EVENT_EXPIRATION_UPDATED,
+    	DRM_EVENT_KEY_CHANGED,
+    	DRM_EVENT_KEYSESSION_LOST,
+    };	
+
+    enum ListenerType {
+        LISTENER_DRM_EVENT = 200,
+        LISTENER_PROVISION_REQUIRED = 201,
+        LISTENER_KEY_REQUIRED = 202,
+        LISTENER_KEY_EXPIRED = 203,
+        LISTENER_VENDOR_DEFINED = 204,
+        LISTENER_KEYSESSION_RECLAIMED = 205,
+        LISTENER_EXPIRATION_UPDATE = 206,
+        LISTENER_KEY_CHANGE = 207,
+        LISTENER_KEYSESSION_LOST = 208,
+    };
+
+    enum MediaKeyType {
+        LICENSETYPE_OFFLINE = 0,
+        LICENSETYPE_ONLINE,
+    };
+
+    enum OfflineMediaKeyStatus {
+        OFFLINELICENSESTATUS_UNKNOWN = 0,
+        OFFLINELICENSESTATUS_USABLE = 1,
+        OFFLINELICENSESTATUS_INACTIVE = 2,
+    };
+
+    enum RequestType {
+        REQUEST_TYPE_UNKNOWN = 0,
+        REQUEST_TYPE_INITIAL = 1,
+        REQUEST_TYPE_RENEWAL = 2,
+        REQUEST_TYPE_RELEASE = 3,
+        REQUEST_TYPE_NONE = 4,
+        REQUEST_TYPE_UPDATE = 5,
+    };
+
+    enum ContentProtectionLevel {
+        CONTENT_PROTECTION_LEVEL_UNKNOWN = 0,
+        CONTENT_PROTECTION_LEVEL_SW_CRYPTO = 1,
+        CONTENT_PROTECTION_LEVEL_HW_CRYPTO = 2,
+        CONTENT_PROTECTION_LEVEL_ENHANCED_HW = 3,
+        CONTENT_PROTECTION_LEVEL_MAX = 4,
+    };
+
+    struct OptionalData {
+        String name;
+        String value;
+    };
+
+    struct MediaKeyRequestInfo {
+        MediaKeyType mediaKeyType;
+        String mimeType;
+        unsigned char[] initData;
+        OrderedMap<String, String> optionalData;
+    };
+
+    struct MediaKeyRequest {
+        RequestType requestType;
+        unsigned char[] mData;
+        String mDefaultURL;
+    };
+
+
+    struct SubSample {
+        unsigned int clearHeaderLen;
+        unsigned int payLoadLen;
+    };
+
+    struct Pattern {
+        unsigned int encryptBlocks;
+        unsigned int skipBlocks;
+    };
+
+    enum CryptAlgorithmType {
+        ALGTYPE_UNENCRYPTED = 0,
+        ALGTYPE_AES_CTR,
+        ALGTYPE_AES_WV,
+        ALGTYPE_AES_CBC,
+        ALGTYPE_SM4_CBC,
+        ALGTYPE_SM4_CTR,
+    };
+
+    struct CryptInfo {
+        CryptAlgorithmType type;
+        unsigned char[] keyId;
+        unsigned char[] iv;
+        Pattern pattern;
+        SubSample[] subSample;
+    };
+
+    struct DrmBuffer {
+        unsigned int bufferType;
+        FileDescriptor fd;
+        unsigned int bufferLen;
+        unsigned int allocLen;
+        unsigned int filledLen;
+        unsigned int offset;
+        unsigned int sharedMemType;
+    };
+
+
+    enum HdcpLevel {
+        HDCP_UNKNOWN,
+        HDCP_NONE,
+        HDCP_V1,
+        HDCP_V2,
+        HDCP_V2_1,
+        HDCP_V2_2,
+        HDCP_V2_3,
+        HDCP_NO_OUTPUT = 0x7fff,
+    };
+
+    enum AdcpLevel {
+        ADCP_UNKNOWN = 0,
+        ADCP_V1_L1,
+        ADCP_V1_L2,
+        ADCP_V1_L3,
+        ADCP_NO_OUTPUT = 0x7fff,
+    };
+
+    enum CertificateStatus {
+        CERT_STATUS_PROVISIONED = 0,
+        CERT_STATUS_NOT_PROVISIONED,
+        CERT_STATUS_EXPIRED,
+        CERT_STATUS_INVALID,
+        CERT_STATUS_UNAVAILABLE,
+    };
+
+    struct MetircKeyValue {
+        String name;
+        String value;
+    };
+
+    struct MediaKeySystemMapInfo {
+        String name;
+        String uuid;
+    };

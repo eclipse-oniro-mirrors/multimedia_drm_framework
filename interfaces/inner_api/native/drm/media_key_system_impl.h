@@ -22,8 +22,8 @@
 #include "drm_death_recipient.h"
 #include "key_session_impl.h"
 #include "drm_listener_stub.h"
-#include "i_mediakeysystem_service.h"
-#include "mediakeysystem_service_callback_stub.h"
+#include "imedia_key_system_service.h"
+#include "media_key_system_service_callback_stub.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -46,20 +46,20 @@ public:
     int32_t GetConfigurationString(std::string &configName, std::string &value);
     int32_t SetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value);
     int32_t GetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value);
-    int32_t CreateMediaKeySession(IMediaKeySessionService::ContentProtectionLevel securityLevel,
+    int32_t CreateMediaKeySession(ContentProtectionLevel securityLevel,
         sptr<MediaKeySessionImpl> *keySessionImpl);
-    int32_t GetStatistics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics);
-    int32_t GetMaxContentProtectionLevel(IMediaKeySessionService::ContentProtectionLevel *securityLevel);
+    int32_t GetStatistics(std::vector<MetircKeyValue> &metrics);
+    int32_t GetMaxContentProtectionLevel(ContentProtectionLevel *securityLevel);
 
     int32_t GenerateKeySystemRequest(std::vector<uint8_t> &request, std::string &defaultUrl);
     int32_t ProcessKeySystemResponse(const std::vector<uint8_t> &response);
 
     int32_t GetOfflineMediaKeyIds(std::vector<std::vector<uint8_t>> &licenseIds);
     int32_t GetOfflineMediaKeyStatus(std::vector<uint8_t> &licenseId,
-        IMediaKeySessionService::OfflineMediaKeyStatus &status);
+        OfflineMediaKeyStatus &status);
     int32_t ClearOfflineMediaKeys(std::vector<uint8_t> &licenseId);
 
-    int32_t GetCertificateStatus(IMediaKeySystemService::CertificateStatus *certStatus);
+    int32_t GetCertificateStatus(CertificateStatus *certStatus);
     sptr<MediaKeySystemImplCallback> GetApplicationCallback();
     int32_t SetCallback(const sptr<MediaKeySystemImplCallback> &callback);
     int32_t Release();

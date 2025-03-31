@@ -17,13 +17,14 @@
 #include <string>
 #include <refbase.h>
 #include <securec.h>
+#include <string_ex.h>
+#include <fuzzer/FuzzedDataProvider.h>
 #include "drm_log.h"
 #include "ipc_skeleton.h"
 #include "mediakeysystem_service.h"
 #include "mediakeysystemfactory_service.h"
 #include "key_session_service.h"
 #include "drmservice_fuzzer.h"
-#include "remote_request_code.h"
 #include "iremote_proxy.h"
 
 using namespace std;
@@ -34,10 +35,16 @@ namespace OHOS {
 namespace DrmStandard {
 const int32_t MEDIA_KEY_SYSTEM_SERVICE_ID = 3012;
 const int32_t DATAMAXSIZE = 12288;
-const std::u16string MEDIA_KEY_SYSTEM_FACTORY_TOKEN = u"IMediaKeySystemSystemFactoryService";
-const std::u16string MEDIA_KEY_SYSTEM_TOKEN = u"IMediaKeySystemSystemService";
-const std::u16string MEDIA_KEY_SESSION_TOKEN = u"IMediaKeySessionService";
-const std::u16string MEDIA_DECRYPT_MODULE_TOKEN = u"IMediaDecryptModuleService";
+const std::u16string MEDIA_KEY_SYSTEM_FACTORY_TOKEN = u"OHOS.DrmStandard.IMediaKeySystemFactoryService";
+const std::u16string MEDIA_KEY_SYSTEM_TOKEN = u"OHOS.DrmStandard.IMediaKeySystemService";
+const std::u16string MEDIA_KEY_SESSION_TOKEN = u"OHOS.DrmStandard.IMediaKeySessionService";
+const std::u16string MEDIA_DECRYPT_MODULE_TOKEN = u"OHOS.DrmStandard.IMediaDecryptModuleService";
+const uint32_t COMMAND_IS_MEDIA_KEY_SYSTEM_SUPPORTED_V2 = static_cast<uint32_t>(
+    IMediaKeySystemFactoryServiceIpcCode::COMMAND_IS_MEDIA_KEY_SYSTEM_SUPPORTED_IN_STRING_IN_STRING_OUT_BOOLEAN
+);
+const uint32_t COMMAND_IS_MEDIA_KEY_SYSTEM_SUPPORTED_V3 = static_cast<uint32_t>(
+    IMediaKeySystemFactoryServiceIpcCode::COMMAND_IS_MEDIA_KEY_SYSTEM_SUPPORTED_IN_STRING_IN_STRING_IN_INT_OUT_BOOLEAN
+);
 
 std::shared_ptr<MediaKeySystemFactoryService> g_mediaKeySystemFactoryServicePtr = nullptr;
 
@@ -56,11 +63,11 @@ bool DrmServiceNdkFuzzer::DrmserviceIsMediaKeySystemSupportedV1Test(uint8_t *raw
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_FACTORY_TOKEN);
-    data.WriteInt32(ARGS_NUM_ONE);
     std::string uuid(reinterpret_cast<const char *>(rawData), size);
-    data.WriteString(uuid);
-    mediaKeySystemFactoryServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SUPPORTED, data,
-        reply, option);
+    data.WriteString16(Str8ToStr16(uuid));
+    mediaKeySystemFactoryServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemFactoryServiceIpcCode::COMMAND_IS_MEDIA_KEY_SYSTEM_SUPPORTED),
+        data, reply, option);
     return true;
 }
 
@@ -74,13 +81,14 @@ bool DrmServiceNdkFuzzer::DrmserviceIsMediaKeySystemSupportedV2Test(uint8_t *raw
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_FACTORY_TOKEN);
-    data.WriteInt32(ARGS_NUM_TWO);
-    std::string uuid(reinterpret_cast<const char *>(rawData), size);
-    std::string mimeType(reinterpret_cast<const char *>(rawData), size);
-    data.WriteString(uuid);
-    data.WriteString(mimeType);
-    mediaKeySystemFactoryServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SUPPORTED, data,
-        reply, option);
+    FuzzedDataProvider fdp(rawData, size);
+    size_t len = size / 2; // 2 half
+    std::string uuid(fdp.ConsumeBytes<char>(len).data(), len);
+    std::string mimeType(fdp.ConsumeBytes<char>(len).data(), len);
+    data.WriteString16(Str8ToStr16(uuid));
+    data.WriteString16(Str8ToStr16(mimeType));
+    mediaKeySystemFactoryServicePtr->OnRemoteRequest(COMMAND_IS_MEDIA_KEY_SYSTEM_SUPPORTED_V2,
+        data, reply, option);
     return true;
 }
 
@@ -94,15 +102,16 @@ bool DrmServiceNdkFuzzer::DrmserviceIsMediaKeySystemSupportedV3Test(uint8_t *raw
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_FACTORY_TOKEN);
-    data.WriteInt32(ARGS_NUM_THREE);
-    std::string uuid(reinterpret_cast<const char *>(rawData), size);
-    std::string mimeType(reinterpret_cast<const char *>(rawData), size);
-    data.WriteString(uuid);
-    data.WriteString(mimeType);
-    int32_t securityLevel = *reinterpret_cast<const int32_t *>(rawData);
+    FuzzedDataProvider fdp(rawData, size);
+    size_t len = (size - sizeof(int32_t))/ 2; // 2 half
+    std::string uuid(fdp.ConsumeBytes<char>(len).data(), len);
+    std::string mimeType(fdp.ConsumeBytes<char>(len).data(), len);
+    data.WriteString16(Str8ToStr16(uuid));
+    data.WriteString16(Str8ToStr16(mimeType));
+    int32_t securityLevel = fdp.ConsumeIntegral<int32_t>();
     data.WriteInt32(securityLevel);
-    mediaKeySystemFactoryServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_FACTORY_IS_MEDIA_KEY_SYSTEM_SUPPORTED, data,
-        reply, option);
+    mediaKeySystemFactoryServicePtr->OnRemoteRequest(COMMAND_IS_MEDIA_KEY_SYSTEM_SUPPORTED_V3,
+        data, reply, option);
     return true;
 }
 
@@ -117,9 +126,10 @@ bool DrmServiceNdkFuzzer::DrmserviceCreateMediaKeySystemTest(uint8_t *rawData, s
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_FACTORY_TOKEN);
     std::string name(reinterpret_cast<const char *>(rawData), size);
-    data.WriteString(name);
-    mediaKeySystemFactoryServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_FACTORY_CREATE_MEDIA_KEYSYSTEM, data, reply,
-        option);
+    data.WriteString16(Str8ToStr16(name));
+    mediaKeySystemFactoryServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemFactoryServiceIpcCode::COMMAND_CREATE_MEDIA_KEY_SYSTEM),
+        data, reply, option);
     return true;
 }
 
@@ -133,8 +143,9 @@ bool DrmServiceNdkFuzzer::DrmserviceGetMediaKeySystemsTest(uint8_t *rawData, siz
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_FACTORY_TOKEN);
-    mediaKeySystemFactoryServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_FACTORY_GET_MEDIA_KEYSYSTEM_NAME, data, reply,
-        option);
+    mediaKeySystemFactoryServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemFactoryServiceIpcCode::COMMAND_GET_MEDIA_KEY_SYSTEMS),
+        data, reply, option);
     return true;
 }
 
@@ -149,9 +160,10 @@ bool DrmServiceNdkFuzzer::DrmserviceGetMediaKeySystemUuidTest(uint8_t *rawData, 
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_FACTORY_TOKEN);
     std::string name(reinterpret_cast<const char *>(rawData), size);
-    data.WriteString(name);
-    mediaKeySystemFactoryServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_FACTORY_GET_MEDIA_KEYSYSTEM_UUID, data, reply,
-        option);
+    data.WriteString16(Str8ToStr16(name));
+    mediaKeySystemFactoryServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemFactoryServiceIpcCode::COMMAND_GET_MEDIA_KEY_SYSTEM_UUID),
+        data, reply, option);
     return true;
 }
 
@@ -167,7 +179,9 @@ bool DrmServiceNdkFuzzer::DrmserviceCreateMediaKeySessionTest(uint8_t *rawData, 
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_TOKEN);
     int32_t securityLevel = *reinterpret_cast<const int32_t *>(rawData);
     data.WriteInt32(securityLevel);
-    mediaKeySystemServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_CREATE_KEY_SESSION, data, reply, option);
+    mediaKeySystemServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemServiceIpcCode::COMMAND_CREATE_MEDIA_KEY_SESSION),
+        data, reply, option);
     return true;
 }
 
@@ -194,7 +208,9 @@ bool DrmServiceNdkFuzzer::DrmserviceGenerateKeySystemRequestTest(uint8_t *rawDat
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_TOKEN);
-    mediaKeySystemServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_GENERATE_KEYSYSTEM_REQUEST, data, reply, option);
+    mediaKeySystemServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemServiceIpcCode::COMMAND_GENERATE_KEY_SYSTEM_REQUEST),
+        data, reply, option);
     return true;
 }
 
@@ -210,8 +226,14 @@ bool DrmServiceNdkFuzzer::DrmserviceProcessKeySystemResponseTest(uint8_t *rawDat
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_TOKEN);
     data.WriteInt32(size);
     uint8_t *response = rawData;
-    data.WriteBuffer(response, size);
-    mediaKeySystemServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_PROCESS_KEYSYSTEM_RESPONSE, data, reply, option);
+    for (size_t i = 0; i < size; i++) {
+        if (!data.WriteUint8(response[i])) {
+            return false;
+        }
+    }
+    mediaKeySystemServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemServiceIpcCode::COMMAND_PROCESS_KEY_SYSTEM_RESPONSE),
+        data, reply, option);
     return true;
 }
 
@@ -225,11 +247,15 @@ bool DrmServiceNdkFuzzer::DrmserviceGenerateSetConfigurationStringTest(uint8_t *
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_TOKEN);
-    std::string configName(reinterpret_cast<const char *>(rawData), size);
-    std::string value(reinterpret_cast<const char *>(rawData), size);
-    data.WriteString(configName);
-    data.WriteString(value);
-    mediaKeySystemServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_SETCONFIGURATION_STRING, data, reply, option);
+    FuzzedDataProvider fdp(rawData, size);
+    size_t len = size / 2; // 2 half
+    std::string configName(fdp.ConsumeBytes<char>(len).data(), len);
+    std::string value(fdp.ConsumeBytes<char>(len).data(), len);
+    data.WriteString16(Str8ToStr16(configName));
+    data.WriteString16(Str8ToStr16(value));
+    mediaKeySystemServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemServiceIpcCode::COMMAND_SET_CONFIGURATION_STRING),
+        data, reply, option);
     return true;
 }
 
@@ -243,11 +269,15 @@ bool DrmServiceNdkFuzzer::DrmserviceSetConfigurationStringTest(uint8_t *rawData,
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_TOKEN);
-    std::string configName(reinterpret_cast<const char *>(rawData), size);
-    std::string value(reinterpret_cast<const char *>(rawData), size);
-    data.WriteString(configName);
-    data.WriteString(value);
-    mediaKeySystemServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_SETCONFIGURATION_STRING, data, reply, option);
+    FuzzedDataProvider fdp(rawData, size);
+    size_t len = size / 2; // 2 half
+    std::string configName(fdp.ConsumeBytes<char>(len).data(), len);
+    std::string value(fdp.ConsumeBytes<char>(len).data(), len);
+    data.WriteString16(Str8ToStr16(configName));
+    data.WriteString16(Str8ToStr16(value));
+    mediaKeySystemServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemServiceIpcCode::COMMAND_SET_CONFIGURATION_STRING),
+        data, reply, option);
     return true;
 }
 
@@ -262,8 +292,10 @@ bool DrmServiceNdkFuzzer::DrmserviceGetConfigurationStringTest(uint8_t *rawData,
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_TOKEN);
     std::string configName(reinterpret_cast<const char *>(rawData), size);
-    data.WriteString(configName);
-    mediaKeySystemServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_GETCONFIGURATION_STRING, data, reply, option);
+    data.WriteString16(Str8ToStr16(configName));
+    mediaKeySystemServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemServiceIpcCode::COMMAND_GET_CONFIGURATION_STRING),
+        data, reply, option);
     return true;
 }
 
@@ -277,10 +309,19 @@ bool DrmServiceNdkFuzzer::DrmserviceSetConfigurationByteArrayTest(uint8_t *rawDa
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_TOKEN);
-    std::string configName(reinterpret_cast<const char *>(rawData), size);
-    data.WriteString(configName);
-    data.WriteBuffer(rawData, size);
-    mediaKeySystemServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_SETCONFIGURATION_BYTEARRAY, data, reply, option);
+    FuzzedDataProvider fdp(rawData, size);
+    size_t len = size / 2; // 2 half
+    std::string configName(fdp.ConsumeBytes<char>(len).data(), len);
+    data.WriteString16(Str8ToStr16(configName));
+    data.WriteInt32(len);
+    for (size_t i = 0; i < len; i++) {
+        if (!data.WriteUint8(rawData[i])) {
+            return false;
+        }
+    }
+    mediaKeySystemServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemServiceIpcCode::COMMAND_SET_CONFIGURATION_BYTE_ARRAY),
+        data, reply, option);
     return true;
 }
 
@@ -295,8 +336,10 @@ bool DrmServiceNdkFuzzer::DrmserviceGetConfigurationByteArrayTest(uint8_t *rawDa
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_TOKEN);
     std::string configName(reinterpret_cast<const char *>(rawData), size);
-    data.WriteString(configName);
-    mediaKeySystemServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_GETCONFIGURATION_BYTEARRAY, data, reply, option);
+    data.WriteString16(Str8ToStr16(configName));
+    mediaKeySystemServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemServiceIpcCode::COMMAND_GET_CONFIGURATION_BYTE_ARRAY),
+        data, reply, option);
     return true;
 }
 
@@ -310,7 +353,9 @@ bool DrmServiceNdkFuzzer::DrmserviceGetStatisticsTest(uint8_t *rawData, size_t s
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_TOKEN);
-    mediaKeySystemServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_GETMETRIC, data, reply, option);
+    mediaKeySystemServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemServiceIpcCode::COMMAND_GET_STATISTICS),
+        data, reply, option);
     return true;
 }
 
@@ -324,7 +369,8 @@ bool DrmServiceNdkFuzzer::DrmserviceReleaseTest(uint8_t *rawData, size_t size,
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_TOKEN);
-    mediaKeySystemServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_RELEASE, data, reply, option);
+    mediaKeySystemServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemServiceIpcCode::COMMAND_RELEASE), data, reply, option);
     return true;
 }
 
@@ -338,7 +384,9 @@ bool DrmServiceNdkFuzzer::DrmserviceGetMaxContentProtectionLevelTest(uint8_t *ra
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_TOKEN);
-    mediaKeySystemServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_GETMAXSECURITYLEVEL, data, reply, option);
+    mediaKeySystemServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemServiceIpcCode::COMMAND_GET_MAX_CONTENT_PROTECTION_LEVEL),
+        data, reply, option);
     return true;
 }
 
@@ -352,7 +400,8 @@ bool DrmServiceNdkFuzzer::DrmserviceGetCertificateStatusTest(uint8_t *rawData, s
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_TOKEN);
-    mediaKeySystemServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_GETCERTIFICATESTATUS, data, reply, option);
+    mediaKeySystemServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemServiceIpcCode::COMMAND_GET_CERTIFICATE_STATUS), data, reply, option);
     return true;
 }
 
@@ -366,7 +415,8 @@ bool DrmServiceNdkFuzzer::DrmserviceGetOfflineMediaKeyIdsTest(uint8_t *rawData, 
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_TOKEN);
-    mediaKeySystemServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_GET_OFFLINELICENSEIDS, data, reply, option);
+    mediaKeySystemServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemServiceIpcCode::COMMAND_GET_OFFLINE_MEDIA_KEY_IDS), data, reply, option);
     return true;
 }
 
@@ -381,8 +431,14 @@ bool DrmServiceNdkFuzzer::DrmserviceGetOfflineMediaKeyStatusTest(uint8_t *rawDat
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_TOKEN);
     data.WriteInt32(size);
-    data.WriteBuffer(rawData, size);
-    mediaKeySystemServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_GET_OFFLINEKEY_STATUS, data, reply, option);
+    for (size_t i = 0; i < size; i++) {
+        if (!data.WriteUint8(rawData[i])) {
+            return false;
+        }
+    }
+    mediaKeySystemServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemServiceIpcCode::COMMAND_GET_OFFLINE_MEDIA_KEY_STATUS),
+        data, reply, option);
     return true;
 }
 
@@ -397,8 +453,13 @@ bool DrmServiceNdkFuzzer::DrmserviceClearOfflineMediaKeysTest(uint8_t *rawData, 
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_TOKEN);
     data.WriteInt32(size);
-    data.WriteBuffer(rawData, size);
-    mediaKeySystemServicePtr->OnRemoteRequest(MEDIA_KEY_SYSTEM_REMOVE_OFFLINELICENSE, data, reply, option);
+    for (size_t i = 0; i < size; i++) {
+        if (!data.WriteUint8(rawData[i])) {
+            return false;
+        }
+    }
+    mediaKeySystemServicePtr->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySystemServiceIpcCode::COMMAND_CLEAR_OFFLINE_MEDIA_KEYS), data, reply, option);
     return true;
 }
 
@@ -412,7 +473,8 @@ bool DrmServiceNdkFuzzer::DrmserviceGetMediaDecryptModuleTest(uint8_t *rawData, 
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SESSION_TOKEN);
-    mediaKeySessionService->OnRemoteRequest(GET_MEDIA_DECRYPT_MODULE, data, reply, option);
+    mediaKeySessionService->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySessionServiceIpcCode::COMMAND_GET_MEDIA_DECRYPT_MODULE), data, reply, option);
     return true;
 }
 
@@ -426,15 +488,25 @@ bool DrmServiceNdkFuzzer::DrmserviceGenerateMediaKeyRequestTest(uint8_t *rawData
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SESSION_TOKEN);
+    FuzzedDataProvider fdp(rawData, size);
+    size_t len = size / 3; // 3 servings
     data.WriteInt32(size);
-    std::string mimeType(reinterpret_cast<const char *>(rawData), size);
-    data.WriteString(mimeType);
-    data.WriteString(mimeType);
+    std::string mimeType(fdp.ConsumeBytes<char>(len).data(), len);
+    data.WriteString16(Str8ToStr16(mimeType));
     data.WriteInt32(size);
-    data.WriteString(mimeType);
+    for (size_t i = 0; i < size; i++) {
+        if (!data.WriteUint8(rawData[i])) {
+            return false;
+        }
+    }
     data.WriteInt32(size);
-    data.WriteBuffer(rawData, size);
-    mediaKeySessionService->OnRemoteRequest(MEDIA_KEY_SESSION_GENERATE_LICENSE_REQUEST, data, reply, option);
+    std::string optionalKey(fdp.ConsumeBytes<char>(len).data(), len);
+    std::string optionalValue(fdp.ConsumeBytes<char>(len).data(), len);
+    data.WriteString16(Str8ToStr16(optionalKey));
+    data.WriteString16(Str8ToStr16(optionalValue));
+    mediaKeySessionService->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySessionServiceIpcCode::COMMAND_GENERATE_MEDIA_KEY_REQUEST),
+        data, reply, option);
     return true;
 }
 
@@ -449,8 +521,14 @@ bool DrmServiceNdkFuzzer::DrmserviceProcessMediaKeyResponseTest(uint8_t *rawData
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SESSION_TOKEN);
     data.WriteInt32(size);
-    data.WriteBuffer(rawData, size);
-    mediaKeySessionService->OnRemoteRequest(MEDIA_KEY_SESSION_PROCESS_LICENSE_RESPONSE, data, reply, option);
+    for (size_t i = 0; i < size; i++) {
+        if (!data.WriteUint8(rawData[i])) {
+            return false;
+        }
+    }
+    mediaKeySessionService->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySessionServiceIpcCode::COMMAND_PROCESS_MEDIA_KEY_RESPONSE),
+        data, reply, option);
     return true;
 }
 
@@ -465,8 +543,14 @@ bool DrmServiceNdkFuzzer::DrmserviceGenerateOfflineReleaseRequestTest(uint8_t *r
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SESSION_TOKEN);
     data.WriteInt32(size);
-    data.WriteBuffer(rawData, size);
-    mediaKeySessionService->OnRemoteRequest(MEDIA_KEY_SESSION_GENERATE_OFFLINE_RELEASE_REQUEST, data, reply, option);
+    for (size_t i = 0; i < size; i++) {
+        if (!data.WriteUint8(rawData[i])) {
+            return false;
+        }
+    }
+    mediaKeySessionService->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySessionServiceIpcCode::COMMAND_GENERATE_OFFLINE_RELEASE_REQUEST),
+        data, reply, option);
     return true;
 }
 
@@ -480,11 +564,25 @@ bool DrmServiceNdkFuzzer::DrmserviceProcessOfflineReleaseResponseTest(uint8_t *r
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SESSION_TOKEN);
-    data.WriteInt32(size);
-    data.WriteBuffer(rawData, size);
-    data.WriteInt32(size);
-    data.WriteBuffer(rawData, size);
-    mediaKeySessionService->OnRemoteRequest(MEDIA_KEY_SESSION_PROCESS_OFFLINE_RELEASE_RESPONSE, data, reply, option);
+    FuzzedDataProvider fdp(rawData, size);
+    size_t len = size / 2; // 2 half
+    uint8_t *licenseId = fdp.ConsumeBytes<uint8_t>(len).data();
+    uint8_t *releaseReponse = fdp.ConsumeBytes<uint8_t>(len).data();
+    data.WriteInt32(len);
+    for (size_t i = 0; i < len; i++) {
+        if (!data.WriteUint8(licenseId[i])) {
+            return false;
+        }
+    }
+    data.WriteInt32(len);
+    for (size_t i = 0; i < len; i++) {
+        if (!data.WriteUint8(releaseReponse[i])) {
+            return false;
+        }
+    }
+    mediaKeySessionService->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySessionServiceIpcCode::COMMAND_PROCESS_OFFLINE_RELEASE_RESPONSE),
+        data, reply, option);
     return true;
 }
 
@@ -498,7 +596,8 @@ bool DrmServiceNdkFuzzer::DrmserviceCheckMediaKeyStatusTest(uint8_t *rawData, si
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SESSION_TOKEN);
-    mediaKeySessionService->OnRemoteRequest(MEDIA_KEY_SESSION_GENERATE_CHECK_LICENSE_STATUS, data, reply, option);
+    mediaKeySessionService->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySessionServiceIpcCode::COMMAND_CHECK_MEDIA_KEY_STATUS), data, reply, option);
     return true;
 }
 
@@ -513,8 +612,14 @@ bool DrmServiceNdkFuzzer::DrmserviceRestoreOfflineMediaKeysTest(uint8_t *rawData
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SESSION_TOKEN);
     data.WriteInt32(size);
-    data.WriteBuffer(rawData, size);
-    mediaKeySessionService->OnRemoteRequest(MEDIA_KEY_SESSION_RESTORE_OFFLINEKEYS, data, reply, option);
+    for (size_t i = 0; i < size; i++) {
+        if (!data.WriteUint8(rawData[i])) {
+            return false;
+        }
+    }
+    mediaKeySessionService->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySessionServiceIpcCode::COMMAND_RESTORE_OFFLINE_MEDIA_KEYS),
+        data, reply, option);
     return true;
 }
 
@@ -528,7 +633,8 @@ bool DrmServiceNdkFuzzer::DrmserviceClearMediaKeysTest(uint8_t *rawData, size_t 
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SESSION_TOKEN);
-    mediaKeySessionService->OnRemoteRequest(MEDIA_KEY_SESSION_REMOVE_LICENSE, data, reply, option);
+    mediaKeySessionService->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySessionServiceIpcCode::COMMAND_CLEAR_MEDIA_KEYS), data, reply, option);
     return true;
 }
 
@@ -543,8 +649,10 @@ bool DrmServiceNdkFuzzer::DrmserviceRequireSecureDecoderModuleTest(uint8_t *rawD
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SESSION_TOKEN);
     std::string mimeType(reinterpret_cast<const char *>(rawData), size);
-    data.WriteString(mimeType);
-    mediaKeySessionService->OnRemoteRequest(MEDIA_KEY_SESSION_REQUIRE_SECURE_DECODER, data, reply, option);
+    data.WriteString16(Str8ToStr16(mimeType));
+    mediaKeySessionService->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySessionServiceIpcCode::COMMAND_REQUIRE_SECURE_DECODER_MODULE),
+        data, reply, option);
     return true;
 }
 
@@ -558,7 +666,9 @@ bool DrmServiceNdkFuzzer::DrmserviceGetContentProtectionLevelTest(uint8_t *rawDa
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SESSION_TOKEN);
-    mediaKeySessionService->OnRemoteRequest(MEDIA_KEY_SESSION_GETSECURITYLEVEL, data, reply, option);
+    mediaKeySessionService->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaKeySessionServiceIpcCode::COMMAND_GET_CONTENT_PROTECTION_LEVEL),
+        data, reply, option);
     return true;
 }
 
@@ -572,7 +682,8 @@ bool DrmServiceNdkFuzzer::DrmserviceDecryptMediaDataTest(uint8_t *rawData, size_
     MessageOption option;
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_DECRYPT_MODULE_TOKEN);
-    mediaDecryptService->OnRemoteRequest(DECRYPT_MODULE_DECRYPT_DATA, data, reply, option);
+    mediaDecryptService->OnRemoteRequest(
+        static_cast<uint32_t>(IMediaDecryptModuleServiceIpcCode::COMMAND_DECRYPT_MEDIA_DATA), data, reply, option);
     return true;
 }
 } // namespace DrmStandard

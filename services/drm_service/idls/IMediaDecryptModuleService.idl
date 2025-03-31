@@ -1,0 +1,7 @@
+package OHOS.DrmStandard;
+//sequenceable CrypInfo;
+import DrmTypes;
+interface IMediaDecryptModuleService{
+  void Release();
+  void DecryptMediaData([in] boolean secureDecodrtState,[in] CryptInfo cryptInfo,[in] DrmBuffer srcBuffer, [in] DrmBuffer dstBuffer);
+}

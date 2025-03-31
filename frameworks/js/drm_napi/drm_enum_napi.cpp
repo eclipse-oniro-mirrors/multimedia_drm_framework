@@ -31,44 +31,44 @@ struct JsEnumString {
 };
 
 static const std::vector<struct JsEnumInt> g_listenerType = {
-    { "LISTENER_DRM_EVENT", IMediaKeySessionService::ListenerType::LISTENER_DRM_EVENT },
-    { "LISTENER_PROVISION_REQUIRED", IMediaKeySessionService::ListenerType::LISTENER_PROVISION_REQUIRED },
-    { "LISTENER_KEY_REQUIRED", IMediaKeySessionService::ListenerType::LISTENER_KEY_REQUIRED },
-    { "LISTENER_KEY_EXPIRED", IMediaKeySessionService::ListenerType::LISTENER_KEY_EXPIRED },
-    { "LISTENER_VENDOR_DEFINED", IMediaKeySessionService::ListenerType::LISTENER_VENDOR_DEFINED },
-    { "LISTENER_EXPIRATION_UPDATE", IMediaKeySessionService::ListenerType::LISTENER_EXPIRATION_UPDATE },
-    { "LISTENER_KEY_CHANGE", IMediaKeySessionService::ListenerType::LISTENER_KEY_CHANGE },
+    { "LISTENER_DRM_EVENT", static_cast<int32_t>(ListenerType::LISTENER_DRM_EVENT) },
+    { "LISTENER_PROVISION_REQUIRED", static_cast<int32_t>(ListenerType::LISTENER_PROVISION_REQUIRED) },
+    { "LISTENER_KEY_REQUIRED", static_cast<int32_t>(ListenerType::LISTENER_KEY_REQUIRED) },
+    { "LISTENER_KEY_EXPIRED", static_cast<int32_t>(ListenerType::LISTENER_KEY_EXPIRED) },
+    { "LISTENER_VENDOR_DEFINED", static_cast<int32_t>(ListenerType::LISTENER_VENDOR_DEFINED) },
+    { "LISTENER_EXPIRATION_UPDATE", static_cast<int32_t>(ListenerType::LISTENER_EXPIRATION_UPDATE) },
+    { "LISTENER_KEY_CHANGE", static_cast<int32_t>(ListenerType::LISTENER_KEY_CHANGE) },
 };
 
 static const std::vector<struct JsEnumInt> g_mediaKeyType = {
-    { "MEDIA_KEY_TYPE_OFFLINE", IMediaKeySessionService::MediaKeyType::LICENSETYPE_OFFLINE },
-    { "MEDIA_KEY_TYPE_ONLINE", IMediaKeySessionService::MediaKeyType::LICENSETYPE_ONLINE },
+    { "MEDIA_KEY_TYPE_OFFLINE", static_cast<int32_t>(MediaKeyType::LICENSETYPE_OFFLINE) },
+    { "MEDIA_KEY_TYPE_ONLINE", static_cast<int32_t>(MediaKeyType::LICENSETYPE_ONLINE) },
 };
 
 static const std::vector<struct JsEnumInt> g_offlineMediaKeyStatus = {
     { "OFFLINE_MEDIA_KEY_STATUS_UNKNOWN",
-      IMediaKeySessionService::OfflineMediaKeyStatus::OFFLINELICENSESTATUS_UNKNOWN },
+      static_cast<int32_t>(OfflineMediaKeyStatus::OFFLINELICENSESTATUS_UNKNOWN) },
     { "OFFLINE_MEDIA_KEY_STATUS_USABLE",
-      IMediaKeySessionService::OfflineMediaKeyStatus::OFFLINELICENSESTATUS_USABLE },
+      static_cast<int32_t>(OfflineMediaKeyStatus::OFFLINELICENSESTATUS_USABLE) },
     { "OFFLINE_MEDIA_KEY_STATUS_INACTIVE",
-      IMediaKeySessionService::OfflineMediaKeyStatus::OFFLINELICENSESTATUS_INACTIVE },
+      static_cast<int32_t>(OfflineMediaKeyStatus::OFFLINELICENSESTATUS_INACTIVE) },
 };
 
 static const std::vector<struct JsEnumInt> g_certificateStatus = {
-    { "CERT_STATUS_PROVISIONED", IMediaKeySystemService::CertificateStatus::CERT_STATUS_PROVISIONED },
-    { "CERT_STATUS_NOT_PROVISIONED", IMediaKeySystemService::CertificateStatus::CERT_STATUS_NOT_PROVISIONED },
-    { "CERT_STATUS_EXPIRED", IMediaKeySystemService::CertificateStatus::CERT_STATUS_EXPIRED },
-    { "CERT_STATUS_INVALID", IMediaKeySystemService::CertificateStatus::CERT_STATUS_INVALID },
-    { "CERT_STATUS_UNAVAILABLE", IMediaKeySystemService::CertificateStatus::CERT_STATUS_UNAVAILABLE },
+    { "CERT_STATUS_PROVISIONED", static_cast<int32_t>(CertificateStatus::CERT_STATUS_PROVISIONED) },
+    { "CERT_STATUS_NOT_PROVISIONED", static_cast<int32_t>(CertificateStatus::CERT_STATUS_NOT_PROVISIONED) },
+    { "CERT_STATUS_EXPIRED", static_cast<int32_t>(CertificateStatus::CERT_STATUS_EXPIRED) },
+    { "CERT_STATUS_INVALID", static_cast<int32_t>(CertificateStatus::CERT_STATUS_INVALID) },
+    { "CERT_STATUS_UNAVAILABLE", static_cast<int32_t>(CertificateStatus::CERT_STATUS_UNAVAILABLE) },
 };
 
 static const std::vector<struct JsEnumInt> g_mediaKeyRequestType = {
-    { "MEDIA_KEY_REQUEST_TYPE_UNKNOWN", IMediaKeySessionService::RequestType::REQUEST_TYPE_UNKNOWN },
-    { "MEDIA_KEY_REQUEST_TYPE_INITIAL", IMediaKeySessionService::RequestType::REQUEST_TYPE_INITIAL },
-    { "MEDIA_KEY_REQUEST_TYPE_RENEWAL", IMediaKeySessionService::RequestType::REQUEST_TYPE_RENEWAL },
-    { "MEDIA_KEY_REQUEST_TYPE_RELEASE", IMediaKeySessionService::RequestType::REQUEST_TYPE_RELEASE },
-    { "MEDIA_KEY_REQUEST_TYPE_NONE", IMediaKeySessionService::RequestType::REQUEST_TYPE_NONE },
-    { "MEDIA_KEY_REQUEST_TYPE_UPDATE", IMediaKeySessionService::RequestType::REQUEST_TYPE_UPDATE },
+    { "MEDIA_KEY_REQUEST_TYPE_UNKNOWN", static_cast<int32_t>(RequestType::REQUEST_TYPE_UNKNOWN) },
+    { "MEDIA_KEY_REQUEST_TYPE_INITIAL", static_cast<int32_t>(RequestType::REQUEST_TYPE_INITIAL) },
+    { "MEDIA_KEY_REQUEST_TYPE_RENEWAL", static_cast<int32_t>(RequestType::REQUEST_TYPE_RENEWAL) },
+    { "MEDIA_KEY_REQUEST_TYPE_RELEASE", static_cast<int32_t>(RequestType::REQUEST_TYPE_RELEASE) },
+    { "MEDIA_KEY_REQUEST_TYPE_NONE", static_cast<int32_t>(RequestType::REQUEST_TYPE_NONE) },
+    { "MEDIA_KEY_REQUEST_TYPE_UPDATE", static_cast<int32_t>(RequestType::REQUEST_TYPE_UPDATE) },
 };
 
 static const std::vector<struct JsEnumInt> g_drmErrorCode = {
@@ -80,15 +80,15 @@ static const std::vector<struct JsEnumInt> g_drmErrorCode = {
 
 static const std::vector<struct JsEnumInt> g_contentProtectionLevel = {
     { "CONTENT_PROTECTION_LEVEL_UNKNOWN",
-        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN },
+        static_cast<int32_t>(ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN) },
     { "CONTENT_PROTECTION_LEVEL_SW_CRYPTO",
-        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_SW_CRYPTO },
+        static_cast<int32_t>(ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_SW_CRYPTO) },
     { "CONTENT_PROTECTION_LEVEL_HW_CRYPTO",
-        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_HW_CRYPTO },
+        static_cast<int32_t>(ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_HW_CRYPTO) },
     { "CONTENT_PROTECTION_LEVEL_ENHANCED_HW",
-        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_ENHANCED_HW },
+        static_cast<int32_t>(ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_ENHANCED_HW) },
     { "CONTENT_PROTECTION_LEVEL_MAX",
-        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_MAX },
+        static_cast<int32_t>(ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_MAX) },
 };
 
 static const std::vector<struct JsEnumString> g_preDefinedConfigName = {

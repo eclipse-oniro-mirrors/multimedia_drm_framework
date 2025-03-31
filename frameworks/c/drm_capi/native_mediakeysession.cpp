@@ -29,7 +29,7 @@
 
 using namespace OHOS::DrmStandard;
 
-static Drm_ErrCode DealMediaKeyRequest(IMediaKeySessionService::MediaKeyRequest &licenseRequest,
+static Drm_ErrCode DealMediaKeyRequest(MediaKeyRequest &licenseRequest,
     DRM_MediaKeyRequest *mediaKeyRequest)
 {
     DrmTrace trace("DealMediaKeyRequest");
@@ -67,10 +67,10 @@ Drm_ErrCode OH_MediaKeySession_GenerateMediaKeyRequest(MediaKeySession *mediaKey
         DRM_ERR_INVALID_VAL, "parameter is error.");
     DRM_CHECK_AND_RETURN_RET_LOG(((info->initDataLen >= 0) && (info->initDataLen <= MAX_INIT_DATA_LEN) &&
         (info->optionsCount <= MAX_MEDIA_KEY_REQUEST_OPTION_COUNT)), DRM_ERR_INVALID_VAL, "info err");
-    IMediaKeySessionService::MediaKeyRequestInfo licenseRequestInfo;
-    IMediaKeySessionService::MediaKeyRequest licenseRequest;
-    licenseRequest.requestType = OHOS::DrmStandard::IMediaKeySessionService::REQUEST_TYPE_RELEASE;
-    licenseRequestInfo.mediaKeyType = (IMediaKeySessionService::MediaKeyType)info->type;
+    MediaKeyRequestInfo licenseRequestInfo;
+    MediaKeyRequest licenseRequest;
+    licenseRequest.requestType = RequestType::REQUEST_TYPE_RELEASE;
+    licenseRequestInfo.mediaKeyType = (MediaKeyType)info->type;
     licenseRequestInfo.mimeType = std::string(info->mimeType, info->mimeType + sizeof(info->mimeType));
     std::vector<uint8_t> initDataStr(info->initData, info->initData + info->initDataLen);
     licenseRequestInfo.initData = initDataStr;
@@ -267,8 +267,8 @@ Drm_ErrCode OH_MediaKeySession_GetContentProtectionLevel(MediaKeySession *mediaK
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySessoin != nullptr) && (contentProtectionLevel != nullptr)),
         DRM_ERR_INVALID_VAL, "OH_MediaKeySession_GetContentProtectionLevel parameter is error!");
     int32_t result = DRM_ERR_OK;
-    IMediaKeySessionService::ContentProtectionLevel level =
-        IMediaKeySessionService::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN;
+    ContentProtectionLevel level =
+        ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN;
     MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySessoin);
     DRM_CHECK_AND_RETURN_RET_LOG(sessionObject->sessionImpl_ != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_GetContentProtectionLevel inner sessionImpl is nullptr!");

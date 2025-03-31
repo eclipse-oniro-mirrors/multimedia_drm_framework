@@ -1,0 +1,6 @@
+package OHOS.DrmStandard;
+import DrmTypes;
+interface IMediaKeySessionServiceCallback{
+  void SendEvent([in] DrmEventType event, [in] int extra, [in] unsigned char[] eventData);
+  void SendEventKeyChanged([in] OrderedMap<unsigned char[], MediaKeySessionKeyStatus> statusTable, [in] boolean hasNewGoodLicense);
+}

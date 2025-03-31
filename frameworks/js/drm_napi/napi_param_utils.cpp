@@ -164,22 +164,22 @@ napi_status NapiParamUtils::SetValueMap(const napi_env &env,
         DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "failed to call napi_set_named_property");
         std::string value;
         switch (itemTmp.second) {
-            case MEDIA_KEY_SESSION_KEY_STATUS_USABLE:
+            case MediaKeySessionKeyStatus::MEDIA_KEY_SESSION_KEY_STATUS_USABLE:
                 value = "USABLE";
                 break;
-            case MEDIA_KEY_SESSION_KEY_STATUS_EXPIRED:
+            case MediaKeySessionKeyStatus::MEDIA_KEY_SESSION_KEY_STATUS_EXPIRED:
                 value = "EXPIRED";
                 break;
-            case MEDIA_KEY_SESSION_KEY_STATUS_OUTPUT_NOT_ALLOWED:
+            case MediaKeySessionKeyStatus::MEDIA_KEY_SESSION_KEY_STATUS_OUTPUT_NOT_ALLOWED:
                 value = "OUTPUT_NOT_ALLOWED";
                 break;
-            case MEDIA_KEY_SESSION_KEY_STATUS_PENDING:
+            case MediaKeySessionKeyStatus::MEDIA_KEY_SESSION_KEY_STATUS_PENDING:
                 value = "PENDING";
                 break;
-            case MEDIA_KEY_SESSION_KEY_STATUS_INTERNAL_ERROR:
+            case MediaKeySessionKeyStatus::MEDIA_KEY_SESSION_KEY_STATUS_INTERNAL_ERROR:
                 value = "INTERNAL_ERROR";
                 break;
-            case MEDIA_KEY_SESSION_KEY_STATUS_USABLE_IN_FUTURE:
+            case MediaKeySessionKeyStatus::MEDIA_KEY_SESSION_KEY_STATUS_USABLE_IN_FUTURE:
                 value = "USABLE_IN_FUTURE";
                 break;
             default:
@@ -247,11 +247,12 @@ napi_status NapiParamUtils::SetProvisionRequest(const napi_env &env, const NapiP
 }
 
 napi_status NapiParamUtils::SetMediaKeyRequest(const napi_env &env,
-    const IMediaKeySessionService::MediaKeyRequest &mediaKeyRequest, napi_value &result)
+    const MediaKeyRequest &mediaKeyRequest, napi_value &result)
 {
     napi_status status = napi_create_object(env, &result);
     DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetMediaKeyRequest napi_create_object failed.");
-    status = SetValueInt32(env, "mediaKeyRequestType", mediaKeyRequest.requestType, result);
+    status = SetValueInt32(env, "mediaKeyRequestType",
+        static_cast<const int32_t>(mediaKeyRequest.requestType), result);
     DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetMediaKeyRequest SetValueInt32 failed.");
     status = SetValueUint8Array(env, "data", mediaKeyRequest.mData, result);
     DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "SetMediaKeyRequest SetValueUint8Array failed.");

@@ -1,0 +1,5 @@
+package OHOS.DrmStandard;
+import DrmTypes;
+interface IMediaKeySystemServiceCallback{
+  void SendEvent([in] DrmEventType event, [in] int extra, [in] unsigned char[] eventData);
+}

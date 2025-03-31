@@ -157,7 +157,7 @@ int32_t MediaKeySystemService::ProcessKeySystemResponse(const std::vector<uint8_
     return ret;
 }
 
-int32_t MediaKeySystemService::SetConfigurationString(std::string &configName, std::string &value)
+int32_t MediaKeySystemService::SetConfigurationString(const std::string &configName, const std::string &value)
 {
     DRM_INFO_LOG("SetConfiguration enter, configName:%{public}s, value:%{public}s.",
         configName.c_str(), value.c_str());
@@ -177,7 +177,7 @@ int32_t MediaKeySystemService::SetConfigurationString(std::string &configName, s
     return ret;
 }
 
-int32_t MediaKeySystemService::GetConfigurationString(std::string &configName, std::string &value)
+int32_t MediaKeySystemService::GetConfigurationString(const std::string &configName, std::string &value)
 {
     DRM_INFO_LOG("GetConfiguration enter, configName:%{public}s.", configName.c_str());
     DRM_CHECK_AND_RETURN_RET_LOG(configName != "bundleName", DRM_INNER_ERR_INVALID_VAL,
@@ -197,7 +197,8 @@ int32_t MediaKeySystemService::GetConfigurationString(std::string &configName, s
     return ret;
 }
 
-int32_t MediaKeySystemService::SetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value)
+int32_t MediaKeySystemService::SetConfigurationByteArray(const std::string &configName,
+    const std::vector<uint8_t> &value)
 {
     DRM_INFO_LOG("SetConfiguration enter, configName:%{public}s.", configName.c_str());
     DRM_CHECK_AND_RETURN_RET_LOG(configName != "bundleName", DRM_INNER_ERR_INVALID_VAL,
@@ -218,7 +219,7 @@ int32_t MediaKeySystemService::SetConfigurationByteArray(std::string &configName
     return ret;
 }
 
-int32_t MediaKeySystemService::GetConfigurationByteArray(std::string &configName, std::vector<uint8_t> &value)
+int32_t MediaKeySystemService::GetConfigurationByteArray(const std::string &configName, std::vector<uint8_t> &value)
 {
     DRM_INFO_LOG("GetConfiguration enter, configName:%{public}s.", configName.c_str());
     DRM_CHECK_AND_RETURN_RET_LOG(configName != "bundleName", DRM_INNER_ERR_INVALID_VAL,
@@ -239,7 +240,7 @@ int32_t MediaKeySystemService::GetConfigurationByteArray(std::string &configName
     return ret;
 }
 
-int32_t MediaKeySystemService::CreateMediaKeySession(IMediaKeySessionService::ContentProtectionLevel securityLevel,
+int32_t MediaKeySystemService::CreateMediaKeySession(ContentProtectionLevel securityLevel,
     sptr<IMediaKeySessionService> &keySessionProxy)
 {
     DrmTrace trace("MediaKeySystemService::CreateMediaKeySession");
@@ -332,7 +333,7 @@ int32_t MediaKeySystemService::CloseMediaKeySessionService(sptr<MediaKeySessionS
     return ret;
 }
 
-int32_t MediaKeySystemService::GetStatistics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics)
+int32_t MediaKeySystemService::GetStatistics(std::vector<MetircKeyValue> &metrics)
 {
     DRM_INFO_LOG("GetStatistics enter");
     int32_t ret = DRM_INNER_ERR_OK;
@@ -346,7 +347,7 @@ int32_t MediaKeySystemService::GetStatistics(std::vector<IMediaKeySystemService:
         return ret;
     }
     for (auto it = tmpStatistics.begin(); it != tmpStatistics.end(); it++) {
-        IMediaKeySystemService::MetircKeyValue keyValue;
+        MetircKeyValue keyValue;
         keyValue.name = it->first;
         keyValue.value = it->second;
         metrics.push_back(keyValue);
@@ -358,8 +359,7 @@ int32_t MediaKeySystemService::GetStatistics(std::vector<IMediaKeySystemService:
     return ret;
 }
 
-int32_t MediaKeySystemService::GetMaxContentProtectionLevel(
-    IMediaKeySessionService::ContentProtectionLevel *securityLevel)
+int32_t MediaKeySystemService::GetMaxContentProtectionLevel(ContentProtectionLevel &securityLevel)
 {
     DRM_INFO_LOG("GetMaxContentProtectionLevel enter.");
     int32_t ret = DRM_INNER_ERR_OK;
@@ -373,11 +373,11 @@ int32_t MediaKeySystemService::GetMaxContentProtectionLevel(
         DRM_ERR_LOG("GetMaxContentProtectionLevel failed.");
         return ret;
     }
-    *securityLevel = (IMediaKeySessionService::ContentProtectionLevel)level;
+    securityLevel = (ContentProtectionLevel)level;
     return ret;
 }
 
-int32_t MediaKeySystemService::GetCertificateStatus(IMediaKeySystemService::CertificateStatus *certStatus)
+int32_t MediaKeySystemService::GetCertificateStatus(CertificateStatus &certStatus)
 {
     DRM_INFO_LOG("GetCertificateStatus enter.");
     int32_t ret = DRM_INNER_ERR_OK;
@@ -391,7 +391,7 @@ int32_t MediaKeySystemService::GetCertificateStatus(IMediaKeySystemService::Cert
         DRM_ERR_LOG("GetCertificateStatus failed.");
         return ret;
     }
-    *certStatus = (IMediaKeySystemService::CertificateStatus)tmpStatus;
+    certStatus = (CertificateStatus)tmpStatus;
 
     return ret;
 }
@@ -413,8 +413,8 @@ int32_t MediaKeySystemService::GetOfflineMediaKeyIds(std::vector<std::vector<uin
     return ret;
 }
 
-int32_t MediaKeySystemService::GetOfflineMediaKeyStatus(std::vector<uint8_t> &licenseId,
-    IMediaKeySessionService::OfflineMediaKeyStatus &status)
+int32_t MediaKeySystemService::GetOfflineMediaKeyStatus(const std::vector<uint8_t> &licenseId,
+    OfflineMediaKeyStatus &status)
 {
     DRM_INFO_LOG("GetOfflineMediaKeyStatus enter.");
     int32_t ret = DRM_INNER_ERR_OK;
@@ -428,12 +428,12 @@ int32_t MediaKeySystemService::GetOfflineMediaKeyStatus(std::vector<uint8_t> &li
         DRM_ERR_LOG("GetOfflineMediaKeyStatus failed.");
         return ret;
     }
-    status = (IMediaKeySessionService::OfflineMediaKeyStatus)offlineMediaKeyStatus;
+    status = (OfflineMediaKeyStatus)offlineMediaKeyStatus;
 
     return ret;
 }
 
-int32_t MediaKeySystemService::ClearOfflineMediaKeys(std::vector<uint8_t> &licenseId)
+int32_t MediaKeySystemService::ClearOfflineMediaKeys(const std::vector<uint8_t> &licenseId)
 {
     DRM_INFO_LOG("ClearOfflineMediaKeys enter.");
     int32_t ret = DRM_INNER_ERR_OK;
@@ -450,7 +450,7 @@ int32_t MediaKeySystemService::ClearOfflineMediaKeys(std::vector<uint8_t> &licen
     return ret;
 }
 
-int32_t MediaKeySystemService::SetCallback(sptr<IMediaKeySystemServiceCallback> &callback)
+int32_t MediaKeySystemService::SetCallback(const sptr<IMediaKeySystemServiceCallback> &callback)
 {
     DRM_INFO_LOG("SetCallback enter");
     int32_t ret = DRM_INNER_ERR_BASE;

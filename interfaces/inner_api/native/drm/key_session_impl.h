@@ -20,10 +20,10 @@
 #include <unordered_map>
 #include "nocopyable.h"
 #include "ipc_skeleton.h"
-#include "i_keysession_service.h"
-#include "i_keysession_service_callback.h"
+#include "imedia_key_session_service.h"
+#include "imedia_key_session_service_callback.h"
 #include "drm_listener_stub.h"
-#include "key_session_service_callback_stub.h"
+#include "media_key_session_service_callback_stub.h"
 #include "drm_death_recipient.h"
 
 namespace OHOS {
@@ -52,8 +52,7 @@ public:
     int32_t Release();
     int32_t Init();
 
-    int32_t GenerateMediaKeyRequest(IMediaKeySessionService::MediaKeyRequestInfo &licenseRequestInfo,
-        IMediaKeySessionService::MediaKeyRequest &licenseRequest);
+    int32_t GenerateMediaKeyRequest(MediaKeyRequestInfo &licenseRequestInfo, MediaKeyRequest &licenseRequest);
     int32_t ProcessMediaKeyResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &licenseResponse);
     int32_t GenerateOfflineReleaseRequest(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &releaseRequest);
     int32_t ProcessOfflineReleaseResponse(std::vector<uint8_t> &licenseId, std::vector<uint8_t> &releaseReponse);
@@ -62,7 +61,7 @@ public:
 
     int32_t ClearMediaKeys();
 
-    int32_t GetContentProtectionLevel(IMediaKeySessionService::ContentProtectionLevel *securityLevel);
+    int32_t GetContentProtectionLevel(ContentProtectionLevel *securityLevel);
 
     sptr<IMediaKeySessionService> GetMediaKeySessionServiceProxy();
     sptr<MediaKeySessionImplCallback> GetApplicationCallback();
@@ -100,7 +99,7 @@ public:
     void InitEventMap();
     std::string GetEventName(DrmEventType event);
     int32_t SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> &data) override;
-    int32_t SendEventKeyChanged(std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> statusTable,
+    int32_t SendEventKeyChanged(const std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> &statusTable,
         bool hasNewGoodLicense) override;
 
 private:

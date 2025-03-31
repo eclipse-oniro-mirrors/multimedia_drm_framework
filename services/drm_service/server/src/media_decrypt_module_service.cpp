@@ -79,8 +79,7 @@ int32_t MediaDecryptModuleService::Release()
 }
 
 int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
-    IMediaDecryptModuleService::CryptInfo &cryptInfo, IMediaDecryptModuleService::DrmBuffer &srcBuffer,
-    IMediaDecryptModuleService::DrmBuffer &dstBuffer)
+    const CryptInfo &cryptInfo, const DrmBuffer &srcBuffer, const DrmBuffer &dstBuffer)
 {
     DrmTrace trace("DecryptMediaData");
     DRM_DEBUG_LOG("DecryptMediaData enter.");
@@ -110,7 +109,7 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
 }
 
 void MediaDecryptModuleService::SetCryptInfo(OHOS::HDI::Drm::V1_0::CryptoInfo &cryptInfoTmp,
-    IMediaDecryptModuleService::CryptInfo &cryptInfo, uint32_t &bufLen)
+    const CryptInfo &cryptInfo, uint32_t &bufLen)
 {
     cryptInfoTmp.type = (OHOS::HDI::Drm::V1_0::CryptoAlgorithmType)cryptInfo.type;
     cryptInfoTmp.keyId.assign(cryptInfo.keyId.begin(), cryptInfo.keyId.end());
@@ -127,8 +126,8 @@ void MediaDecryptModuleService::SetCryptInfo(OHOS::HDI::Drm::V1_0::CryptoInfo &c
 }
 
 void MediaDecryptModuleService::SetDrmBufferInfo(OHOS::HDI::Drm::V1_0::DrmBuffer* drmSrcBuffer,
-    OHOS::HDI::Drm::V1_0::DrmBuffer* drmDstBuffer, IMediaDecryptModuleService::DrmBuffer &srcBuffer,
-    IMediaDecryptModuleService::DrmBuffer &dstBuffer, uint32_t bufLen)
+    OHOS::HDI::Drm::V1_0::DrmBuffer* drmDstBuffer, const DrmBuffer &srcBuffer,
+    const DrmBuffer &dstBuffer, uint32_t bufLen)
 {
     DRM_DEBUG_LOG("SetDrmBufferInfo enter");
     drmSrcBuffer->bufferType = srcBuffer.bufferType;

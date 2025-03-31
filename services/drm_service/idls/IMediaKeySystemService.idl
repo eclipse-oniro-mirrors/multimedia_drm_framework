@@ -1,0 +1,21 @@
+package OHOS.DrmStandard;
+import DrmTypes;
+import IMediaKeySessionService;
+import IMediaKeySystemServiceCallback;
+interface IMediaKeySystemService{
+  void Release();
+  void GenerateKeySystemRequest([out] unsigned char[] request, [out] String defaultUrl);
+  void ProcessKeySystemResponse([in] unsigned char[] response);
+  void SetConfigurationString([in] String configName, [in] String value);
+  void GetConfigurationString([in] String configName, [out] String value);
+  void SetConfigurationByteArray([in] String configName, [in] unsigned char[] value);
+  void GetConfigurationByteArray([in] String configName, [out] unsigned char[] value);
+  void CreateMediaKeySession([in] ContentProtectionLevel securityLevel,[out] IMediaKeySessionService keySessionProxy);
+  void GetStatistics([out] MetircKeyValue[] metrics);
+  void GetMaxContentProtectionLevel([out] ContentProtectionLevel securityLevel);
+  void GetCertificateStatus([out] CertificateStatus certStatus);
+  void GetOfflineMediaKeyIds([out] List<unsigned char[]> licenseIds);
+  void GetOfflineMediaKeyStatus([in] unsigned char[] licenseId,[out] OfflineMediaKeyStatus status);
+  void ClearOfflineMediaKeys([in] unsigned char[] licenseId);
+  void SetCallback([in] IMediaKeySystemServiceCallback callbackFunc);
+}

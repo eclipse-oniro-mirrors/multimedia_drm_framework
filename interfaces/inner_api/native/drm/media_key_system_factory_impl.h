@@ -19,7 +19,7 @@
 #include "media_key_system_impl.h"
 #include "ipc_skeleton.h"
 #include "nocopyable.h"
-#include "i_mediakeysystemfactory_service.h"
+#include "imedia_key_system_factory_service.h"
 #include "drm_death_recipient.h"
 #include "drm_log.h"
 #include "hitrace/tracechain.h"
@@ -35,7 +35,7 @@ public:
     bool IsMediaKeySystemSupported(std::string &name);
     bool IsMediaKeySystemSupported(std::string &name, std::string &mimeType);
     bool IsMediaKeySystemSupported(std::string &name, std::string &mimeType,
-        IMediaKeySessionService::ContentProtectionLevel securityLevel);
+        ContentProtectionLevel securityLevel);
     int32_t GetMediaKeySystems(std::map<std::string, std::string> &keySystemNames);
     int32_t GetMediaKeySystemUuid(std::string &name, std::string &uuid);
     int32_t CreateMediaKeySystem(std::string &name, sptr<MediaKeySystemImpl> *mediaKeySystemImpl);

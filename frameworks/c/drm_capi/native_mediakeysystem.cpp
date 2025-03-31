@@ -73,10 +73,10 @@ bool OH_MediaKeySystem_IsSupported3(const char *uuid, const char *mimeType,
 
     OHOS::sptr<MediaKeySystemFactoryImpl> fatory = MediaKeySystemFactoryImpl::GetInstance();
 
-    IMediaKeySessionService::ContentProtectionLevel securityLevel =
-        (IMediaKeySessionService::ContentProtectionLevel)ContentProtectionLevel;
-    if ((securityLevel <= IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN) ||
-        (securityLevel >= IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_MAX)) {
+    OHOS::DrmStandard::ContentProtectionLevel securityLevel =
+        (OHOS::DrmStandard::ContentProtectionLevel)ContentProtectionLevel;
+    if ((securityLevel <= OHOS::DrmStandard::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN) ||
+        (securityLevel >= OHOS::DrmStandard::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_MAX)) {
         DRM_ERR_LOG("ContentProtectionLevel is invalid");
         return false;
     }
@@ -283,7 +283,7 @@ Drm_ErrCode OH_MediaKeySystem_GetConfigurationByteArray(MediaKeySystem *mediaKey
     return DRM_ERR_OK;
 }
 
-static Drm_ErrCode vectorToClist(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics,
+static Drm_ErrCode vectorToClist(std::vector<MetircKeyValue> &metrics,
     DRM_Statistics *statistics)
 {
     DRM_INFO_LOG("vectorToCArray start.");
@@ -319,7 +319,7 @@ Drm_ErrCode OH_MediaKeySystem_GetStatistics(MediaKeySystem *mediaKeySystem, DRM_
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySystem != nullptr) && (statistics != nullptr)), DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_GetStatistics params is error!");
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
-    std::vector<IMediaKeySystemService::MetircKeyValue> metrics;
+    std::vector<MetircKeyValue> metrics;
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
         "mediaKeySystemImpl::GetStatistics inner systemImpl is nullptr!");
     int32_t result = systemObject->systemImpl_->GetStatistics(metrics);
@@ -341,13 +341,13 @@ Drm_ErrCode OH_MediaKeySystem_GetMaxContentProtectionLevel(MediaKeySystem *media
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
         "mediaKeySystemImpl::GetMaxContentProtectionLevel faild!");
     int32_t result = DRM_ERR_OK;
-    IMediaKeySessionService::ContentProtectionLevel level =
-        IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN;
+    ContentProtectionLevel level =
+        ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN;
     result = systemObject->systemImpl_->GetMaxContentProtectionLevel(&level);
     DRM_CHECK_AND_RETURN_RET_LOG(result == DRM_ERR_OK, DRM_ERR_UNKNOWN,
         "OH_MediaKeySystem_GetMaxContentProtectionLevel fail!");
-    if (level <= IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_UNKNOWN ||
-        level >= IMediaKeySessionService::CONTENT_PROTECTION_LEVEL_MAX) {
+    if (level <= ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN ||
+        level >= ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_MAX) {
         DRM_ERR_LOG("the level obtained is beyond reasonable range!");
         return DRM_ERR_UNKNOWN;
     }
@@ -413,7 +413,7 @@ Drm_ErrCode OH_MediaKeySystem_GetCertificateStatus(MediaKeySystem *mediaKeySyste
     DRM_INFO_LOG("OH_MediaKeySystem_GetCertificateStatus enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySystem != nullptr) && (certStatus != nullptr)), DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_GetCertificateStatus parameter is error!");
-    IMediaKeySystemService::CertificateStatus CertStatus;
+    CertificateStatus CertStatus;
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
         "mediaKeySystemImpl::GetCertificateStatus faild!");
@@ -470,8 +470,8 @@ Drm_ErrCode OH_MediaKeySystem_CreateMediaKeySession(MediaKeySystem *mediaKeySyst
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
         "mediaKeySystemImpl::CreateMediaKeySession faild!");
     int32_t secure = static_cast<int32_t>(*level);
-    IMediaKeySessionService::ContentProtectionLevel secureLevel =
-        static_cast<IMediaKeySessionService::ContentProtectionLevel>(secure);
+    ContentProtectionLevel secureLevel =
+        static_cast<ContentProtectionLevel>(secure);
     OHOS::sptr<MediaKeySessionImpl> keySessionImpl = nullptr;
     int32_t ret = systemObject->systemImpl_->CreateMediaKeySession(secureLevel, &keySessionImpl);
     Drm_ErrCode retCode = DRM_ERR_UNKNOWN;
@@ -559,8 +559,8 @@ Drm_ErrCode OH_MediaKeySystem_GetOfflineMediaKeyStatus(MediaKeySystem *mediaKeyS
     int32_t result = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
 
     std::vector<uint8_t> licenseIdVec(offlineMediaKeyId, offlineMediaKeyId + offlineMediaKeyIdLen);
-    IMediaKeySessionService::OfflineMediaKeyStatus offlineMediaKeyStatus =
-        IMediaKeySessionService::OFFLINELICENSESTATUS_UNKNOWN;
+    OfflineMediaKeyStatus offlineMediaKeyStatus =
+        OfflineMediaKeyStatus::OFFLINELICENSESTATUS_UNKNOWN;
 
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
