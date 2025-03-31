@@ -29,9 +29,7 @@ ohos_copy("drm_declaration") {
 }
 
 ohos_shared_library("drm_napi") {
-  configs = [
-    "./../../../../services/drm_service/idls:drm_sa_idl_config"
-  ]
+  configs = [ "./../../../../services/drm_service/idls:drm_sa_idl_config" ]
   include_dirs = [
     "./../../../../frameworks/js/drm_napi",
     "./../../../../frameworks/native/drm",
