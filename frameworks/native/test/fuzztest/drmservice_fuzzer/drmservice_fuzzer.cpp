@@ -103,7 +103,7 @@ bool DrmServiceNdkFuzzer::DrmserviceIsMediaKeySystemSupportedV3Test(uint8_t *raw
     MessageParcel data;
     data.WriteInterfaceToken(MEDIA_KEY_SYSTEM_FACTORY_TOKEN);
     FuzzedDataProvider fdp(rawData, size);
-    size_t len = (size - sizeof(int32_t))/ 2; // 2 half
+    size_t len = (size - sizeof(int32_t)) / 2; // 2 half    
     std::string uuid(fdp.ConsumeBytes<char>(len).data(), len);
     std::string mimeType(fdp.ConsumeBytes<char>(len).data(), len);
     data.WriteString16(Str8ToStr16(uuid));
