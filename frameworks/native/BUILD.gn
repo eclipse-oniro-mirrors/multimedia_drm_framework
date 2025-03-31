@@ -66,14 +66,14 @@ ohos_shared_library("drm_framework") {
   public_configs = [
     ":drm_framework_local_config",
     ":drm_framework_public_config",
-    "./../../services/drm_service/idls:drm_sa_idl_config"
+    "./../../services/drm_service/idls:drm_sa_idl_config",
   ]
 
   include_dirs = [ "./drm" ]
 
   deps = [
     ":drm_api_operation",
-    "./../../services/drm_service/idls:idl_sa_proxy"
+    "./../../services/drm_service/idls:idl_sa_proxy",
   ]
 
   external_deps = [
