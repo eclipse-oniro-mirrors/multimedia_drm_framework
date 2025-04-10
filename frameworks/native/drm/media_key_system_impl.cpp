@@ -370,7 +370,6 @@ int32_t MediaKeySystemImpl::SetCallback(const sptr<MediaKeySystemImplCallback> &
 sptr<MediaKeySystemImplCallback> MediaKeySystemImpl::GetApplicationCallback()
 {
     DRM_INFO_LOG("GetApplicationCallback");
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
     return mediaKeySystemApplicationCallback_;
 }
 
