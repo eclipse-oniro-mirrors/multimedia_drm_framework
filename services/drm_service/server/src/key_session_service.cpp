@@ -337,7 +337,6 @@ int32_t MediaKeySessionService::SendEvent(OHOS::HDI::Drm::V1_0::EventType eventT
     const std::vector<uint8_t> &data)
 {
     DRM_INFO_LOG("SendEvent.");
-    std::lock_guard<std::recursive_mutex> lock(sessionMutex_);
     DrmEventType event = static_cast<DrmEventType>(eventType);
     if (callback_ != nullptr) {
         return callback_->SendEvent(event, extra, data);
@@ -350,7 +349,6 @@ int32_t MediaKeySessionService::SendEventKeyChange(
     bool hasNewGoodLicense)
 {
     DRM_INFO_LOG("SendEventKeyChange.");
-    std::lock_guard<std::recursive_mutex> lock(sessionMutex_);
     std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> keyStatusMap;
     for (auto item : keyStatus) {
         keyStatusMap.insert({ item.first, static_cast<MediaKeySessionKeyStatus>(item.second) });
