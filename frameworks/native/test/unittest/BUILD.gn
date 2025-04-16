@@ -14,7 +14,7 @@
 import("//build/ohos.gni")
 import("//build/test.gni")
 
-module_output_path = "drm_framework/drm_framework_unittest"
+module_output_path = "drm_framework/drm"
 
 config("drm_framework_capi_unittest_v1_0_config") {
   include_dirs = [
