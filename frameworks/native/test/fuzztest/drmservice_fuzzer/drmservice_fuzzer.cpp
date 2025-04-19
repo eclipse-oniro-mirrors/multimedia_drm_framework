@@ -566,8 +566,8 @@ bool DrmServiceNdkFuzzer::DrmserviceProcessOfflineReleaseResponseTest(uint8_t *r
     data.WriteInterfaceToken(MEDIA_KEY_SESSION_TOKEN);
     FuzzedDataProvider fdp(rawData, size);
     size_t len = size / 2; // 2 half
-    uint8_t *licenseId = fdp.ConsumeBytes<uint8_t>(len).data();
-    uint8_t *releaseReponse = fdp.ConsumeBytes<uint8_t>(len).data();
+    std::vector<uint8_t> licenseId = fdp.ConsumeBytes<uint8_t>(len);
+    std::vector<uint8_t> releaseReponse = fdp.ConsumeBytes<uint8_t>(len);
     data.WriteInt32(len);
     for (size_t i = 0; i < len; i++) {
         if (!data.WriteUint8(licenseId[i])) {
