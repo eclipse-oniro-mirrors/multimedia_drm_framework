@@ -46,10 +46,6 @@ MediaKeySessionService::MediaKeySessionService(sptr<OHOS::HDI::Drm::V1_0::IMedia
 MediaKeySessionService::~MediaKeySessionService()
 {
     DRM_INFO_LOG("~MediaKeySessionService 0x%{public}06" PRIXPTR " Instances destroy.", FAKE_POINTER(this));
-    std::lock_guard<std::recursive_mutex> lock(callbackMutex_);
-    if (sessionOperatorsCallback_ != nullptr) {
-        sessionOperatorsCallback_ = nullptr;
-    }
 }
 
 int32_t MediaKeySessionService::CloseMediaKeySessionServiceByCallback()
@@ -57,9 +53,7 @@ int32_t MediaKeySessionService::CloseMediaKeySessionServiceByCallback()
     DRM_INFO_LOG("CloseMediaKeySessionServiceByCallback enter.");
     {
         std::lock_guard<std::recursive_mutex> lock(callbackMutex_);
-        if (sessionOperatorsCallback_ != nullptr) {
-            sessionOperatorsCallback_ = nullptr;
-        }
+        sessionOperatorsCallback_ = nullptr;
     }
     std::lock_guard<std::recursive_mutex> lock(sessionMutex_);
     int32_t currentPid = IPCSkeleton::GetCallingPid();
@@ -168,10 +162,7 @@ int32_t MediaKeySessionService::GenerateOfflineReleaseRequest(const std::vector<
     DRM_CHECK_AND_RETURN_RET_LOG(hdiMediaKeySession_ != nullptr, DRM_INNER_ERR_SERVICE_FATAL_ERROR,
         "hdiMediaKeySession_ is nullptr!");
     ret = hdiMediaKeySession_->GetOfflineReleaseRequest(licenseId, releaseRequest);
-    if (ret != DRM_INNER_ERR_OK) {
-        DRM_ERR_LOG("GenerateOfflineReleaseRequest failed.");
-        return ret;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "GenerateOfflineReleaseRequest failed.");
     return ret;
 }
 
@@ -185,10 +176,7 @@ int32_t MediaKeySessionService::ProcessOfflineReleaseResponse(const std::vector<
         "hdiMediaKeySession_ is nullptr!");
 
     ret = hdiMediaKeySession_->ProcessOfflineReleaseResponse(licenseId, releaseResponse);
-    if (ret != DRM_INNER_ERR_OK) {
-        DRM_ERR_LOG("ProcessOfflineReleaseResponse failed.");
-        return ret;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "ProcessOfflineReleaseResponse failed.");
     return ret;
 }
 
@@ -201,19 +189,14 @@ int32_t MediaKeySessionService::CheckMediaKeyStatus(std::map<std::string, std::s
         "hdiMediaKeySession_ is nullptr!");
     std::map<std::string, std::string> mp;
     ret = hdiMediaKeySession_->CheckMediaKeyStatus(mp);
-    if (ret != DRM_INNER_ERR_OK) {
-        DRM_ERR_LOG("CheckMediaKeyStatus failed.");
-        return ret;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "CheckMediaKeyStatus failed.");
     for (auto m : mp) {
         std::string name = m.first;
         std::string status = m.second;
         licenseStatus.insert(std::make_pair(name, status));
     }
-    if (licenseStatus.size() == 0) {
-        DRM_ERR_LOG("CheckMediaKeyStatus licenseStatus is empty.");
-        return DRM_INNER_ERR_BASE;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        licenseStatus.size() != 0, DRM_INNER_ERR_BASE, "CheckMediaKeyStatus licenseStatus is empty.");
     return ret;
 }
 
@@ -225,10 +208,8 @@ int32_t MediaKeySessionService::RestoreOfflineMediaKeys(const std::vector<uint8_
     DRM_CHECK_AND_RETURN_RET_LOG(hdiMediaKeySession_ != nullptr, DRM_INNER_ERR_SERVICE_FATAL_ERROR,
         "hdiMediaKeySession_ is nullptr!");
     ret = hdiMediaKeySession_->RestoreOfflineMediaKeys(licenseId);
-    if (ret != DRM_INNER_ERR_OK) {
-        DRM_ERR_LOG("RestoreOfflineMediaKeys failed.");
-        return ret;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        ret == DRM_INNER_ERR_OK, ret, "RestoreOfflineMediaKeys failed.");
     return ret;
 }
 
@@ -240,10 +221,7 @@ int32_t MediaKeySessionService::ClearMediaKeys()
     DRM_CHECK_AND_RETURN_RET_LOG(hdiMediaKeySession_ != nullptr, DRM_INNER_ERR_SERVICE_FATAL_ERROR,
         "hdiMediaKeySession_ is nullptr!");
     ret = hdiMediaKeySession_->ClearMediaKeys();
-    if (ret != DRM_INNER_ERR_OK) {
-        DRM_ERR_LOG("ClearMediaKeys failed.");
-        return ret;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "ClearMediaKeys failed.");
     return ret;
 }
 
@@ -256,10 +234,7 @@ int32_t MediaKeySessionService::GetContentProtectionLevel(ContentProtectionLevel
         "hdiMediaKeySession_ is nullptr!");
     OHOS::HDI::Drm::V1_0::ContentProtectionLevel level;
     ret = hdiMediaKeySession_->GetContentProtectionLevel(level);
-    if (ret != DRM_INNER_ERR_OK) {
-        DRM_ERR_LOG("GetContentProtectionLevel failed.");
-        return ret;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "GetContentProtectionLevel failed.");
     securityLevel = (ContentProtectionLevel)level;
     return ret;
 }
@@ -269,30 +244,21 @@ int32_t MediaKeySessionService::GetMediaDecryptModule(sptr<IMediaDecryptModuleSe
     DrmTrace trace("GetMediaDecryptModule");
     DRM_INFO_LOG("GetMediaDecryptModule enter.");
     std::lock_guard<std::recursive_mutex> lock(sessionMutex_);
-    if (decryptModule_ != nullptr) {
-        DRM_INFO_LOG("decryptModule already exists.");
-        decryptModule = decryptModule_;
-        return DRM_INNER_ERR_OK;
-    }
+    decryptModule = decryptModule_;
+    DRM_CHECK_AND_RETURN_RET_LOG(decryptModule_ == nullptr, DRM_INNER_ERR_OK, "decryptModule already exists.");
     sptr<OHOS::HDI::Drm::V1_0::IMediaDecryptModule> hdiDecryptModule = nullptr;
-    if (hdiMediaKeySession_ == nullptr) {
-        DRM_ERR_LOG("hdiMediaKeySession_ == nullptr");
-        return DRM_INNER_ERR_INVALID_KEY_SESSION;
-    } else {
-        int32_t retCode = DRM_INNER_ERR_OK;
-        retCode = hdiMediaKeySession_->GetMediaDecryptModule(hdiDecryptModule);
-        if (retCode != DRM_INNER_ERR_OK || hdiDecryptModule == nullptr) {
-            DRM_ERR_LOG("hdiDecryptModule allocation failed.");
-            return DRM_INNER_ERR_BASE;
-        }
-        decryptModule_ = new (std::nothrow) MediaDecryptModuleService(hdiDecryptModule, statisticsInfo_);
-        if (decryptModule_ == nullptr) {
-            DRM_ERR_LOG("New MediaDecryptModuleService allocation failed.");
-            return DRM_INNER_ERR_NO_MEMORY;
-        }
-        decryptModule = decryptModule_;
-        return DRM_INNER_ERR_OK;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        hdiMediaKeySession_ != nullptr, DRM_INNER_ERR_INVALID_KEY_SESSION, "hdiMediaKeySession_ == nullptr");
+    int32_t retCode = DRM_INNER_ERR_OK;
+    retCode = hdiMediaKeySession_->GetMediaDecryptModule(hdiDecryptModule);
+    DRM_CHECK_AND_RETURN_RET_LOG(retCode == DRM_INNER_ERR_OK && hdiDecryptModule != nullptr,
+        DRM_INNER_ERR_BASE,
+        "hdiDecryptModule allocation failed.");
+    decryptModule_ = new (std::nothrow) MediaDecryptModuleService(hdiDecryptModule, statisticsInfo_);
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        decryptModule_ != nullptr, DRM_INNER_ERR_NO_MEMORY, "New MediaDecryptModuleService allocation failed.");
+    decryptModule = decryptModule_;
+    return DRM_INNER_ERR_OK;
 }
 
 int32_t MediaKeySessionService::RequireSecureDecoderModule(const std::string &mimeType, bool &status)
@@ -306,10 +272,7 @@ int32_t MediaKeySessionService::RequireSecureDecoderModule(const std::string &mi
     DRM_CHECK_AND_RETURN_RET_LOG(hdiMediaKeySession_ != nullptr, DRM_INNER_ERR_SERVICE_FATAL_ERROR,
         "hdiMediaKeySession_ is nullptr!");
     ret = hdiMediaKeySession_->RequiresSecureDecoderModule(mimeType, status);
-    if (ret != DRM_INNER_ERR_OK) {
-        DRM_ERR_LOG("RequireSecureDecoderModule failed.");
-        return ret;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "RequireSecureDecoderModule failed.");
     return ret;
 }
 
@@ -317,16 +280,12 @@ int32_t MediaKeySessionService::SetCallback(const sptr<IMediaKeySessionServiceCa
 {
     DRM_INFO_LOG("SetCallback enter.");
     std::lock_guard<std::recursive_mutex> lock(sessionMutex_);
-    if (callback == nullptr) {
-        DRM_ERR_LOG("SetCallback nullptr , failed.");
-        return DRM_INNER_ERR_BASE;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(callback != nullptr, DRM_INNER_ERR_BASE, "SetCallback nullptr failed.");
     callback_ = callback;
-    if (hdiMediaKeySession_ != nullptr) {
-        return hdiMediaKeySession_->SetCallback(this);
-    }
-    DRM_ERR_LOG("SetCallback hdiMediaKeySession_ is nullptr , failed.");
-    return DRM_INNER_ERR_OPERATION_NOT_PERMITTED;
+    DRM_CHECK_AND_RETURN_RET_LOG(hdiMediaKeySession_ != nullptr,
+        DRM_INNER_ERR_OPERATION_NOT_PERMITTED,
+        "SetCallback hdiMediaKeySession_ is nullptr , failed.");
+    return hdiMediaKeySession_->SetCallback(this);
 }
 
 int32_t MediaKeySessionService::SendEvent(OHOS::HDI::Drm::V1_0::EventType eventType, int32_t extra,
@@ -334,10 +293,9 @@ int32_t MediaKeySessionService::SendEvent(OHOS::HDI::Drm::V1_0::EventType eventT
 {
     DRM_INFO_LOG("SendEvent.");
     DrmEventType event = static_cast<DrmEventType>(eventType);
-    if (callback_ != nullptr) {
-        return callback_->SendEvent(event, extra, data);
-    }
-    return DRM_INNER_ERR_OPERATION_NOT_PERMITTED;
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        callback_ != nullptr, DRM_INNER_ERR_OPERATION_NOT_PERMITTED, "SendEvent callback not set");
+    return callback_->SendEvent(event, extra, data);
 }
 
 int32_t MediaKeySessionService::SendEventKeyChange(
@@ -349,19 +307,17 @@ int32_t MediaKeySessionService::SendEventKeyChange(
     for (auto item : keyStatus) {
         keyStatusMap.insert({ item.first, static_cast<MediaKeySessionKeyStatus>(item.second) });
     }
-    if (callback_ != nullptr) {
-        return callback_->SendEventKeyChanged(keyStatusMap, hasNewGoodLicense);
-    }
-    return DRM_INNER_ERR_OPERATION_NOT_PERMITTED;
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        callback_ != nullptr, DRM_INNER_ERR_OPERATION_NOT_PERMITTED, "SendEventKeyChange callback not set");
+    return callback_->SendEventKeyChanged(keyStatusMap, hasNewGoodLicense);
 }
 
 std::string MediaKeySessionService::GetDecryptModuleDumpInfo()
 {
     std::lock_guard<std::recursive_mutex> lock(sessionMutex_);
-    if (decryptModule_ != nullptr) {
-        return decryptModule_->GetDumpInfo();
-    }
-    return "";
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        decryptModule_ != nullptr, "", "get decrypt dump info: decrypt module is null");
+    return decryptModule_->GetDumpInfo();
 }
 } // DrmStandard
 } // OHOS

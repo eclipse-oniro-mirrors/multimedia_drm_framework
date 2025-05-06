@@ -1590,7 +1590,8 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetOfflineMediaKeyStatusNormal_038, 
         EXPECT_EQ(rett, 0);
     } else {
         testKeySessionResponseLen = 50;
-    }errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
+    }
+    errNo = OH_MediaKeySession_ProcessMediaKeyResponse(mediaKeySession, testKeySessionResponse,
         (int32_t)testKeySessionResponseLen, onlineMediaKeyId, &onlineMediaKeyIdLen);
     DRM_MediaKeyStatus mediaKeyStatus;
     errNo = OH_MediaKeySession_CheckMediaKeyStatus(mediaKeySession, &mediaKeyStatus);
@@ -2321,6 +2322,8 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_SetConfigurationStringNormal_051, Te
     errNo = OH_MediaKeySystem_GetConfigurationString(mediaKeySystem, "version", value, valueLen);
     if (g_isWisePlay) {
         EXPECT_EQ(errNo, DRM_ERR_OK);
+        errNo = OH_MediaKeySystem_GetConfigurationString(mediaKeySystem, "version", value, 0);
+        EXPECT_NE(errNo, DRM_ERR_OK);
     } else {
         EXPECT_NE(errNo, DRM_ERR_OK);
     }
@@ -3584,6 +3587,8 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ClearMediaKeysAbNormal_081, TestSize
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CreateMediaKeySessionAbNormal_082, TestSize.Level0)
 {
     MediaKeySystem *mediaKeySystem = nullptr;
+    string name;
+    string uuid;
     Drm_ErrCode errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
@@ -3599,6 +3604,14 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CreateMediaKeySessionAbNormal_082, T
         allback->~MediaKeySystemCallback();
         OHOS::sptr<MediaKeySystemFactoryImpl> fatory = MediaKeySystemFactoryImpl::GetInstance();
         fatory->Init();
+        if (g_isWisePlay) {
+            name = "com.wiseplay.drm";
+        } else {
+            name = "com.wiseplay.drm";
+        }
+        fatory->GetMediaKeySystemUuid(name, uuid);
+        name = "com.test";
+        fatory->GetMediaKeySystemUuid(name, uuid);
     }
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
     mediaKeySystem = nullptr;
@@ -3807,6 +3820,35 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_KillClearPlayHostAbNormal1, TestSize
     sleep(5);
 }
 
+static void PrepareCryptoInfo_HugeSubsample(CryptInfo &info)
+{
+    info.type = CryptAlgorithmType::ALGTYPE_AES_CTR;
+    info.pattern.encryptBlocks = 0;
+    info.pattern.skipBlocks = 0;
+    SubSample testSubsample;
+    testSubsample.clearHeaderLen = 3 * 1024 * 1024; // 1024 = 1kb 3M
+    testSubsample.payLoadLen = 1 * 1024 * 1024; // 1024 = 1kb 1M
+    info.subSample.push_back(testSubsample);
+    testSubsample.clearHeaderLen = 1 * 1024 * 1024; // 1024 = 1kb 1M
+    testSubsample.payLoadLen = 3 * 1024 * 1024; // 1024 = 1kb 3M
+    info.subSample.push_back(testSubsample);
+    testSubsample.clearHeaderLen = 1024; // 1024 = 1kb
+    testSubsample.payLoadLen = 1024; // 1024 = 1kb
+    info.subSample.push_back(testSubsample);
+    testSubsample.clearHeaderLen = 1024; // 1024 = 1kb
+    testSubsample.payLoadLen = 1024; // 1024 = 1kb
+    info.subSample.push_back(testSubsample);
+    testSubsample.clearHeaderLen = 1024; // 1024 = 1kb
+    testSubsample.payLoadLen = 507 * 1024; // 1024 = 1kb 507kb
+    info.subSample.push_back(testSubsample);
+    testSubsample.clearHeaderLen = 24; // 24 = 16 + 8
+    testSubsample.payLoadLen = 2 * 1024 * 1024; // 1024 = 1kb 2M
+    info.subSample.push_back(testSubsample);
+    testSubsample.clearHeaderLen = 1024; // 1024 = 1kb
+    testSubsample.payLoadLen = 0;
+    info.subSample.push_back(testSubsample);
+}
+
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_Dump_01, TestSize.Level0)
 {
     Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
@@ -3831,6 +3873,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_Dump_01, TestSize.Level0)
         DrmBuffer dstBuffer;
         bool secureDecodrtState = false;
         CryptInfo cryptInfo;
+        decryptModule->DecryptMediaData(secureDecodrtState, cryptInfo, srcBuffer, dstBuffer);
+        decryptModule->DecryptMediaData(secureDecodrtState, cryptInfo, srcBuffer, dstBuffer);
+        decryptModule->DecryptMediaData(secureDecodrtState, cryptInfo, srcBuffer, dstBuffer);
+        PrepareCryptoInfo_HugeSubsample(cryptInfo);
         decryptModule->DecryptMediaData(secureDecodrtState, cryptInfo, srcBuffer, dstBuffer);
         system("hidumper -s 3012");
         decryptModule->Release();

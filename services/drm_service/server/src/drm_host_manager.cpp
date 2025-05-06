@@ -56,9 +56,12 @@ DrmHostManager::DrmHostDeathRecipient::~DrmHostDeathRecipient()
 {
     DRM_DEBUG_LOG("~DrmHostDeathRecipient");
 }
+
 void DrmHostManager::OnDrmPluginDied(std::string &name)
 {
 }
+
+
 void DrmHostManager::DrmHostDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
     DRM_ERR_LOG("Remote service died, do clean works.");
@@ -69,20 +72,15 @@ void DrmHostManager::ClearDeathService(std::string &name)
 {
     DRM_INFO_LOG("ClearDeathService enter.");
     std::lock_guard<std::recursive_mutex> lock(drmHostMapMutex);
-    if (lazyLoadPluginInfoMap.count(name) <= 0) {
-        DRM_DEBUG_LOG("PluginCountInfo is empty, name:%{public}s",
-            name.c_str());
-        return;
-    }
-    if (lazyLoadPluginCountMap.empty()) {
-        DRM_DEBUG_LOG("PluginCountMap is empty.");
-        return;
-    }
+    DRM_CHECK_AND_RETURN_LOG(
+        lazyLoadPluginInfoMap.count(name) > 0, "PluginCountInfo is empty, name:%{public}s", name.c_str());
+    DRM_CHECK_AND_RETURN_LOG(!lazyLoadPluginCountMap.empty(), "PluginCountMap is empty.");
     if (statusCallback_ != nullptr) {
         statusCallback_->OnDrmPluginDied(name);
     }
     lazyLoadPluginCountMap[name] = NOT_LAZY_LOADDED;
     lazyLoadPluginTimeoutMap[name] = NOT_LAZY_LOADDED;
+    
     for (auto it = hdiMediaKeySystemFactoryAndPluginNameMap.begin();
         it != hdiMediaKeySystemFactoryAndPluginNameMap.end();) {
         if (it->second == name) {
@@ -91,10 +89,12 @@ void DrmHostManager::ClearDeathService(std::string &name)
             ++it;
         }
     }
+    
 }
 
 DrmHostManager::DrmHostManager(StatusCallback *statusCallback) : statusCallback_(statusCallback)
 {}
+
 
 DrmHostManager::~DrmHostManager()
 {
@@ -147,9 +147,8 @@ void DrmHostManager::DelayedLazyUnLoad()
     DRM_DEBUG_LOG("DelayedLazyUnLoad enter.");
     sptr<IDeviceManager> deviceMgr = IDeviceManager::Get();
     std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
-    if (deviceMgr == nullptr || lazyLoadPluginInfoMap.empty()) {
-        return;
-    }
+    DRM_CHECK_AND_RETURN_LOG(
+        deviceMgr != nullptr && !lazyLoadPluginInfoMap.empty(), "devMgr is null or lazyLoadPluginInfoMap is empty");
     for (auto pluginInfoIt = lazyLoadPluginInfoMap.begin(); pluginInfoIt != lazyLoadPluginInfoMap.end();
         pluginInfoIt++) {
         DRM_DEBUG_LOG("ProcessMessage check lazy unload, name:%{public}s, Count:%{public}d,"
@@ -173,6 +172,7 @@ void DrmHostManager::DelayedLazyUnLoad()
     }
 }
 
+
 void DrmHostManager::ProcessMessage()
 {
     DRM_INFO_LOG("ProcessMessage enter.");
@@ -186,6 +186,7 @@ void DrmHostManager::ProcessMessage()
             std::queue<Message> localQueue;
             localQueue.swap(messageQueue);
             queueMutexLock.unlock();
+            
             while (!localQueue.empty()) {
                 auto message = localQueue.front();
                 localQueue.pop();
@@ -204,6 +205,7 @@ void DrmHostManager::ProcessMessage()
             if (!serviceThreadRunning) {
                 break;
             }
+            
             counter -= LAZY_UNLOAD_WAIT_IN_MILMINUTES;
             if (counter <= 0) {
                 DRM_DEBUG_LOG("ProcessMessage lazy unload start.");
@@ -261,6 +263,46 @@ void DrmHostManager::GetOemLibraryPath(std::vector<std::string> &libsToLoad)
     }
 }
 
+bool DrmHostManager::ProcessProvision(void *handle)
+{
+    auto QueryMediaKeySystemName = (QueryMediaKeySystemNameFuncType)dlsym(handle, "QueryMediaKeySystemName");
+    auto IsProvisionRequired = (IsProvisionRequiredFuncType)dlsym(handle, "IsProvisionRequired");
+    auto SetMediaKeySystem = (SetMediaKeySystemFuncType)dlsym(handle, "SetMediaKeySystem");
+    auto ThreadGetHttpProxyParameter =
+        (ThreadGetHttpProxyParameterFuncType)dlsym(handle, "ThreadGetHttpProxyParameter");
+    auto ThreadExitNotify = (ThreadExitNotifyFuncType)dlsym(handle, "ThreadExitNotify");
+    auto StartThread = (StartThreadFuncType)dlsym(handle, "StartThread");
+
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        QueryMediaKeySystemName && IsProvisionRequired && SetMediaKeySystem && ThreadExitNotify && StartThread,
+        DRM_INNER_ERR_UNKNOWN,
+        "Not all functions found");
+
+    std::string pluginName;
+    int32_t ret = QueryMediaKeySystemName(pluginName);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "QueryMediaKeySystemName error!");
+    sptr<IMediaKeySystem> hdiMediaKeySystem = nullptr;
+    ret = CreateMediaKeySystem(pluginName, hdiMediaKeySystem);
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        ret == DRM_INNER_ERR_OK && hdiMediaKeySystem != nullptr, ret, "CreateMediaKeySystem error!");
+    {
+        std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
+        pluginNameAndHandleMap[pluginName] = handle;
+        handleAndKeySystemMap[handle] = hdiMediaKeySystem;
+    }
+    ret = SetMediaKeySystem(hdiMediaKeySystem);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "SetMediaKeySystem error!");
+    DRM_CHECK_AND_RETURN_RET_LOG(IsProvisionRequired(), DRM_INNER_ERR_UNKNOWN, "Provision not required!");
+
+    ret = ThreadGetHttpProxyParameter(DrmHostManager::GetHttpProxyParameter);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "ThreadGetHttpProxyParameter error!");
+    ret = ThreadExitNotify(DrmHostManager::UnLoadOEMCertifaicateService);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "ThreadExitNotify error!");
+    ret = StartThread();
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "StartThread error!");
+    return ret;
+}
+
 void DrmHostManager::ServiceThreadMain() __attribute__((no_sanitize("cfi")))
 {
     DRM_INFO_LOG("ServiceThreadMain enter.");
@@ -275,62 +317,8 @@ void DrmHostManager::ServiceThreadMain() __attribute__((no_sanitize("cfi")))
             std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
             loadedLibs.push_back(handle);
         }
-        auto QueryMediaKeySystemName = (QueryMediaKeySystemNameFuncType)dlsym(handle, "QueryMediaKeySystemName");
-        auto IsProvisionRequired = (IsProvisionRequiredFuncType)dlsym(handle, "IsProvisionRequired");
-        auto SetMediaKeySystem = (SetMediaKeySystemFuncType)dlsym(handle, "SetMediaKeySystem");
-        auto ThreadGetHttpProxyParameter =
-            (ThreadGetHttpProxyParameterFuncType)dlsym(handle, "ThreadGetHttpProxyParameter");
-        auto ThreadExitNotify = (ThreadExitNotifyFuncType)dlsym(handle, "ThreadExitNotify");
-        auto StartThread = (StartThreadFuncType)dlsym(handle, "StartThread");
-        if (QueryMediaKeySystemName && IsProvisionRequired && SetMediaKeySystem && ThreadExitNotify &&
-            StartThread) {
-            std::string pluginName;
-            int32_t ret = QueryMediaKeySystemName(pluginName);
-            if (ret != DRM_INNER_ERR_OK) {
-                ReleaseHandleAndKeySystemMap(handle);
-                DRM_ERR_LOG("QueryMediaKeySystemName error!");
-                continue;
-            }
-            sptr<IMediaKeySystem> hdiMediaKeySystem = nullptr;
-            ret = CreateMediaKeySystem(pluginName, hdiMediaKeySystem);
-            if (ret != DRM_INNER_ERR_OK || hdiMediaKeySystem == nullptr) {
-                ReleaseHandleAndKeySystemMap(handle);
-                DRM_ERR_LOG("CreateMediaKeySystem error!");
-                continue;
-            }
-            {
-                std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
-                pluginNameAndHandleMap[pluginName] = handle;
-                handleAndKeySystemMap[handle] = hdiMediaKeySystem;
-            }
-            ret = SetMediaKeySystem(hdiMediaKeySystem);
-            if (ret != DRM_INNER_ERR_OK) {
-                ReleaseHandleAndKeySystemMap(handle);
-                DRM_ERR_LOG("SetMediaKeySystem error!");
-                continue;
-            }
-            if (IsProvisionRequired() == false) {
-                ReleaseHandleAndKeySystemMap(handle);
-                DRM_DEBUG_LOG("Provision not required!");
-                continue;
-            }
-            ret = ThreadGetHttpProxyParameter(DrmHostManager::GetHttpProxyParameter);
-            if (ret != DRM_INNER_ERR_OK) {
-                ReleaseHandleAndKeySystemMap(handle);
-                DRM_ERR_LOG("ThreadGetHttpProxyParameter error!");
-                continue;
-            }
-            ret = ThreadExitNotify(DrmHostManager::UnLoadOEMCertifaicateService);
-            if (ret != DRM_INNER_ERR_OK) {
-                ReleaseHandleAndKeySystemMap(handle);
-                DRM_ERR_LOG("ThreadExitNotify error!");
-                continue;
-            }
-            ret = StartThread();
-            if (ret != DRM_INNER_ERR_OK) {
-                ReleaseHandleAndKeySystemMap(handle);
-                DRM_ERR_LOG("StartThread error!");
-            }
+        if (ProcessProvision(handle) != DRM_INNER_ERR_OK) {
+            ReleaseHandleAndKeySystemMap(handle);
         }
     }
     ReportServiceBehaviorEvent("DRM_OEM_SERVICE", "start");
@@ -355,6 +343,7 @@ void DrmHostManager::GetHttpProxyParameter(std::string &host, int32_t &port, std
     port = httpProxy.GetPort();
 }
 
+
 void DrmHostManager::OemCertificateManager()
 {
     DRM_INFO_LOG("OemCertificateManager enter.");
@@ -374,6 +363,7 @@ int32_t DrmHostManager::Init(void)
     return DRM_INNER_ERR_OK;
 }
 
+
 void DrmHostManager::DeInit(void)
 {
     DRM_INFO_LOG("DeInit");
@@ -381,6 +371,7 @@ void DrmHostManager::DeInit(void)
 
 void DrmHostManager::OnReceive(const HDI::ServiceManager::V1_0::ServiceStatus &status)
 {}
+
 
 std::string DrmHostManager::StringTrim(const std::string &str)
 {
@@ -433,10 +424,8 @@ int32_t DrmHostManager::LoadPluginInfo(const std::string &filePath)
     lazyLoadPluginInfoMap.clear();
 
     std::ifstream file(filePath);
-    if (!file.is_open()) {
-        DRM_ERR_LOG("LoadPluginInfo unable to open file:%{public}s.", filePath.c_str());
-        return DRM_INNER_ERR_BASE;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        file.is_open(), DRM_INNER_ERR_BASE, "LoadPluginInfo unable to open file:%{public}s.", filePath.c_str());
 
     std::string line;
     bool inPluginServices = false;
@@ -463,10 +452,7 @@ void DrmHostManager::UnloadAllServices()
     DRM_INFO_LOG("UnloadAllServices enter.");
     std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
     sptr<IDeviceManager> deviceMgr = IDeviceManager::Get();
-    if (deviceMgr == nullptr) {
-        DRM_ERR_LOG("deviceMgr == nullptr");
-        return;
-    }
+    DRM_CHECK_AND_RETURN_LOG(deviceMgr != nullptr, "deviceMgr == nullptr");
     for (auto pluginInfoIt = lazyLoadPluginInfoMap.begin(); pluginInfoIt != lazyLoadPluginInfoMap.end();
          pluginInfoIt++) {
         deviceMgr->UnloadDevice(pluginInfoIt->second);
@@ -486,15 +472,10 @@ void DrmHostManager::ReleaseSevices(sptr<IMediaKeySystemFactory> drmHostServiePr
     drmHostDeathRecipientMap.erase(drmHostServieProxy);
     std::string name = hdiMediaKeySystemFactoryAndPluginNameMap[drmHostServieProxy];
     /* No need to release non lazy loading */
-    if (lazyLoadPluginInfoMap.count(name) <= 0) {
-        DRM_DEBUG_LOG("ReleaseSevices PluginCountInfo is empty, name:%{public}s",
+    DRM_CHECK_AND_RETURN_LOG(
+        lazyLoadPluginInfoMap.count(name) > 0, "ReleaseSevices PluginCountInfo is empty, name:%{public}s",
             name.c_str());
-        return;
-    }
-    if (lazyLoadPluginCountMap.empty()) {
-        DRM_DEBUG_LOG("ReleaseSevices PluginCountMap is empty");
-        return;
-    }
+    DRM_CHECK_AND_RETURN_LOG(!lazyLoadPluginCountMap.empty(), "ReleaseSevices PluginCountMap is empty");
     lazyLoadPluginCountMap[name]--;
     DRM_DEBUG_LOG("Lazy unLoad plugin name:%{public}s,count:%{public}d", name.c_str(), lazyLoadPluginCountMap[name]);
     if (lazyLoadPluginCountMap[name] == 0) {
@@ -510,18 +491,16 @@ int32_t DrmHostManager::LazyLoadPlugin(std::string &name, std::vector<std::strin
 {
     DRM_INFO_LOG("LazyLoadPlugin enter, name:%{public}s.", name.c_str());
     deviceMgr = IDeviceManager::Get();
-    if (deviceMgr == nullptr) {
-        DRM_ERR_LOG("LazyLoadPlugin deviceMgr == nullptr");
-        return DRM_INNER_ERR_PLUGIN_ERROR;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        deviceMgr != nullptr, DRM_INNER_ERR_PLUGIN_ERROR, "LazyLoadPlugin deviceMgr == nullptr");
     int32_t ret = deviceMgr->LoadDevice(lazyLoadPluginInfoMap[name]);
     if (ret != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("LazyLoadPlugin loadDevice failed return Code:%{public}d", ret);
         ret = servmgr->ListServiceByInterfaceDesc(serviceName, "ohos.hdi.drm.v1_0.IMediaKeySystemFactory");
-        if (ret != DRM_INNER_ERR_OK) {
-            DRM_ERR_LOG("ListServiceByInterfaceDesc faild, return Code:%{public}d", ret);
-            return DRM_INNER_ERR_PLUGIN_ERROR;
-        }
+        DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK,
+            DRM_INNER_ERR_PLUGIN_ERROR,
+            "ListServiceByInterfaceDesc faild, return Code:%{public}d",
+            ret);
     } else {
         lazyLoadPluginCountMap[name] = 0;
         DRM_INFO_LOG("LazyLoadPlugin LoadDevice: %{public}s.", lazyLoadPluginInfoMap[name].c_str());
@@ -543,18 +522,16 @@ int32_t DrmHostManager::ProcessLazyLoadPlugin(std::string &name, std::vector<std
         auto it = std::find(serviceName.begin(), serviceName.end(), lazyLoadPluginInfoMap[name]);
         if (it == serviceName.end()) {
             int32_t ret = LazyLoadPlugin(name, serviceName, deviceMgr, servmgr);
-            if (ret != DRM_INNER_ERR_OK) {
-                DRM_ERR_LOG("ProcessLazyLoadPlugin LazyLoadPlugin faild, return Code:%{public}d",
-                    ret);
-                return DRM_INNER_ERR_PLUGIN_ERROR;
-            }
+            DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK,
+                DRM_INNER_ERR_PLUGIN_ERROR,
+                "ProcessLazyLoadPlugin LazyLoadPlugin faild, return Code:%{public}d",
+                ret);
         }
     }
-    if (serviceName.empty()) {
-        DRM_DEBUG_LOG("No DRM driver service named:%{public}s configured.",
-            name.c_str());
-        return DRM_INNER_ERR_PLUGIN_ERROR;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(!serviceName.empty(),
+        DRM_INNER_ERR_PLUGIN_ERROR,
+        "No DRM driver service named:%{public}s configured.",
+        name.c_str());
     return DRM_INNER_ERR_OK;
 }
 
@@ -572,12 +549,14 @@ int32_t DrmHostManager::ProcessLazyLoadInfomation(std::string &name, sptr<IMedia
             return DRM_INNER_ERR_BASE;
         }
     }
-    if (!lazyLoadPluginCountMap.empty()) {
-        lazyLoadPluginCountMap[name]++;
-        hdiMediaKeySystemFactoryAndPluginNameMap[drmHostServieProxy] = name;
-        DRM_DEBUG_LOG("Lazy load plugin name:%{public}s,count:%{public}d",
-            name.c_str(), lazyLoadPluginCountMap[name]);
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(!lazyLoadPluginCountMap.empty(),
+        DRM_INNER_ERR_OK,
+        "no puglin in count map");
+
+    lazyLoadPluginCountMap[name]++;
+    hdiMediaKeySystemFactoryAndPluginNameMap[drmHostServieProxy] = name;
+    DRM_DEBUG_LOG("Lazy load plugin name:%{public}s,count:%{public}d", name.c_str(), lazyLoadPluginCountMap[name]);
+
     return DRM_INNER_ERR_OK;
 }
 
@@ -589,21 +568,16 @@ int32_t DrmHostManager::GetServices(std::string &name, bool *isSupported,
     std::vector<std::string> serviceName;
     drmHostServieProxys = nullptr;
     sptr<IServiceManager> servmgr = IServiceManager::Get();
-    if (servmgr == nullptr) {
-        DRM_ERR_LOG("GetServices IServiceManager::Get() failed!");
-        return DRM_INNER_ERR_PLUGIN_ERROR;
-    }
+    *isSupported = false;
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        servmgr != nullptr, DRM_INNER_ERR_PLUGIN_ERROR, "GetServices IServiceManager::Get() failed!");
     int32_t ret = servmgr->ListServiceByInterfaceDesc(serviceName, "ohos.hdi.drm.v1_0.IMediaKeySystemFactory");
-    if (ret != DRM_INNER_ERR_OK) {
-        DRM_ERR_LOG("ListServiceByInterfaceDesc faild, return Code:%{public}d", ret);
-        return ret;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        ret == DRM_INNER_ERR_OK, ret, "ListServiceByInterfaceDesc faild, return Code:%{public}d", ret);
     sptr<IDeviceManager> deviceMgr = nullptr;
     ret = ProcessLazyLoadPlugin(name, serviceName, deviceMgr, servmgr);
-    if (ret != DRM_INNER_ERR_OK) {
-        DRM_ERR_LOG("GetServices ProcessLazyLoadPlugin faild, return Code:%{public}d", ret);
-        return ret;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        ret == DRM_INNER_ERR_OK, ret, "GetServices ProcessLazyLoadPlugin faild, return Code:%{public}d", ret);
 
     for (auto hdiServiceName : serviceName) {
         sptr<IMediaKeySystemFactory> drmHostServieProxy =
@@ -618,10 +592,10 @@ int32_t DrmHostManager::GetServices(std::string &name, bool *isSupported,
             continue;
         } else if (*isSupported) {
             ret = ProcessLazyLoadInfomation(name, drmHostServieProxy);
-            if (ret != DRM_INNER_ERR_OK) {
-                DRM_ERR_LOG("GetServices ProcessLazyLoadInfomation faild, return Code:%{public}d", ret);
-                return ret;
-            }
+            DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK,
+                ret,
+                "GetServices ProcessLazyLoadInfomation faild, return Code:%{public}d",
+                ret);
             drmHostServieProxys = drmHostServieProxy;
             break;
         }
@@ -642,12 +616,12 @@ int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &name, bool *isSup
     sptr<IMediaKeySystemFactory> drmHostServieProxys;
     /* Lock will be released when lock goes out of scope */
     std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
-    int32_t ret = GetServices(name, isSupported, drmHostServieProxys);
-    if (ret != DRM_INNER_ERR_OK || drmHostServieProxys == nullptr) {
-        *isSupported = false;
-        DRM_ERR_LOG("IsMediaKeySystemSupported one parameter GetServices error");
-        return DRM_INNER_ERR_PLUGIN_ERROR;
-    }
+    int32_t ret;
+    *isSupported = false;
+    ret = GetServices(name, isSupported, drmHostServieProxys);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK && drmHostServieProxys != nullptr,
+        DRM_INNER_ERR_PLUGIN_ERROR,
+        "IsMediaKeySystemSupported one parameter GetServices error");
     ReleaseSevices(drmHostServieProxys);
     return DRM_INNER_ERR_OK;
 }
@@ -661,23 +635,18 @@ int32_t DrmHostManager::IsMediaKeySystemSupported(std::string &name, std::string
     sptr<IMediaKeySystemFactory> drmHostServieProxys;
     /* Lock will be released when lock goes out of scope */
     std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
-    int32_t ret = GetServices(name, isSupported, drmHostServieProxys);
-    if (ret != DRM_INNER_ERR_OK || drmHostServieProxys == nullptr) {
-        *isSupported = false;
-        DRM_ERR_LOG("IsMediaKeySystemSupported two parameters GetServices error.");
-        return DRM_INNER_ERR_PLUGIN_ERROR;
-    }
-    if (mimeType.length() == 0) {
-        *isSupported = false;
-        ReleaseSevices(drmHostServieProxys);
-        DRM_ERR_LOG("IsMediaKeySystemSupported mimeType is null!");
-        return DRM_INNER_ERR_UNSUPPORTED;
-    }
+    int32_t ret;
+    *isSupported = false;
+    DRM_CHECK_AND_RETURN_RET_LOG(mimeType.length() != 0,
+        DRM_INNER_ERR_UNSUPPORTED,
+        "IsMediaKeySystemSupported mimeType is null!");
+    ret = GetServices(name, isSupported, drmHostServieProxys);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK && drmHostServieProxys != nullptr,
+        DRM_INNER_ERR_PLUGIN_ERROR,
+        "IsMediaKeySystemSupported two parameters GetServices error.");
     ret = drmHostServieProxys->IsMediaKeySystemSupported(name, mimeType, SECURE_UNKNOWN, *isSupported);
-    if (ret != 0) {
-        DRM_ERR_LOG("IsMediaKeySystemSupported return Code:%{public}d.", ret);
-    }
     ReleaseSevices(drmHostServieProxys);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == 0, DRM_INNER_ERR_OK, "IsMediaKeySystemSupported return Code:%{public}d.", ret);
     return DRM_INNER_ERR_OK;
 }
 
@@ -691,25 +660,20 @@ int32_t DrmHostManager::IsMediaKeySystemSupported(
         securityLevel);
     std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
     sptr<IMediaKeySystemFactory> drmHostServieProxys;
+    int32_t ret;
+    *isSupported = false;
     /* Lock will be released when lock goes out of scope */
-    int32_t ret = GetServices(name, isSupported, drmHostServieProxys);
-    if (ret != DRM_INNER_ERR_OK || drmHostServieProxys == nullptr) {
-        *isSupported = false;
-        DRM_ERR_LOG("IsMediaKeySystemSupported three parameters GetServices error");
-        return DRM_INNER_ERR_PLUGIN_ERROR;
-    }
-    if (mimeType.length() == 0) {
-        *isSupported = false;
-        ReleaseSevices(drmHostServieProxys);
-        DRM_ERR_LOG("IsMediaKeySystemSupported mimeType is null!");
-        return DRM_INNER_ERR_UNSUPPORTED;
-    }
+     DRM_CHECK_AND_RETURN_RET_LOG(mimeType.length() != 0,
+        DRM_INNER_ERR_UNSUPPORTED,
+        "IsMediaKeySystemSupported mimeType is null!");
+    ret = GetServices(name, isSupported, drmHostServieProxys);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK && drmHostServieProxys != nullptr,
+        DRM_INNER_ERR_PLUGIN_ERROR,
+        "IsMediaKeySystemSupported three parameters GetServices error");
     ret = drmHostServieProxys->IsMediaKeySystemSupported(
-        name, mimeType, (OHOS::HDI::Drm::V1_0::ContentProtectionLevel)securityLevel, *isSupported);
-    if (ret != DRM_INNER_ERR_OK) {
-        DRM_ERR_LOG("IsMediaKeySystemSupported return Code:%{public}d", ret);
-    }
+        name, mimeType, (OHOS::HDI::Drm::V1_0::ContentProtectionLevel)securityLevel, *isSupported);    
     ReleaseSevices(drmHostServieProxys);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == 0, DRM_INNER_ERR_OK, "IsMediaKeySystemSupported return Code:%{public}d.", ret);
     return DRM_INNER_ERR_OK;
 }
 
@@ -720,8 +684,6 @@ void DrmHostManager::ReleaseMediaKeySystem(sptr<IMediaKeySystem> &hdiMediaKeySys
     sptr<IMediaKeySystemFactory> drmHostServieProxys = hdiMediaKeySystemAndFactoryMap[hdiMediaKeySystem];
     if (drmHostServieProxys != nullptr) {
         ReleaseSevices(drmHostServieProxys);
-    } else {
-        DRM_INFO_LOG("ReleaseMediaKeySystem proxys not found.");
     }
     hdiMediaKeySystemAndFactoryMap.erase(hdiMediaKeySystem);
 }
@@ -758,17 +720,15 @@ int32_t DrmHostManager::GetMediaKeySystemUuid(std::string &name, std::string &uu
     /* Lock will be released when lock goes out of scope */
     std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
     int32_t ret = GetServices(name, &isSupported, drmHostServieProxys);
-    if (ret != DRM_INNER_ERR_OK || drmHostServieProxys == nullptr) {
-        DRM_INFO_LOG("GetMediaKeySystemUuid faild.");
-        return DRM_INNER_ERR_PLUGIN_ERROR;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK && drmHostServieProxys != nullptr,
+        DRM_INNER_ERR_PLUGIN_ERROR,
+        "GetMediaKeySystemUuid failed.");
     ret = drmHostServieProxys->GetMediaKeySystemDescription(name, uuid);
-    if (ret != DRM_INNER_ERR_OK) {
-        ReleaseSevices(drmHostServieProxys);
-        DRM_ERR_LOG("GetMediaKeySystemUuid return Code:%{public}d", ret);
-        return DRM_INNER_ERR_INVALID_MEDIA_KEY_SYSTEM;
-    }
     ReleaseSevices(drmHostServieProxys);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK,
+        DRM_INNER_ERR_INVALID_MEDIA_KEY_SYSTEM,
+        "GetMediaKeySystemUuid return Code:%{public}d",
+        ret);
     return DRM_INNER_ERR_OK;
 }
 
@@ -794,10 +754,8 @@ int32_t DrmHostManager::InitGetMediaKeySystems()
      * the plugin service instance through the uuid and issuport interfaces
      */
     sptr<IDeviceManager> deviceMgr = IDeviceManager::Get();
-    if (deviceMgr == nullptr) {
-        DRM_ERR_LOG("InitGetMediaKeySystems deviceMgr == nullptr");
-        return DRM_INNER_ERR_PLUGIN_ERROR;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        deviceMgr != nullptr, DRM_INNER_ERR_PLUGIN_ERROR, "InitGetMediaKeySystems deviceMgr == nullptr");
 
     for (auto pluginInfoIt = lazyLoadPluginInfoMap.begin(); pluginInfoIt != lazyLoadPluginInfoMap.end();
          pluginInfoIt++) {
@@ -809,15 +767,13 @@ int32_t DrmHostManager::InitGetMediaKeySystems()
     }
 
     auto servmgr = IServiceManager::Get();
-    if (servmgr == nullptr) {
-        DRM_ERR_LOG("InitGetMediaKeySystems IServiceManager::Get() failed!");
-        return DRM_INNER_ERR_PLUGIN_ERROR;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(
+        servmgr != nullptr, DRM_INNER_ERR_PLUGIN_ERROR, "InitGetMediaKeySystems IServiceManager::Get() failed!");
     ret = servmgr->ListServiceByInterfaceDesc(pluginServiceNames, "ohos.hdi.drm.v1_0.IMediaKeySystemFactory");
-    if (ret != DRM_INNER_ERR_OK) {
-        DRM_ERR_LOG("InitGetMediaKeySystems ListServiceByInterfaceDesc faild, return Code:%{public}d", ret);
-        return ret;
-    }
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK,
+        ret,
+        "InitGetMediaKeySystems ListServiceByInterfaceDesc faild, return Code:%{public}d",
+        ret);
     for (auto hdiServiceName : pluginServiceNames) {
         std::string pluginName = "";
         std::string pluginUuid = "";
