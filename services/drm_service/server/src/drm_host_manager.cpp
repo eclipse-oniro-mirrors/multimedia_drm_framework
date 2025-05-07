@@ -58,8 +58,8 @@ DrmHostManager::DrmHostDeathRecipient::~DrmHostDeathRecipient()
 }
 
 void DrmHostManager::OnDrmPluginDied(std::string &name)
-{}
-
+{
+}
 void DrmHostManager::DrmHostDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
     DRM_ERR_LOG("Remote service died, do clean works.");
@@ -146,11 +146,9 @@ void DrmHostManager::DelayedLazyUnLoad()
     DRM_CHECK_AND_RETURN_LOG(
         deviceMgr != nullptr && !lazyLoadPluginInfoMap.empty(), "devMgr is null or lazyLoadPluginInfoMap is empty");
     for (auto pluginInfoIt = lazyLoadPluginInfoMap.begin(); pluginInfoIt != lazyLoadPluginInfoMap.end();
-         pluginInfoIt++) {
+        pluginInfoIt++) {
         DRM_DEBUG_LOG("ProcessMessage check lazy unload, name:%{public}s, Count:%{public}d,"
-                      "Timeout:%{public}d",
-            pluginInfoIt->second.c_str(),
-            lazyLoadPluginCountMap[pluginInfoIt->first],
+            "Timeout:%{public}d", pluginInfoIt->second.c_str(), lazyLoadPluginCountMap[pluginInfoIt->first],
             lazyLoadPluginTimeoutMap[pluginInfoIt->first]);
         if (lazyLoadPluginCountMap[pluginInfoIt->first] <= NOT_LAZY_LOADDED ||
             lazyLoadPluginTimeoutMap[pluginInfoIt->first] <= NOT_LAZY_LOADDED) {
@@ -183,7 +181,6 @@ void DrmHostManager::ProcessMessage()
             std::queue<Message> localQueue;
             localQueue.swap(messageQueue);
             queueMutexLock.unlock();
-
             while (!localQueue.empty()) {
                 auto message = localQueue.front();
                 localQueue.pop();
@@ -193,8 +190,8 @@ void DrmHostManager::ProcessMessage()
                     void *libHandle = pluginNameAndHandleMap[message.name];
                     if (libHandle != nullptr) {
                         ReleaseHandleAndKeySystemMap(libHandle);
-                        loadedLibs.erase(
-                            std::remove(loadedLibs.begin(), loadedLibs.end(), libHandle), loadedLibs.end());
+                        loadedLibs.erase(std::remove(loadedLibs.begin(), loadedLibs.end(), libHandle),
+                            loadedLibs.end());
                         DRM_INFO_LOG("ProcessMessage UnLoadOEMCertifaicateService success.");
                     }
                 }
@@ -202,7 +199,6 @@ void DrmHostManager::ProcessMessage()
             if (!serviceThreadRunning) {
                 break;
             }
-
             counter -= LAZY_UNLOAD_WAIT_IN_MILMINUTES;
             if (counter <= 0) {
                 DRM_DEBUG_LOG("ProcessMessage lazy unload start.");
@@ -472,7 +468,8 @@ void DrmHostManager::ReleaseSevices(sptr<IMediaKeySystemFactory> drmHostServiePr
     DRM_DEBUG_LOG("Lazy unLoad plugin name:%{public}s,count:%{public}d", name.c_str(), lazyLoadPluginCountMap[name]);
     if (lazyLoadPluginCountMap[name] == 0) {
         lazyLoadPluginTimeoutMap[name] = LAZY_UNLOAD_TIME_IN_MINUTES;
-        DRM_DEBUG_LOG("ReleaseSevices device need to unload: %{public}s.", lazyLoadPluginInfoMap[name].c_str());
+        DRM_DEBUG_LOG(
+            "ReleaseSevices device need to unload: %{public}s.", lazyLoadPluginInfoMap[name].c_str());
     }
     hdiMediaKeySystemFactoryAndPluginNameMap.erase(drmHostServieProxy);
 }
