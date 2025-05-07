@@ -33,6 +33,7 @@ MediaKeySystemService::MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKe
     DRM_INFO_LOG("MediaKeySystemService 0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
     keySystemOperatoersCallback_ = nullptr;
     hdiKeySystem_ = hdiKeySystem;
+    statisticsInfo_.targetVersion = 0;
 }
 
 MediaKeySystemService::MediaKeySystemService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> hdiKeySystem,
