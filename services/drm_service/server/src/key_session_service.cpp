@@ -32,6 +32,7 @@ MediaKeySessionService::MediaKeySessionService(sptr<OHOS::HDI::Drm::V1_0::IMedia
     DRM_INFO_LOG("0x%{public}06" PRIXPTR " Instances create.", FAKE_POINTER(this));
     sessionOperatorsCallback_ = nullptr;
     hdiMediaKeySession_ = hdiMediaKeySession;
+    statisticsInfo_.targetVersion = 0;
 }
 
 MediaKeySessionService::MediaKeySessionService(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySession> hdiMediaKeySession,
