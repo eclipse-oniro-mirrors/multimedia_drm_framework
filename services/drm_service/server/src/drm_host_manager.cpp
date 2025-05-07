@@ -671,7 +671,7 @@ int32_t DrmHostManager::IsMediaKeySystemSupported(
         DRM_INNER_ERR_PLUGIN_ERROR,
         "IsMediaKeySystemSupported three parameters GetServices error");
     ret = drmHostServieProxys->IsMediaKeySystemSupported(
-        name, mimeType, (OHOS::HDI::Drm::V1_0::ContentProtectionLevel)securityLevel, *isSupported);    
+        name, mimeType, (OHOS::HDI::Drm::V1_0::ContentProtectionLevel)securityLevel, *isSupported);
     ReleaseSevices(drmHostServieProxys);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == 0, DRM_INNER_ERR_OK, "IsMediaKeySystemSupported return Code:%{public}d.", ret);
     return DRM_INNER_ERR_OK;
