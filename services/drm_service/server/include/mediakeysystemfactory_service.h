@@ -81,6 +81,7 @@ private:
     void DistroyForClientDied(pid_t pid);
     void MediaKeySystemFactoryClientDied(pid_t pid);
     bool IsListenerObjectSet();
+    int32_t CancelAbilityIdle();
     std::map<pid_t, sptr<DrmDeathRecipient>> deathRecipientMap_;
     std::map<pid_t, sptr<IDrmListener>> clientListenerMap_;
 };

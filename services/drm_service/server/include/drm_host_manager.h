@@ -116,6 +116,7 @@ private:
     void StopServiceThread();
     void DelayedLazyUnLoad();
     void ProcessMessage();
+    bool ProcessProvision(void *handle);
     void ServiceThreadMain();
     void GetOemLibraryPath(std::vector<std::string> &libsToLoad);
     void OemCertificateManager();
