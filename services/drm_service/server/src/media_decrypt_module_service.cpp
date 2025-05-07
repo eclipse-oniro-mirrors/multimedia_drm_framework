@@ -162,10 +162,10 @@ void MediaDecryptModuleService::UpdateDecryptionStatistics(int32_t decryptionRes
     if (decryptionResult != DRM_INNER_ERR_OK) {
         decryptStatistics_.errorDecryptTimes++;
     }
-    if (decryptStatistics_.decryptTimes == UINT32_MAX) {        
+    if (decryptStatistics_.decryptTimes == UINT32_MAX) {
         decryptStatistics_.decryptTimes = 0;
         decryptStatistics_.decryptSumSize = 0;
-        decryptStatistics_.decryptSumDuration = 0;        
+        decryptStatistics_.decryptSumDuration = 0;
     }
     decryptStatistics_.decryptTimes++;
     decryptStatistics_.decryptSumSize += bufLen;
