@@ -94,7 +94,6 @@ void MediaKeySystemFactoryService::OnStart()
     ReportServiceBehaviorEvent("DRM_SERVICE", "start");
 }
 
-
 void MediaKeySystemFactoryService::OnDump()
 {
 }
@@ -127,7 +126,6 @@ int32_t MediaKeySystemFactoryService::OnIdle(const SystemAbilityOnDemandReason& 
     return 0;
 }
 
-
 void MediaKeySystemFactoryService::OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId)
 {
     DRM_INFO_LOG("OnAddSystemAbility enter.");
@@ -148,7 +146,6 @@ int32_t MediaKeySystemFactoryService::Dump(int32_t fd, const std::vector<std::u1
         OHOS::INVALID_OPERATION, "Failed to write framework information");
     return OHOS::NO_ERROR;
 }
-
 
 void MediaKeySystemFactoryService::DistroyForClientDied(pid_t pid)
 {
@@ -189,12 +186,10 @@ void MediaKeySystemFactoryService::MediaKeySystemFactoryClientDied(pid_t pid)
     DistroyForClientDied(pid);
 }
 
-
 int32_t MediaKeySystemFactoryService::SetListenerObject(const sptr<IRemoteObject> &object)
 {
     pid_t pid = IPCSkeleton::GetCallingPid();
     std::lock_guard<std::recursive_mutex> lock(factoryServiceMutex_);
-    
     if (clientListenerMap_.find(pid) != clientListenerMap_.end()) {
         if (clientListenerMap_[pid] != nullptr && clientListenerMap_[pid]->AsObject() != nullptr &&
             deathRecipientMap_.find(pid) != deathRecipientMap_.end() && deathRecipientMap_[pid] != nullptr) {
@@ -203,7 +198,6 @@ int32_t MediaKeySystemFactoryService::SetListenerObject(const sptr<IRemoteObject
         deathRecipientMap_.erase(pid);
         clientListenerMap_.erase(pid);
     }
-    
     DRM_CHECK_AND_RETURN_RET_LOG(clientListenerMap_.size() < MAX_LISTNER_NUM,
         DRM_INNER_ERR_OPERATION_NOT_PERMITTED, "the number of listeners exceeds MAX_LISTNER_NUM: 64");
     DRM_CHECK_AND_RETURN_RET_LOG(object != nullptr, DRM_INNER_ERR_MEMORY_ERROR, "set listener object is nullptr");
@@ -243,12 +237,10 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(const std::string &na
     bool res = IsListenerObjectSet();
     DRM_CHECK_AND_RETURN_RET_LOG(res, DRM_INNER_ERR_OPERATION_NOT_PERMITTED, "Not Set Listener.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    
     if (GetAbilityState() == SystemAbilityState::IDLE) {
         bool result = CancelIdle();
         DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_INNER_ERR_SERVICE_DIED, "CancelIdle failed");
     }
-    
     sptr<MediaKeySystemService> mediaKeySystemService = nullptr;
     sptr<IMediaKeySystem> hdiMediaKeySystem = nullptr;
     if (currentMediaKeySystemNum_[name] >= KEY_SYSTEM_INSTANCES_MAX_NUMBER) {
@@ -321,12 +313,10 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(const std::strin
     DRM_INFO_LOG("IsMediaKeySystemSupported one parameters enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     bool isSystemSupported = false;
-    
     if (GetAbilityState() == SystemAbilityState::IDLE) {
         bool result = CancelIdle();
         DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_INNER_ERR_SERVICE_DIED, "CancelIdle failed");
     }
-    
     std::string systemName = name;
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(systemName, &isSystemSupported);
     if (ret != DRM_INNER_ERR_OK) {
@@ -343,12 +333,10 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(const std::strin
     DRM_INFO_LOG("IsMediaKeySystemSupported two parameters enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     bool isSystemSupported = false;
-    
     if (GetAbilityState() == SystemAbilityState::IDLE) {
         bool result = CancelIdle();
         DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_INNER_ERR_SERVICE_DIED, "CancelIdle failed");
     }
-    
     std::string systemName = name;
     std::string systemMimeType = mimeType;
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(systemName, systemMimeType, &isSystemSupported);
@@ -366,12 +354,10 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(const std::strin
     DRM_INFO_LOG("IsMediaKeySystemSupported three parameters enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     bool isSystemSupported = false;
-    
     if (GetAbilityState() == SystemAbilityState::IDLE) {
         bool result = CancelIdle();
         DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_INNER_ERR_SERVICE_DIED, "CancelIdle failed");
     }
-    
     std::string systemName = name;
     std::string systemMimeType = mimeType;
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(systemName,
@@ -388,12 +374,10 @@ int32_t MediaKeySystemFactoryService::GetMediaKeySystems(std::map<std::string, s
 {
     DRM_INFO_LOG("GetMediaKeySystems enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    
     if (GetAbilityState() == SystemAbilityState::IDLE) {
         bool result = CancelIdle();
         DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_INNER_ERR_SERVICE_DIED, "CancelIdle failed");
     }
-    
     int32_t ret = drmHostManager_->GetMediaKeySystems(mediaKeySystemNames);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "GetMediaKeySystems failed.");
     return ret;
@@ -403,12 +387,10 @@ int32_t MediaKeySystemFactoryService::GetMediaKeySystemUuid(const std::string &n
 {
     DRM_INFO_LOG("GetMediaKeySystemUuid enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    
     if (GetAbilityState() == SystemAbilityState::IDLE) {
         bool result = CancelIdle();
         DRM_CHECK_AND_RETURN_RET_LOG(result, DRM_INNER_ERR_SERVICE_DIED, "CancelIdle failed");
     }
-    
     std::string systemName = name;
     int32_t ret = drmHostManager_->GetMediaKeySystemUuid(systemName, uuid);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "GetMediaKeySystemUuid failed.");
