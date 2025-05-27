@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+#include <thread>
 #include "media_key_system_impl.h"
 #include "imedia_key_system_service.h"
 #include "drm_error_code.h"
@@ -406,6 +407,15 @@ std::string MediaKeySystemCallback::GetEventName(DrmEventType event)
 int32_t MediaKeySystemCallback::SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> &data)
 {
     DRM_INFO_LOG("SendEvent enter");
+    std::thread([this, event, extra, data]
+                { this->SendEventHandler(event, extra, data); })
+        .detach();
+    return DRM_INNER_ERR_OK;
+}
+
+int32_t MediaKeySystemCallback::SendEventHandler(DrmEventType event, int32_t extra, const std::vector<uint8_t> &data)
+{
+    DRM_INFO_LOG("SendEventHandler enter");
     std::string eventName = GetEventName(event);
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     if (systemImpl_ != nullptr && eventName.length() != 0) {
@@ -415,7 +425,7 @@ int32_t MediaKeySystemCallback::SendEvent(DrmEventType event, int32_t extra, con
             return DRM_INNER_ERR_OK;
         }
     }
-    DRM_DEBUG_LOG("SendEvent failed");
+    DRM_DEBUG_LOG("SendEventHandler failed");
     return DRM_INNER_ERR_BASE;
 }
 } // namespace DrmStandard
