@@ -89,6 +89,7 @@ public:
     int32_t SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> &data) override;
 
 private:
+    int32_t SendEventHandler(DrmEventType event, int32_t extra, const std::vector<uint8_t> &data);
     std::recursive_mutex mutex_;
     MediaKeySystemImpl *systemImpl_;
     std::unordered_map<int32_t, std::string> eventMap_;
