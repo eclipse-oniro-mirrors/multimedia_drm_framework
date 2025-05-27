@@ -407,9 +407,7 @@ std::string MediaKeySystemCallback::GetEventName(DrmEventType event)
 int32_t MediaKeySystemCallback::SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> &data)
 {
     DRM_INFO_LOG("SendEvent enter");
-    std::thread([this, event, extra, data]
-                { this->SendEventHandler(event, extra, data); })
-        .detach();
+    std::thread([this, event, extra, data] { this->SendEventHandler(event, extra, data); }).detach();
     return DRM_INNER_ERR_OK;
 }
 
