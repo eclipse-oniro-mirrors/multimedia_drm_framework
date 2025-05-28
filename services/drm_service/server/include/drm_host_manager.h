@@ -66,11 +66,9 @@ struct Message {
 #define PLUGIN_LAZYLOAD_CONFIG_PATH "/etc/drm/drm_plugin_lazyloding.cfg"
 
 typedef void (*MediaKeySystemCallBack)(std::string &, ExtraInfo);
-typedef void (*GetHttpProxyParameterCallback)(std::string &, int32_t &, std::list<std::string> &);
 typedef int32_t (*QueryMediaKeySystemNameFuncType)(std::string &);
 typedef int32_t (*SetMediaKeySystemFuncType)(sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> &);
 typedef bool (*IsProvisionRequiredFuncType)();
-typedef int32_t (*ThreadGetHttpProxyParameterFuncType)(GetHttpProxyParameterCallback);
 typedef int32_t (*ThreadExitNotifyFuncType)(MediaKeySystemCallBack);
 typedef int32_t (*StartThreadFuncType)();
 typedef void (*StopThreadFuncType)();

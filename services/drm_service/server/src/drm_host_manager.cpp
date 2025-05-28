@@ -27,13 +27,11 @@
 #include "drm_log.h"
 #include "drm_error_code.h"
 #include "napi_param_utils.h"
-#include "net_conn_client.h"
 #include "drm_host_manager.h"
 
 namespace OHOS {
 namespace DrmStandard {
 using namespace OHOS::HiviewDFX;
-using namespace NetManagerStandard;
 std::queue<Message> DrmHostManager::messageQueue;
 std::mutex DrmHostManager::queueMutex;
 std::condition_variable DrmHostManager::cv;
@@ -261,8 +259,6 @@ bool DrmHostManager::ProcessProvision(void *handle)
     auto QueryMediaKeySystemName = (QueryMediaKeySystemNameFuncType)dlsym(handle, "QueryMediaKeySystemName");
     auto IsProvisionRequired = (IsProvisionRequiredFuncType)dlsym(handle, "IsProvisionRequired");
     auto SetMediaKeySystem = (SetMediaKeySystemFuncType)dlsym(handle, "SetMediaKeySystem");
-    auto ThreadGetHttpProxyParameter =
-        (ThreadGetHttpProxyParameterFuncType)dlsym(handle, "ThreadGetHttpProxyParameter");
     auto ThreadExitNotify = (ThreadExitNotifyFuncType)dlsym(handle, "ThreadExitNotify");
     auto StartThread = (StartThreadFuncType)dlsym(handle, "StartThread");
 
@@ -287,8 +283,6 @@ bool DrmHostManager::ProcessProvision(void *handle)
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "SetMediaKeySystem error!");
     DRM_CHECK_AND_RETURN_RET_LOG(IsProvisionRequired(), DRM_INNER_ERR_UNKNOWN, "Provision not required!");
 
-    ret = ThreadGetHttpProxyParameter(DrmHostManager::GetHttpProxyParameter);
-    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "ThreadGetHttpProxyParameter error!");
     ret = ThreadExitNotify(DrmHostManager::UnLoadOEMCertifaicateService);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "ThreadExitNotify error!");
     ret = StartThread();
@@ -324,16 +318,6 @@ void DrmHostManager::UnLoadOEMCertifaicateService(std::string &name, ExtraInfo i
     Message message(Message::UnLoadOEMCertifaicateService, name, info);
     messageQueue.push(message);
     cv.notify_all();
-}
-
-void DrmHostManager::GetHttpProxyParameter(std::string &host, int32_t &port, std::list<std::string> &exclusionList)
-{
-    DRM_INFO_LOG("GetHttpProxyParameter enter.");
-    NetManagerStandard::HttpProxy httpProxy;
-    NetConnClient::GetInstance().GetDefaultHttpProxy(httpProxy);
-    exclusionList = httpProxy.GetExclusionList();
-    host = httpProxy.GetHost();
-    port = httpProxy.GetPort();
 }
 
 void DrmHostManager::OemCertificateManager()
