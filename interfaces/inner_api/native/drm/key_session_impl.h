@@ -15,6 +15,8 @@
 #ifndef OHOS_DRM_KEY_SESSION_IMPL_H_
 #define OHOS_DRM_KEY_SESSION_IMPL_H_
 
+#include <thread>
+#include <queue>
 #include <cstring>
 #include <map>
 #include <unordered_map>
@@ -45,6 +47,8 @@ public:
         bool hasNewGoodLicense) = 0;
 };
 
+class MediaKeySessionServiceCallback;
+
 class MediaKeySessionImpl : public RefBase {
 public:
     explicit MediaKeySessionImpl(sptr<IMediaKeySessionService> &keySession);
@@ -72,10 +76,20 @@ public:
 private:
     void MediaKeySessionServerDied(pid_t pid);
     sptr<MediaKeySessionImplCallback> keySessionApplicationCallback_;
-    sptr<IMediaKeySessionServiceCallback> keySessionServiceCallback_;
+    sptr<MediaKeySessionServiceCallback> keySessionServiceCallback_;
     sptr<OHOS::DrmStandard::IMediaKeySessionService> keySessionServiceProxy_;
     std::recursive_mutex mutex_;
     sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
+};
+
+struct KeySessionEventMessage {
+    enum MessageType { EventKeyChanged = 0, EventKey };
+    MessageType messageType;
+    DrmEventType event;
+    int32_t extra;
+    std::vector<uint8_t> data;
+    std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> statusTable;
+    bool hasNewGoodLicense;
 };
 
 class MediaKeySessionServiceCallback : public MediaKeySessionServiceCallbackStub {
@@ -92,8 +106,7 @@ public:
 
     ~MediaKeySessionServiceCallback()
     {
-        std::lock_guard<std::recursive_mutex> lock(mutex_);
-        keySessionImpl_ = nullptr;
+        Release();
     }
 
     void InitEventMap();
@@ -101,7 +114,8 @@ public:
     int32_t SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> &data) override;
     int32_t SendEventKeyChanged(const std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> &statusTable,
         bool hasNewGoodLicense) override;
-
+    void Release();
+    void Init();
 private:
     int32_t SendEventHandler(DrmEventType event, int32_t extra, const std::vector<uint8_t> &data);
     int32_t SendEventKeyChangedHandler(
@@ -109,6 +123,12 @@ private:
     std::recursive_mutex mutex_;
     MediaKeySessionImpl *keySessionImpl_;
     std::unordered_map<int32_t, std::string> eventMap_;
+    bool serviceThreadRunning = false;
+    void ProcessEventMessage();
+    std::thread eventQueueThread;
+    std::queue<KeySessionEventMessage> eventQueue;
+    std::mutex queueMutex;
+    std::condition_variable cv;
 };
 } // DrmStandard
 } // OHOS

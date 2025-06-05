@@ -24,17 +24,15 @@ namespace OHOS {
 namespace DrmStandard {
 MediaKeySystemImpl::MediaKeySystemImpl(sptr<IMediaKeySystemService> &mediaKeysystem) : serviceProxy_(mediaKeysystem)
 {
-    DRM_DEBUG_LOG("MediaKeySystemImpl:0x %{public}06" PRIXPTR "MediaKeySystemImpl Instances create",
-        FAKE_POINTER(this));
+    DRM_DEBUG_LOG(
+        "MediaKeySystemImpl:0x %{public}06" PRIXPTR "MediaKeySystemImpl Instances create", FAKE_POINTER(this));
 
     sptr<IRemoteObject> object = serviceProxy_->AsObject();
     pid_t pid = 0;
-    deathRecipient_ = new(std::nothrow) DrmDeathRecipient(pid);
+    deathRecipient_ = new (std::nothrow) DrmDeathRecipient(pid);
     DRM_CHECK_AND_RETURN_LOG(deathRecipient_ != nullptr, "failed to new DrmDeathRecipient.");
 
-    deathRecipient_->SetNotifyCb([this] (pid_t pid) {
-        this->MediaKeySystemServerDied(pid);
-    });
+    deathRecipient_->SetNotifyCb([this](pid_t pid) { this->MediaKeySystemServerDied(pid); });
     bool result = object->AddDeathRecipient(deathRecipient_);
     if (!result) {
         DRM_ERR_LOG("failed to add deathRecipient");
@@ -44,6 +42,7 @@ MediaKeySystemImpl::MediaKeySystemImpl(sptr<IMediaKeySystemService> &mediaKeysys
 
 MediaKeySystemImpl::~MediaKeySystemImpl()
 {
+    Release();
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     serviceProxy_ = nullptr;
 }
@@ -62,6 +61,10 @@ void MediaKeySystemImpl::MediaKeySystemServerDied(pid_t pid)
 int32_t MediaKeySystemImpl::Release()
 {
     DRM_INFO_LOG("Release enter.");
+    if (serviceCallback_ != nullptr) {
+        serviceCallback_->Release();
+        serviceCallback_ = nullptr;
+    }
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = DRM_INNER_ERR_UNKNOWN;
     if (serviceProxy_ != nullptr) {
@@ -123,8 +126,7 @@ int32_t MediaKeySystemImpl::ProcessKeySystemResponse(const std::vector<uint8_t> 
 
 int32_t MediaKeySystemImpl::SetConfigurationString(std::string &configName, std::string &value)
 {
-    DRM_INFO_LOG("SetConfiguration enter, configName:%{public}s, value:%{public}s.",
-        configName.c_str(), value.c_str());
+    DRM_INFO_LOG("SetConfiguration enter, configName:%{public}s, value:%{public}s.", configName.c_str(), value.c_str());
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = DRM_INNER_ERR_OK;
 
@@ -195,8 +197,8 @@ int32_t MediaKeySystemImpl::GetConfigurationByteArray(std::string &configName, s
     return DRM_INNER_ERR_OK;
 }
 
-int32_t MediaKeySystemImpl::CreateMediaKeySession(ContentProtectionLevel securityLevel,
-    sptr<MediaKeySessionImpl> *keySessionImpl)
+int32_t MediaKeySystemImpl::CreateMediaKeySession(
+    ContentProtectionLevel securityLevel, sptr<MediaKeySessionImpl> *keySessionImpl)
 {
     DrmTrace trace("MediaKeySystemImpl::CreateMediaKeySession");
     DRM_INFO_LOG("CreateMediaKeySession enter.");
@@ -289,8 +291,7 @@ int32_t MediaKeySystemImpl::GetOfflineMediaKeyIds(std::vector<std::vector<uint8_
     return DRM_INNER_ERR_OK;
 }
 
-int32_t MediaKeySystemImpl::GetOfflineMediaKeyStatus(std::vector<uint8_t> &licenseId,
-    OfflineMediaKeyStatus &status)
+int32_t MediaKeySystemImpl::GetOfflineMediaKeyStatus(std::vector<uint8_t> &licenseId, OfflineMediaKeyStatus &status)
 {
     DRM_INFO_LOG("GetOfflineMediaKeyStatus enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
@@ -358,7 +359,7 @@ int32_t MediaKeySystemImpl::SetCallback(const sptr<MediaKeySystemImplCallback> &
         DRM_ERR_LOG("MediaKeySystemCallback alloc failed.");
         return ret;
     }
-
+    serviceCallback_->Init();
     if (serviceProxy_ == nullptr) {
         DRM_ERR_LOG("SetCallback serviceProxy_ is null");
         return DRM_INNER_ERR_SERVICE_FATAL_ERROR;
@@ -380,6 +381,29 @@ sptr<MediaKeySystemImplCallback> MediaKeySystemImpl::GetApplicationCallback()
 MediaKeySystemCallback::~MediaKeySystemCallback()
 {
     DRM_INFO_LOG("~MediaKeySystemCallback");
+    Release();
+}
+
+void MediaKeySystemCallback::Init()
+{
+    DRM_INFO_LOG("MediaKeySystemCallback::Init");
+    serviceThreadRunning = true;
+    eventQueueThread = std::thread([this] { this->ProcessEventMessage(); });
+    DRM_INFO_LOG("MediaKeySystemCallback::Init exit");
+}
+
+void MediaKeySystemCallback::Release()
+{
+    DRM_INFO_LOG("Release Enter");
+    serviceThreadRunning = false;
+    {
+        std::unique_lock<std::mutex> queueMutexLock(queueMutex);
+        cv.notify_all();
+    }
+    if (eventQueueThread.joinable()) {
+        DRM_INFO_LOG("MediaKeySystemCallback join");
+        eventQueueThread.join();
+    }
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     systemImpl_ = nullptr;
 }
@@ -407,7 +431,10 @@ std::string MediaKeySystemCallback::GetEventName(DrmEventType event)
 int32_t MediaKeySystemCallback::SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> &data)
 {
     DRM_INFO_LOG("SendEvent enter");
-    std::thread([this, event, extra, data] { this->SendEventHandler(event, extra, data); }).detach();
+    std::unique_lock<std::mutex> queueMutexLock(queueMutex);
+    MediaKeySystemEventMessage message(event, extra, data);
+    eventQueue.push(message);
+    cv.notify_all();
     return DRM_INNER_ERR_OK;
 }
 
@@ -426,5 +453,23 @@ int32_t MediaKeySystemCallback::SendEventHandler(DrmEventType event, int32_t ext
     DRM_DEBUG_LOG("SendEventHandler failed");
     return DRM_INNER_ERR_BASE;
 }
-} // namespace DrmStandard
-} // namespace OHOS
+
+void MediaKeySystemCallback::ProcessEventMessage()
+{
+    DRM_INFO_LOG("ProcessEventMessage msg enter");
+    while (serviceThreadRunning) {
+        std::unique_lock<std::mutex> queueMutexLock(queueMutex);
+        cv.wait_for(queueMutexLock, std::chrono::milliseconds(100L));  // 100ms
+        std::queue<MediaKeySystemEventMessage> localQueue;
+        localQueue.swap(eventQueue);
+        queueMutexLock.unlock();
+        while (!localQueue.empty()) {
+            auto e = localQueue.front();
+            localQueue.pop();
+            SendEventHandler(e.event, e.extra, e.data);
+        }
+    }
+    DRM_INFO_LOG("ProcessEventMessage msg exit");
+}
+}  // namespace DrmStandard
+}  // namespace OHOS

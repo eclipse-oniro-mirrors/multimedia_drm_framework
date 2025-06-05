@@ -45,9 +45,9 @@ MediaKeySessionImpl::MediaKeySessionImpl(sptr<IMediaKeySessionService> &keySessi
 MediaKeySessionImpl::~MediaKeySessionImpl()
 {
     DRM_INFO_LOG("~MediaKeySessionImpl enter.");
+    Release();
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    keySessionServiceProxy_ = nullptr;
-    keySessionServiceCallback_ = nullptr;
+    keySessionServiceProxy_ = nullptr;    
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR "MediaKeySessionImpl Instances release",
         FAKE_POINTER(this));
 }
@@ -66,7 +66,11 @@ void MediaKeySessionImpl::MediaKeySessionServerDied(pid_t pid)
 
 int32_t MediaKeySessionImpl::Release()
 {
-    DRM_INFO_LOG("MediaKeySessionImpl Release enter.");
+    DRM_INFO_LOG("MediaKeySessionImpl Release enter.");    
+    if (keySessionServiceCallback_ != nullptr) {
+        keySessionServiceCallback_->Release();
+        keySessionServiceCallback_ = nullptr;
+    }
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     int32_t ret = DRM_INNER_ERR_UNKNOWN;
     if (keySessionServiceProxy_ != nullptr) {
@@ -82,8 +86,7 @@ int32_t MediaKeySessionImpl::Release()
     } else {
         DRM_ERR_LOG("MediaKeySessionServiceProxy_ == nullptr");
     }
-    keySessionServiceProxy_ = nullptr;
-    keySessionServiceCallback_ = nullptr;
+    keySessionServiceProxy_ = nullptr;    
     return ret;
 }
 
@@ -287,7 +290,7 @@ int32_t MediaKeySessionImpl::SetCallback(const sptr<MediaKeySessionImplCallback>
         DRM_ERR_LOG("MediaKeySessionServiceCallback alloc failed.");
         return ret;
     }
-
+    keySessionServiceCallback_->Init();
     if (keySessionServiceProxy_ == nullptr) {
         DRM_ERR_LOG("SetCallback keySessionServiceProxy_ is null");
         return DRM_INNER_ERR_INVALID_KEY_SESSION;
@@ -298,6 +301,31 @@ int32_t MediaKeySessionImpl::SetCallback(const sptr<MediaKeySessionImplCallback>
         return DRM_INNER_ERR_BASE;
     }
     return ret;
+}
+
+
+void MediaKeySessionServiceCallback::Init() 
+{
+    DRM_INFO_LOG("MediaKeySessionServiceCallback::Init");
+    serviceThreadRunning = true;
+    eventQueueThread = std::thread([this] { this->ProcessEventMessage();});
+}
+
+void MediaKeySessionServiceCallback::Release()
+{
+    DRM_INFO_LOG("Release enter");
+    {
+        serviceThreadRunning = false;
+        {
+            std::unique_lock<std::mutex> queueMutexLock(queueMutex);
+            cv.notify_all();
+        }
+        if (eventQueueThread.joinable()) {
+            eventQueueThread.join();
+        }
+    }
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    keySessionImpl_ = nullptr;
 }
 
 void MediaKeySessionServiceCallback::InitEventMap()
@@ -331,7 +359,14 @@ std::string MediaKeySessionServiceCallback::GetEventName(DrmEventType event)
 int32_t MediaKeySessionServiceCallback::SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> &data)
 {
     DRM_INFO_LOG("SendEvent enter");
-    std::thread([this, event, extra, data] { this->SendEventHandler(event, extra, data); }).detach();
+    std::unique_lock<std::mutex> queueMutexLock(queueMutex);
+    KeySessionEventMessage message;
+    message.messageType = KeySessionEventMessage::EventKey;
+    message.event = event;
+    message.extra = extra;
+    message.data = data;
+    eventQueue.push(message);
+    cv.notify_all();
     return DRM_INNER_ERR_OK;
 }
 
@@ -355,10 +390,14 @@ int32_t MediaKeySessionServiceCallback::SendEventHandler(
 int32_t MediaKeySessionServiceCallback::SendEventKeyChanged(
     const std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> &statusTable, bool hasNewGoodLicense)
 {
-    DRM_INFO_LOG("SendEventKeyChanged enter.");
-    std::thread([this, statusTable, hasNewGoodLicense] {
-        this->SendEventKeyChangedHandler(statusTable, hasNewGoodLicense);
-    }).detach();
+    DRM_INFO_LOG("SendEventKeyChanged enter");
+    std::unique_lock<std::mutex> queueMutexLock(queueMutex);
+    KeySessionEventMessage message;
+    message.messageType = KeySessionEventMessage::EventKeyChanged;
+    message.statusTable = statusTable;
+    message.hasNewGoodLicense = hasNewGoodLicense;
+    eventQueue.push(message);
+    cv.notify_all();
     return DRM_INNER_ERR_OK;
 }
 
@@ -376,6 +415,28 @@ int32_t MediaKeySessionServiceCallback::SendEventKeyChangedHandler(
     }
     DRM_ERR_LOG("SendEventKeyChangedHandler failed.");
     return DRM_INNER_ERR_BASE;
+}
+
+void MediaKeySessionServiceCallback::ProcessEventMessage()
+{
+    DRM_INFO_LOG("ProcessEventMessage msg enter");
+    while (serviceThreadRunning) {
+        std::unique_lock<std::mutex> queueMutexLock(queueMutex);
+        cv.wait_for(queueMutexLock, std::chrono::milliseconds(100L));  // 100ms
+        std::queue<KeySessionEventMessage> localQueue;
+        localQueue.swap(eventQueue);
+        queueMutexLock.unlock();
+        while (!localQueue.empty()) {
+            auto e = localQueue.front();
+            localQueue.pop();
+            if (e.messageType == KeySessionEventMessage::EventKeyChanged) {
+                SendEventKeyChangedHandler(e.statusTable, e.hasNewGoodLicense);
+            } else if (e.messageType == KeySessionEventMessage::EventKey) {
+                SendEventHandler(e.event, e.extra, e.data);
+            }
+        }
+    }
+    DRM_INFO_LOG("ProcessEventMessage msg exit");
 }
 } // DrmStandard
 } // OHOS
