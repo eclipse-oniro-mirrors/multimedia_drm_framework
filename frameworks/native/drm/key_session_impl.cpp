@@ -47,7 +47,7 @@ MediaKeySessionImpl::~MediaKeySessionImpl()
     DRM_INFO_LOG("~MediaKeySessionImpl enter.");
     Release();
     std::lock_guard<std::recursive_mutex> lock(mutex_);
-    keySessionServiceProxy_ = nullptr;    
+    keySessionServiceProxy_ = nullptr;
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR "MediaKeySessionImpl Instances release",
         FAKE_POINTER(this));
 }
@@ -66,7 +66,7 @@ void MediaKeySessionImpl::MediaKeySessionServerDied(pid_t pid)
 
 int32_t MediaKeySessionImpl::Release()
 {
-    DRM_INFO_LOG("MediaKeySessionImpl Release enter.");    
+    DRM_INFO_LOG("MediaKeySessionImpl Release enter.");
     if (keySessionServiceCallback_ != nullptr) {
         keySessionServiceCallback_->Release();
         keySessionServiceCallback_ = nullptr;
@@ -86,7 +86,7 @@ int32_t MediaKeySessionImpl::Release()
     } else {
         DRM_ERR_LOG("MediaKeySessionServiceProxy_ == nullptr");
     }
-    keySessionServiceProxy_ = nullptr;    
+    keySessionServiceProxy_ = nullptr;
     return ret;
 }
 
@@ -304,7 +304,7 @@ int32_t MediaKeySessionImpl::SetCallback(const sptr<MediaKeySessionImplCallback>
 }
 
 
-void MediaKeySessionServiceCallback::Init() 
+void MediaKeySessionServiceCallback::Init()
 {
     DRM_INFO_LOG("MediaKeySessionServiceCallback::Init");
     serviceThreadRunning = true;
