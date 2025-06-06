@@ -406,7 +406,7 @@ int32_t MediaKeySessionServiceProxy::RequireSecureDecoderModule(std::string &mim
     return ret;
 }
 
-int32_t MediaKeySessionServiceProxy::SetCallback(sptr<IMediaKeySessionServiceCallback> &callback)
+int32_t MediaKeySessionServiceProxy::SetCallback(const sptr<IMediaKeySessionServiceCallback> &callback)
 {
     DRM_INFO_LOG("SetCallback enter.");
     MessageParcel data;

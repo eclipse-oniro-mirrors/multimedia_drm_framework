@@ -429,7 +429,7 @@ int32_t MediaKeySystemService::ClearOfflineMediaKeys(std::vector<uint8_t> &licen
     return ret;
 }
 
-int32_t MediaKeySystemService::SetCallback(sptr<IMediaKeySystemServiceCallback> &callback)
+int32_t MediaKeySystemService::SetCallback(const sptr<IMediaKeySystemServiceCallback> &callback)
 {
     DRM_INFO_LOG("SetCallback enter");
     int32_t ret = DRM_INNER_ERR_BASE;

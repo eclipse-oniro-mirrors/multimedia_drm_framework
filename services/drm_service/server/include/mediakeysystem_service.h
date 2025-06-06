@@ -70,7 +70,7 @@ public:
 
     int32_t CloseMediaKeySessionService(sptr<MediaKeySessionService> sessionService) override;
     int32_t GetStatistics(std::vector<IMediaKeySystemService::MetircKeyValue> &metrics) override;
-    int32_t SetCallback(sptr<IMediaKeySystemServiceCallback> &callback) override;
+    int32_t SetCallback(const sptr<IMediaKeySystemServiceCallback> &callback) override;
     std::string GetPluginName();
     sptr<OHOS::HDI::Drm::V1_0::IMediaKeySystem> getMediaKeySystem();
     int32_t SetBundleName();

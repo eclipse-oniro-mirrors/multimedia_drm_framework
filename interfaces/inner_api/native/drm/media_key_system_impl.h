@@ -16,6 +16,8 @@
 #ifndef OHOS_DRM_MEDIA_KEY_SYSTEMP_IMPL_H
 #define OHOS_DRM_MEDIA_KEY_SYSTEMP_IMPL_H
 
+#include <thread>
+#include <queue>
 #include "ipc_skeleton.h"
 #include "nocopyable.h"
 #include "drm_log.h"
@@ -36,6 +38,8 @@ public:
     virtual ~MediaKeySystemImplCallback() = default;
     virtual void SendEvent(const std::string &event, int32_t extra, const std::vector<uint8_t> &data) = 0;
 };
+
+class MediaKeySystemCallback;
 
 class MediaKeySystemImpl : public RefBase {
 public:
@@ -69,8 +73,16 @@ private:
     std::recursive_mutex mutex_;
     sptr<IMediaKeySystemService> serviceProxy_;
     sptr<MediaKeySystemImplCallback> mediaKeySystemApplicationCallback_;
-    sptr<IMediaKeySystemServiceCallback> serviceCallback_;
+    sptr<MediaKeySystemCallback> serviceCallback_;
     sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
+};
+
+struct MediaKeySystemEventMessage {
+    DrmEventType event;
+    int32_t extra;
+    std::vector<uint8_t> data;
+    MediaKeySystemEventMessage(DrmEventType t, int32_t e, std::vector<uint8_t> d) : event(t), extra(e), data(d)
+    {}
 };
 
 class MediaKeySystemCallback : public MediaKeySystemServiceCallbackStub {
@@ -87,11 +99,19 @@ public:
     void InitEventMap();
     std::string GetEventName(DrmEventType event);
     int32_t SendEvent(DrmEventType event, int32_t extra, const std::vector<uint8_t> &data) override;
-
+    void Release();
+    void Init();
 private:
+    int32_t SendEventHandler(DrmEventType event, int32_t extra, const std::vector<uint8_t> &data);
     std::recursive_mutex mutex_;
     MediaKeySystemImpl *systemImpl_;
     std::unordered_map<int32_t, std::string> eventMap_;
+    bool serviceThreadRunning = false;
+    void ProcessEventMessage();
+    std::thread eventQueueThread;
+    std::queue<MediaKeySystemEventMessage> eventQueue;
+    std::mutex queueMutex;
+    std::condition_variable cv;
 };
 } // DrmStandard
 } // OHOS
