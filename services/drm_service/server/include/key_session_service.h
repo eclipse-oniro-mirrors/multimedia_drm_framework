@@ -56,7 +56,7 @@ public:
     int32_t ClearMediaKeys() override;
     int32_t GetContentProtectionLevel(IMediaKeySessionService::ContentProtectionLevel *securityLevel) override;
     int32_t RequireSecureDecoderModule(std::string &mimeType, bool *status) override;
-    int32_t SetCallback(sptr<IMediaKeySessionServiceCallback> &callback) override;
+    int32_t SetCallback(const sptr<IMediaKeySessionServiceCallback> &callback) override;
 
     // for hdi callback
     int32_t SendEvent(OHOS::HDI::Drm::V1_0::EventType eventType, int32_t extra,

@@ -317,7 +317,7 @@ int32_t MediaKeySessionService::RequireSecureDecoderModule(std::string &mimeType
     return ret;
 }
 
-int32_t MediaKeySessionService::SetCallback(sptr<IMediaKeySessionServiceCallback> &callback)
+int32_t MediaKeySessionService::SetCallback(const sptr<IMediaKeySessionServiceCallback> &callback)
 {
     DRM_INFO_LOG("SetCallback enter.");
     std::lock_guard<std::recursive_mutex> lock(sessionMutex_);
