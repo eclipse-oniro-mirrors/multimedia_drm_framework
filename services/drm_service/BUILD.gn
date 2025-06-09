@@ -68,8 +68,7 @@ ohos_shared_library("drm_service") {
     "ipc:ipc_core",
     "ipc:ipc_single",
     "memmgr:memmgrclient",
-    "napi:ace_napi",
-    "netmanager_base:net_conn_manager_if",
+    "napi:ace_napi",    
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
