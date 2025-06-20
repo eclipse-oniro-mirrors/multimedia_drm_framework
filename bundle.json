@@ -22,6 +22,8 @@
           "components": [
               "ability_base",
               "ability_runtime",
+              "access_token",
+              "curl",
               "safwk",
               "napi",
               "samgr",
