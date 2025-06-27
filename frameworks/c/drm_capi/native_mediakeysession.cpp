@@ -194,7 +194,8 @@ Drm_ErrCode OH_MediaKeySession_GenerateOfflineReleaseRequest(MediaKeySession *me
 {
     DRM_INFO_LOG("OH_MediaKeySession_GenerateOfflineReleaseRequest enter");
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySessoin != nullptr) && (offlineMediaKeyId != nullptr) &&
-        (offlineMediaKeyIdLen > 0) && (releaseRequest != nullptr) && (releaseRequestLen != nullptr)),
+        (offlineMediaKeyIdLen > 0) && (offlineMediaKeyIdLen <= MAX_OFFLINE_MEDIA_KEY_ID_LEN) &&
+        (releaseRequest != nullptr) && (releaseRequestLen != nullptr)),
         DRM_ERR_INVALID_VAL, "OH_MediaKeySession_GenerateOfflineReleaseRequest parameter is error!");
     std::vector<uint8_t> ReleaseRequest;
     std::vector<uint8_t> licenseIdVec(offlineMediaKeyId, offlineMediaKeyId + offlineMediaKeyIdLen);
@@ -225,7 +226,8 @@ Drm_ErrCode OH_MediaKeySession_ProcessOfflineReleaseResponse(MediaKeySession *me
 {
     DRM_INFO_LOG("OH_MediaKeySession_ProcessOfflineReleaseResponse enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySessoin != nullptr) && (offlineMediaKeyId != nullptr) &&
-        (offlineMediaKeyIdLen > 0) && (releaseReponse != nullptr) && (releaseReponseLen > 0)),
+        (offlineMediaKeyIdLen > 0) && (offlineMediaKeyIdLen <= MAX_OFFLINE_MEDIA_KEY_ID_LEN) &&
+        (releaseReponse != nullptr) && (releaseReponseLen > 0)),
         DRM_ERR_INVALID_VAL, "OH_MediaKeySession_ProcessOfflineReleaseResponse parameter is error!");
     std::vector<uint8_t> licenseIdVec(offlineMediaKeyId, offlineMediaKeyId + offlineMediaKeyIdLen);
     std::vector<uint8_t> responseVec(releaseReponse, releaseReponse + releaseReponseLen);
@@ -246,7 +248,8 @@ Drm_ErrCode OH_MediaKeySession_RestoreOfflineMediaKeys(MediaKeySession *mediaKey
     int64_t beginTime = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::system_clock::now().time_since_epoch()).count();
     DRM_CHECK_AND_RETURN_RET_LOG(
-        ((mediaKeySessoin != nullptr) && (offlineMediaKeyId != nullptr) && (offlineMediaKeyIdLen > 0)),
+        ((mediaKeySessoin != nullptr) && (offlineMediaKeyId != nullptr) && (offlineMediaKeyIdLen > 0) &&
+        (offlineMediaKeyIdLen <= MAX_OFFLINE_MEDIA_KEY_ID_LEN)),
         DRM_ERR_INVALID_VAL, "OH_MediaKeySession_RestoreOfflineMediaKeys parameter is error!");
     std::vector<uint8_t> licenseIdVec(offlineMediaKeyId, offlineMediaKeyId + offlineMediaKeyIdLen);
     int32_t result = DRM_ERR_OK;

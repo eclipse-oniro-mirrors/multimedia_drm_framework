@@ -554,7 +554,7 @@ Drm_ErrCode OH_MediaKeySystem_GetOfflineMediaKeyStatus(MediaKeySystem *mediaKeyS
 {
     DRM_INFO_LOG("OH_MediaKeySystem_GetOfflineMediaKeyStatus enter");
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySystem != nullptr) && (offlineMediaKeyId != nullptr) &&
-        (offlineMediaKeyIdLen > 0) && (status != nullptr)),
+        (offlineMediaKeyIdLen > 0) && (offlineMediaKeyIdLen <= MAX_OFFLINE_MEDIA_KEY_ID_LEN) && (status != nullptr)),
         DRM_ERR_INVALID_VAL, "OH_MediaKeySystem_GetOfflineMediaKeyStatus parameter is error!");
     int32_t result = OFFLINE_MEDIA_KEY_STATUS_UNKNOWN;
 
@@ -585,7 +585,7 @@ Drm_ErrCode OH_MediaKeySystem_ClearOfflineMediaKeys(MediaKeySystem *mediaKeySyst
 {
     DRM_INFO_LOG("OH_MediaKeySystem_ClearOfflineMediaKeys enter.");
     DRM_CHECK_AND_RETURN_RET_LOG(((mediaKeySystem != nullptr) && (offlineMediaKeyId != nullptr) &&
-        (offlineMediaKeyIdLen > 0)),
+        (offlineMediaKeyIdLen > 0) && (offlineMediaKeyIdLen <= MAX_OFFLINE_MEDIA_KEY_ID_LEN)),
         DRM_ERR_INVALID_VAL, "OH_MediaKeySystem_ClearOfflineMediaKeys parameter is error!");
     int32_t result = DRM_ERR_OK;
     std::vector<uint8_t> licenseIdVec(offlineMediaKeyId, offlineMediaKeyId + offlineMediaKeyIdLen);
