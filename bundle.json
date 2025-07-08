@@ -39,7 +39,8 @@
               "memmgr",
               "hiappevent",
               "json",
-              "netmanager_base"
+              "netmanager_base",
+              "runtime_core"
             ]
         },
         "build": {
@@ -47,7 +48,8 @@
             "base_group": [
             ],
             "fwk_group": [
-              "//foundation/multimedia/drm_framework/:multimedia_drm_framework"
+              "//foundation/multimedia/drm_framework/:multimedia_drm_framework",
+              "//foundation/multimedia/drm_framework/frameworks/taihe:drm_framework_taihe"
             ],
             "service_group": [
               "//foundation/multimedia/drm_framework/sa_profile:drm_service_sa_profile",
