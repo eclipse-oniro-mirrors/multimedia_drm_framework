@@ -76,6 +76,21 @@
             },
             {
               "type": "none",
+              "name": "//foundation/multimedia/drm_framework/frameworks/taihe:drm_taihe",
+              "header": {
+                "header_base": [
+                    "//foundation/multimedia/drm_framework/frameworks/taihe/include"
+                ],
+                "header_files": [
+                  "key_session_taihe.h"
+                ]
+              }
+            },
+            {
+              "name": "//foundation/multimedia/drm_framework/frameworks/taihe:copy_drm_taihe"
+            },
+            {
+              "type": "none",
               "name": "//foundation/multimedia/drm_framework/interfaces/kits/c/drm_capi:native_drm",
               "header": {
                 "header_base": [
