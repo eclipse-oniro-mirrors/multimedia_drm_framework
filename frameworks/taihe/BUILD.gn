@@ -36,6 +36,11 @@ ohos_taihe("run_drm_taihe") {
   ]
 }
 
+config("drm_taihe_config") {
+  visibility = [ ":*" ]
+  include_dirs = [ "//foundation/multimedia/drm_framework/frameworks/taihe/include",]
+}
+
 taihe_shared_library("drm_taihe") {
   sanitize = {
     cfi = true
@@ -48,18 +53,18 @@ taihe_shared_library("drm_taihe") {
   subsystem_name = "$subsystem_name"
   part_name = "$part_name"
 
+  public_configs = [ ":drm_taihe_config" ]
+
   include_dirs = [
     "//foundation/multimedia/drm_framework/frameworks/taihe/include",
     "//foundation/multimedia/drm_framework/frameworks/native/drm",
     "//foundation/multimedia/drm_framework/frameworks/native/common",
     "//foundation/multimedia/drm_framework/interfaces/inner_api/native/drm",
-    "//foundation/multimedia/drm_framework/interfaces/kits/js/drm_napi/include",
     "//foundation/multimedia/drm_framework/services/drm_service/",
     "//foundation/multimedia/drm_framework/services/drm_service/client/include",
     "//foundation/multimedia/drm_framework/services/drm_service/server/include",
     "//foundation/multimedia/drm_framework/services/drm_service/ipc",
     "//foundation/multimedia/drm_framework/services/utils/include",
-    # "//foundation/multimedia/camera_lite/interfaces/kits/",
   ]
 
   sources = get_target_outputs(":run_drm_taihe")
@@ -79,14 +84,12 @@ taihe_shared_library("drm_taihe") {
   ]
   external_deps = [
     "ability_runtime:abilitykit_native",
-    "ability_runtime:napi_base_context",
     "c_utils:utils",
     "hiappevent:hiappevent_innerapi",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "hitrace:libhitracechain",
     "ipc:ipc_core",
-    "napi:ace_napi",
     "eventhandler:libeventhandler",
   ]
 }
