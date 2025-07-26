@@ -28,6 +28,7 @@
 #include "drm_error_code.h"
 #include "napi_param_utils.h"
 #include "drm_host_manager.h"
+#include "drm_helper.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -41,6 +42,11 @@ const int32_t LAZY_UNLOAD_WAIT_IN_MILMINUTES = 100;
 const int32_t LAZY_UNLOAD_TIME_IN_MINUTES = 3;
 const int32_t NOT_LAZY_LOADDED = -65536;
 const int32_t TIME_IN_MS = 60000;
+const int32_t QUERY_INTERVAL = 60;
+const std::string TV_DEVICE = "tv";
+const std::string AGREED_STATEMENT = "1";
+const std::string SECURE_TYPE = "secure";
+const std::string BASIC_STATEMENT_AGREED = "basic_statement_agreed";
 
 DrmHostManager::DrmHostDeathRecipient::DrmHostDeathRecipient(
     const sptr<DrmHostManager> &drmHostManager, std::string &name)
@@ -303,6 +309,12 @@ void DrmHostManager::ServiceThreadMain() __attribute__((no_sanitize("cfi")))
         {
             std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
             loadedLibs.push_back(handle);
+        }
+        if (DrmHelper::GetDeviceType() == TV_DEVICE) {
+            while (DrmHelper::GetSettingDataValue(SECURE_TYPE, BASIC_STATEMENT_AGREED) != AGREED_STATEMENT) {
+                DRM_INFO_LOG("DrmHostManager wait for basic statement agreed.");
+                sleep(QUERY_INTERVAL);
+            }
         }
         if (ProcessProvision(handle) != DRM_INNER_ERR_OK) {
             ReleaseHandleAndKeySystemMap(handle);
