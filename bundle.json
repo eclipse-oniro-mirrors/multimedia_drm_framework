@@ -40,7 +40,10 @@
               "drivers_interface_drm",
               "memmgr",
               "hiappevent",
-              "json"
+              "json",
+              "init",
+              "data_share",
+              "os_account"
             ]
         },
         "build": {

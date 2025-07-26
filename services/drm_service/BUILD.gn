@@ -31,6 +31,7 @@ ohos_shared_library("drm_service") {
     "./../utils/drm_dfx_utils.cpp",
     "./../utils/drm_trace.cpp",
     "./../utils/hdi_err_convertor.cpp",
+    "./../utils/drm_helper.cpp",
     "./server/src/drm_host_manager.cpp",
     "./server/src/key_session_service.cpp",
     "./server/src/media_decrypt_module_service.cpp",
@@ -43,11 +44,13 @@ ohos_shared_library("drm_service") {
   ]
   external_deps = [
     "ability_base:want",
+    "ability_base:zuri",
     "ability_runtime:abilitykit_native",
     "ability_runtime:napi_base_context",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
+    "data_share:datashare_consumer",
     "drivers_interface_drm:libdrm_proxy_1.0",
     "hdf_core:libhdf_host",
     "hdf_core:libhdf_ipc_adapter",
@@ -61,8 +64,10 @@ ohos_shared_library("drm_service") {
     "hitrace:libhitracechain",
     "ipc:ipc_core",
     "ipc:ipc_single",
+    "init:libbegetutil",
     "memmgr:memmgrclient",
     "napi:ace_napi",
+    "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
