@@ -215,17 +215,21 @@ napi_status NapiParamUtils::GetValueOptionsData(const napi_env &env, std::map<st
             DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "Could not able to read optionalData property!");
             status = napi_get_named_property(env, tmpData, "value", &tmpValue);
             DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status, "Could not able to read optionalData property!");
+            std::string name = "";
+            std::string value = "";
             status = napi_get_value_string_utf8(env, tmpName, nullptr, 0, &nameLength);
             DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status,
                 "Could not able to transfer optionalData buffer info!");
             status = napi_get_value_string_utf8(env, tmpValue, nullptr, 0, &valueLength);
             DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status,
                 "Could not able to transfer optionalData buffer info!");
-            std::string name(nameLength, 0);
+            name.reserve(nameLength + 1);
+            name.resize(nameLength);
             status = napi_get_value_string_utf8(env, tmpName, &name[0], nameLength + 1, &nameLength);
             DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status,
                 "Could not able to transfer optionalData buffer info!");
-            std::string value(valueLength, 0);
+            value.reserve(valueLength + 1);
+            value.resize(valueLength);
             status = napi_get_value_string_utf8(env, tmpValue, &value[0], valueLength + 1, &valueLength);
             DRM_NAPI_CHECK_AND_RETURN_LOG(status == napi_ok, status,
                 "Could not able to transfer optionalData buffer info!");
