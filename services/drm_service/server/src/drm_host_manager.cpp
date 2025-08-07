@@ -252,7 +252,6 @@ void DrmHostManager::GetOemLibraryPath(std::vector<std::string> &libsToLoad)
                 continue;
             }
             std::string fullPath = OEM_CERTIFICATE_PATH + fileName;
-            DRM_DEBUG_LOG("ServiceThreadMain fullPath:%{public}s.", fullPath.c_str());
             libsToLoad.push_back(fullPath);
         }
         closedir(dir);
