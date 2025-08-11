@@ -34,8 +34,8 @@ config("drm_framework_capi_fuzztest_session_config") {
 
   if (use_libfuzzer) {
     defines = [ "SUPPORT_FUZZ" ]
-    cflags += [ "-fno-sanitize-coverage=inline-8bit-counters" ]
-    cflags_cc += [ "-fno-sanitize-coverage=inline-8bit-counters" ]
+    cflags += [ "-fsanitize-coverage=inline-8bit-counters" ]
+    cflags_cc += [ "-fsanitize-coverage=inline-8bit-counters" ]
   }
 }
 
