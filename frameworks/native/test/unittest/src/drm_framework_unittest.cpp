@@ -47,6 +47,7 @@
 #include "imedia_key_session_service.h"
 #include "imedia_key_session_service_callback.h"
 #include "media_key_session_service_callback_stub.h"
+#include "drm_common_utils.h"
 
 #define DRM_SAMPLE_CHECK_AND_RETURN_RET_LOG(cond, ret, fmt, ...) \
     do {                                                         \
@@ -3946,5 +3947,33 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_CreateMediaKeySession_MAX_01, TestSi
     EXPECT_EQ(errNo, DRM_ERR_OK);
 }
 
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_IsUuidValid_01, TestSize.Level0)
+{
+    EXPECT_TRUE(IsUuidValid("0123456789ABCDEF"));
+    EXPECT_TRUE(IsUuidValid("abcdef1234567890"));
+    EXPECT_TRUE(IsUuidValid("a1b2c3d4e5f6"));
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_IsUuidValid_02, TestSize.Level0)
+{
+    EXPECT_FALSE(IsUuidValid(""));
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_IsUuidValid_03, TestSize.Level0)
+{
+    EXPECT_FALSE(IsUuidValid("123G456"));
+    EXPECT_FALSE(IsUuidValid("xyz123"));
+    EXPECT_FALSE(IsUuidValid("123456_"));
+    EXPECT_FALSE(IsUuidValid(" 123456"));
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_IsUuidValid_04, TestSize.Level0)
+{
+    EXPECT_TRUE(IsUuidValid("0"));
+    EXPECT_TRUE(IsUuidValid("f"));
+    EXPECT_TRUE(IsUuidValid("F"));
+    EXPECT_TRUE(IsUuidValid("09AFaf"));
+    EXPECT_FALSE(IsUuidValid("09AG"));
+}
 } // DrmStandard
 } // OHOS
