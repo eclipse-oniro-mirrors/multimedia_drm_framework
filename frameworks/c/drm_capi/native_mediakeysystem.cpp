@@ -28,6 +28,7 @@
 #include "drm_api_operation.h"
 #include "media_key_system_factory_impl.h"
 #include "drm_error_code.h"
+#include "drm_common_utils.h"
 
 using namespace OHOS::DrmStandard;
 
@@ -98,6 +99,9 @@ Drm_ErrCode OH_MediaKeySystem_GetMediaKeySystems(DRM_MediaKeySystemDescription *
     DRM_CHECK_AND_RETURN_RET_LOG((ret == DRM_ERR_OK), DRM_ERR_UNKNOWN,
         "GetMediaKeySystems call Failed!");
     for (auto it = keySystemNames.begin(); it != keySystemNames.end(); it++) {
+        if (!IsUuidValid(it->second)) {
+            continue;
+        }
         if (it->first.size() != 0) {
             ret = strcpy_s(description[times].name, sizeof(description[times].name) - 1, it->first.c_str());
             if (ret != 0) {
