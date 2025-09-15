@@ -35,7 +35,7 @@ std::string DrmHelper::GetDeviceType()
     std::string deviceType = OHOS::system::GetParameter("const.product.devicetype", "");
     if (deviceType.empty()) {
         deviceType = OHOS::system::GetParameter("const.build.characteristics", "");
-        DRM_INFO_LOG("DrmHostManager GetParameter characteristics is:%{public}s", deviceType.c_str());
+        DRM_WARNING_LOG("DrmHelper GetParameter characteristics is:%{public}s", deviceType.c_str());
     }
     return deviceType;
 }
@@ -45,12 +45,12 @@ std::string DrmHelper::GetSettingDataValue(const std::string &tableType, const s
     std::string value;
     int32_t currentuserId = DrmHelper::GetCurrentUserId();
     if (currentuserId < 0) {
-        DRM_ERR_LOG("DrmHostManager currentuserId is invalid");
+        DRM_ERR_LOG("DrmHelper currentuserId is invalid");
         return "";
     }
     auto dataShareHelper = DrmHelper::CreateDataShareHelperProxy(currentuserId, tableType);
     if (dataShareHelper == nullptr) {
-        DRM_ERR_LOG("DrmHostManager dataShareHelper return nullptr");
+        DRM_ERR_LOG("DrmHelper dataShareHelper return nullptr");
         return "";
     }
 
@@ -63,13 +63,13 @@ std::string DrmHelper::GetSettingDataValue(const std::string &tableType, const s
     predicates.EqualTo(KEY_WORD, key);
     auto result = dataShareHelper->Query(uri, predicates, columns);
     if (result == nullptr) {
-        DRM_WARNING_LOG("DrmHostManager query error, result is null");
+        DRM_WARNING_LOG("DrmHelper query error, result is null");
         dataShareHelper->Release();
         return "";
     }
 
     if (result->GoToFirstRow() != DataShare::E_OK) {
-        DRM_WARNING_LOG("DrmHostManager query error, go to first row error");
+        DRM_WARNING_LOG("DrmHelper query error, go to first row error");
         result->Close();
         dataShareHelper->Release();
         return "";
@@ -80,7 +80,7 @@ std::string DrmHelper::GetSettingDataValue(const std::string &tableType, const s
     result->GetString(columnIndex, value);
     result->Close();
     dataShareHelper->Release();
-    DRM_INFO_LOG("DrmHostManager query success, value: %{public}s", value.c_str());
+    DRM_INFO_LOG("DrmHelper query success, value: %{public}s", value.c_str());
     return value;
 }
 
@@ -88,12 +88,12 @@ std::shared_ptr<DataShare::DataShareHelper> DrmHelper::CreateDataShareHelperProx
 {
     auto saManager = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (saManager == nullptr) {
-        DRM_ERR_LOG("DrmHostManager saManager return nullptr");
+        DRM_ERR_LOG("DrmHelper saManager return nullptr");
         return nullptr;
     }
     auto remoteObj = saManager->GetSystemAbility(MEDIA_KEY_SYSTEM_SERVICE_ID);
     if (remoteObj == nullptr) {
-        DRM_ERR_LOG("DrmHostManager saManager->GetSystemAbility return nullptr");
+        DRM_ERR_LOG("DrmHelper saManager->GetSystemAbility return nullptr");
         return nullptr;
     }
 
@@ -106,7 +106,7 @@ std::shared_ptr<DataShare::DataShareHelper> DrmHelper::CreateDataShareHelperProx
     }
 
     if (helper == nullptr) {
-        DRM_WARNING_LOG("DrmHostManager helper is nullptr, uri=%{public}s", SettingSystemUri.c_str());
+        DRM_WARNING_LOG("DrmHelper helper is nullptr, uri=%{public}s", SettingSystemUri.c_str());
         return nullptr;
     }
     return helper;
@@ -122,13 +122,13 @@ int32_t DrmHelper::GetCurrentUserId()
         result = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
         if (result == ERR_OK && !ids.empty()) {
             currentuserId = ids[0];
-            DRM_DEBUG_LOG("DrmHostManager current userId is :%{public}d", currentuserId);
+            DRM_DEBUG_LOG("DrmHelper current userId is :%{public}d", currentuserId);
             break;
         }
         sleep(1);
     }
     if (result != ERR_OK || ids.empty()) {
-        DRM_WARNING_LOG("DrmHostManager current userId is empty");
+        DRM_WARNING_LOG("DrmHelper current userId is empty");
     }
     return currentuserId;
 }
