@@ -41,6 +41,9 @@
               "memmgr",
               "hiappevent",
               "json",
+              "init",
+              "data_share",
+              "os_account",
               "runtime_core"
             ]
         },
