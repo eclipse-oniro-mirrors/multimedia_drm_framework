@@ -1,0 +1,253 @@
+/*
+ * Copyright (C) 2025 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@!namespace("@ohos.multimedia.drm", "drm")
+@!sts_export_default
+
+@!sts_inject("""
+static { loadLibrary("drm_taihe.z"); }
+""")
+
+enum DrmErrorCode: i32 {
+    ERROR_UNKNOWN = 24700101,
+    MAX_SYSTEM_NUM_REACHED = 24700103,
+    MAX_SESSION_NUM_REACHED = 24700104,
+    SERVICE_FATAL_ERROR = 24700201
+}
+
+enum PreDefinedConfigName: String {
+    CONFIG_DEVICE_VENDOR = "vendor",
+    CONFIG_DEVICE_VERSION = "version",
+    CONFIG_DEVICE_DESCRIPTION = "description",
+    CONFIG_DEVICE_ALGORITHMS = "algorithms",
+    CONFIG_DEVICE_UNIQUE_ID = "deviceUniqueId",
+    CONFIG_SESSION_MAX = "maxSessionNum",
+    CONFIG_SESSION_CURRENT = "currentSessionNum",
+}
+
+enum MediaKeyType: i32 {
+    MEDIA_KEY_TYPE_OFFLINE = 0,
+    MEDIA_KEY_TYPE_ONLINE = 1,
+}
+
+enum OfflineMediaKeyStatus: i32 {
+    OFFLINE_MEDIA_KEY_STATUS_UNKNOWN = 0,
+    OFFLINE_MEDIA_KEY_STATUS_USABLE = 1,
+    OFFLINE_MEDIA_KEY_STATUS_INACTIVE = 2,
+}
+
+enum CertificateStatus: i32 {
+    CERT_STATUS_PROVISIONED = 0,
+    CERT_STATUS_NOT_PROVISIONED = 1,
+    CERT_STATUS_EXPIRED = 2,
+    CERT_STATUS_INVALID = 3,
+    CERT_STATUS_UNAVAILABLE = 4,
+}
+
+enum MediaKeyRequestType: i32 {
+    MEDIA_KEY_REQUEST_TYPE_UNKNOWN = 0,
+    MEDIA_KEY_REQUEST_TYPE_INITIAL = 1,
+    MEDIA_KEY_REQUEST_TYPE_RENEWAL = 2,
+    MEDIA_KEY_REQUEST_TYPE_RELEASE = 3,
+    MEDIA_KEY_REQUEST_TYPE_NONE = 4,
+    MEDIA_KEY_REQUEST_TYPE_UPDATE = 5,
+}
+
+enum ContentProtectionLevel: i32 {
+    CONTENT_PROTECTION_LEVEL_UNKNOWN = 0,
+    CONTENT_PROTECTION_LEVEL_SW_CRYPTO = 1,
+    CONTENT_PROTECTION_LEVEL_HW_CRYPTO = 2,
+    CONTENT_PROTECTION_LEVEL_ENHANCED_HW = 3,
+    CONTENT_PROTECTION_LEVEL_MAX = 4,
+}
+
+struct ProvisionRequest {
+    data: @typedarray Array<u8>;
+    defaultURL: String;
+}
+
+struct OptionsData {
+    name: String;
+    value: String;
+}
+
+struct MediaKeyRequest {
+    mediaKeyRequestType: MediaKeyRequestType;
+    data: @typedarray Array<u8>;
+    defaultURL: String;
+}
+
+struct EventInfo {
+    info: @typedarray Array<u8>;
+    extraInfo: String;
+}
+
+struct StatisticKeyValue {
+    name: String;
+    value: String;
+}
+
+struct MediaKeyStatus {
+    name: String;
+    value: String;
+}
+
+struct KeysInfo {
+    keyId: @typedarray Array<u8>;
+    value: String;
+}
+
+struct MediaKeySystemInfo {
+    uuid: String;
+    pssh: @typedarray Array<u8>;
+}
+
+struct MediaKeySystemDescription {
+    name: String;
+    uuid: String;
+}
+
+function GetMediaKeySystemUuid(name: String): String;
+function GetMediaKeySystems(): Array<MediaKeySystemDescription>;
+function CreateMediaKeySystem(name: String): Optional<MediaKeySystem>;
+@overload("isMediaKeySystemSupported")
+function IsMediaKeySystemSupportedWithThreeArgs(name: String, mimeType: String, level: ContentProtectionLevel): bool;
+@overload("isMediaKeySystemSupported")
+function IsMediaKeySystemSupportedWithTwoArgs(name: String, mimeType: String): bool;
+@overload("isMediaKeySystemSupported")
+function IsMediaKeySystemSupported(name: String): bool;
+
+interface MediaKeySystem {
+    GetConfigurationString(configName: String): String;
+    SetConfigurationString(configName: String, value: String): void;
+    GetConfigurationByteArray(configName: String): @typedarray Array<u8>;
+    SetConfigurationByteArray(configName: String, value: @typedarray Array<u8>): void;
+    GetStatistics(): Array<StatisticKeyValue>;
+    GetMaxContentProtectionLevel(): ContentProtectionLevel;
+
+    @gen_promise("generateKeySystemRequest")
+    GenerateKeySystemRequestSync(): ProvisionRequest;
+
+    @gen_promise("processKeySystemResponse")
+    ProcessKeySystemResponseSync(response: @typedarray Array<u8>): void;
+
+    GetCertificateStatus(): CertificateStatus;
+
+    @!sts_inject_into_interface("on(type: string, callback: (eventInfo: EventInfo)=> void): void;")
+    @!sts_inject_into_class("""on(type: string, callback: object): void {
+        if (type === "keySystemRequired") {
+            this.onKeySystemRequired(callback as (data: EventInfo)=> void);
+        } else {
+            throw new Error(`Unknown type: ${type}`);
+        }
+    }""")
+    OnKeySystemRequired(callback: (eventInfo: EventInfo) => void): void;
+
+    @!sts_inject_into_interface("off(type: string, callback?: (eventInfo: EventInfo)=> void): void;")
+    @!sts_inject_into_class("""off(type: string, callback?: object): void {
+        if (type === "keySystemRequired") {
+            this.offKeySystemRequired(callback as (((data: EventInfo)=> void) | undefined));
+        } else {
+            throw new Error(`Unknown type: ${type}`);
+        }
+    }""")
+    OffKeySystemRequired(callback: Optional<(eventInfo: EventInfo) => void>): void;
+
+    @overload("createMediaKeySession")
+    CreateMediaKeySessionWithLevel(level: ContentProtectionLevel): Optional<MediaKeySession>;
+
+    @overload("createMediaKeySession")
+    CreateMediaKeySession(): Optional<MediaKeySession>;
+
+    GetOfflineMediaKeyIds(): Array<@typedarray Array<u8>>;
+    GetOfflineMediaKeyStatus(mediaKeyId: @typedarray Array<u8>): OfflineMediaKeyStatus;
+    ClearOfflineMediaKeys(mediaKeyId: @typedarray Array<u8>): void;
+    Destroy(): void;
+}
+
+interface MediaKeySession {
+    @get GetMediaKeySessionNative(): i64;
+    @set SetMediaKeySessionNative(mediaKeySessionNative: i64): void;
+
+    @gen_promise("generateMediaKeyRequest")
+    GenerateMediaKeyRequestSync(mimeType: String, initData: @typedarray Array<u8>, mediaKeyType: i32, options: Optional<Array<OptionsData>>): MediaKeyRequest;
+
+    @gen_promise("processMediaKeyResponse")
+    ProcessMediaKeyResponseSync(response: @typedarray Array<u8>): @typedarray Array<u8>;
+
+    CheckMediaKeyStatus(): Array<MediaKeyStatus>;
+    ClearMediaKeys(): void;
+
+    @gen_promise("generateOfflineReleaseRequest")
+    GenerateOfflineReleaseRequestSync(mediaKeyId: @typedarray Array<u8>): @typedarray Array<u8>;
+
+    @gen_promise("processOfflineReleaseResponse")
+    ProcessOfflineReleaseResponseSync(mediaKeyId: @typedarray Array<u8>, response: @typedarray Array<u8>): void;
+
+    @gen_promise("restoreOfflineMediaKeys")
+    RestoreOfflineMediaKeysSync(mediaKeyId: @typedarray Array<u8>): void;
+
+    GetContentProtectionLevel(): ContentProtectionLevel;
+    RequireSecureDecoderModule(mimeType: String): bool;
+    Destroy(): void;
+
+    @!sts_inject_into_interface("on(type: string, callback: (eventInfo: EventInfo)=> void): void;")
+    @!sts_inject_into_interface("on(type: string, callback: (keyInfo: Array<KeysInfo>, newKeyAvailable: boolean)=> void): void;")
+    @!sts_inject_into_class("""on(type: string, callback: object): void {
+        if (type === "keyRequired") {
+            this.onKeyRequired(callback as (data: EventInfo)=> void);
+        } else if(type === "keysChange") {
+            this.onKeysChange(callback as (keyInfo: Array<KeysInfo>, newKeyAvailable: boolean)=> void);
+        } else if(type === "keyExpired") {
+            this.onKeyExpired(callback as (data: EventInfo)=> void);
+        } else if(type === "vendorDefined") {
+            this.onVendorDefined(callback as (data: EventInfo)=> void);
+        } else if(type === "expirationUpdate") {
+            this.onExpirationUpdate(callback as (data: EventInfo)=> void);
+        } else {
+            throw new Error(`Unknown type: ${type}`);
+        }
+    }""")
+
+    OnKeyRequired(callback: (eventInfo: EventInfo) => void): void;
+    OnKeysChange(callback: (keyInfo: Array<KeysInfo>, newKeyAvailable: bool) => void): void;
+    OnKeyExpired(callback: (eventInfo: EventInfo) => void): void;
+    OnVendorDefined(callback: (eventInfo: EventInfo) => void): void;
+    OnExpirationUpdate(callback: (eventInfo: EventInfo) => void): void;
+
+    @!sts_inject_into_interface("off(type: string, callback?: (eventInfo: EventInfo)=> void): void;")
+    @!sts_inject_into_interface("off(type: string, callback?: (keyInfo: Array<KeysInfo>, newKeyAvailable: boolean)=> void): void;")
+    @!sts_inject_into_class("""off(type: string, callback?: object): void {
+        if (type === "keyRequired") {
+            this.offKeyRequired(callback as (((data: EventInfo)=> void) | undefined));
+        } else if(type === "keysChange") {
+            this.offKeysChange(callback as (((keyInfo: Array<KeysInfo>, newKeyAvailable: boolean)=> void) | undefined));
+        } else if(type === "keyExpired") {
+            this.offKeyExpired(callback as (((data: EventInfo)=> void) | undefined));
+        } else if(type === "vendorDefined") {
+            this.offVendorDefined(callback as (((data: EventInfo)=> void) | undefined));
+        } else if(type === "expirationUpdate") {
+            this.offExpirationUpdate(callback as (((data: EventInfo)=> void) | undefined));
+        } else {
+            throw new Error(`Unknown type: ${type}`);
+        }
+    }""")
+
+    OffKeyRequired(callback: Optional<(eventInfo: EventInfo) => void>): void;
+    OffKeysChange(callback: Optional<(keyInfo: Array<KeysInfo>, newKeyAvailable: bool) => void>): void;
+    OffKeyExpired(callback: Optional<(eventInfo: EventInfo) => void>): void;
+    OffVendorDefined(callback: Optional<(eventInfo: EventInfo) => void>): void;
+    OffExpirationUpdate(callback: Optional<(eventInfo: EventInfo) => void>): void;
+}

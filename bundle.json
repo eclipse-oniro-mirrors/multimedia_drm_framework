@@ -41,9 +41,7 @@
               "memmgr",
               "hiappevent",
               "json",
-              "init",
-              "data_share",
-              "os_account"
+              "runtime_core"
             ]
         },
         "build": {
@@ -51,7 +49,8 @@
             "base_group": [
             ],
             "fwk_group": [
-              "//foundation/multimedia/drm_framework/:multimedia_drm_framework"
+              "//foundation/multimedia/drm_framework/:multimedia_drm_framework",
+              "//foundation/multimedia/drm_framework/frameworks/taihe:drm_framework_taihe"
             ],
             "service_group": [
               "//foundation/multimedia/drm_framework/sa_profile:drm_service_sa_profile",
@@ -74,6 +73,21 @@
                   "media_decrypt_module_impl.h"
                 ]
               }
+            },
+            {
+              "type": "none",
+              "name": "//foundation/multimedia/drm_framework/frameworks/taihe:drm_taihe",
+              "header": {
+                "header_base": [
+                    "//foundation/multimedia/drm_framework/frameworks/taihe/include"
+                ],
+                "header_files": [
+                  "key_session_taihe.h"
+                ]
+              }
+            },
+            {
+              "name": "//foundation/multimedia/drm_framework/frameworks/taihe:copy_drm_taihe"
             },
             {
               "type": "none",
