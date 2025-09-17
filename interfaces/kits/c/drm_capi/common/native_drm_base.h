@@ -25,7 +25,7 @@
 /**
  * @file native_drm_base.h
  * @brief Defines the Drm MediaKeySystem and MediaKeySession struct.
- * @library libnative_drm.z.so
+ * @library libnative_drm.so
  * @Syscap SystemCapability.Multimedia.Drm.Core
  * @since 11
  * @version 1.0
