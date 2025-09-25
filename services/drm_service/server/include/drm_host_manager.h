@@ -130,6 +130,7 @@ private:
     int32_t LoadPluginInfo(const std::string& filePath);
     void ReleaseSevices(sptr<IMediaKeySystemFactory> drmHostServieProxy);
     void UnloadAllServices();
+    std::string QueryBasicStatement();
 
     StatusCallback *statusCallback_;
     std::map<void *, sptr<IMediaKeySystem>> handleAndKeySystemMap;

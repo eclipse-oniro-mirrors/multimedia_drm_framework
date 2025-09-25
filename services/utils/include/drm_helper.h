@@ -24,8 +24,6 @@ class DrmHelper {
 public:
     static std::string GetDeviceType();
     static std::string GetSettingDataValue(const std::string &tableType, const std::string &key);
-
-private:
     static std::shared_ptr<DataShare::DataShareHelper> CreateDataShareHelperProxy(
         int32_t userId, std::string tableType = "");
     static int32_t GetCurrentUserId();
