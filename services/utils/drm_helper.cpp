@@ -23,19 +23,22 @@
 namespace OHOS {
 namespace DrmStandard {
 const int32_t MEDIA_KEY_SYSTEM_SERVICE_ID = 3012;
+const int32_t GET_ID_RETRY_TIME = 5;
 const std::string SECURE_TYPE = "secure";
 const std::string KEY_WORD = "KEYWORD";
 const std::string SETTING_USER_SECURE_URI_PROXY =
     "datashare:///com.ohos.settingsdata/entry/settingsdata/USER_SETTINGSDATA_SECURE_";
 const std::string SETTINGS_DATA_EXT_URI = "datashare:///com.ohos.settingsdata.DataAbility";
 const std::string SETTING_USER_SECURE_URI_PROXY_SUFFIX = "?Proxy=true&key=";
+const std::string INVALID_DATA = "invalid_data";
 
 std::string DrmHelper::GetDeviceType()
 {
     std::string deviceType = OHOS::system::GetParameter("const.product.devicetype", "");
+    DRM_INFO_LOG("DrmHelper GetParameter is:%{public}s", deviceType.c_str());
     if (deviceType.empty()) {
         deviceType = OHOS::system::GetParameter("const.build.characteristics", "");
-        DRM_WARNING_LOG("DrmHelper GetParameter characteristics is:%{public}s", deviceType.c_str());
+        DRM_INFO_LOG("DrmHelper GetParameter characteristics is:%{public}s", deviceType.c_str());
     }
     return deviceType;
 }
@@ -46,26 +49,26 @@ std::string DrmHelper::GetSettingDataValue(const std::string &tableType, const s
     int32_t currentuserId = DrmHelper::GetCurrentUserId();
     if (currentuserId < 0) {
         DRM_ERR_LOG("DrmHelper currentuserId is invalid");
-        return "";
+        return INVALID_DATA;
     }
     auto dataShareHelper = DrmHelper::CreateDataShareHelperProxy(currentuserId, tableType);
     if (dataShareHelper == nullptr) {
         DRM_ERR_LOG("DrmHelper dataShareHelper return nullptr");
-        return "";
+        return INVALID_DATA;
     }
 
     std::string SettingSystemUri = SETTING_USER_SECURE_URI_PROXY +
         std::to_string(currentuserId) + SETTING_USER_SECURE_URI_PROXY_SUFFIX + key;
     OHOS::Uri uri(SettingSystemUri);
 
+    std::vector<std::string> columns = {"VALUE"};
     DataShare::DataSharePredicates predicates;
-    std::vector<std::string> columns;
     predicates.EqualTo(KEY_WORD, key);
     auto result = dataShareHelper->Query(uri, predicates, columns);
     if (result == nullptr) {
         DRM_WARNING_LOG("DrmHelper query error, result is null");
         dataShareHelper->Release();
-        return "";
+        return INVALID_DATA;
     }
 
     if (result->GoToFirstRow() != DataShare::E_OK) {
@@ -117,7 +120,7 @@ int32_t DrmHelper::GetCurrentUserId()
     std::vector<int32_t> ids;
     int32_t currentuserId = -1;
     ErrCode result;
-    int32_t retry = 5;
+    int32_t retry = GET_ID_RETRY_TIME;
     while (retry--) {
         result = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
         if (result == ERR_OK && !ids.empty()) {

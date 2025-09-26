@@ -47,6 +47,7 @@ const std::string TV_DEVICE = "tv";
 const std::string AGREED_STATEMENT = "1";
 const std::string SECURE_TYPE = "secure";
 const std::string BASIC_STATEMENT_AGREED = "basic_statement_agreed";
+const std::string INVALID_DATA = "invalid_data";
 
 DrmHostManager::DrmHostDeathRecipient::DrmHostDeathRecipient(
     const sptr<DrmHostManager> &drmHostManager, std::string &name)
@@ -309,13 +310,7 @@ void DrmHostManager::ServiceThreadMain() __attribute__((no_sanitize("cfi")))
             std::lock_guard<std::recursive_mutex> drmHostMapLock(drmHostMapMutex);
             loadedLibs.push_back(handle);
         }
-        if (DrmHelper::GetDeviceType() == TV_DEVICE) {
-            while (DrmHelper::GetSettingDataValue(SECURE_TYPE, BASIC_STATEMENT_AGREED) != AGREED_STATEMENT) {
-                DRM_INFO_LOG("DrmHostManager wait for basic statement agreed.");
-                sleep(QUERY_INTERVAL);
-            }
-        }
-        if (ProcessProvision(handle) != DRM_INNER_ERR_OK) {
+        if (QueryBasicStatement() == INVALID_DATA|| ProcessProvision(handle) != DRM_INNER_ERR_OK) {
             ReleaseHandleAndKeySystemMap(handle);
         }
     }
@@ -774,6 +769,21 @@ int32_t DrmHostManager::InitGetMediaKeySystems()
         }
     }
     return DRM_INNER_ERR_OK;
+}
+
+std::string DrmHostManager::QueryBasicStatement()
+{
+    std::string value = "";
+    if (DrmHelper::GetDeviceType() == TV_DEVICE) {
+        value = DrmHelper::GetSettingDataValue(SECURE_TYPE, BASIC_STATEMENT_AGREED);
+        while (value != AGREED_STATEMENT) {
+            DRM_CHECK_AND_RETURN_RET_LOG(value != INVALID_DATA, value, "QueryBasicStatement error!");
+            DRM_INFO_LOG("DrmHostManager wait for basic statement agreed.");
+            sleep(QUERY_INTERVAL);
+            value = DrmHelper::GetSettingDataValue(SECURE_TYPE, BASIC_STATEMENT_AGREED);
+        }
+    }
+    return value;
 }
 }  // namespace DrmStandard
 }  // namespace OHOS
