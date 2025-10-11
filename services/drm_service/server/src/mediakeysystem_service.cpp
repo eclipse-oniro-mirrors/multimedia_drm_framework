@@ -94,7 +94,7 @@ int32_t MediaKeySystemService::Release()
     std::lock_guard<std::recursive_mutex> lock(callbackMutex_);
     auto var = keySystemOperatoersCallback_.promote();
     if (var != nullptr) {
-        keySystemOperatoersCallback_->CloseMediaKeySystemService(this);
+        var->CloseMediaKeySystemService(this);
     }
     return DRM_INNER_ERR_OK;
 }

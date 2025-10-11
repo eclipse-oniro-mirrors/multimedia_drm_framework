@@ -76,7 +76,7 @@ int32_t MediaKeySessionService::Release()
     DRM_DEBUG_LOG("MediaKeySessionService GetCallingPID: %{public}d", currentPid);
     auto var = sessionOperatorsCallback_.promote();
     if (var != nullptr) {
-        sessionOperatorsCallback_->CloseMediaKeySessionService(this);
+        var->CloseMediaKeySessionService(this);
     }
     return DRM_INNER_ERR_OK;
 }
