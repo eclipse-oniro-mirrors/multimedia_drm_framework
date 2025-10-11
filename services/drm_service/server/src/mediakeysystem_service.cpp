@@ -92,7 +92,8 @@ int32_t MediaKeySystemService::Release()
     int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemService GetCallingPID: %{public}d", currentPid);
     std::lock_guard<std::recursive_mutex> lock(callbackMutex_);
-    if (keySystemOperatoersCallback_.promote() != nullptr) {
+    auto var = keySystemOperatoersCallback_.promote();
+    if (var != nullptr) {
         keySystemOperatoersCallback_->CloseMediaKeySystemService(this);
     }
     return DRM_INNER_ERR_OK;
