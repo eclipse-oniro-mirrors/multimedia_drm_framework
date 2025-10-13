@@ -49,12 +49,12 @@ std::string DrmHelper::GetSettingDataValue(const std::string &tableType, const s
     int32_t currentuserId = DrmHelper::GetCurrentUserId();
     if (currentuserId < 0) {
         DRM_ERR_LOG("DrmHelper currentuserId is invalid");
-        return INVALID_DATA;
+        return "";
     }
     auto dataShareHelper = DrmHelper::CreateDataShareHelperProxy(currentuserId, tableType);
     if (dataShareHelper == nullptr) {
         DRM_ERR_LOG("DrmHelper dataShareHelper return nullptr");
-        return INVALID_DATA;
+        return "";
     }
 
     std::string SettingSystemUri = SETTING_USER_SECURE_URI_PROXY +

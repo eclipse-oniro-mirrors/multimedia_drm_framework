@@ -36,7 +36,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_GetSettingDataValue_001, TestSize.Le
     EXPECT_EQ(ret1, INVALID_DATA);
 
     string ret2 = DrmHelper::GetSettingDataValue("", "");
-    EXPECT_EQ(ret2, INVALID_DATA);
+    EXPECT_EQ(ret2, "");
 }
 
 HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_CreateDataShareHelperProxy_001, TestSize.Level0)
