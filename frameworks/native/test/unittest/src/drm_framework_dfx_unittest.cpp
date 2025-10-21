@@ -174,56 +174,67 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_ReportCertificateBehaviorEvent, Test
 }
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteServiceEvent, TestSize.Level0)
 {
-    DrmEvent drmevent =new DrmEvent();
+    DrmEvent *drmevent =new DrmEvent();
     DrmServiveInfo info;
     info.module = "drm_core";
     info.currentTime = 1024;  
     info.serviceName = "DrmKeyService";
     info.action = "Init";
     info.memoryUsage = 2048;
-    Drm_ErrCode errNo = WriteLicenseEvent("DRM_SERVICE_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR, info);
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteServiceEvent(
+        "DRM_SERVICE_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+        info));
     EXPECT_EQ(errNo, 0);
+    delete drmevent;
 }
-HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteServiceEvent_001, TestSize.Level0)
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteServiceEventAbNormal_001, TestSize.Level0)
 {
-    DrmEvent drmevent =new DrmEvent();
+    DrmEvent *drmevent =new DrmEvent();
     DrmServiveInfo info;
     info.module = "drm_core";
     info.currentTime = 1024;  
     info.serviceName = "DrmKeyService";
     info.action = "Init";
     info.memoryUsage = 2048;
-    Drm_ErrCode errNo = WriteLicenseEvent("DRM_SERVICE_INFO", nullptr, info);
-    EXPECT_EQ(errNo, 0);
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteServiceEvent(
+        "",
+        OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+        info));
+    EXPECT_NE(errNo, 0);
+    delete drmevent;
 }
-HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteServiceEvent_002, TestSize.Level0)
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteServiceEventAbNormal_002, TestSize.Level0)
 {
-    DrmEvent drmevent =new DrmEvent();
+    DrmEvent *drmevent =new DrmEvent();
     DrmServiveInfo info;
-    info.module = "drm_core";
-    info.currentTime = 1024;  
-    info.serviceName = "DrmKeyService";
-    info.action = "Init";
-    info.memoryUsage = 2048;
-    Drm_ErrCode errNo = WriteLicenseEvent(nullptr, OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR, info);
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteServiceEvent(
+        "DRM_SERVICE_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+        info));
     EXPECT_EQ(errNo, 0);
+    delete drmevent;
 }
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteServiceEvent_003, TestSize.Level0)
 {
-    DrmEvent drmevent =new DrmEvent();
+    DrmEvent *drmevent =new DrmEvent();
     DrmServiveInfo info;
     info.module = "drm_core";
     info.currentTime = 1024;  
     info.serviceName = "DrmKeyService";
     info.action = "Init";
     info.memoryUsage = 2048;
-    Drm_ErrCode errNo = WriteLicenseEvent("DRM_LICENSE_DOWNLOAD_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR, nullptr);
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteServiceEvent(
+        "DRM_SERVICE_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+        info));
     EXPECT_EQ(errNo, 0);
+    delete drmevent;
 }
-
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteLicenseEvent, TestSize.Level0)
 {
-    DrmEvent drmevent =new DrmEvent();
+    DrmEvent *drmevent =new DrmEvent();
     DrmLicenseInfo license;
     license.module = "VideoModule";
     license.currentTime = 1697730000;
@@ -237,12 +248,16 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteLicenseEvent, TestSize.Level0)
     license.generationResult = "Success";
     license.processDuration = 300;
     license.processResult = "Processed";
-    Drm_ErrCode errNo = WriteLicenseEvent("DRM_LICENSE_DOWNLOAD_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR, license);
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteServiceEvent(
+        "DRM_LICENSE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+        license));
     EXPECT_EQ(errNo, 0);
+    delete drmevent;
 }
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteLicenseEvent_001, TestSize.Level0)
 {
-    DrmEvent drmevent =new DrmEvent();
+    DrmEvent *drmevent =new DrmEvent();
     DrmLicenseInfo license;
     license.module = "VideoModule";
     license.currentTime = 1697730000;
@@ -256,12 +271,16 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteLicenseEvent_001, TestSize.Leve
     license.generationResult = "Success";
     license.processDuration = 300;
     license.processResult = "Processed";
-    Drm_ErrCode errNo = WriteLicenseEvent("", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR, license);
-    EXPECT_EQ(errNo, 0);
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteServiceEvent(
+        "",
+        OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+        license));
+    EXPECT_NE(errNo, 0);
+    delete drmevent;
 }
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteLicenseEvent_002, TestSize.Level0)
 {
-    DrmEvent drmevent =new DrmEvent();
+    DrmEvent *drmevent =new DrmEvent();
     DrmLicenseInfo license;
     license.module = "VideoModule";
     license.currentTime = 1697730000;
@@ -275,36 +294,28 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteLicenseEvent_002, TestSize.Leve
     license.generationResult = "Success";
     license.processDuration = 300;
     license.processResult = "Processed";
-    Drm_ErrCode errNo = WriteLicenseEvent("DRM_LICENSE_DOWNLOAD_INFO", nullptr, license);
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteLicenseEvent(
+        "DRM_LICENSE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+        license));
     EXPECT_EQ(errNo, 0);
+    delete drmevent;
 }
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteLicenseEvent_003, TestSize.Level0)
 {
-    DrmEvent drmevent =new DrmEvent();
-    DrmEvent drmevent =new DrmEvent();
+    DrmEvent *drmevent =new DrmEvent();
     DrmLicenseInfo license;
-    license.module = "VideoModule";
-    license.currentTime = 1697730000;
-    license.appName = "MyApp";
-    license.instanceId = "instance_001";
-    license.drmName = "ClearPlayDRM";
-    license.drmUuid = "com.clearplay.drm";
-    license.clientVersion = "v1.2.3";
-    license.licenseType = "Trial";
-    license.generationDuration = 500;
-    license.generationResult = "Success";
-    license.processDuration = 300;
-    license.processResult = "Processed";
-    (void) license;
-    Drm_ErrCode errNo = WriteLicenseEvent("DRM_LICENSE_DOWNLOAD_INFO", OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR, nullptr);
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteLicenseEvent(
+        "DRM_LICENSE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+        license));
     EXPECT_EQ(errNo, 0);
+    delete drmevent;
 }
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent, TestSize.Level0)
 {
-        // 创建实例
+    DrmEvent *drmevent =new DrmEvent();
     DrmCertificateInfo cert;
-
-    // 用 . 运算符赋值
     cert.module = "VideoModule";
     cert.currentTime = 1697730000;
     cert.appName = "MyApp";
@@ -319,7 +330,73 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent, TestSize.Leve
     cert.callServerTime = 1697730050;
     cert.serverCostDuration = 150;
     cert.serverResult = "ServerOK";
-
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteCertificateEvent(
+        "DRM_CERTIFICATE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+        cert));
+    EXPECT_EQ(errNo, 0);
+    delete drmevent;
+}
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_001, TestSize.Level0)
+{
+    DrmEvent *drmevent =new DrmEvent();
+    DrmCertificateInfo cert;
+    cert.module = "VideoModule";
+    cert.currentTime = 1697730000;
+    cert.appName = "MyApp";
+    cert.instanceId = "instance_001";
+    cert.drmName = "ClearPlayDRM";
+    cert.drmUuid = "com.clearplay.drm";
+    cert.clientVersion = "v1.2.3";
+    cert.generationDuration = 500;
+    cert.generationResult = "Success";
+    cert.processDuration = 300;
+    cert.processResult = "Processed";
+    cert.callServerTime = 1697730050;
+    cert.serverCostDuration = 150;
+    cert.serverResult = "ServerOK";
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteCertificateEvent(
+        "",
+        OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+        cert));
+    EXPECT_EQ(errNo, 0);
+    delete drmevent;
+}
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_002, TestSize.Level0)
+{
+    DrmEvent *drmevent =new DrmEvent();
+    DrmCertificateInfo cert;
+    cert.module = "VideoModule";
+    cert.currentTime = 1697730000;
+    cert.appName = "MyApp";
+    cert.instanceId = "instance_001";
+    cert.drmName = "ClearPlayDRM";
+    cert.drmUuid = "com.clearplay.drm";
+    cert.clientVersion = "v1.2.3";
+    cert.generationDuration = 500;
+    cert.generationResult = "Success";
+    cert.processDuration = 300;
+    cert.processResult = "Processed";
+    cert.callServerTime = 1697730050;
+    cert.serverCostDuration = 150;
+    cert.serverResult = "ServerOK";
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteCertificateEvent(
+        "DRM_CERTIFICATE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+        cert));
+    EXPECT_EQ(errNo, 0);
+    delete drmevent;
+}
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_003, TestSize.Level0)
+{
+    DrmEvent *drmevent =new DrmEvent();
+    DrmCertificateInfo cert;
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteCertificateEvent(
+        "DRM_CERTIFICATE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+        cert));
+    EXPECT_EQ(errNo, 0);
+    delete drmevent;
 }
 } // DrmStandard
 } // OHOS
