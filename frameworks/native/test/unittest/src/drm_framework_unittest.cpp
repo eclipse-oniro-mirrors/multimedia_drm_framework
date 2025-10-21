@@ -4001,7 +4001,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelAbNormalAdd
     Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
     MediaKeySystem *mediaKeySystem = nullptr;
     MediaKeySession *mediaKeySession = nullptr;
-    DRM_ContentProtectionLevel     = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
+    DRM_ContentProtectionLevel contentProtectionLevel = CONTENT_PROTECTION_LEVEL_SW_CRYPTO;
     errNo = OH_MediaKeySystem_Create(GetUuid(), &mediaKeySystem);
     EXPECT_NE(mediaKeySystem, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);

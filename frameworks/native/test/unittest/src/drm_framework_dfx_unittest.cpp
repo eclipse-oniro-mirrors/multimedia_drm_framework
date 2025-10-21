@@ -248,7 +248,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteLicenseEvent, TestSize.Level0)
     license.generationResult = "Success";
     license.processDuration = 300;
     license.processResult = "Processed";
-    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteServiceEvent(
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteLicenseEvent(
         "DRM_LICENSE_DOWNLOAD_INFO",
         OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
         license));
@@ -271,7 +271,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteLicenseEvent_001, TestSize.Leve
     license.generationResult = "Success";
     license.processDuration = 300;
     license.processResult = "Processed";
-    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteServiceEvent(
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteLicenseEvent(
         "",
         OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
         license));
