@@ -177,7 +177,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteServiceEvent, TestSize.Level0)
     DrmEvent *drmevent =new DrmEvent();
     DrmServiveInfo info;
     info.module = "drm_core";
-    info.currentTime = 1024;  
+    info.currentTime = 1024;
     info.serviceName = "DrmKeyService";
     info.action = "Init";
     info.memoryUsage = 2048;
@@ -193,7 +193,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteServiceEventAbNormal_001, TestS
     DrmEvent *drmevent =new DrmEvent();
     DrmServiveInfo info;
     info.module = "drm_core";
-    info.currentTime = 1024;  
+    info.currentTime = 1024;
     info.serviceName = "DrmKeyService";
     info.action = "Init";
     info.memoryUsage = 2048;
@@ -221,7 +221,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteServiceEvent_003, TestSize.Leve
     DrmEvent *drmevent =new DrmEvent();
     DrmServiveInfo info;
     info.module = "drm_core";
-    info.currentTime = 1024;  
+    info.currentTime = 1024;
     info.serviceName = "DrmKeyService";
     info.action = "Init";
     info.memoryUsage = 2048;
