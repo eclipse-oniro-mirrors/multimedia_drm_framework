@@ -3989,7 +3989,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelAbNormalAdd
     EXPECT_EQ(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySystem_SetMediaKeySystemCallback(mediaKeySystem, &TestSystemEventCallBack);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySession_GetContentProtectionLevel(nullptr,&contentProtectionLevel);
+    errNo = OH_MediaKeySession_GetContentProtectionLevel(nullptr, &contentProtectionLevel);
     EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
@@ -4008,7 +4008,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelAbNormalAdd
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
     EXPECT_NE(mediaKeySession, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySession_GetContentProtectionLevel(mediaKeySession,nullptr);
+    errNo = OH_MediaKeySession_GetContentProtectionLevel(mediaKeySession, nullptr);
     EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
@@ -4027,7 +4027,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelAbNormalAdd
     errNo = OH_MediaKeySystem_CreateMediaKeySession(mediaKeySystem, &contentProtectionLevel, &mediaKeySession);
     EXPECT_NE(mediaKeySession, nullptr);
     EXPECT_EQ(errNo, DRM_ERR_OK);
-    errNo = OH_MediaKeySession_GetContentProtectionLevel(nullptr,nullptr);
+    errNo = OH_MediaKeySession_GetContentProtectionLevel(nullptr, nullptr);
     EXPECT_NE(errNo, DRM_ERR_OK);
     errNo = OH_MediaKeySession_Destroy(mediaKeySession);
     EXPECT_EQ(errNo, DRM_ERR_OK);
