@@ -334,7 +334,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent, TestSize.Leve
         "DRM_CERTIFICATE_DOWNLOAD_INFO",
         OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
         cert));
-    EXPECT_NE(errNo, 0);
+    EXPECT_EQ(errNo, 0);
     delete drmevent;
 }
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_001, TestSize.Level0)
@@ -359,7 +359,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_001, TestSize.
         "",
         OHOS::HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
         cert));
-    EXPECT_EQ(errNo, 0);
+    EXPECT_NE(errNo, 0);
     delete drmevent;
 }
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_002, TestSize.Level0)
