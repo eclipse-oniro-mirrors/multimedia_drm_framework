@@ -32,6 +32,7 @@ ohos_shared_library("drm_service") {
     "./../utils/drm_trace.cpp",
     "./../utils/hdi_err_convertor.cpp",
     "./../utils/drm_helper.cpp",
+    "./../utils/drm_net_observer.cpp",
     "./server/src/drm_host_manager.cpp",
     "./server/src/key_session_service.cpp",
     "./server/src/media_decrypt_module_service.cpp",
@@ -70,6 +71,7 @@ ohos_shared_library("drm_service") {
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "netmanager_base:net_conn_manager_if"
   ]
 
   cflags = [

@@ -44,7 +44,8 @@
               "init",
               "data_share",
               "os_account",
-              "runtime_core"
+              "runtime_core",
+              "netmanager_base"
             ]
         },
         "build": {
