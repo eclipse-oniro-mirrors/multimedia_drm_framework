@@ -96,7 +96,7 @@ int32_t DrmNetObserver::HandleNetAllCap(const NetAllCapabilities& netAllCap) {
     DRM_CHECK_AND_RETURN_RET_LOG(m_drmHostManager, DRM_INNER_ERR_INVALID_VAL, "drmHostManager is nullptr");
 
     bool hasInternet = netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_INTERNET) &&
-                       !netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_CHECKING_CONNECTIVITY);
+                       netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_VALIDATED);
     bool isChecking  = netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_CHECKING_CONNECTIVITY);
 
     if (hasInternet && !isChecking) {
