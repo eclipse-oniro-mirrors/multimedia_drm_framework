@@ -800,10 +800,12 @@ void DrmHostManager::WaitForNetwork()
 }
 
 
-void DrmHostManager::SetIsNetWork(const bool &isNetWork){
+void DrmHostManager::SetIsNetWork(const bool &isNetWork)
+{
     this->isNetWork = isNetWork;
 }
-bool DrmHostManager::GetIsNetWork(){
+bool DrmHostManager::GetIsNetWork()
+{
     return this->isNetWork;
 }
 }  // namespace DrmStandard

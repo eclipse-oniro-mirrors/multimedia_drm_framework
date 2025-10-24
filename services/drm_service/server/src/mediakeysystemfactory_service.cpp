@@ -470,8 +470,7 @@ int32_t MediaKeySystemFactoryService::WriteDumpInfo(int32_t fd, std::string &dum
 int32_t MediaKeySystemFactoryService::StartDrmNetObserver()
 {
     sptr<DrmNetObserver> drmNetObserverService_ = new DrmNetObserver();
-    int32_t ret;
-    ret = drmNetObserverService_->SetDrmHostManager(drmHostManager_);
+    int32_t ret = drmNetObserverService_->SetDrmHostManager(drmHostManager_);
     DRM_CHECK_AND_RETURN_RET_LOG(ret != DRM_INNER_ERR_OK, DRM_INNER_ERR_INVALID_VAL, "Set drmHostManager failed");
     drmNetObserverService_->StartObserver();
     return ret;

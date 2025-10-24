@@ -30,14 +30,19 @@ using namespace OHOS::NetManagerStandard;
 static constexpr int32_t RETRY_MAX_TIMES = 10;
 static constexpr int32_t RETRY_INTERVAL_S = 1;
 
-DrmNetObserver::~DrmNetObserver() {
-    DRM_CHECK_AND_RETURN_RET_LOG(startFuture_.valid(), , "startFuture_ not valid");
+DrmNetObserver::~DrmNetObserver()
+{
+    if (!startFuture_.valid()) {
+        DRM_WARNING_LOG("startFuture_ not valid");
+        return;
+    }
     stopRequested_ = true;
     StopObserver();
     startFuture_.wait();
 }
 
-void DrmNetObserver::StartObserver() {
+void DrmNetObserver::StartObserver()
+{
     DRM_INFO_LOG("DRM NetObserver Start");
     stopRequested_ = false;
     startFuture_ = std::async(std::launch::async, [self = sptr<DrmNetObserver>(this)]() {
@@ -46,7 +51,10 @@ void DrmNetObserver::StartObserver() {
         netAllCapabilities.netCaps_.insert(NetCap::NET_CAPABILITY_INTERNET);
         netSpecifier.ident_ = "";
         netSpecifier.netCapabilities_ = netAllCapabilities;
-        sptr<NetSpecifier> specifier = new NetSpecifier(netSpecifier);
+        sptr<NetSpecifier> specifier = new (std::nothrow) NetSpecifier(netSpecifier);
+        DRM_CHECK_AND_RETURN_RET_LOG(specifier != nullptr,
+                                    DRM_INNER_ERR_MEMORY_ALLOC,
+                                    "NetSpecifier new failed");
 
         int32_t retryCount = 0;
         int32_t ret = NetConnResultCode::NET_CONN_SUCCESS;
@@ -69,7 +77,8 @@ void DrmNetObserver::StartObserver() {
     });
 }
 
-int32_t DrmNetObserver::StopObserver() {
+int32_t DrmNetObserver::StopObserver()
+{
     sptr<INetConnCallback> callbackCopy;
     {
         std::lock_guard<std::mutex> lock(netCallbackMutex_);
@@ -79,26 +88,27 @@ int32_t DrmNetObserver::StopObserver() {
     DRM_CHECK_AND_RETURN_RET_LOG(callbackCopy, DRM_INNER_ERR_UNKNOWN, "no registered callback");
 
     int32_t ret = NetConnClient::GetInstance().UnregisterNetConnCallback(callbackCopy);
-    DRM_CHECK_AND_RETURN_RET_LOG(ret == NetConnResultCode::NET_CONN_SUCCESS, DRM_INNER_ERR_UNKNOWN, "Unregister Error, ret=%d", ret);
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == NetConnResultCode::NET_CONN_SUCCESS,
+                                    DRM_INNER_ERR_UNKNOWN, "Unregister Error, ret=%d", ret);
     DRM_INFO_LOG("Unregister Success");
     return DRM_INNER_ERR_OK;
 }
 
 int32_t DrmNetObserver::NetCapabilitiesChange(sptr<NetHandle>& netHandle,
-                                              const sptr<NetAllCapabilities>& netAllCap) {
+                                              const sptr<NetAllCapabilities>& netAllCap)
+{
     (void)netHandle;
     DRM_INFO_LOG("NetCapabilitiesChange");
     DRM_CHECK_AND_RETURN_RET_LOG(netAllCap, DRM_INNER_ERR_INVALID_VAL, "NetAllCap is nullptr");
     return HandleNetAllCap(*netAllCap);
 }
 
-int32_t DrmNetObserver::HandleNetAllCap(const NetAllCapabilities& netAllCap) {
+int32_t DrmNetObserver::HandleNetAllCap(const NetAllCapabilities& netAllCap)
+{
     DRM_CHECK_AND_RETURN_RET_LOG(m_drmHostManager, DRM_INNER_ERR_INVALID_VAL, "drmHostManager is nullptr");
-
     bool hasInternet = netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_INTERNET) &&
                        netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_VALIDATED);
     bool isChecking  = netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_CHECKING_CONNECTIVITY);
-
     if (hasInternet && !isChecking) {
         DRM_INFO_LOG("DrmNetwork OK, trigger CertDownload");
         m_drmHostManager->SetIsNetWork(true);
@@ -114,7 +124,8 @@ int32_t DrmNetObserver::HandleNetAllCap(const NetAllCapabilities& netAllCap) {
     return DRM_INNER_ERR_UNKNOWN;
 }
 
-int32_t DrmNetObserver::SetDrmHostManager(const sptr<DrmHostManager>& drmHostManager) {
+int32_t DrmNetObserver::SetDrmHostManager(const sptr<DrmHostManager>& drmHostManager)
+{
     DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager, DRM_INNER_ERR_INVALID_VAL, "drmHostManager is nullptr");
     m_drmHostManager = drmHostManager;
     return DRM_INNER_ERR_OK;
