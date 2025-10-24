@@ -52,15 +52,19 @@ void DrmNetObserver::StartObserver()
         netSpecifier.ident_ = "";
         netSpecifier.netCapabilities_ = netAllCapabilities;
         sptr<NetSpecifier> specifier = new (std::nothrow) NetSpecifier(netSpecifier);
-        DRM_CHECK_AND_RETURN_RET_LOG(specifier != nullptr,
-                                    DRM_INNER_ERR_MEMORY_ALLOC,
-                                    "NetSpecifier new failed");
+        if (specifier == nullptr) {
+            DRM_ERR_LOG("Specifier Alloc Error");
+            return;
+        }
 
         int32_t retryCount = 0;
         int32_t ret = NetConnResultCode::NET_CONN_SUCCESS;
 
         do {
-            DRM_CHECK_AND_RETURN_RET_LOG(!self->stopRequested_, , "early exit");
+            if (self->stopRequested_) {
+                DRM_ERR_LOG("exit too early");
+                return;
+            }
             ret = NetConnClient::GetInstance().RegisterNetConnCallback(specifier, self, 0);
             if (ret == NetConnResultCode::NET_CONN_SUCCESS) {
                 DRM_INFO_LOG("DRM NetObserver Start Success");
@@ -89,7 +93,9 @@ int32_t DrmNetObserver::StopObserver()
 
     int32_t ret = NetConnClient::GetInstance().UnregisterNetConnCallback(callbackCopy);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == NetConnResultCode::NET_CONN_SUCCESS,
-                                    DRM_INNER_ERR_UNKNOWN, "Unregister Error, ret=%d", ret);
+                                DRM_INNER_ERR_UNKNOWN,
+                                "Unregister Error ret=%d",
+                                ret);
     DRM_INFO_LOG("Unregister Success");
     return DRM_INNER_ERR_OK;
 }
