@@ -44,7 +44,7 @@ public:
 private:
     int32_t HandleNetAllCap(const OHOS::NetManagerStandard::NetAllCapabilities &netAllCap);
 
-    sptr<DrmHostManager> m_drmHostManager;
+    sptr<DrmHostManager> drmHostManager_;
     sptr<OHOS::NetManagerStandard::INetConnCallback> netCallback_;
     std::mutex netCallbackMutex_;
     std::future<void> startFuture_;

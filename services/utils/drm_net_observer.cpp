@@ -111,14 +111,14 @@ int32_t DrmNetObserver::NetCapabilitiesChange(sptr<NetHandle>& netHandle,
 
 int32_t DrmNetObserver::HandleNetAllCap(const NetAllCapabilities& netAllCap)
 {
-    DRM_CHECK_AND_RETURN_RET_LOG(m_drmHostManager, DRM_INNER_ERR_INVALID_VAL, "drmHostManager is nullptr");
+    DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager_, DRM_INNER_ERR_INVALID_VAL, "drmHostManager is nullptr");
     bool hasInternet = netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_INTERNET) &&
                        netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_VALIDATED);
     bool isChecking  = netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_CHECKING_CONNECTIVITY);
     if (hasInternet && !isChecking) {
         DRM_INFO_LOG("DrmNetwork OK, trigger CertDownload");
-        m_drmHostManager->SetIsNetWork(true);
-        m_drmHostManager->condVar.notify_one();
+        drmHostManager_->SetIsNetWork(true);
+        drmHostManager_->condVar.notify_one();
 
         int32_t ret = StopObserver();
         DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, DRM_INNER_ERR_UNKNOWN, "StopObserver Error");
@@ -133,7 +133,7 @@ int32_t DrmNetObserver::HandleNetAllCap(const NetAllCapabilities& netAllCap)
 int32_t DrmNetObserver::SetDrmHostManager(const sptr<DrmHostManager>& drmHostManager)
 {
     DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager, DRM_INNER_ERR_INVALID_VAL, "drmHostManager is nullptr");
-    m_drmHostManager = drmHostManager;
+    this->drmHostManager_ = drmHostManager;
     return DRM_INNER_ERR_OK;
 }
 
