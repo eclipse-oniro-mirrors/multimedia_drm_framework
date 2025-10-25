@@ -84,6 +84,7 @@ ohos_unittest("drm_framework_capi_unittest_v1_0") {
     "init:libbegetutil",
     "samgr:samgr_proxy",
     "os_account:os_account_innerkits",
+    "netmanager_base:net_conn_manager_if",
   ]
   subsystem_name = "multimedia"
   part_name = "drm_framework"
