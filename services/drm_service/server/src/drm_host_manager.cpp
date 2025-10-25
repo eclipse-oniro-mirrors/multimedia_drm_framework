@@ -804,6 +804,7 @@ void DrmHostManager::SetIsNetWork(const bool &isNetWork)
 {
     this->isNetWork = isNetWork;
 }
+
 bool DrmHostManager::GetIsNetWork()
 {
     return this->isNetWork;
