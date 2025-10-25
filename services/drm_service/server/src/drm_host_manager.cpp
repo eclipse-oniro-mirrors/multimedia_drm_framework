@@ -782,8 +782,8 @@ std::string DrmHostManager::QueryBasicStatement()
             DRM_INFO_LOG("DrmHostManager wait for basic statement agreed.");
             sleep(QUERY_INTERVAL);
             value = DrmHelper::GetSettingDataValue(SECURE_TYPE, BASIC_STATEMENT_AGREED);
-            WaitForNetwork();
         }
+        WaitForNetwork();
     }
     return value;
 }
