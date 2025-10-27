@@ -17,7 +17,6 @@
 #include "gmock/gmock.h"
 #include "drm_helper.h"
 #include "drm_framework_unittest.h"
-#include "drm_net_observer.h"
 
 using namespace testing::ext;
 using namespace std;
