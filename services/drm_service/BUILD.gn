@@ -68,7 +68,7 @@ ohos_shared_library("drm_service") {
     "init:libbegetutil",
     "memmgr:memmgrclient",
     "napi:ace_napi",
-    "netmanager_base:net_conn_manager_if"，
+    "netmanager_base:net_conn_manager_if",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy"
