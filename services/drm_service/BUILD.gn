@@ -71,7 +71,7 @@ ohos_shared_library("drm_service") {
     "netmanager_base:net_conn_manager_if",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
-    "samgr:samgr_proxy"
+    "samgr:samgr_proxy",
   ]
 
   cflags = [
