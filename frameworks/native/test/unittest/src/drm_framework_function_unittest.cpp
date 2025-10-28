@@ -12,16 +12,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#define private public
 
 #include <string>
 #include "gmock/gmock.h"
 #include "drm_helper.h"
 #include "drm_framework_unittest.h"
-#define private public
 #include "mediakeysystemfactory_service.cpp"
 #include "drm_error_code.h"
 
-#define MEMORY_MANAGER_SA_ID 1902 
+#define MEMORY_MANAGER_SA_ID 1902
 
 using namespace testing::ext;
 using namespace std;
@@ -65,9 +65,9 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_GetCurrentUserId_001, TestSize.Level
 HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_StartNetObserverNormal, TestSize.Level0)
 {
     auto systemAbility = MEMORY_MANAGER_SA_ID;
-    MediaKeySystemFactoryService mediaKeySystemFactoryService_ =
+    MediaKeySystemFactoryService *mediaKeySystemFactoryService_ =
         new MediaKeySystemFactoryService(systemAbility);
-    int32_t ret = mediaKeySystemFactoryService_->StartNetObserver();
+    int32_t ret = mediaKeySystemFactoryService_->StartDrmNetObserver();
     EXPECT_EQ(ret, DRM_INNER_ERR_OK);
     delete mediaKeySystemFactoryService_;
 }
@@ -75,10 +75,10 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_StartNetObserverNormal, TestSize.Lev
 HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_StartNetObserverAbNormal, TestSize.Level0)
 {
     auto systemAbility = MEMORY_MANAGER_SA_ID;
-    MediaKeySystemFactoryService mediaKeySystemFactoryService_ =
+    MediaKeySystemFactoryService *mediaKeySystemFactoryService_ =
         new MediaKeySystemFactoryService(systemAbility);
     mediaKeySystemFactoryService_->drmHostManager_ = nullptr;
-    int32_t ret = mediaKeySystemFactoryService_->StartNetObserver();
+    int32_t ret = mediaKeySystemFactoryService_->StartDrmNetObserver();
     EXPECT_NE(ret, DRM_INNER_ERR_OK);
     delete mediaKeySystemFactoryService_;
 }
@@ -86,7 +86,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_StartNetObserverAbNormal, TestSize.L
 HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_SetIsNetWorkNormal_001, TestSize.Level0)
 {
     auto systemAbility = MEMORY_MANAGER_SA_ID;
-    MediaKeySystemFactoryService mediaKeySystemFactoryService_ =
+    MediaKeySystemFactoryService *mediaKeySystemFactoryService_ =
         new MediaKeySystemFactoryService(systemAbility);
     bool testFlag = true;
     auto hostptr = mediaKeySystemFactoryService_->drmHostManager_;
@@ -98,7 +98,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_SetIsNetWorkNormal_001, TestSize.Lev
 HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_SetIsNetWorkNormal_002, TestSize.Level0)
 {
     auto systemAbility = MEMORY_MANAGER_SA_ID;
-    MediaKeySystemFactoryService mediaKeySystemFactoryService_ =
+    MediaKeySystemFactoryService *mediaKeySystemFactoryService_ =
         new MediaKeySystemFactoryService(systemAbility);
     bool testFlag = false;
     auto hostptr = mediaKeySystemFactoryService_->drmHostManager_;
@@ -110,7 +110,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_SetIsNetWorkNormal_002, TestSize.Lev
 HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_GetIsNetWorkNormal_001, TestSize.Level0)
 {
     auto systemAbility = MEMORY_MANAGER_SA_ID;
-    MediaKeySystemFactoryService mediaKeySystemFactoryService_ =
+    MediaKeySystemFactoryService *mediaKeySystemFactoryService_ =
         new MediaKeySystemFactoryService(systemAbility);
     bool testFlag = true;
     auto hostptr = mediaKeySystemFactoryService_->drmHostManager_;
@@ -122,19 +122,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_GetIsNetWorkNormal_001, TestSize.Lev
 HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_GetIsNetWorkNormal_002, TestSize.Level0)
 {
     auto systemAbility = MEMORY_MANAGER_SA_ID;
-    MediaKeySystemFactoryService mediaKeySystemFactoryService_ =
-        new MediaKeySystemFactoryService(systemAbility);
-    bool testFlag = false;
-    auto hostptr = mediaKeySystemFactoryService_->drmHostManager_;
-    hostptr->SetIsNetWork(testFlag);
-    EXPECT_EQ(testFlag, hostptr->GetIsNetWork());
-    delete mediaKeySystemFactoryService_;
-}
-
-HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_GetIsNetWorkNormal_002, TestSize.Level0)
-{
-    auto systemAbility = MEMORY_MANAGER_SA_ID;
-    MediaKeySystemFactoryService mediaKeySystemFactoryService_ =
+    MediaKeySystemFactoryService *mediaKeySystemFactoryService_ =
         new MediaKeySystemFactoryService(systemAbility);
     bool testFlag = false;
     auto hostptr = mediaKeySystemFactoryService_->drmHostManager_;
@@ -146,7 +134,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_GetIsNetWorkNormal_002, TestSize.Lev
 HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_WaitForNetWorkAbnormal_001, TestSize.Level0)
 {
     auto systemAbility = MEMORY_MANAGER_SA_ID;
-    MediaKeySystemFactoryService mediaKeySystemFactoryService_ =
+    MediaKeySystemFactoryService *mediaKeySystemFactoryService_ =
         new MediaKeySystemFactoryService(systemAbility);
     bool testFlag = true;
     auto hostptr = mediaKeySystemFactoryService_->drmHostManager_;
