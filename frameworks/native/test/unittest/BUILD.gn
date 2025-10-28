@@ -75,11 +75,6 @@ ohos_unittest("drm_framework_capi_unittest_v1_0") {
     "c_utils:utils",
     "curl:curl_shared",
     "data_share:datashare_consumer",
-    "drivers_interface_drm:libdrm_proxy_1.0",
-    "hdf_core:libhdf_host",
-    "hdf_core:libhdf_ipc_adapter",
-    "hdf_core:libhdf_utils",
-    "hdf_core:libhdi",
     "googletest:gmock_main",
     "hidumper:lib_dump_usage",
     "hilog:libhilog",
@@ -89,7 +84,7 @@ ohos_unittest("drm_framework_capi_unittest_v1_0") {
     "init:libbegetutil",
     "netmanager_base:net_conn_manager_if",
     "samgr:samgr_proxy",
-    "os_account:os_account_innerkits"
+    "os_account:os_account_innerkits",
   ]
   subsystem_name = "multimedia"
   part_name = "drm_framework"
