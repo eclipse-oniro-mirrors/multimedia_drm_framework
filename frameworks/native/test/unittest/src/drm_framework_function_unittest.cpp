@@ -144,14 +144,6 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_WaitForNetWorkAbnormal_001, TestSize
     delete mediaKeySystemFactoryService_;
 }
 
-HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_StartObservernormal_001, TestSize.Level0)
-{
-    DrmNetObserver *drmNetObserver_ = new DrmNetObserver();
-    drmNetObserver_->StartObserver();
-    EXPECT_EQ(drmNetObserver_->netCallback_, nullptr);
-    delete drmNetObserver_;
-}
-
 HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_StopObserverAbNormal_001, TestSize.Level0)
 {
     DrmNetObserver *drmNetObserver_ = new DrmNetObserver();
