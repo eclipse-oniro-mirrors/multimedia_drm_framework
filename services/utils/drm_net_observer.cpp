@@ -32,13 +32,11 @@ static constexpr int32_t RETRY_INTERVAL_S = 1;
 
 DrmNetObserver::~DrmNetObserver()
 {
-    if (!startFuture_.valid()) {
-        DRM_WARNING_LOG("startFuture_ not valid");
-        return;
+    if (startFuture_.valid()) {
+        startFuture_.wait();
     }
     stopRequested_ = true;
     StopObserver();
-    startFuture_.wait();
 }
 
 void DrmNetObserver::StartObserver()

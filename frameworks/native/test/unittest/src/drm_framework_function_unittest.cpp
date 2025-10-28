@@ -17,6 +17,11 @@
 #include "gmock/gmock.h"
 #include "drm_helper.h"
 #include "drm_framework_unittest.h"
+#define private public
+#include "mediakeysystemfactory_service.cpp"
+#include "drm_error_code.h"
+
+#define MEMORY_MANAGER_SA_ID 1902 
 
 using namespace testing::ext;
 using namespace std;
@@ -57,5 +62,116 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_GetCurrentUserId_001, TestSize.Level
     EXPECT_TRUE(ret0 != -1);
 }
 
+HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_StartNetObserverNormal, TestSize.Level0)
+{
+    auto systemAbility = MEMORY_MANAGER_SA_ID;
+    MediaKeySystemFactoryService mediaKeySystemFactoryService_ =
+        new MediaKeySystemFactoryService(systemAbility);
+    int32_t ret = mediaKeySystemFactoryService_->StartNetObserver();
+    EXPECT_EQ(ret, DRM_INNER_ERR_OK);
+    delete mediaKeySystemFactoryService_;
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_StartNetObserverAbNormal, TestSize.Level0)
+{
+    auto systemAbility = MEMORY_MANAGER_SA_ID;
+    MediaKeySystemFactoryService mediaKeySystemFactoryService_ =
+        new MediaKeySystemFactoryService(systemAbility);
+    mediaKeySystemFactoryService_->drmHostManager_ = nullptr;
+    int32_t ret = mediaKeySystemFactoryService_->StartNetObserver();
+    EXPECT_NE(ret, DRM_INNER_ERR_OK);
+    delete mediaKeySystemFactoryService_;
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_SetIsNetWorkNormal_001, TestSize.Level0)
+{
+    auto systemAbility = MEMORY_MANAGER_SA_ID;
+    MediaKeySystemFactoryService mediaKeySystemFactoryService_ =
+        new MediaKeySystemFactoryService(systemAbility);
+    bool testFlag = true;
+    auto hostptr = mediaKeySystemFactoryService_->drmHostManager_;
+    hostptr->SetIsNetWork(testFlag);
+    EXPECT_EQ(testFlag, hostptr->isNetWork);
+    delete mediaKeySystemFactoryService_;
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_SetIsNetWorkNormal_002, TestSize.Level0)
+{
+    auto systemAbility = MEMORY_MANAGER_SA_ID;
+    MediaKeySystemFactoryService mediaKeySystemFactoryService_ =
+        new MediaKeySystemFactoryService(systemAbility);
+    bool testFlag = false;
+    auto hostptr = mediaKeySystemFactoryService_->drmHostManager_;
+    hostptr->SetIsNetWork(testFlag);
+    EXPECT_EQ(testFlag, hostptr->isNetWork);
+    delete mediaKeySystemFactoryService_;
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_GetIsNetWorkNormal_001, TestSize.Level0)
+{
+    auto systemAbility = MEMORY_MANAGER_SA_ID;
+    MediaKeySystemFactoryService mediaKeySystemFactoryService_ =
+        new MediaKeySystemFactoryService(systemAbility);
+    bool testFlag = true;
+    auto hostptr = mediaKeySystemFactoryService_->drmHostManager_;
+    hostptr->SetIsNetWork(testFlag);
+    EXPECT_EQ(testFlag, hostptr->GetIsNetWork());
+    delete mediaKeySystemFactoryService_;
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_GetIsNetWorkNormal_002, TestSize.Level0)
+{
+    auto systemAbility = MEMORY_MANAGER_SA_ID;
+    MediaKeySystemFactoryService mediaKeySystemFactoryService_ =
+        new MediaKeySystemFactoryService(systemAbility);
+    bool testFlag = false;
+    auto hostptr = mediaKeySystemFactoryService_->drmHostManager_;
+    hostptr->SetIsNetWork(testFlag);
+    EXPECT_EQ(testFlag, hostptr->GetIsNetWork());
+    delete mediaKeySystemFactoryService_;
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_GetIsNetWorkNormal_002, TestSize.Level0)
+{
+    auto systemAbility = MEMORY_MANAGER_SA_ID;
+    MediaKeySystemFactoryService mediaKeySystemFactoryService_ =
+        new MediaKeySystemFactoryService(systemAbility);
+    bool testFlag = false;
+    auto hostptr = mediaKeySystemFactoryService_->drmHostManager_;
+    hostptr->SetIsNetWork(testFlag);
+    EXPECT_EQ(testFlag, hostptr->GetIsNetWork());
+    delete mediaKeySystemFactoryService_;
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_WaitForNetWorkAbnormal_001, TestSize.Level0)
+{
+    auto systemAbility = MEMORY_MANAGER_SA_ID;
+    MediaKeySystemFactoryService mediaKeySystemFactoryService_ =
+        new MediaKeySystemFactoryService(systemAbility);
+    bool testFlag = true;
+    auto hostptr = mediaKeySystemFactoryService_->drmHostManager_;
+    hostptr->SetIsNetWork(testFlag);
+    hostptr->WaitForNetwork();
+    EXPECT_EQ(testFlag, hostptr->GetIsNetWork());
+    delete mediaKeySystemFactoryService_;
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_StartObservernormal_001, TestSize.Level0)
+{
+    DrmNetObserver *drmNetObserver_ = new DrmNetObserver();
+    drmNetObserver_->StartObserver();
+    EXPECT_EQ(drmNetObserver_->netCallback_, nullptr);
+    delete drmNetObserver_;
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_StopObserverAbNormal_001, TestSize.Level0)
+{
+    DrmNetObserver *drmNetObserver_ = new DrmNetObserver();
+    int32_t ret = drmNetObserver_->StopObserver();
+    EXPECT_NE(ret, DRM_INNER_ERR_OK);
+    delete drmNetObserver_;
+}
+
 } // DrmStandard
 } // OHOS
+#undef private
