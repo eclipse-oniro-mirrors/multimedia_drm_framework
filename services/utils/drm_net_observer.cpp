@@ -32,11 +32,11 @@ static constexpr int32_t RETRY_INTERVAL_S = 1;
 
 DrmNetObserver::~DrmNetObserver()
 {
+    stopRequested_ = true;
+    StopObserver();
     if (startFuture_.valid()) {
         startFuture_.wait();
     }
-    stopRequested_ = true;
-    StopObserver();
 }
 
 void DrmNetObserver::StartObserver()
