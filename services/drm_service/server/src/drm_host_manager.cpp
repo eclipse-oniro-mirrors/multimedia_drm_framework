@@ -29,6 +29,7 @@
 #include "napi_param_utils.h"
 #include "drm_host_manager.h"
 #include "drm_helper.h"
+#include "drm_net_observer.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -782,8 +783,31 @@ std::string DrmHostManager::QueryBasicStatement()
             sleep(QUERY_INTERVAL);
             value = DrmHelper::GetSettingDataValue(SECURE_TYPE, BASIC_STATEMENT_AGREED);
         }
+        WaitForNetwork();
     }
     return value;
+}
+
+void DrmHostManager::WaitForNetwork()
+{
+    if (this->isNetWork) {
+        return;
+    }
+    DRM_INFO_LOG("DRM Net Is Not Connected - waiting for network...");
+    std::unique_lock<std::mutex> lock(drmNetObserverMutex);
+    condVar.wait(lock, [this] { return this->isNetWork; });
+    DRM_INFO_LOG("DRM Net Connected");
+}
+
+
+void DrmHostManager::SetIsNetWork(const bool &isNetWork)
+{
+    this->isNetWork = isNetWork;
+}
+
+bool DrmHostManager::GetIsNetWork()
+{
+    return this->isNetWork;
 }
 }  // namespace DrmStandard
 }  // namespace OHOS

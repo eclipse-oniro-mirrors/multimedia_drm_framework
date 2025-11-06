@@ -82,6 +82,7 @@ ohos_unittest("drm_framework_capi_unittest_v1_0") {
     "hitrace:libhitracechain",
     "ipc:ipc_core",
     "init:libbegetutil",
+    "netmanager_base:net_conn_manager_if",
     "samgr:samgr_proxy",
     "os_account:os_account_innerkits",
   ]

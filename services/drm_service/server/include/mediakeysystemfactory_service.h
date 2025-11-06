@@ -33,6 +33,7 @@
 #include "mediakeysystem_service.h"
 #include "idrm_listener.h"
 #include "drm_death_recipient.h"
+#include "drm_net_observer.h"
 
 #include "v1_0/media_key_system_factory_proxy.h"
 #include "v1_0/media_key_system_proxy.h"
@@ -84,6 +85,8 @@ private:
     int32_t CancelAbilityIdle();
     std::map<pid_t, sptr<DrmDeathRecipient>> deathRecipientMap_;
     std::map<pid_t, sptr<IDrmListener>> clientListenerMap_;
+    sptr<DrmNetObserver> drmNetObserver_;
+    int32_t StartDrmNetObserver();
 };
 } // DrmStandard
 } // OHOS

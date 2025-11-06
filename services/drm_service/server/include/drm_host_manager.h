@@ -107,6 +107,8 @@ public:
     void ReleaseMediaKeySystem(sptr<IMediaKeySystem> &hdiMediaKeySystem);
     void ClearDeathService(std::string &name);
     void OnDrmPluginDied(std::string &name);
+    void SetIsNetWork(const bool &isNetWork);
+    bool GetIsNetWork();
 private:
     static void UnLoadOEMCertifaicateService(std::string &name, ExtraInfo info);
     static void GetHttpProxyParameter(std::string &host, int32_t &port, std::list<std::string> &exclusionList);
@@ -131,14 +133,17 @@ private:
     void ReleaseSevices(sptr<IMediaKeySystemFactory> drmHostServieProxy);
     void UnloadAllServices();
     std::string QueryBasicStatement();
+    void WaitForNetwork();
 
     StatusCallback *statusCallback_;
     std::map<void *, sptr<IMediaKeySystem>> handleAndKeySystemMap;
     std::thread serviceThread;
     std::thread messageQueueThread;
     bool serviceThreadRunning = false;
+    bool isNetWork = false;
     std::vector<void *> loadedLibs;
     std::recursive_mutex drmHostMapMutex;
+    std::mutex drmNetObserverMutex;
     static std::mutex queueMutex;
     static std::queue<Message> messageQueue;
     static std::condition_variable cv;
@@ -150,6 +155,8 @@ private:
     std::map<sptr<IMediaKeySystem>, sptr<IMediaKeySystemFactory>> hdiMediaKeySystemAndFactoryMap;
     std::map<sptr<IMediaKeySystemFactory>, std::string> hdiMediaKeySystemFactoryAndPluginNameMap;
     std::map<sptr<IMediaKeySystemFactory>, sptr<DrmHostDeathRecipient>> drmHostDeathRecipientMap;
+    std::condition_variable condVar;
+    friend class DrmNetObserver;
 };
 } // DrmStandard
 } // OHOS
