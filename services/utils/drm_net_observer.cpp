@@ -32,6 +32,7 @@ static constexpr int32_t RETRY_INTERVAL_S = 1;
 
 DrmNetObserver::~DrmNetObserver()
 {
+    DRM_INFO_LOG("~DrmNetObserver enter");
     stopRequested_ = true;
     StopObserver();
     if (startFuture_.valid()) {
@@ -74,7 +75,6 @@ void DrmNetObserver::StartObserver()
             DRM_WARNING_LOG("DRM Start Observer Retry %d, ret = %d", retryCount, ret);
             sleep(RETRY_INTERVAL_S);
         } while (retryCount < RETRY_MAX_TIMES);
-
         DRM_ERR_LOG("DRM Start Observer Failed after %d retries", retryCount);
     });
 }
@@ -132,6 +132,13 @@ int32_t DrmNetObserver::SetDrmHostManager(const sptr<DrmHostManager>& drmHostMan
 {
     DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager, DRM_INNER_ERR_INVALID_VAL, "drmHostManager is nullptr");
     this->drmHostManager_ = drmHostManager;
+    return DRM_INNER_ERR_OK;
+}
+
+int32_t DrmNetObserver::DeInitDrmHostManager()
+{
+    DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager_, DRM_INNER_ERR_INVALID_VAL, "drmHostManager is nullptr");
+    drmHostManager_ = nullptr;
     return DRM_INNER_ERR_OK;
 }
 
