@@ -40,7 +40,7 @@ public:
         sptr<OHOS::NetManagerStandard::NetHandle> &netHandle,
         const sptr<OHOS::NetManagerStandard::NetAllCapabilities> &netAllCap) final;
     int32_t SetDrmHostManager(const sptr<DrmHostManager> &drmHostManager);
-    int32_t DrmNetObserver::DeInitDrmHostManager();
+    int32_t ReleaseDrmHostManager();
 
 private:
     int32_t HandleNetAllCap(const OHOS::NetManagerStandard::NetAllCapabilities &netAllCap);

@@ -33,7 +33,10 @@ static constexpr int32_t RETRY_INTERVAL_S = 1;
 DrmNetObserver::~DrmNetObserver()
 {
     DRM_INFO_LOG("~DrmNetObserver enter");
-    DeInitDrmHostManager();
+    int32_t ret = ReleaseDrmHostManager();
+    if (ret != DRM_INNER_ERR_OK) {
+        DRM_INFO_LOG("DrmHostManager is nullptr");
+    }
     stopRequested_ = true;
     StopObserver();
     if (startFuture_.valid()) {
@@ -76,14 +79,20 @@ void DrmNetObserver::StartObserver()
             DRM_WARNING_LOG("DRM Start Observer Retry %d, ret = %d", retryCount, ret);
             sleep(RETRY_INTERVAL_S);
         } while (retryCount < RETRY_MAX_TIMES);
-        DeInitDrmHostManager();
+        ret = ReleaseDrmHostManager();
+        if (ret != DRM_INNER_ERR_OK) {
+            DRM_INFO_LOG("DrmHostManager is nullptr");
+        }
         DRM_ERR_LOG("DRM Start Observer Failed after %d retries", retryCount);
     });
 }
 
 int32_t DrmNetObserver::StopObserver()
 {
-    DeInitDrmHostManager();
+    int32_t ret = ReleaseDrmHostManager();
+    if (ret != DRM_INNER_ERR_OK) {
+        DRM_INFO_LOG("DrmHostManager is nullptr");
+    }
     sptr<INetConnCallback> callbackCopy;
     {
         std::lock_guard<std::mutex> lock(netCallbackMutex_);
@@ -92,7 +101,7 @@ int32_t DrmNetObserver::StopObserver()
     }
     DRM_CHECK_AND_RETURN_RET_LOG(callbackCopy, DRM_INNER_ERR_UNKNOWN, "no registered callback");
 
-    int32_t ret = NetConnClient::GetInstance().UnregisterNetConnCallback(callbackCopy);
+    ret = NetConnClient::GetInstance().UnregisterNetConnCallback(callbackCopy);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == NetConnResultCode::NET_CONN_SUCCESS,
                                  DRM_INNER_ERR_UNKNOWN,
                                  "Unregister ret=%d",
@@ -138,7 +147,7 @@ int32_t DrmNetObserver::SetDrmHostManager(const sptr<DrmHostManager>& drmHostMan
     return DRM_INNER_ERR_OK;
 }
 
-int32_t DrmNetObserver::DeInitDrmHostManager()
+int32_t DrmNetObserver::ReleaseDrmHostManager()
 {
     DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager_, DRM_INNER_ERR_INVALID_VAL, "drmHostManager is nullptr");
     drmHostManager_ = nullptr;
