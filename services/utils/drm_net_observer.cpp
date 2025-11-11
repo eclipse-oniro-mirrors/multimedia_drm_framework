@@ -33,6 +33,7 @@ static constexpr int32_t RETRY_INTERVAL_S = 1;
 DrmNetObserver::~DrmNetObserver()
 {
     DRM_INFO_LOG("~DrmNetObserver enter");
+    DeInitDrmHostManager();
     stopRequested_ = true;
     StopObserver();
     if (startFuture_.valid()) {
@@ -75,12 +76,14 @@ void DrmNetObserver::StartObserver()
             DRM_WARNING_LOG("DRM Start Observer Retry %d, ret = %d", retryCount, ret);
             sleep(RETRY_INTERVAL_S);
         } while (retryCount < RETRY_MAX_TIMES);
+        DeInitDrmHostManager();
         DRM_ERR_LOG("DRM Start Observer Failed after %d retries", retryCount);
     });
 }
 
 int32_t DrmNetObserver::StopObserver()
 {
+    DeInitDrmHostManager();
     sptr<INetConnCallback> callbackCopy;
     {
         std::lock_guard<std::mutex> lock(netCallbackMutex_);
