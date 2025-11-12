@@ -33,10 +33,7 @@ static constexpr int32_t RETRY_INTERVAL_S = 1;
 DrmNetObserver::~DrmNetObserver()
 {
     DRM_INFO_LOG("~DrmNetObserver enter");
-    int32_t ret = ReleaseDrmHostManager();
-    if (ret != DRM_INNER_ERR_OK) {
-        DRM_INFO_LOG("DrmHostManager is nullptr");
-    }
+    ReleaseDrmHostManager();
     stopRequested_ = true;
     StopObserver();
     if (startFuture_.valid()) {
@@ -79,20 +76,14 @@ void DrmNetObserver::StartObserver()
             DRM_WARNING_LOG("DRM Start Observer Retry %d, ret = %d", retryCount, ret);
             sleep(RETRY_INTERVAL_S);
         } while (retryCount < RETRY_MAX_TIMES);
-        ret = ReleaseDrmHostManager();
-        if (ret != DRM_INNER_ERR_OK) {
-            DRM_INFO_LOG("DrmHostManager is nullptr");
-        }
+        ReleaseDrmHostManager();
         DRM_ERR_LOG("DRM Start Observer Failed after %d retries", retryCount);
     });
 }
 
 int32_t DrmNetObserver::StopObserver()
 {
-    int32_t ret = ReleaseDrmHostManager();
-    if (ret != DRM_INNER_ERR_OK) {
-        DRM_INFO_LOG("DrmHostManager is nullptr");
-    }
+    ReleaseDrmHostManager();
     sptr<INetConnCallback> callbackCopy;
     {
         std::lock_guard<std::mutex> lock(netCallbackMutex_);
@@ -147,11 +138,10 @@ int32_t DrmNetObserver::SetDrmHostManager(const sptr<DrmHostManager>& drmHostMan
     return DRM_INNER_ERR_OK;
 }
 
-int32_t DrmNetObserver::ReleaseDrmHostManager()
+void DrmNetObserver::ReleaseDrmHostManager()
 {
-    DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager_, DRM_INNER_ERR_INVALID_VAL, "drmHostManager is nullptr");
+    DRM_CHECK_AND_RETURN_LOG(drmHostManager_, "drmHostManager is nullptr");
     drmHostManager_ = nullptr;
-    return DRM_INNER_ERR_OK;
 }
 
 } // namespace DrmStandard

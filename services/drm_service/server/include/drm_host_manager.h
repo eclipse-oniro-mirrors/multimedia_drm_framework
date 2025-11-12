@@ -18,6 +18,7 @@
 
 #include <refbase.h>
 #include <iostream>
+#include <atomic>
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
@@ -140,7 +141,7 @@ private:
     std::thread serviceThread;
     std::thread messageQueueThread;
     bool serviceThreadRunning = false;
-    bool isNetWork = false;
+    std::atomic<bool> isNetWork{false};
     std::vector<void *> loadedLibs;
     std::recursive_mutex drmHostMapMutex;
     std::mutex drmNetObserverMutex;
