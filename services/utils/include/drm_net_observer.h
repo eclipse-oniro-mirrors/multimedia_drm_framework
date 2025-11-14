@@ -21,6 +21,7 @@
 #include <atomic>
 #include "refbase.h"
 #include "net_all_capabilities.h"
+#include "net_conn_callback_stub.h"
 #include "net_specifier.h"
 #include "drm_host_manager.h"
 
@@ -39,7 +40,7 @@ public:
         sptr<OHOS::NetManagerStandard::NetHandle> &netHandle,
         const sptr<OHOS::NetManagerStandard::NetAllCapabilities> &netAllCap) final;
     int32_t SetDrmHostManager(const sptr<DrmHostManager> &drmHostManager);
-    int32_t ReleaseDrmHostManager();
+    void ReleaseDrmHostManager();
 
 private:
     int32_t HandleNetAllCap(const OHOS::NetManagerStandard::NetAllCapabilities &netAllCap);
@@ -47,6 +48,7 @@ private:
     sptr<DrmHostManager> drmHostManager_;
     sptr<OHOS::NetManagerStandard::INetConnCallback> netCallback_;
     std::mutex netCallbackMutex_;
+    std::mutex drmHostManagerMutex_;
     std::future<void> startFuture_;
     std::atomic<bool> stopRequested_{false};
 };

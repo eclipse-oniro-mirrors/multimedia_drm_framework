@@ -83,10 +83,10 @@ private:
     void MediaKeySystemFactoryClientDied(pid_t pid);
     bool IsListenerObjectSet();
     int32_t CancelAbilityIdle();
+    void StartDrmNetObserver();
     std::map<pid_t, sptr<DrmDeathRecipient>> deathRecipientMap_;
     std::map<pid_t, sptr<IDrmListener>> clientListenerMap_;
     sptr<DrmNetObserver> drmNetObserver_;
-    int32_t StartDrmNetObserver();
 };
 } // DrmStandard
 } // OHOS

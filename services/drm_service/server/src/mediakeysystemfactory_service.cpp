@@ -89,10 +89,7 @@ void MediaKeySystemFactoryService::OnStart()
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     DRM_CHECK_AND_RETURN_LOG(drmHostManager_ != nullptr && drmHostManager_->Init() == DRM_INNER_ERR_OK,
         "OnStart failed to init drm host manager.");
-    int32_t ret = StartDrmNetObserver();
-    if (ret != DRM_INNER_ERR_OK) {
-        DRM_WARNING_LOG("DRM StartDrmNetObserver Failed");
-    }
+    StartDrmNetObserver();
     bool res = Publish(this);
     DRM_DEBUG_LOG("MediaKeySystemFactoryService OnStart res=%{public}d", res);
     AddSystemAbilityListener(MEMORY_MANAGER_SA_ID);
@@ -468,18 +465,16 @@ int32_t MediaKeySystemFactoryService::WriteDumpInfo(int32_t fd, std::string &dum
     return OHOS::NO_ERROR;
 }
 
-int32_t MediaKeySystemFactoryService::StartDrmNetObserver()
+void MediaKeySystemFactoryService::StartDrmNetObserver()
 {
-    DRM_CHECK_AND_RETURN_RET_LOG(DrmHelper::GetDeviceType() == TV_DEVICE,
-                                 DRM_INNER_ERR_UNSUPPORTED,
-                                 "not TV,StartDrmNetObserver stop");
+    DRM_CHECK_AND_RETURN_LOG(DrmHelper::GetDeviceType() == TV_DEVICE,
+                             "not TV,StartDrmNetObserver stop");
     sptr<DrmNetObserver> drmNetObserver_ = new (std::nothrow)DrmNetObserver();
-    DRM_CHECK_AND_RETURN_RET_LOG(drmNetObserver_!=nullptr, DRM_INNER_ERR_NO_MEMORY, "Drm Alloc Memory Failed");
+    DRM_CHECK_AND_RETURN_LOG(drmNetObserver_ != nullptr, "Drm Alloc Memory Failed");
     this->drmNetObserver_ = drmNetObserver_;
     int32_t ret = drmNetObserver_->SetDrmHostManager(drmHostManager_);
-    DRM_CHECK_AND_RETURN_RET_LOG(ret != DRM_INNER_ERR_OK, DRM_INNER_ERR_INVALID_VAL, "Set drmHostManager failed");
+    DRM_CHECK_AND_RETURN_LOG(ret == DRM_INNER_ERR_OK, "Set drmHostManager failed");
     drmNetObserver_->StartObserver();
-    return ret;
 }
 } // DrmStandard
 } // OHOS

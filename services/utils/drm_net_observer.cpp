@@ -76,7 +76,7 @@ void DrmNetObserver::StartObserver()
             DRM_WARNING_LOG("DRM Start Observer Retry %d, ret = %d", retryCount, ret);
             sleep(RETRY_INTERVAL_S);
         } while (retryCount < RETRY_MAX_TIMES);
-        ReleaseDrmHostManager();
+        self->ReleaseDrmHostManager();
         DRM_ERR_LOG("DRM Start Observer Failed after %d retries", retryCount);
     });
 }
@@ -112,7 +112,10 @@ int32_t DrmNetObserver::NetCapabilitiesChange(sptr<NetHandle>& netHandle,
 
 int32_t DrmNetObserver::HandleNetAllCap(const NetAllCapabilities& netAllCap)
 {
-    DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager_, DRM_INNER_ERR_INVALID_VAL, "drmHostManager is nullptr");
+    std::lock_guard<std::mutex> lock(drmHostManagerMutex_);
+    DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager_ !=nullptr,
+                                 DRM_INNER_ERR_INVALID_VAL,
+                                 "drmHostManager is nullptr");
     bool hasInternet = netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_INTERNET) &&
                        netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_VALIDATED);
     bool isChecking  = netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_CHECKING_CONNECTIVITY);
@@ -133,6 +136,7 @@ int32_t DrmNetObserver::HandleNetAllCap(const NetAllCapabilities& netAllCap)
 
 int32_t DrmNetObserver::SetDrmHostManager(const sptr<DrmHostManager>& drmHostManager)
 {
+    std::lock_guard<std::mutex> lock(drmHostManagerMutex_);
     DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager, DRM_INNER_ERR_INVALID_VAL, "drmHostManager is nullptr");
     this->drmHostManager_ = drmHostManager;
     return DRM_INNER_ERR_OK;
@@ -140,6 +144,7 @@ int32_t DrmNetObserver::SetDrmHostManager(const sptr<DrmHostManager>& drmHostMan
 
 void DrmNetObserver::ReleaseDrmHostManager()
 {
+    std::lock_guard<std::mutex> lock(drmHostManagerMutex_);
     DRM_CHECK_AND_RETURN_LOG(drmHostManager_, "drmHostManager is nullptr");
     drmHostManager_ = nullptr;
 }
