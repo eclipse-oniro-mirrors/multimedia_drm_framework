@@ -20,7 +20,7 @@
 
 using namespace testing::ext;
 using namespace std;
-
+#define SYSTEM_ID 3012
 namespace OHOS {
 namespace DrmStandard {
 const std::string SECURE_TYPE = "secure";
