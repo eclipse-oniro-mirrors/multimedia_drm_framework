@@ -92,7 +92,7 @@ int32_t DrmNetObserver::StopObserver()
     }
     DRM_CHECK_AND_RETURN_RET_LOG(callbackCopy, DRM_INNER_ERR_UNKNOWN, "no registered callback");
 
-    ret = NetConnClient::GetInstance().UnregisterNetConnCallback(callbackCopy);
+    int32_t ret = NetConnClient::GetInstance().UnregisterNetConnCallback(callbackCopy);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == NetConnResultCode::NET_CONN_SUCCESS,
                                  DRM_INNER_ERR_UNKNOWN,
                                  "Unregister ret=%d",
