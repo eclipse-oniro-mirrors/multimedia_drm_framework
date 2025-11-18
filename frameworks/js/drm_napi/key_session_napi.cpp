@@ -655,7 +655,10 @@ napi_value MediaKeySessionNapi::SetEventCallback(napi_env env, napi_callback_inf
         napi_create_reference(env, argv[PARAM1], 1, &callbackRef);
         DRM_DEBUG_LOG("SetEventCallback event is %{public}s", eventType.c_str());
 
-        std::shared_ptr<AutoRef> callbackPair = std::make_shared<AutoRef>(env, callbackRef);
+        std::shared_ptr<AutoRef> callbackPair = std::make_shared<AutoRef>(env,
+                                                                          callbackRef,
+                                                                          eventType.c_str());
+
         keySessionNapi->SetEventCallbackReference(eventType, callbackPair);
     } else {
         DRM_ERR_LOG("napi_unwrap failed!");
