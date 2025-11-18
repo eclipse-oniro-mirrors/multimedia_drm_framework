@@ -36,6 +36,7 @@ using namespace OHOS::HiviewDFX;
 namespace {
 constexpr uint32_t MAX_LISTNER_NUM = 64;
 }
+const std::string TV_DEVICE = "tv";
 const std::string SPLIT_LINE =
     "----------------------------------------------------------------------------------------\n";
 
