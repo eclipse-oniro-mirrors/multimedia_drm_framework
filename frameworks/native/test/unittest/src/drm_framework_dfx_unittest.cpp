@@ -398,5 +398,332 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_003, TestSize.
     EXPECT_EQ(errNo, 0);
     delete drmevent;
 }
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_004, TestSize.Level0)
+{
+    DrmEvent *drmevent =new DrmEvent();
+    DrmCertificateInfo cert;
+    cert.module = "VideoModule";
+    cert.currentTime = 1697730000;
+    cert.appName = "MyApp";
+    cert.instanceId = "";
+    cert.drmName = "ClearPlayDRM";
+    cert.drmUuid = "com.clearplay.drm";
+    cert.clientVersion = "v1.2.3";
+    cert.generationDuration = 500;
+    cert.generationResult = "Success";
+    cert.processDuration = 300;
+    cert.processResult = "Processed";
+    cert.callServerTime = 1697730050;
+    cert.serverCostDuration = 150;
+    cert.serverResult = "ServerOK";
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteCertificateEvent(
+        "DRM_CERTIFICATE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+        cert));
+    EXPECT_EQ(errNo, 0);
+    delete drmevent;
+}
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_005, TestSize.Level0)
+{
+    DrmEvent *drmevent =new DrmEvent();
+    DrmCertificateInfo cert;
+    cert.module = "VideoModule";
+    cert.currentTime = 0;
+    cert.appName = "MyApp";
+    cert.instanceId = "instance_001";
+    cert.drmName = "ClearPlayDRM";
+    cert.drmUuid = "com.clearplay.drm";
+    cert.clientVersion = "v1.2.3";
+    cert.generationDuration = 500;
+    cert.generationResult = "Success";
+    cert.processDuration = 300;
+    cert.processResult = "Processed";
+    cert.callServerTime = 1697730050;
+    cert.serverCostDuration = 150;
+    cert.serverResult = "ServerOK";
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteCertificateEvent(
+        "DRM_CERTIFICATE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+        cert));
+    EXPECT_EQ(errNo, 0);
+    delete drmevent;
+}
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_006, TestSize.Level0)
+{
+    DrmEvent *drmevent =new DrmEvent();
+    DrmCertificateInfo cert;
+    cert.module = "VideoModule";
+    cert.currentTime = 1697730000;
+    cert.appName = "MyApp";
+    cert.instanceId = "instance_001";
+    cert.drmName = "ClearPlayDRM";
+    cert.drmUuid = "com.clearplay.drm";
+    cert.clientVersion = "v1.2.3";
+    cert.generationDuration = 500;
+    cert.generationResult = "Success";
+    cert.processDuration = 300;
+    cert.processResult = "Processed";
+    cert.callServerTime = 0;
+    cert.serverCostDuration = 150;
+    cert.serverResult = "ServerOK";
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteCertificateEvent(
+        "DRM_CERTIFICATE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+        cert));
+    EXPECT_EQ(errNo, 0);
+    delete drmevent;
+}
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_007, TestSize.Level0)
+{
+    DrmEvent *drmevent =new DrmEvent();
+    DrmCertificateInfo cert;
+    cert.module = "VideoModule";
+    cert.currentTime = 1697730000;
+    cert.appName = "MyApp";
+    cert.instanceId = "instance_001";
+    cert.drmName = "ClearPlayDRM";
+    cert.drmUuid = "com.clearplay.drm";
+    cert.clientVersion = "v1.2.3";
+    cert.generationDuration = 500;
+    cert.generationResult = "Success";
+    cert.processDuration = 300;
+    cert.processResult = "";
+    cert.callServerTime = 1697730050;
+    cert.serverCostDuration = 150;
+    cert.serverResult = "ServerOK";
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteCertificateEvent(
+        "DRM_CERTIFICATE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+        cert));
+    EXPECT_EQ(errNo, 0);
+    delete drmevent;
+}
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_008, TestSize.Level0)
+{
+    DrmEvent *drmevent =new DrmEvent();
+    DrmCertificateInfo cert;
+    cert.module = "VideoModule";
+    cert.currentTime = 1697730000;
+    cert.appName = "MyApp";
+    cert.instanceId = "instance_001";
+    cert.drmName = "ClearPlayDRM";
+    cert.drmUuid = "";
+    cert.clientVersion = "v1.2.3";
+    cert.generationDuration = 500;
+    cert.generationResult = "Success";
+    cert.processDuration = 300;
+    cert.processResult = "Processed";
+    cert.callServerTime = 1697730050;
+    cert.serverCostDuration = 150;
+    cert.serverResult = "ServerOK";
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteCertificateEvent(
+        "DRM_CERTIFICATE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+        cert));
+    EXPECT_EQ(errNo, 0);
+    delete drmevent;
+}
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_009, TestSize.Level0)
+{
+    DrmEvent *drmevent =new DrmEvent();
+    DrmCertificateInfo cert;
+    cert.module = "";
+    cert.currentTime = 1697730000;
+    cert.appName = "MyApp";
+    cert.instanceId = "instance_001";
+    cert.drmName = "ClearPlayDRM";
+    cert.drmUuid = "";
+    cert.clientVersion = "v1.2.3";
+    cert.generationDuration = 500;
+    cert.generationResult = "Success";
+    cert.processDuration = 300;
+    cert.processResult = "Processed";
+    cert.callServerTime = 1697730050;
+    cert.serverCostDuration = 150;
+    cert.serverResult = "ServerOK";
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteCertificateEvent(
+        "DRM_CERTIFICATE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+        cert));
+    EXPECT_EQ(errNo, 0);
+    delete drmevent;
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_010, TestSize.Level0)
+{
+    DrmEvent *drmevent =new DrmEvent();
+    DrmCertificateInfo cert;
+    cert.module = "VideoModule";
+    cert.currentTime = 1697730000;
+    cert.appName = "MyApp";
+    cert.instanceId = "instance_001";
+    cert.drmName = "ClearPlayDRM";
+    cert.drmUuid = "";
+    cert.clientVersion = "";
+    cert.generationDuration = 500;
+    cert.generationResult = "Success";
+    cert.processDuration = 300;
+    cert.processResult = "Processed";
+    cert.callServerTime = 1697730050;
+    cert.serverCostDuration = 150;
+    cert.serverResult = "ServerOK";
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteCertificateEvent(
+        "DRM_CERTIFICATE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+        cert));
+    EXPECT_EQ(errNo, 0);
+    delete drmevent;
+}
+
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_011, TestSize.Level0)
+{
+    DrmEvent *drmevent =new DrmEvent();
+    DrmCertificateInfo cert;
+    cert.module = "VideoModule";
+    cert.currentTime = 1697730000;
+    cert.appName = "MyApp";
+    cert.instanceId = "instance_001";
+    cert.drmName = "ClearPlayDRM";
+    cert.drmUuid = "";
+    cert.clientVersion = "v1.2.3";
+    cert.generationDuration = 111111111111111111;
+    cert.generationResult = "Success";
+    cert.processDuration = 300;
+    cert.processResult = "Processed";
+    cert.callServerTime = 1697730050;
+    cert.serverCostDuration = 150;
+    cert.serverResult = "";
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteCertificateEvent(
+        "DRM_CERTIFICATE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+        cert));
+    EXPECT_EQ(errNo, 0);
+    delete drmevent;
+}
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_012, TestSize.Level0)
+{
+    DrmEvent *drmevent =new DrmEvent();
+    DrmCertificateInfo cert;
+    cert.module = "VideoModule";
+    cert.currentTime = 1697730000;
+    cert.appName = "MyApp";
+    cert.instanceId = "instance_001";
+    cert.drmName = "ClearPlayDRM";
+    cert.drmUuid = "";
+    cert.clientVersion = "v1.2.3";
+    cert.generationDuration = 111111111111111111;
+    cert.generationResult = "Success";
+    cert.processDuration = 300;
+    cert.processResult = "Processed";
+    cert.callServerTime = 1697730050;
+    cert.serverCostDuration = 150;
+    cert.serverResult = "Servernot";
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteCertificateEvent(
+        "DRM_CERTIFICATE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+        cert));
+    EXPECT_EQ(errNo, 0);
+    delete drmevent;
+}
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_013, TestSize.Level0)
+{
+    DrmEvent *drmevent =new DrmEvent();
+    DrmCertificateInfo cert;
+    cert.module = "VideoModule";
+    cert.currentTime = 1697730000;
+    cert.appName = "MyApp";
+    cert.instanceId = "instance_001";
+    cert.drmName = "ClearPlayDRM";
+    cert.drmUuid = "";
+    cert.clientVersion = "v1.2.3";
+    cert.generationDuration = 111111111111111111;
+    cert.generationResult = "Success";
+    cert.processDuration = 300;
+    cert.processResult = "Processed";
+    cert.callServerTime = 1697730050;
+    cert.serverCostDuration = 150;
+    cert.serverResult = "error";
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteCertificateEvent(
+        "DRM_CERTIFICATE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+        cert));
+    EXPECT_EQ(errNo, 0);
+    delete drmevent;
+}
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_014, TestSize.Level0)
+{
+    DrmEvent *drmevent =new DrmEvent();
+    DrmCertificateInfo cert;
+    cert.module = "VideoModule";
+    cert.currentTime = 1697730000;
+    cert.appName = "MyApp";
+    cert.instanceId = "instance_001";
+    cert.drmName = "ClearPlayDRM";
+    cert.drmUuid = "";
+    cert.clientVersion = "v1.2.3";
+    cert.generationDuration = 111111111111111111;
+    cert.generationResult = "Success";
+    cert.processDuration = 300;
+    cert.processResult = "Processed";
+    cert.callServerTime = 1697730050;
+    cert.serverCostDuration = 150;
+    cert.serverResult = "test";
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteCertificateEvent(
+        "DRM_CERTIFICATE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+        cert));
+    EXPECT_EQ(errNo, 0);
+    delete drmevent;
+}
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_015, TestSize.Level0)
+{
+    DrmEvent *drmevent =new DrmEvent();
+    DrmCertificateInfo cert;
+    cert.module = "VideoModule";
+    cert.currentTime = 1697730000;
+    cert.appName = "MyApp";
+    cert.instanceId = "instance_001";
+    cert.drmName = "ClearPlayDRM";
+    cert.drmUuid = "";
+    cert.clientVersion = "v1.2.3";
+    cert.generationDuration = 111111111111111111;
+    cert.generationResult = "Success";
+    cert.processDuration = 300;
+    cert.processResult = "";
+    cert.callServerTime = 1697730050;
+    cert.serverCostDuration = 150;
+    cert.serverResult = "ServerOK";
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteCertificateEvent(
+        "DRM_CERTIFICATE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+        cert));
+    EXPECT_EQ(errNo, 0);
+    delete drmevent;
+}
+HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_WriteCertificateEvent_016, TestSize.Level0)
+{
+    DrmEvent *drmevent =new DrmEvent();
+    DrmCertificateInfo cert;
+    cert.module = "VideoModule";
+    cert.currentTime = 1697730000;
+    cert.appName = "MyApp";
+    cert.instanceId = "instance_001";
+    cert.drmName = "ClearPlayDRM";
+    cert.drmUuid = "";
+    cert.clientVersion = "v1.2.3";
+    cert.generationDuration = 111111111111111111;
+    cert.generationResult = "failed";
+    cert.processDuration = 300;
+    cert.processResult = "Processed";
+    cert.callServerTime = 1697730050;
+    cert.serverCostDuration = 150;
+    cert.serverResult = "ServerOK";
+    Drm_ErrCode errNo = static_cast<Drm_ErrCode>(drmevent->WriteCertificateEvent(
+        "DRM_CERTIFICATE_DOWNLOAD_INFO",
+        OHOS::HiviewDFX::HiSysEvent::EventType::FAULT,
+        cert));
+    EXPECT_EQ(errNo, 0);
+    delete drmevent;
+}
 } // DrmStandard
 } // OHOS
