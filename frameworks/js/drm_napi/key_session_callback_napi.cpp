@@ -17,6 +17,9 @@
 
 namespace OHOS {
 namespace DrmStandard {
+
+const char* taskName = "OnJsCallbackInterrupt";
+
 MediaKeySessionCallbackNapi::MediaKeySessionCallbackNapi(napi_env env)
 {
     env_ = env;
@@ -55,7 +58,6 @@ void MediaKeySessionCallbackNapi::OnJsCallbackInterrupt(std::unique_ptr<MediaKey
 {
     DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(jsCb.get() != nullptr, "OnJsCallbackInterrupt: jsCb.get() is null");
     MediaKeySessionJsCallback *event = jsCb.get();
-    const char* taskName = "OnJsCallbackInterrupt";
     auto task = [event]() {
         std::shared_ptr<MediaKeySessionJsCallback> context(static_cast<MediaKeySessionJsCallback*>(event),
             [](MediaKeySessionJsCallback* ptr) {
