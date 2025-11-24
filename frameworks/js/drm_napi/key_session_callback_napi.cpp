@@ -18,7 +18,7 @@
 namespace OHOS {
 namespace DrmStandard {
 
-const char* taskName = "OnJsCallbackInterrupt";
+const char* TASK_NAME = "OnJsCallbackInterrupt";
 
 MediaKeySessionCallbackNapi::MediaKeySessionCallbackNapi(napi_env env)
 {
