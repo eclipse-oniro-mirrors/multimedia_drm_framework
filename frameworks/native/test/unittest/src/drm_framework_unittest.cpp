@@ -3975,6 +3975,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_IsUuidValid_04, TestSize.Level0)
     EXPECT_TRUE(IsUuidValid("09AFaf"));
     EXPECT_FALSE(IsUuidValid("09AG"));
 }
+
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelAbNormalAdd_001, TestSize.Level0)
 {
     Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
@@ -3996,6 +3997,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelAbNormalAdd
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 }
+
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelAbNormalAdd_002, TestSize.Level0)
 {
     Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
@@ -4015,6 +4017,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelAbNormalAdd
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 }
+
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelAbNormalAdd_003, TestSize.Level0)
 {
     Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
@@ -4034,6 +4037,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetContentProtectionLevelAbNormalAdd
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 }
+
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetMediakeySystemsNormal, TestSize.Level0)
 {
     Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
@@ -4060,6 +4064,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetMediakeySystemsNormal, TestSize.L
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 }
+
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetMediakeySystemsAbNormal_001, TestSize.Level0)
 {
     Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
@@ -4084,6 +4089,7 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetMediakeySystemsAbNormal_001, Test
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 }
+
 HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetMediakeySystemsAbNormal_002, TestSize.Level0)
 {
     Drm_ErrCode errNo = DRM_ERR_UNKNOWN;
@@ -4109,6 +4115,5 @@ HWTEST_F(DrmFrameworkUnitTest, Drm_unittest_GetMediakeySystemsAbNormal_002, Test
     errNo = OH_MediaKeySystem_Destroy(mediaKeySystem);
     EXPECT_EQ(errNo, DRM_ERR_OK);
 }
-
 } // DrmStandard
 } // OHOS
