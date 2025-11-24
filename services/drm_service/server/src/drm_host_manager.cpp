@@ -66,10 +66,14 @@ DrmHostManager::DrmHostDeathRecipient::~DrmHostDeathRecipient()
 void DrmHostManager::OnDrmPluginDied(std::string &name)
 {
 }
+
 void DrmHostManager::DrmHostDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
     DRM_ERR_LOG("Remote service died, do clean works.");
-    drmHostManager_->ClearDeathService(name_);
+    if (auto drmHostManagerPtr = drmHostManager_.promote()) {
+        DRM_INFO_LOG("OnRemoteDied enter.");
+        drmHostManagerPtr->ClearDeathService(name_);
+    }
 }
 
 void DrmHostManager::ClearDeathService(std::string &name)
