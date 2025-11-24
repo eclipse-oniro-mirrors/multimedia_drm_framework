@@ -790,12 +790,10 @@ std::string DrmHostManager::QueryBasicStatement()
 
 void DrmHostManager::WaitForNetwork()
 {
-    if (this->isNetWork) {
-        return;
-    }
+    DRM_CHECK_AND_RETURN_LOG(this->isNetWork, "DRM Net has Connected");
     DRM_INFO_LOG("DRM Net Is Not Connected - waiting for network...");
     std::unique_lock<std::mutex> lock(drmNetObserverMutex);
-    condVar.wait(lock, [this] { return this->isNetWork; });
+    condVar.wait(lock, [this] { return this->isNetWork.load(); });
     DRM_INFO_LOG("DRM Net Connected");
 }
 
