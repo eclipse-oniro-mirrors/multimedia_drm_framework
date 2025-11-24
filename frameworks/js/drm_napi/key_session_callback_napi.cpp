@@ -17,9 +17,6 @@
 
 namespace OHOS {
 namespace DrmStandard {
-
-const char* TASK_NAME = "OnJsCallbackInterrupt";
-
 MediaKeySessionCallbackNapi::MediaKeySessionCallbackNapi(napi_env env)
 {
     env_ = env;
@@ -103,11 +100,11 @@ void MediaKeySessionCallbackNapi::OnJsCallbackInterrupt(std::unique_ptr<MediaKey
         } while (0);
         napi_close_handle_scope(env, scope);
     };
-    if (napi_status::napi_ok != napi_send_event(env_, task, napi_eprio_immediate, taskName)) {
-        DRM_ERR_LOG("OnJsCallbackInterrupt: Failed to SendEvent");
-    } else {
-        jsCb.release();
-    }
+    const char* taskName = "OnJsCallbackInterrupt";
+    DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(
+        napi_status::napi_ok != napi_send_event(env_, task, napi_eprio_immediate, taskName),
+        "OnJsCallbackInterrupt: Failed to SendEvent");
+    jsCb.release();
 }
 
 void MediaKeySessionCallbackNapi::SendEventKeyChanged(
