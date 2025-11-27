@@ -67,8 +67,8 @@ struct NapiWorkData {
 };
 
 struct AutoRef {
-    AutoRef(napi_env env, napi_ref cb)
-        : env_(env), cb_(cb)
+    AutoRef(napi_env env, napi_ref cb, const char* taskName)
+        : env_(env), cb_(cb), taskName_(taskName)
     {
     }
     ~AutoRef()
@@ -94,7 +94,10 @@ struct AutoRef {
         }
         work->data = (void *)workData;
 
-        int ret = uv_queue_work_with_qos(loop, work, [] (uv_work_t *work) {}, [] (uv_work_t *work, int status) {
+        int ret = uv_queue_work_with_qos_internal(loop,
+                                                  work,
+                                                  [] (uv_work_t *work) {},
+                                                  [] (uv_work_t *work, int status) {
             // Js thread
             NapiWorkData *workData = reinterpret_cast<NapiWorkData *>(work->data);
             napi_env env = workData->env_;
@@ -104,7 +107,7 @@ struct AutoRef {
             }
             delete workData;
             delete work;
-        }, uv_qos_default);
+        }, uv_qos_default, taskName_);
         if (ret != 0) {
             delete work;
             work = nullptr;
@@ -114,6 +117,7 @@ struct AutoRef {
     }
     napi_env env_;
     napi_ref cb_;
+    const char* taskName_;
 };
 
 class NapiAsyncWork {

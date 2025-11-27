@@ -1064,7 +1064,10 @@ napi_value MediaKeySystemNapi::SetEventCallback(napi_env env, napi_callback_info
         napi_create_reference(env, argv[PARAM1], 1, &callbackRef);
         DRM_INFO_LOG("SetEventCallback event is %{public}s", eventType.c_str());
 
-        std::shared_ptr<AutoRef> callbackPair = std::make_shared<AutoRef>(env, callbackRef);
+        std::shared_ptr<AutoRef> callbackPair = std::make_shared<AutoRef>(env,
+                                                                          callbackRef,
+                                                                          eventType.c_str());
+
         mediaKeySystemNapi->SaveEventCallbackReferrence(eventType, callbackPair);
         DRM_INFO_LOG("SetEventCallback out");
     } else {

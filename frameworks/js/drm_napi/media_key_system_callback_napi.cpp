@@ -55,6 +55,7 @@ void MediaKeySystemCallbackNapi::OnJsCallbackInterrupt(std::unique_ptr<MediaKeyS
 {
     DRM_NAPI_CHECK_AND_RETURN_VOID_LOG(jsCb.get() != nullptr, "OnJsCallbackInterrupt: jsCb.get() is null");
     MediaKeySystemJsCallback *event = jsCb.get();
+    const char* taskName = "OnJsCallbackInterrupt";
     auto task = [event]() {
         std::shared_ptr<MediaKeySystemJsCallback> context(
             static_cast<MediaKeySystemJsCallback*>(event),
@@ -92,7 +93,7 @@ void MediaKeySystemCallbackNapi::OnJsCallbackInterrupt(std::unique_ptr<MediaKeyS
         } while (0);
         napi_close_handle_scope(env, scope);
     };
-    if (napi_status::napi_ok != napi_send_event(env_, task, napi_eprio_immediate)) {
+    if (napi_status::napi_ok != napi_send_event(env_, task, napi_eprio_immediate, taskName)) {
         DRM_ERR_LOG("OnJsCallbackInterrupt: Failed to SendEvent");
     } else {
         jsCb.release();
