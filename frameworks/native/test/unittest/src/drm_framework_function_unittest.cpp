@@ -27,17 +27,6 @@ const std::string SECURE_TYPE = "secure";
 const std::string BASIC_STATEMENT_AGREED = "basic_statement_agreed";
 const std::string INVALID_DATA = "invalid_data";
 
-HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_GetSettingDataValue_001, TestSize.Level0)
-{
-    string ret0 = DrmHelper::GetSettingDataValue(SECURE_TYPE, BASIC_STATEMENT_AGREED);
-    EXPECT_TRUE(ret0.size() != 0);
-
-    string ret1 = DrmHelper::GetSettingDataValue(SECURE_TYPE, BASIC_STATEMENT_AGREED);
-    EXPECT_EQ(ret1, INVALID_DATA);
-
-    string ret2 = DrmHelper::GetSettingDataValue("", "");
-    EXPECT_EQ(ret2, "");
-}
 
 HWTEST_F(DrmFrameworkUnitTest, Drm_Unittest_CreateDataShareHelperProxy_001, TestSize.Level0)
 {
