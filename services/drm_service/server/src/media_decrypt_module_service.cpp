@@ -99,7 +99,7 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
     uint32_t decryptDuration = CalculateTimeDiff(timeBefore, std::chrono::system_clock::now());
     UpdateDecryptionStatistics(ret, bufLen, decryptDuration);
     if (ret != DRM_INNER_ERR_OK) {
-        DRM_ERR_LOG("DecryptMediaData failed.");
+        DRM_ERR_LOG("DecryptMediaData failed. ret is %x", ret);
         ReportDecryptionFaultEvent(ret, "DecryptMediaData failed",
             std::to_string(static_cast<int32_t>(cryptInfoTmp.type)),
             CastToHexString(cryptInfoTmp.keyId), CastToHexString(cryptInfoTmp.iv));
