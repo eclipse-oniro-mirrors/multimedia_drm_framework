@@ -35,6 +35,7 @@
 #include "iservstat_listener_hdi.h"
 #include "v1_0/media_key_system_factory_proxy.h"
 #include "v1_0/media_key_system_proxy.h"
+#include "v1_1/media_key_system_factory_proxy.h"
 
 namespace OHOS {
 namespace DrmStandard {
@@ -110,6 +111,8 @@ public:
     void OnDrmPluginDied(std::string &name);
     void SetIsNetWork(const bool &isNetWork);
     bool GetIsNetWork();
+    void SetBundleName(const std::string &BundleName);
+    std::string GetBundleName();
 private:
     static void UnLoadOEMCertifaicateService(std::string &name, ExtraInfo info);
     static void GetHttpProxyParameter(std::string &host, int32_t &port, std::list<std::string> &exclusionList);
@@ -136,6 +139,7 @@ private:
     std::string QueryBasicStatement();
     void WaitForNetwork();
 
+    std::string bundleName_;
     StatusCallback *statusCallback_;
     std::map<void *, sptr<IMediaKeySystem>> handleAndKeySystemMap;
     std::thread serviceThread;

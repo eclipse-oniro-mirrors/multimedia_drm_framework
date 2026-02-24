@@ -53,6 +53,7 @@ ohos_shared_library("drm_service") {
     "c_utils:utils",
     "data_share:datashare_consumer",
     "drivers_interface_drm:libdrm_proxy_1.0",
+    "drivers_interface_drm:libdrm_proxy_1.1",
     "hdf_core:libhdf_host",
     "hdf_core:libhdf_ipc_adapter",
     "hdf_core:libhdf_utils",
