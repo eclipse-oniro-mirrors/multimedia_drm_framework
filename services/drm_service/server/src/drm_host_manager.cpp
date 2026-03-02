@@ -79,23 +79,27 @@ void DrmHostManager::DrmHostDeathRecipient::OnRemoteDied(const wptr<IRemoteObjec
 void DrmHostManager::ClearDeathService(std::string &name)
 {
     DRM_INFO_LOG("ClearDeathService enter.");
-    std::lock_guard<std::recursive_mutex> lock(drmHostMapMutex);
-    DRM_CHECK_AND_RETURN_LOG(
-        lazyLoadPluginInfoMap.count(name) > 0, "PluginCountInfo is empty, name:%{public}s", name.c_str());
-    DRM_CHECK_AND_RETURN_LOG(!lazyLoadPluginCountMap.empty(), "PluginCountMap is empty.");
-    if (statusCallback_ != nullptr) {
-        statusCallback_->OnDrmPluginDied(name);
-    }
-    lazyLoadPluginCountMap[name] = NOT_LAZY_LOADDED;
-    lazyLoadPluginTimeoutMap[name] = NOT_LAZY_LOADDED;
-
-    for (auto it = hdiMediaKeySystemFactoryAndPluginNameMap.begin();
-         it != hdiMediaKeySystemFactoryAndPluginNameMap.end();) {
-        if (it->second == name) {
-            it = hdiMediaKeySystemFactoryAndPluginNameMap.erase(it);
-        } else {
-            ++it;
+    StatusCallback *statusCallback = nullptr;
+    {
+        std::lock_guard<std::recursive_mutex> lock(drmHostMapMutex);
+        DRM_CHECK_AND_RETURN_LOG(
+            lazyLoadPluginInfoMap.count(name) > 0, "PluginCountInfo is empty, name:%{public}s", name.c_str());
+        DRM_CHECK_AND_RETURN_LOG(!lazyLoadPluginCountMap.empty(), "PluginCountMap is empty.");
+        statusCallback = statusCallback_;
+        lazyLoadPluginCountMap[name] = NOT_LAZY_LOADDED;
+        lazyLoadPluginTimeoutMap[name] = NOT_LAZY_LOADDED;
+        for (auto it = hdiMediaKeySystemFactoryAndPluginNameMap.begin();
+            it != hdiMediaKeySystemFactoryAndPluginNameMap.end();) {
+            if (it->second == name) {
+                it = hdiMediaKeySystemFactoryAndPluginNameMap.erase(it);
+            } else {
+                ++it;
+            }
         }
+    }
+
+    if (statusCallback != nullptr) {
+        statusCallback->OnDrmPluginDied(name);
     }
 }
 
