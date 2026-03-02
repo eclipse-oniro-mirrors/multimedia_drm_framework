@@ -37,6 +37,7 @@
 
 #include "v1_0/media_key_system_factory_proxy.h"
 #include "v1_0/media_key_system_proxy.h"
+#include "v1_1/media_key_system_factory_proxy.h"
 
 namespace OHOS {
 namespace DrmStandard {

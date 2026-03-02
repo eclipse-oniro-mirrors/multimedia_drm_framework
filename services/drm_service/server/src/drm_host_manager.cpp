@@ -677,8 +677,17 @@ int32_t DrmHostManager::CreateMediaKeySystem(std::string &name, sptr<IMediaKeySy
         DRM_ERR_LOG("CreateMediaKeySystem faild.");
         return DRM_INNER_ERR_PLUGIN_ERROR;
     }
-
-    ret = drmHostServieProxys->CreateMediaKeySystem(hdiMediaKeySystem);
+    auto drmHostServiceProxy_1_1 = OHOS::HDI::Drm::V1_1::IMediaKeySystemFactory::CastFrom(drmHostServieProxys);
+    if (drmHostServiceProxy_1_1 != nullptr) {
+        DRM_INFO_LOG("proxy 1.1 enter");
+        ret = drmHostServiceProxy_1_1->CreateMediaKeySystemWithBundleName(bundleName_, hdiMediaKeySystem);
+        hdiMediaKeySystemFactoryAndPluginNameMap[drmHostServiceProxy_1_1] = name;
+        hdiMediaKeySystemFactoryAndPluginNameMap.erase(drmHostServieProxys);
+        drmHostServieProxys = drmHostServiceProxy_1_1;
+    } else {
+        DRM_INFO_LOG("proxy 1.0 enter");
+        ret = drmHostServieProxys->CreateMediaKeySystem(hdiMediaKeySystem);
+    }
     if (ret != DRM_INNER_ERR_OK) {
         hdiMediaKeySystem = nullptr;
         ReleaseSevices(drmHostServieProxys);
@@ -810,6 +819,16 @@ void DrmHostManager::SetIsNetWork(const bool &isNetWork)
 bool DrmHostManager::GetIsNetWork()
 {
     return this->isNetWork;
+}
+
+void DrmHostManager::SetBundleName(const std::string &bundleName)
+{
+    this->bundleName_ = bundleName;
+}
+
+std::string DrmHostManager::GetBundleName()
+{
+    return this->bundleName_;
 }
 }  // namespace DrmStandard
 }  // namespace OHOS

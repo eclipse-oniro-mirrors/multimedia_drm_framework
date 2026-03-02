@@ -258,6 +258,8 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(const std::string &na
         return DRM_INNER_ERR_MAX_SYSTEM_NUM_REACHED;
     }
     std::string systemName = name;
+    std::string bundleName = GetClientBundleName(IPCSkeleton::GetCallingUid());
+    drmHostManager_->SetBundleName(bundleName);
     int32_t ret = drmHostManager_->CreateMediaKeySystem(systemName, hdiMediaKeySystem);
     if (hdiMediaKeySystem == nullptr || ret != DRM_INNER_ERR_OK) {
         DRM_ERR_LOG("drmHostManager_ return hdiMediaKeySystem nullptr.");
