@@ -45,7 +45,8 @@
               "data_share",
               "os_account",
               "runtime_core",
-              "netmanager_base"
+              "netmanager_base",
+              "taihe_ffi_gen"
             ]
         },
         "build": {
