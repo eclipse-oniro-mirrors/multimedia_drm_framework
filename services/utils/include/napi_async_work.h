@@ -107,7 +107,7 @@ struct AutoRef {
             }
             delete workData;
             delete work;
-        }, uv_qos_default, taskName_);
+        }, uv_qos_default, taskName_.c_str());
         if (ret != 0) {
             delete work;
             work = nullptr;
@@ -117,7 +117,7 @@ struct AutoRef {
     }
     napi_env env_;
     napi_ref cb_;
-    const char* taskName_;
+    std::string taskName_;
 };
 
 class NapiAsyncWork {

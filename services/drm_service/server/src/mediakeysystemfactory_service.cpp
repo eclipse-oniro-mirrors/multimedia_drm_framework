@@ -106,6 +106,11 @@ void MediaKeySystemFactoryService::OnStop()
     DRM_INFO_LOG("OnStop enter.");
     std::lock_guard<std::recursive_mutex> lock(mutex_);
 
+    if (drmNetObserver_) {
+        drmNetObserver_->StopObserver();
+        drmNetObserver_ = nullptr;
+    }
+
     if (drmHostManager_) {
         drmHostManager_->DeInit();
         drmHostManager_ = nullptr;
@@ -253,7 +258,10 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(const std::string &na
         CancelAbilityIdle() == DRM_INNER_ERR_OK, DRM_INNER_ERR_SERVICE_DIED, "Cancel Idle failed");
     sptr<MediaKeySystemService> mediaKeySystemService = nullptr;
     sptr<IMediaKeySystem> hdiMediaKeySystem = nullptr;
-    if (currentMediaKeySystemNum_[name] >= KEY_SYSTEM_INSTANCES_MAX_NUMBER) {
+
+    auto iter = currentMediaKeySystemNum_.find(name);
+    if (iter != currentMediaKeySystemNum_.end() &&
+            iter->second >= KEY_SYSTEM_INSTANCES_MAX_NUMBER) {
         DRM_ERR_LOG("The number of MediaKeySystem is greater than 64");
         return DRM_INNER_ERR_MAX_SYSTEM_NUM_REACHED;
     }
