@@ -162,6 +162,7 @@ void MediaKeySystemFactoryService::DistroyForClientDied(pid_t pid)
     DRM_INFO_LOG("DistroyForClientDied pid: %{public}d.", pid);
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     DRM_CHECK_AND_RETURN_LOG(mediaKeySystemForPid_.find(pid) != mediaKeySystemForPid_.end(), "pid not found");
+    DRM_CHECK_AND_RETURN_LOG(drmHostManager_ != nullptr, "drmHostManager_ is nullptr.");
     for (auto it = mediaKeySystemForPid_[pid].begin(); it != mediaKeySystemForPid_[pid].end();) {
         if ((*it) != nullptr) {
             // decrease the total count in drm host manager.
@@ -257,6 +258,8 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(const std::string &na
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     DRM_CHECK_AND_RETURN_RET_LOG(
         CancelAbilityIdle() == DRM_INNER_ERR_OK, DRM_INNER_ERR_SERVICE_DIED, "Cancel Idle failed");
+    DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager_ != nullptr, DRM_INNER_ERR_SERVICE_DIED,
+        "drmHostManager_ is nullptr.");
     sptr<MediaKeySystemService> mediaKeySystemService = nullptr;
     sptr<IMediaKeySystem> hdiMediaKeySystem = nullptr;
 
@@ -306,6 +309,8 @@ int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySy
 {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     DRM_INFO_LOG("CloseMediaKeySystemService enter.");
+    DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager_ != nullptr, DRM_INNER_ERR_SERVICE_DIED,
+        "drmHostManager_ is nullptr.");
     int32_t currentPid = IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySystemFactoryService GetCallingPID: %{public}d", currentPid);
     sptr<IMediaKeySystem> hdiMediaKeySystem = mediaKeySystemService->getMediaKeySystem();
@@ -336,6 +341,8 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(const std::strin
     bool isSystemSupported = false;
     DRM_CHECK_AND_RETURN_RET_LOG(
         CancelAbilityIdle() == DRM_INNER_ERR_OK, DRM_INNER_ERR_SERVICE_DIED, "Cancel Idle failed");
+    DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager_ != nullptr, DRM_INNER_ERR_SERVICE_DIED,
+        "drmHostManager_ is nullptr.");
     std::string systemName = name;
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(systemName, &isSystemSupported);
     if (ret != DRM_INNER_ERR_OK) {
@@ -354,6 +361,8 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(const std::strin
     bool isSystemSupported = false;
     DRM_CHECK_AND_RETURN_RET_LOG(
         CancelAbilityIdle() == DRM_INNER_ERR_OK, DRM_INNER_ERR_SERVICE_DIED, "Cancel Idle failed");
+    DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager_ != nullptr, DRM_INNER_ERR_SERVICE_DIED,
+        "drmHostManager_ is nullptr.");
     std::string systemName = name;
     std::string systemMimeType = mimeType;
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(systemName, systemMimeType, &isSystemSupported);
@@ -373,6 +382,8 @@ int32_t MediaKeySystemFactoryService::IsMediaKeySystemSupported(const std::strin
     bool isSystemSupported = false;
     DRM_CHECK_AND_RETURN_RET_LOG(
         CancelAbilityIdle() == DRM_INNER_ERR_OK, DRM_INNER_ERR_SERVICE_DIED, "Cancel Idle failed");
+    DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager_ != nullptr, DRM_INNER_ERR_SERVICE_DIED,
+        "drmHostManager_ is nullptr.");
     std::string systemName = name;
     std::string systemMimeType = mimeType;
     int32_t ret = drmHostManager_->IsMediaKeySystemSupported(systemName,
@@ -391,6 +402,8 @@ int32_t MediaKeySystemFactoryService::GetMediaKeySystems(std::map<std::string, s
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     DRM_CHECK_AND_RETURN_RET_LOG(
         CancelAbilityIdle() == DRM_INNER_ERR_OK, DRM_INNER_ERR_SERVICE_DIED, "Cancel Idle failed");
+    DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager_ != nullptr, DRM_INNER_ERR_SERVICE_DIED,
+        "drmHostManager_ is nullptr.");
     int32_t ret = drmHostManager_->GetMediaKeySystems(mediaKeySystemNames);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "GetMediaKeySystems failed.");
     return ret;
@@ -402,6 +415,8 @@ int32_t MediaKeySystemFactoryService::GetMediaKeySystemUuid(const std::string &n
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     DRM_CHECK_AND_RETURN_RET_LOG(
         CancelAbilityIdle() == DRM_INNER_ERR_OK, DRM_INNER_ERR_SERVICE_DIED, "Cancel Idle failed");
+    DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager_ != nullptr, DRM_INNER_ERR_SERVICE_DIED,
+        "drmHostManager_ is nullptr.");
     std::string systemName = name;
     int32_t ret = drmHostManager_->GetMediaKeySystemUuid(systemName, uuid);
     DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, ret, "GetMediaKeySystemUuid failed.");
@@ -441,6 +456,8 @@ int32_t MediaKeySystemFactoryService::WriteDumpInfo(int32_t fd, std::string &dum
     OHOS::HiviewDFX::DumpUsage dumpUse;
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     dumpString += "MediaKeySystem MemoryUsage: " + std::to_string(dumpUse.GetPss(getpid())) + "\n";
+    DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager_ != nullptr, OHOS::INVALID_OPERATION,
+        "drmHostManager_ is nullptr.");
     std::map<std::string, std::string> mediaKeySystemInfo;
     drmHostManager_->GetMediaKeySystems(mediaKeySystemInfo);
     for (auto &iter : mediaKeySystemInfo) {
@@ -484,6 +501,7 @@ void MediaKeySystemFactoryService::StartDrmNetObserver()
     sptr<DrmNetObserver> drmNetObserver_ = new (std::nothrow)DrmNetObserver();
     DRM_CHECK_AND_RETURN_LOG(drmNetObserver_ != nullptr, "Drm Alloc Memory Failed");
     this->drmNetObserver_ = drmNetObserver_;
+    DRM_CHECK_AND_RETURN_LOG(drmHostManager_ != nullptr, "drmHostManager_ is nullptr.");
     int32_t ret = drmNetObserver_->SetDrmHostManager(drmHostManager_);
     DRM_CHECK_AND_RETURN_LOG(ret == DRM_INNER_ERR_OK, "Set drmHostManager failed");
     drmNetObserver_->StartObserver();
