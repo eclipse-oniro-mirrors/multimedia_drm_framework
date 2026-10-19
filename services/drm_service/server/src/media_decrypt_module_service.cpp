@@ -95,6 +95,12 @@ int32_t MediaDecryptModuleService::DecryptMediaData(bool secureDecodrtState,
     SetDrmBufferInfo(&drmSrcBuffer, &drmDstBuffer, srcBuffer, dstBuffer, bufLen);
     auto timeBefore = std::chrono::system_clock::now();
     std::lock_guard<std::recursive_mutex> lock(moduleLock_);
+    if (hdiMediaDecryptModule_ == nullptr) {
+        DRM_ERR_LOG("hdiMediaDecryptModule_ is nullptr");
+        (void)::close(srcBuffer.fd);
+        (void)::close(dstBuffer.fd);
+        return DRM_INNER_ERR_INVALID_VAL;
+    }
     ret = hdiMediaDecryptModule_->DecryptMediaData(secureDecodrtState, cryptInfoTmp, drmSrcBuffer, drmDstBuffer);
     uint32_t decryptDuration = CalculateTimeDiff(timeBefore, std::chrono::system_clock::now());
     UpdateDecryptionStatistics(ret, bufLen, decryptDuration);
