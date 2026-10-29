@@ -136,6 +136,7 @@ ohos_source_set("idl_sa_stub") {
     "hilog:libhilog",
     "hitrace:hitrace_meter",
     "ipc:ipc_single",
+    "bounds_checking_function:libsec_shared",
   ]
 
   part_name = "drm_framework"
