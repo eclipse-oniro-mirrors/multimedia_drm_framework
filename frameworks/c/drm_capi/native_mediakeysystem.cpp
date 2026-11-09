@@ -440,6 +440,8 @@ Drm_ErrCode OH_MediaKeySystem_SetMediaKeySystemCallback(MediaKeySystem *mediaKey
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_SetMediaKeySystemCallback faild!");
+    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemCallback_ != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySystem_SetMediaKeySystemCallback systemCallback is nullptr!");
     systemObject->systemCallback_->SetCallbackReference(callback);
     return DRM_ERR_OK;
 }
@@ -452,6 +454,8 @@ Drm_ErrCode OH_MediaKeySystem_SetCallback(MediaKeySystem *mediaKeySystem, OH_Med
     MediaKeySystemObject *systemObject = reinterpret_cast<MediaKeySystemObject *>(mediaKeySystem);
     DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemImpl_ != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySystem_SetCallback faild!");
+    DRM_CHECK_AND_RETURN_RET_LOG(systemObject->systemCallback_ != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySystem_SetCallback systemCallback is nullptr!");
     systemObject->systemCallback_->SetCallbackReference(mediaKeySystem, callback);
     return DRM_ERR_OK;
 }

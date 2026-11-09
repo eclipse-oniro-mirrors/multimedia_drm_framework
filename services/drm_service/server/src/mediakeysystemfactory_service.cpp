@@ -47,25 +47,31 @@ REGISTER_SYSTEM_ABILITY_BY_ID(MediaKeySystemFactoryService, MEDIA_KEY_SYSTEM_SER
 void MediaKeySystemFactoryService::OnDrmPluginDied(std::string &name)
 {
     DRM_INFO_LOG("OnDrmPluginDied enter.");
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
-    for (auto pidIt = mediaKeySystemForPid_.begin(); pidIt != mediaKeySystemForPid_.end();) {
-        std::set<sptr<MediaKeySystemService>> mediaKeySystemServiceSet = pidIt->second;
-        for (auto keySystem = mediaKeySystemServiceSet.begin(); keySystem != mediaKeySystemServiceSet.end();) {
-            std::string pluginName = (*keySystem)->GetPluginName();
-            if (name == pluginName) {
-                CloseMediaKeySystemService(*keySystem);
-                mediaKeySystemServiceSet.erase(keySystem++);
+    std::vector<sptr<MediaKeySystemService>> toClose;
+    {
+        std::lock_guard<std::recursive_mutex> lock(mutex_);
+        for (auto pidIt = mediaKeySystemForPid_.begin(); pidIt != mediaKeySystemForPid_.end();) {
+            std::set<sptr<MediaKeySystemService>> mediaKeySystemServiceSet = pidIt->second;
+            for (auto keySystem = mediaKeySystemServiceSet.begin(); keySystem != mediaKeySystemServiceSet.end();) {
+                std::string pluginName = (*keySystem)->GetPluginName();
+                if (name == pluginName) {
+                    toClose.push_back(*keySystem);
+                    mediaKeySystemServiceSet.erase(keySystem++);
+                } else {
+                    ++keySystem;
+                }
+            }
+            if (mediaKeySystemServiceSet.empty()) {
+                pidIt = mediaKeySystemForPid_.erase(pidIt);
             } else {
-                ++keySystem;
+                pidIt++;
             }
         }
-        if (mediaKeySystemServiceSet.empty()) {
-            pidIt = mediaKeySystemForPid_.erase(pidIt);
-        } else {
-            pidIt++;
-        }
+        currentMediaKeySystemNum_.erase(name);
     }
-    currentMediaKeySystemNum_.erase(name);
+    for (auto &service : toClose) {
+        CloseMediaKeySystemService(service);
+    }
 }
 
 MediaKeySystemFactoryService::MediaKeySystemFactoryService(int32_t systemAbilityId, bool runOnCreate)
@@ -160,25 +166,38 @@ void MediaKeySystemFactoryService::DistroyForClientDied(pid_t pid)
 {
     // destroy all system objects for this pid
     DRM_INFO_LOG("DistroyForClientDied pid: %{public}d.", pid);
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
-    DRM_CHECK_AND_RETURN_LOG(mediaKeySystemForPid_.find(pid) != mediaKeySystemForPid_.end(), "pid not found");
-    DRM_CHECK_AND_RETURN_LOG(drmHostManager_ != nullptr, "drmHostManager_ is nullptr.");
-    for (auto it = mediaKeySystemForPid_[pid].begin(); it != mediaKeySystemForPid_[pid].end();) {
-        if ((*it) != nullptr) {
-            // decrease the total count in drm host manager.
-            sptr<IMediaKeySystem> hdiMediaKeySystem = (*it)->getMediaKeySystem();
-            (*it)->CloseMediaKeySystemServiceByCallback();
-            if (hdiMediaKeySystem != nullptr) {
-                drmHostManager_->ReleaseMediaKeySystem(hdiMediaKeySystem);
+    struct ReleaseItem {
+        sptr<MediaKeySystemService> service;
+        sptr<IMediaKeySystem> hdiMediaKeySystem;
+    };
+    std::vector<ReleaseItem> releaseList;
+    sptr<DrmHostManager> drmHostManagerSnap;
+    {
+        std::lock_guard<std::recursive_mutex> lock(mutex_);
+        DRM_CHECK_AND_RETURN_LOG(mediaKeySystemForPid_.find(pid) != mediaKeySystemForPid_.end(), "pid not found");
+        DRM_CHECK_AND_RETURN_LOG(drmHostManager_ != nullptr, "drmHostManager_ is nullptr.");
+        drmHostManagerSnap = drmHostManager_;
+        for (auto it = mediaKeySystemForPid_[pid].begin(); it != mediaKeySystemForPid_[pid].end();) {
+            if ((*it) != nullptr) {
+                ReleaseItem item;
+                item.service = *it;
+                item.hdiMediaKeySystem = (*it)->getMediaKeySystem();
+                releaseList.push_back(item);
+                if (currentMediaKeySystemNum_.find((*it)->GetPluginName()) != currentMediaKeySystemNum_.end()) {
+                    currentMediaKeySystemNum_[(*it)->GetPluginName()]--;
+                }
             }
-            if (currentMediaKeySystemNum_.find((*it)->GetPluginName()) != currentMediaKeySystemNum_.end()) {
-                currentMediaKeySystemNum_[(*it)->GetPluginName()]--;
-            }
+            it = mediaKeySystemForPid_[pid].erase(it);
         }
-        it = mediaKeySystemForPid_[pid].erase(it);
+        mediaKeySystemForPid_[pid].clear();
+        mediaKeySystemForPid_.erase(pid);
     }
-    mediaKeySystemForPid_[pid].clear();
-    mediaKeySystemForPid_.erase(pid);
+    for (auto &item : releaseList) {
+        item.service->CloseMediaKeySystemServiceByCallback();
+        if (item.hdiMediaKeySystem != nullptr && drmHostManagerSnap != nullptr) {
+            drmHostManagerSnap->ReleaseMediaKeySystem(item.hdiMediaKeySystem);
+        }
+    }
 }
 
 void MediaKeySystemFactoryService::MediaKeySystemFactoryClientDied(pid_t pid)
@@ -307,28 +326,37 @@ int32_t MediaKeySystemFactoryService::CreateMediaKeySystem(const std::string &na
 
 int32_t MediaKeySystemFactoryService::CloseMediaKeySystemService(sptr<MediaKeySystemService> mediaKeySystemService)
 {
-    std::lock_guard<std::recursive_mutex> lock(mutex_);
     DRM_INFO_LOG("CloseMediaKeySystemService enter.");
-    DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager_ != nullptr, DRM_INNER_ERR_SERVICE_DIED,
-        "drmHostManager_ is nullptr.");
-    int32_t currentPid = IPCSkeleton::GetCallingPid();
-    DRM_DEBUG_LOG("MediaKeySystemFactoryService GetCallingPID: %{public}d", currentPid);
-    sptr<IMediaKeySystem> hdiMediaKeySystem = mediaKeySystemService->getMediaKeySystem();
+    sptr<IMediaKeySystem> hdiMediaKeySystem;
+    sptr<DrmHostManager> drmHostManagerSnap;
+    bool needClose = false;
+    {
+        std::lock_guard<std::recursive_mutex> lock(mutex_);
+        DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager_ != nullptr, DRM_INNER_ERR_SERVICE_DIED,
+            "drmHostManager_ is nullptr.");
+        drmHostManagerSnap = drmHostManager_;
+        int32_t currentPid = IPCSkeleton::GetCallingPid();
+        DRM_DEBUG_LOG("MediaKeySystemFactoryService GetCallingPID: %{public}d", currentPid);
+        hdiMediaKeySystem = mediaKeySystemService->getMediaKeySystem();
 
-    for (auto &pidSystemsSet : mediaKeySystemForPid_) {
-        if (pidSystemsSet.second.find(mediaKeySystemService) != pidSystemsSet.second.end()) {
-            mediaKeySystemService->CloseMediaKeySystemServiceByCallback();
-            pidSystemsSet.second.erase(mediaKeySystemService);
-            break;
+        for (auto &pidSystemsSet : mediaKeySystemForPid_) {
+            if (pidSystemsSet.second.find(mediaKeySystemService) != pidSystemsSet.second.end()) {
+                needClose = true;
+                pidSystemsSet.second.erase(mediaKeySystemService);
+                break;
+            }
+        }
+        std::string pluginName = mediaKeySystemService->GetPluginName();
+        if (currentMediaKeySystemNum_.find(pluginName) != currentMediaKeySystemNum_.end() &&
+            currentMediaKeySystemNum_[pluginName] > 0) {
+            currentMediaKeySystemNum_[pluginName]--;
         }
     }
-    std::string pluginName = mediaKeySystemService->GetPluginName();
-    if (currentMediaKeySystemNum_.find(pluginName) != currentMediaKeySystemNum_.end() &&
-        currentMediaKeySystemNum_[pluginName] > 0) {
-        currentMediaKeySystemNum_[pluginName]--;
+    if (needClose) {
+        mediaKeySystemService->CloseMediaKeySystemServiceByCallback();
     }
-    if (hdiMediaKeySystem != NULL) {
-        drmHostManager_->ReleaseMediaKeySystem(hdiMediaKeySystem);
+    if (hdiMediaKeySystem != nullptr && drmHostManagerSnap != nullptr) {
+        drmHostManagerSnap->ReleaseMediaKeySystem(hdiMediaKeySystem);
     }
     mediaKeySystemService = nullptr;
     return DRM_INNER_ERR_OK;

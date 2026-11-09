@@ -206,33 +206,47 @@ public:
     void SendEvent(const std::string &event, int32_t extra, const std::vector<uint8_t> &data) override
     {
         DRM_INFO_LOG("MediaKeySessionCallbackCapi SendEvent.");
-        std::lock_guard<std::mutex> lock(mutex_);
-        DRM_CHECK_AND_RETURN_LOG((callback_.eventCallback != nullptr) || (sessionCallback_.eventCallback != nullptr),
-            "hasn't register any callback of %{public}s event", event.c_str());
-        if (eventMap_.find(event) == eventMap_.end()) {
-            DRM_ERR_LOG("MediaKeySystemCallbackCapi SendEvent failed, not find this event type.");
-            return;
-        }
-
+        MediaKeySession_Callback callbackCopy = {};
+        OH_MediaKeySession_Callback sessionCallbackCopy = {};
+        MediaKeySession *sessionCopy = nullptr;
+        DRM_EventType eventType;
+        std::string extraStr;
         unsigned char *dataInfo = nullptr;
-        if (data.size() != 0) {
-            dataInfo = (unsigned char *)malloc(data.size());
-            DRM_CHECK_AND_RETURN_LOG(dataInfo != nullptr, "malloc faild!");
-            errno_t ret = memcpy_s(dataInfo, data.size(), data.data(), data.size());
-            if (ret != EOK) {
-                DRM_ERR_LOG("memcpy_s faild!");
-                free(dataInfo);
-                dataInfo = nullptr;
+
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            DRM_CHECK_AND_RETURN_LOG((callback_.eventCallback != nullptr) ||
+                (sessionCallback_.eventCallback != nullptr),
+                "hasn't register any callback of %{public}s event", event.c_str());
+            if (eventMap_.find(event) == eventMap_.end()) {
+                DRM_ERR_LOG("MediaKeySystemCallbackCapi SendEvent failed, not find this event type.");
                 return;
             }
+
+            if (data.size() != 0) {
+                dataInfo = (unsigned char *)malloc(data.size());
+                DRM_CHECK_AND_RETURN_LOG(dataInfo != nullptr, "malloc faild!");
+                errno_t ret = memcpy_s(dataInfo, data.size(), data.data(), data.size());
+                if (ret != EOK) {
+                    DRM_ERR_LOG("memcpy_s faild!");
+                    free(dataInfo);
+                    dataInfo = nullptr;
+                    return;
+                }
+            }
+
+            callbackCopy = callback_;
+            sessionCallbackCopy = sessionCallback_;
+            sessionCopy = session_;
+            eventType = eventMap_[event];
+            extraStr = std::to_string(extra);
         }
 
-        if (callback_.eventCallback != nullptr) {
-            callback_.eventCallback(eventMap_[event], dataInfo, data.size(), std::to_string(extra).data());
+        if (callbackCopy.eventCallback != nullptr) {
+            callbackCopy.eventCallback(eventType, dataInfo, data.size(), extraStr.data());
         }
-        if (sessionCallback_.eventCallback != nullptr) {
-            sessionCallback_.eventCallback(
-                session_, eventMap_[event], dataInfo, data.size(), std::to_string(extra).data());
+        if (sessionCallbackCopy.eventCallback != nullptr) {
+            sessionCallbackCopy.eventCallback(sessionCopy, eventType, dataInfo, data.size(), extraStr.data());
         }
 
         if (dataInfo != nullptr) {
@@ -245,10 +259,37 @@ public:
         bool hasNewGoodLicense) override
     {
         DRM_INFO_LOG("MediaKeySessionCallbackCapi SendEventKeyChanged.");
-        std::lock_guard<std::mutex> lock(mutex_);
-        DRM_CHECK_AND_RETURN_LOG((callback_.keyChangeCallback != nullptr) ||
-            (sessionCallback_.keyChangeCallback != nullptr), "hasn't register any callback of KeyChanged event!");
+        MediaKeySession_Callback callbackCopy = {};
+        OH_MediaKeySession_Callback sessionCallbackCopy = {};
+        MediaKeySession *sessionCopy = nullptr;
 
+        DRM_KeysInfo info;
+        if (!ConvertKeysInfo(info, statusTable)) {
+            return;
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            DRM_CHECK_AND_RETURN_LOG((callback_.keyChangeCallback != nullptr) ||
+                (sessionCallback_.keyChangeCallback != nullptr),
+                "hasn't register any callback of KeyChanged event!");
+            callbackCopy = callback_;
+            sessionCallbackCopy = sessionCallback_;
+            sessionCopy = session_;
+        }
+
+        if (callbackCopy.keyChangeCallback != nullptr) {
+            callbackCopy.keyChangeCallback(&info, hasNewGoodLicense);
+        }
+        if (sessionCallbackCopy.keyChangeCallback != nullptr) {
+            sessionCallbackCopy.keyChangeCallback(sessionCopy, &info, hasNewGoodLicense);
+        }
+    }
+
+private:
+    bool ConvertKeysInfo(DRM_KeysInfo &info,
+        const std::map<std::vector<uint8_t>, MediaKeySessionKeyStatus> &statusTable)
+    {
         static std::unordered_map<MediaKeySessionKeyStatus, std::string> KeyStatusStringMap {
             {MediaKeySessionKeyStatus::MEDIA_KEY_SESSION_KEY_STATUS_USABLE, "USABLE"},
             {MediaKeySessionKeyStatus::MEDIA_KEY_SESSION_KEY_STATUS_EXPIRED, "EXPIRED"},
@@ -259,36 +300,52 @@ public:
         };
 
         uint32_t tableCount = statusTable.size();
-        DRM_CHECK_AND_RETURN_LOG(tableCount <= MAX_KEY_INFO_COUNT, "DRM_KeysInfo has not enough space!");
-
-        DRM_KeysInfo info;
+        if (tableCount > MAX_KEY_INFO_COUNT) {
+            DRM_ERR_LOG("DRM_KeysInfo has not enough space!");
+            return false;
+        }
         info.keysInfoCount = tableCount;
         uint32_t index = 0;
         for (auto &item : statusTable) {
-            uint32_t keyIdSize = item.first.size();
-            DRM_CHECK_AND_RETURN_LOG(keyIdSize <= MAX_KEY_ID_LEN, "DRM_KeysInfo keyId has not enough space!");
-            errno_t ret = memset_s(info.keyId[index], MAX_KEY_ID_LEN, 0x00, MAX_KEY_ID_LEN);
-            DRM_CHECK_AND_RETURN_LOG(ret == EOK, "memset_s keyId failed!");
-            ret = memcpy_s(info.keyId[index], keyIdSize, item.first.data(), keyIdSize);
-            DRM_CHECK_AND_RETURN_LOG(ret == EOK, "memcpy_s keyId failed!");
-
-            std::string keyStatus = KeyStatusStringMap[item.second];
-            uint32_t statusSize = keyStatus.size();
-            DRM_CHECK_AND_RETURN_LOG(statusSize <= MAX_KEY_STATUS_VALUE_LEN,
-                "DRM_KeysInfo statusValue has not enough space!");
-            ret = memset_s(info.statusValue[index], MAX_KEY_STATUS_VALUE_LEN, 0x00, MAX_KEY_STATUS_VALUE_LEN);
-            DRM_CHECK_AND_RETURN_LOG(ret == EOK, "memset_s statusValue failed!");
-            ret = memcpy_s(info.statusValue[index], statusSize, keyStatus.data(), statusSize);
-            DRM_CHECK_AND_RETURN_LOG(ret == EOK, "memcpy_s statusValue failed!");
-
+            if (!ConvertOneKey(info, index, item.first, KeyStatusStringMap[item.second])) {
+                return false;
+            }
             index++;
         }
-        if (callback_.keyChangeCallback != nullptr) {
-            callback_.keyChangeCallback(&info, hasNewGoodLicense);
+        return true;
+    }
+
+    bool ConvertOneKey(DRM_KeysInfo &info, uint32_t index, const std::vector<uint8_t> &keyId,
+        const std::string &keyStatus)
+    {
+        uint32_t keyIdSize = keyId.size();
+        if (keyIdSize > MAX_KEY_ID_LEN) {
+            DRM_ERR_LOG("DRM_KeysInfo keyId has not enough space!");
+            return false;
         }
-        if (sessionCallback_.keyChangeCallback != nullptr) {
-            sessionCallback_.keyChangeCallback(session_, &info, hasNewGoodLicense);
+        if (memset_s(info.keyId[index], MAX_KEY_ID_LEN, 0x00, MAX_KEY_ID_LEN) != EOK) {
+            DRM_ERR_LOG("memset_s keyId failed!");
+            return false;
         }
+        if (memcpy_s(info.keyId[index], keyIdSize, keyId.data(), keyIdSize) != EOK) {
+            DRM_ERR_LOG("memcpy_s keyId failed!");
+            return false;
+        }
+
+        uint32_t statusSize = keyStatus.size();
+        if (statusSize > MAX_KEY_STATUS_VALUE_LEN) {
+            DRM_ERR_LOG("DRM_KeysInfo statusValue has not enough space!");
+            return false;
+        }
+        if (memset_s(info.statusValue[index], MAX_KEY_STATUS_VALUE_LEN, 0x00, MAX_KEY_STATUS_VALUE_LEN) != EOK) {
+            DRM_ERR_LOG("memset_s statusValue failed!");
+            return false;
+        }
+        if (memcpy_s(info.statusValue[index], statusSize, keyStatus.data(), statusSize) != EOK) {
+            DRM_ERR_LOG("memcpy_s statusValue failed!");
+            return false;
+        }
+        return true;
     }
 
 private:
