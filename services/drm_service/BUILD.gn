@@ -48,6 +48,7 @@ ohos_shared_library("drm_service") {
     "ability_base:zuri",
     "ability_runtime:abilitykit_native",
     "ability_runtime:napi_base_context",
+    "bounds_checking_function:libsec_shared",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
