@@ -73,6 +73,7 @@ ohos_unittest("drm_framework_capi_unittest_v1_0") {
 
   external_deps = [
     "ability_base:zuri",
+    "bounds_checking_function:libsec_shared",
     "c_utils:utils",
     "curl:curl_shared",
     "data_share:datashare_consumer",

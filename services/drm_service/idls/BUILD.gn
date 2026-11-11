@@ -132,6 +132,7 @@ ohos_source_set("idl_sa_stub") {
   }
 
   external_deps = [
+    "bounds_checking_function:libsec_shared",
     "c_utils:utils",
     "hilog:libhilog",
     "hitrace:hitrace_meter",

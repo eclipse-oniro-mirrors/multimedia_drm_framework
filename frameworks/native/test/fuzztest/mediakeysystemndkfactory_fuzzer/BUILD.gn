@@ -66,6 +66,7 @@ ohos_fuzztest("mediakeysystemndkfactoryFuzzTest") {
   ]
 
   external_deps = [
+    "bounds_checking_function:libsec_shared",
     "c_utils:utils",
     "curl:curl_shared",
     "hilog:libhilog",
