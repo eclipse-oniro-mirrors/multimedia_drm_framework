@@ -56,11 +56,14 @@ MediaKeySystemImpl::~MediaKeySystemImpl()
     OHOS::DrmStandard::DrmTrace trace("MediaKeySystemImplDestructor");
     DRM_INFO_LOG("MediaKeySystemImplDestructor enter.");
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " Instances destroy", FAKE_POINTER(this));
-    if (mediaKeySystemImpl_) {
-        mediaKeySystemImpl_ = nullptr;
-    }
-    if (mediaKeySystemCallbackTaihe_) {
-        mediaKeySystemCallbackTaihe_ = nullptr;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (mediaKeySystemImpl_) {
+            mediaKeySystemImpl_ = nullptr;
+        }
+        if (mediaKeySystemCallbackTaihe_) {
+            mediaKeySystemCallbackTaihe_ = nullptr;
+        }
     }
 }
 
@@ -69,8 +72,13 @@ string MediaKeySystemImpl::GetConfigurationString(string_view configName)
     DRM_INFO_LOG("GetConfiguration enter");
     std::string value;
     std::string name = std::string(configName);
-    if (mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemImpl_->GetConfigurationString(name, value);
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> implSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        implSnap = mediaKeySystemImpl_;
+    }
+    if (implSnap != nullptr) {
+        int32_t ret = implSnap->GetConfigurationString(name, value);
         if (ret != OHOS::DrmStandard::DRM_INNER_ERR_OK) {
             DRM_ERR_LOG("GetConfigurationString failed!");
             set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -95,8 +103,13 @@ void MediaKeySystemImpl::SetConfigurationString(string_view configName, string_v
         return;
     }
     std::string taiheValue = std::string(value);
-    if (mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemImpl_->SetConfigurationString(name, taiheValue);
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> implSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        implSnap = mediaKeySystemImpl_;
+    }
+    if (implSnap != nullptr) {
+        int32_t ret = implSnap->SetConfigurationString(name, taiheValue);
         if (ret != OHOS::DrmStandard::DRM_INNER_ERR_OK) {
             DRM_ERR_LOG("SetConfigurationString failed!");
             set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -114,8 +127,13 @@ array<uint8_t> MediaKeySystemImpl::GetConfigurationByteArray(string_view configN
     std::string name = std::string(configName);
     std::vector<uint8_t> value;
     std::vector<uint8_t> emptyVector;
-    if (mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemImpl_->GetConfigurationByteArray(name, value);
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> implSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        implSnap = mediaKeySystemImpl_;
+    }
+    if (implSnap != nullptr) {
+        int32_t ret = implSnap->GetConfigurationByteArray(name, value);
         if (ret != OHOS::DrmStandard::DRM_INNER_ERR_OK) {
             DRM_ERR_LOG("GetConfigurationByteArray failed!");
             set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -141,8 +159,13 @@ void MediaKeySystemImpl::SetConfigurationByteArray(string_view configName, array
         return;
     }
     std::vector<uint8_t> taiheValue(value.begin(), value.end());
-    if (mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemImpl_->SetConfigurationByteArray(name, taiheValue);
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> implSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        implSnap = mediaKeySystemImpl_;
+    }
+    if (implSnap != nullptr) {
+        int32_t ret = implSnap->SetConfigurationByteArray(name, taiheValue);
         if (ret != OHOS::DrmStandard::DRM_INNER_ERR_OK) {
             DRM_ERR_LOG("SetConfigurationByteArray failed!");
             set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -181,8 +204,13 @@ array<StatisticKeyValue> MediaKeySystemImpl::GetStatistics()
 {
     DRM_INFO_LOG("GetStatistics enter.");
     std::vector<OHOS::DrmStandard::MetircKeyValue> metrics;
-    if (mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemImpl_->GetStatistics(metrics);
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> implSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        implSnap = mediaKeySystemImpl_;
+    }
+    if (implSnap != nullptr) {
+        int32_t ret = implSnap->GetStatistics(metrics);
         if (ret != OHOS::DrmStandard::DRM_INNER_ERR_OK) {
             DRM_ERR_LOG("GetStatistics failed!");
             set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -204,8 +232,13 @@ ContentProtectionLevel MediaKeySystemImpl::GetMaxContentProtectionLevel()
         OHOS::DrmStandard::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN;
     ContentProtectionLevel::key_t contentProtectionLevel;
     DrmTaiheUtils::GetEnumKeyByValue<ContentProtectionLevel>(static_cast<int32_t>(level), contentProtectionLevel);
-    if (mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemImpl_->GetMaxContentProtectionLevel(&level);
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> implSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        implSnap = mediaKeySystemImpl_;
+    }
+    if (implSnap != nullptr) {
+        int32_t ret = implSnap->GetMaxContentProtectionLevel(&level);
         if (ret != OHOS::DrmStandard::DRM_INNER_ERR_OK) {
             DRM_ERR_LOG("GetMaxContentProtectionLevel failed!");
             set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -238,8 +271,13 @@ ProvisionRequest MediaKeySystemImpl::GenerateKeySystemRequestSync()
 {
     DRM_INFO_LOG("GenerateKeySystemRequest enter");
     OHOS::DrmStandard::DrmTrace trace("MediaKeySystemTaihe::GenerateKeySystemRequest");
-    if (mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemImpl_->GenerateKeySystemRequest(
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> implSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        implSnap = mediaKeySystemImpl_;
+    }
+    if (implSnap != nullptr) {
+        int32_t ret = implSnap->GenerateKeySystemRequest(
             provisionRequest.data, provisionRequest.defaultURL);
         if (ret != OHOS::DrmStandard::DRM_INNER_ERR_OK) {
             DRM_ERR_LOG("GenerateKeySystemRequestSync failed!");
@@ -268,8 +306,13 @@ void MediaKeySystemImpl::ProcessKeySystemResponseSync(array_view<uint8_t> respon
     OHOS::DrmStandard::DrmTrace trace("MediaKeySystemTaihe::ProcessKeySystemResponse");
     std::vector<uint8_t> taiheValue(response.begin(), response.end());
     OHOS::DrmStandard::ConfigParser::WriteEndEvent(0, 0, std::string("processKeySystemResponse"), beginTime);
-    if (mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemImpl_->ProcessKeySystemResponse(taiheValue);
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> implSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        implSnap = mediaKeySystemImpl_;
+    }
+    if (implSnap != nullptr) {
+        int32_t ret = implSnap->ProcessKeySystemResponse(taiheValue);
         if (ret != OHOS::DrmStandard::DRM_INNER_ERR_OK) {
             DRM_ERR_LOG("ProcessKeySystemResponseSync failed!");
             set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -290,8 +333,13 @@ CertificateStatus MediaKeySystemImpl::GetCertificateStatus()
         OHOS::DrmStandard::CertificateStatus::CERT_STATUS_UNAVAILABLE;
     CertificateStatus::key_t certStatusInfo;
     DrmTaiheUtils::GetEnumKeyByValue<CertificateStatus>(static_cast<int32_t>(certStatus), certStatusInfo);
-    if (mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemImpl_->GetCertificateStatus(&certStatus);
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> implSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        implSnap = mediaKeySystemImpl_;
+    }
+    if (implSnap != nullptr) {
+        int32_t ret = implSnap->GetCertificateStatus(&certStatus);
         if (ret != OHOS::DrmStandard::DRM_INNER_ERR_OK) {
             DRM_ERR_LOG("GetCertificateStatus failed!");
             set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -334,8 +382,13 @@ optional<MediaKeySession> MediaKeySystemImpl::CreateMediaKeySessionWithLevel(Con
         DRM_ERR_LOG("securityLevel is error!");
         return res;
     }
-    if (mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemImpl_->CreateMediaKeySession(
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> implSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        implSnap = mediaKeySystemImpl_;
+    }
+    if (implSnap != nullptr) {
+        int32_t ret = implSnap->CreateMediaKeySession(
             (OHOS::DrmStandard::ContentProtectionLevel)securityLevel, &keySessionImpl);
         if (ret != OHOS::DrmStandard::DRM_INNER_ERR_OK) {
             set_business_error(DrmInnerErrToTaiheErrAPI12(static_cast<OHOS::DrmStandard::DrmInnerErrCode>(ret)),
@@ -359,8 +412,13 @@ optional<MediaKeySession> MediaKeySystemImpl::CreateMediaKeySession()
     OHOS::DrmStandard::ContentProtectionLevel securityLevel =
         OHOS::DrmStandard::ContentProtectionLevel::CONTENT_PROTECTION_LEVEL_UNKNOWN;
     OHOS::sptr<OHOS::DrmStandard::MediaKeySessionImpl> keySessionImpl = nullptr;
-    if (mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemImpl_->CreateMediaKeySession(
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> implSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        implSnap = mediaKeySystemImpl_;
+    }
+    if (implSnap != nullptr) {
+        int32_t ret = implSnap->CreateMediaKeySession(
             (OHOS::DrmStandard::ContentProtectionLevel)securityLevel, &keySessionImpl);
         if (ret != OHOS::DrmStandard::DRM_INNER_ERR_OK) {
             set_business_error(DrmInnerErrToTaiheErrAPI12(static_cast<OHOS::DrmStandard::DrmInnerErrCode>(ret)),
@@ -395,8 +453,13 @@ array<array<uint8_t>> MediaKeySystemImpl::GetOfflineMediaKeyIds()
 {
     DRM_INFO_LOG("GetOfflineMediaKeyIds enter.");
     std::vector<std::vector<uint8_t>> licenseIds;
-    if (mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemImpl_->GetOfflineMediaKeyIds(licenseIds);
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> implSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        implSnap = mediaKeySystemImpl_;
+    }
+    if (implSnap != nullptr) {
+        int32_t ret = implSnap->GetOfflineMediaKeyIds(licenseIds);
         if (ret != OHOS::DrmStandard::DRM_INNER_ERR_OK) {
             DRM_ERR_LOG("napi GetOfflineMediaKeyIds failed!");
             set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -426,8 +489,13 @@ OfflineMediaKeyStatus MediaKeySystemImpl::GetOfflineMediaKeyStatus(array_view<ui
         return OfflineMediaKeyStatus(offlineMediaKeyStatusValue);
     }
     std::vector<uint8_t> licenseIdVec(mediaKeyId.begin(), mediaKeyId.end());
-    if (mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemImpl_->GetOfflineMediaKeyStatus(licenseIdVec, offlineMediaKeyStatus);
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> implSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        implSnap = mediaKeySystemImpl_;
+    }
+    if (implSnap != nullptr) {
+        int32_t ret = implSnap->GetOfflineMediaKeyStatus(licenseIdVec, offlineMediaKeyStatus);
         if (ret != OHOS::DrmStandard::DRM_INNER_ERR_OK) {
             DRM_ERR_LOG("GetOfflineMediaKeyStatus failed!");
             set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -454,8 +522,13 @@ void MediaKeySystemImpl::ClearOfflineMediaKeys(array_view<uint8_t> mediaKeyId)
         return;
     }
     std::vector<uint8_t> licenseIdVec(mediaKeyId.begin(), mediaKeyId.end());
-    if (mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemImpl_->ClearOfflineMediaKeys(licenseIdVec);
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> implSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        implSnap = mediaKeySystemImpl_;
+    }
+    if (implSnap != nullptr) {
+        int32_t ret = implSnap->ClearOfflineMediaKeys(licenseIdVec);
         if (ret != OHOS::DrmStandard::DRM_INNER_ERR_OK) {
             DRM_ERR_LOG("ClearOfflineMediaKeys failed!");
             set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -473,8 +546,13 @@ void MediaKeySystemImpl::Destroy()
     DRM_INFO_LOG("Release enter.");
     int32_t currentPid = OHOS::IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("GetCallingPID: %{public}d", currentPid);
-    if (mediaKeySystemImpl_ != nullptr) {
-        int32_t ret = mediaKeySystemImpl_->Release();
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySystemImpl> implSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        implSnap = mediaKeySystemImpl_;
+    }
+    if (implSnap != nullptr) {
+        int32_t ret = implSnap->Release();
         if (ret != OHOS::DrmStandard::DRM_INNER_ERR_OK) {
             DRM_ERR_LOG("Destroy failed!");
             set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL, "Destroy failed, service error.");
@@ -519,6 +597,7 @@ void MediaKeySystemImpl::OffKeySystemRequired(optional_view<callback<void(
 void MediaKeySystemImpl::ClearEventCallbackReferrence(const std::string eventType)
 {
     DRM_INFO_LOG("ClearEventCallbackReference");
+    std::lock_guard<std::mutex> lock(mutex_);
     if (mediaKeySystemCallbackTaihe_ != nullptr) {
         mediaKeySystemCallbackTaihe_->ClearCallbackReference(eventType);
     } else {

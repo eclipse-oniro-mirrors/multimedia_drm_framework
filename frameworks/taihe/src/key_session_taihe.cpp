@@ -41,11 +41,14 @@ MediaKeySessionImpl::~MediaKeySessionImpl()
     OHOS::DrmStandard::DrmTrace trace("MediaKeySessionImplDestructor");
     DRM_INFO_LOG("MediaKeySessionImplDestructor enter.");
     DRM_DEBUG_LOG("0x%{public}06" PRIXPTR " Instances destroy", FAKE_POINTER(this));
-    if (keySessionImpl_) {
-        keySessionImpl_ = nullptr;
-    }
-    if (keySessionCallbackTaihe_) {
-        keySessionCallbackTaihe_ = nullptr;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        if (keySessionImpl_) {
+            keySessionImpl_ = nullptr;
+        }
+        if (keySessionCallbackTaihe_) {
+            keySessionCallbackTaihe_ = nullptr;
+        }
     }
 }
 
@@ -70,13 +73,21 @@ MediaKeyRequest MediaKeySessionImpl::getEmptyMediaKeyRequest()
     return emptyReq;
 }
 
-bool MediaKeySessionImpl::CheckMediaKeySessionStatus(MediaKeySessionImpl *keySessionTaihe)
+bool MediaKeySessionImpl::CheckMediaKeySessionStatus(MediaKeySessionImpl *keySessionTaihe,
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySessionImpl> &snapshot)
 {
-    if (keySessionTaihe == nullptr || keySessionTaihe->keySessionImpl_ == nullptr) {
+    if (keySessionTaihe == nullptr) {
         DRM_ERR_LOG("MediaKeySession state is error.");
         set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL, "keySessionImpl_ is null");
         return false;
     }
+    std::lock_guard<std::mutex> lock(keySessionTaihe->mutex_);
+    if (keySessionTaihe->keySessionImpl_ == nullptr) {
+        DRM_ERR_LOG("MediaKeySession state is error.");
+        set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL, "keySessionImpl_ is null");
+        return false;
+    }
+    snapshot = keySessionTaihe->keySessionImpl_;
     return true;
 }
 
@@ -87,6 +98,7 @@ MediaKeyRequest MediaKeySessionImpl::GenerateMediaKeyRequestSync(string_view mim
     DRM_INFO_LOG("GenerateMediaKeyRequest enter");
     OHOS::DrmStandard::DrmTrace trace("MediaKeySessionImpl::GenerateMediaKeyRequestSync");
 
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySessionImpl> keySessionSnap;
     OHOS::DrmStandard::MediaKeyRequestInfo mediaKeyRequestInfo;
     OHOS::DrmStandard::MediaKeyRequest mediaKeyRequest;
     mediaKeyRequestInfo.mimeType = std::string(mimeType);
@@ -99,10 +111,10 @@ MediaKeyRequest MediaKeySessionImpl::GenerateMediaKeyRequestSync(string_view mim
             mediaKeyRequestInfo.optionalData.insert(std::make_pair(std::string(opt.name), std::string(opt.value)));
         }
     }
-    if (!CheckMediaKeySessionStatus(this)) {
+    if (!CheckMediaKeySessionStatus(this, keySessionSnap)) {
         return getEmptyMediaKeyRequest();
     }
-    int intValue = keySessionImpl_->GenerateMediaKeyRequest(mediaKeyRequestInfo, mediaKeyRequest);
+    int intValue = keySessionSnap->GenerateMediaKeyRequest(mediaKeyRequestInfo, mediaKeyRequest);
     if (intValue != OHOS::DrmStandard::DRM_TAIHE_ERR_OK) {
         set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
             "service error.");
@@ -132,12 +144,13 @@ array<uint8_t> MediaKeySessionImpl::ProcessMediaKeyResponseSync(array_view<uint8
 
     std::vector<uint8_t> licenseId;
     std::vector<uint8_t> resPonse(response.begin(), response.end());
-    if (!CheckMediaKeySessionStatus(this)) {
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySessionImpl> keySessionSnap;
+    if (!CheckMediaKeySessionStatus(this, keySessionSnap)) {
         std::vector<uint8_t> emptyData;
         array<uint8_t> emptyArray(emptyData);
         return emptyArray;
     }
-    int32_t intValue = keySessionImpl_->ProcessMediaKeyResponse(licenseId, resPonse);
+    int32_t intValue = keySessionSnap->ProcessMediaKeyResponse(licenseId, resPonse);
     OHOS::DrmStandard::ConfigParser::WriteEndEvent(0, 0, std::string("ProcessMediaKeyResponse"), beginTime);
     if (intValue != OHOS::DrmStandard::DRM_TAIHE_ERR_OK) {
         set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -161,8 +174,13 @@ array<MediaKeyStatus> MediaKeySessionImpl::CheckMediaKeyStatus()
     DRM_INFO_LOG("CheckMediaKeyStatus enter");
     std::map<std::string, std::string> licenseStatus;
 
-    if (keySessionImpl_ != nullptr) {
-        int32_t ret = keySessionImpl_->CheckMediaKeyStatus(licenseStatus);
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySessionImpl> keySessionSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        keySessionSnap = keySessionImpl_;
+    }
+    if (keySessionSnap != nullptr) {
+        int32_t ret = keySessionSnap->CheckMediaKeyStatus(licenseStatus);
         if (ret != OHOS::DrmStandard::DRM_TAIHE_ERR_OK) {
             DRM_ERR_LOG("CheckMediaKeyStatus failed!");
             set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -190,8 +208,13 @@ void MediaKeySessionImpl::ClearMediaKeys()
     DRM_INFO_LOG("ClearMediaKeys enter.");
     int32_t currentPid = OHOS::IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySessiontaihe GetCallingPID: %{public}d", currentPid);
-    if (keySessionImpl_ != nullptr) {
-        int32_t ret = keySessionImpl_->ClearMediaKeys();
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySessionImpl> keySessionSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        keySessionSnap = keySessionImpl_;
+    }
+    if (keySessionSnap != nullptr) {
+        int32_t ret = keySessionSnap->ClearMediaKeys();
         if (ret != OHOS::DrmStandard::DRM_TAIHE_ERR_OK) {
             DRM_ERR_LOG("ClearMediaKeys call Failed!");
             set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -216,12 +239,13 @@ array<uint8_t> MediaKeySessionImpl::getEmptyArray()
 array<uint8_t> MediaKeySessionImpl::GenerateOfflineReleaseRequestSync(array_view<uint8_t> mediaKeyId)
 {
     DRM_INFO_LOG("GenerateOfflineReleaseRequest enter");
-    if (!CheckMediaKeySessionStatus(this)) {
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySessionImpl> keySessionSnap;
+    if (!CheckMediaKeySessionStatus(this, keySessionSnap)) {
         return getEmptyArray();
     }
     std::vector<uint8_t> releaseRequest;
     std::vector<uint8_t> releaseResponseLicenseId(mediaKeyId.begin(), mediaKeyId.end());
-    int32_t intValue = keySessionImpl_->GenerateOfflineReleaseRequest(releaseResponseLicenseId,
+    int32_t intValue = keySessionSnap->GenerateOfflineReleaseRequest(releaseResponseLicenseId,
         releaseRequest);
     if (intValue != OHOS::DrmStandard::DRM_TAIHE_ERR_OK) {
         set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -237,10 +261,11 @@ void MediaKeySessionImpl::ProcessOfflineReleaseResponseSync(array_view<uint8_t> 
     DRM_INFO_LOG("ProcessOfflineReleaseResponse enter.");
     std::vector<uint8_t> releaseResponseLicenseId(mediaKeyId.begin(), mediaKeyId.end());
     std::vector<uint8_t> releaseResponse(response.begin(), response.end());
-    if (!CheckMediaKeySessionStatus(this)) {
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySessionImpl> keySessionSnap;
+    if (!CheckMediaKeySessionStatus(this, keySessionSnap)) {
         return;
     }
-    int32_t intValue = keySessionImpl_->ProcessOfflineReleaseResponse(releaseResponseLicenseId,
+    int32_t intValue = keySessionSnap->ProcessOfflineReleaseResponse(releaseResponseLicenseId,
         releaseResponse);
     if (intValue != OHOS::DrmStandard::DRM_TAIHE_ERR_OK) {
         set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -256,10 +281,11 @@ void MediaKeySessionImpl::RestoreOfflineMediaKeysSync(array_view<uint8_t> mediaK
         std::chrono::system_clock::now().time_since_epoch()).count();
     int32_t intValue;
     std::vector<uint8_t> restoreLicenseId(mediaKeyId.begin(), mediaKeyId.end());
-    if (!CheckMediaKeySessionStatus(this)) {
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySessionImpl> keySessionSnap;
+    if (!CheckMediaKeySessionStatus(this, keySessionSnap)) {
         return;
     }
-    intValue = keySessionImpl_->RestoreOfflineMediaKeys(restoreLicenseId);
+    intValue = keySessionSnap->RestoreOfflineMediaKeys(restoreLicenseId);
     OHOS::DrmStandard::ConfigParser::WriteEndEvent(0, 0, std::string("restoreOfflineMediaKeys"), beginTime);
     if (intValue != OHOS::DrmStandard::DRM_TAIHE_ERR_OK) {
         set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -276,8 +302,13 @@ ContentProtectionLevel MediaKeySessionImpl::GetContentProtectionLevel()
     (OHOS::DrmStandard::ContentProtectionLevel)0;
     ContentProtectionLevel::key_t levelKey;
     DrmTaiheUtils::GetEnumKeyByValue<ContentProtectionLevel>(static_cast<int32_t>(level), levelKey);
-    if (keySessionImpl_ != nullptr) {
-        int32_t ret = keySessionImpl_->GetContentProtectionLevel(&level);
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySessionImpl> keySessionSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        keySessionSnap = keySessionImpl_;
+    }
+    if (keySessionSnap != nullptr) {
+        int32_t ret = keySessionSnap->GetContentProtectionLevel(&level);
         if (ret != OHOS::DrmStandard::DRM_TAIHE_ERR_OK) {
             DRM_ERR_LOG("GetContentProtectionLevel call Failed!");
             set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -300,12 +331,17 @@ bool MediaKeySessionImpl::RequireSecureDecoderModule(string_view mimeType)
     DRM_INFO_LOG("RequireSecureDecoderModule enter.");
     std::string mimeTypeStr(mimeType.data(), mimeType.size());
     bool statusValue = false;
-    if (keySessionImpl_ == nullptr) {
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySessionImpl> keySessionSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        keySessionSnap = keySessionImpl_;
+    }
+    if (keySessionSnap == nullptr) {
         DRM_ERR_LOG("taihe call failed!");
         set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_UNKNOWN, "taihe call failed");
         return false;
     }
-    int32_t ret = keySessionImpl_->RequireSecureDecoderModule(mimeTypeStr, &statusValue);
+    int32_t ret = keySessionSnap->RequireSecureDecoderModule(mimeTypeStr, &statusValue);
     if (ret != OHOS::DrmStandard::DRM_TAIHE_ERR_OK) {
         DRM_ERR_LOG("keySessionImpl_ RequireSecureDecoderModule call Failed!");
         set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -323,8 +359,13 @@ void MediaKeySessionImpl::Destroy()
     int32_t currentPid = OHOS::IPCSkeleton::GetCallingPid();
     DRM_DEBUG_LOG("MediaKeySessionNapi GetCallingPID: %{public}d", currentPid);
 
-    if (keySessionImpl_ != nullptr) {
-        int32_t ret = keySessionImpl_->Release();
+    OHOS::sptr<OHOS::DrmStandard::MediaKeySessionImpl> keySessionSnap;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        keySessionSnap = keySessionImpl_;
+    }
+    if (keySessionSnap != nullptr) {
+        int32_t ret = keySessionSnap->Release();
         if (ret != OHOS::DrmStandard::DRM_TAIHE_ERR_OK) {
             DRM_ERR_LOG("keySessionImpl_ Release call Failed!");
             set_business_error(OHOS::DrmStandard::DRM_TAIHE_ERR_SERVICE_FATAL,
@@ -476,6 +517,7 @@ void MediaKeySessionImpl::SetEventCallbackReference(const std::string eventType,
 void MediaKeySessionImpl::ClearEventCallbackReference(const std::string eventType)
 {
     DRM_INFO_LOG("ClearEventCallbackReference");
+    std::lock_guard<std::mutex> lock(mutex_);
     if (keySessionCallbackTaihe_ != nullptr) {
         keySessionCallbackTaihe_->ClearCallbackReference(eventType);
     } else {

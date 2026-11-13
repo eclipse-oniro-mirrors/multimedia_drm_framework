@@ -834,11 +834,13 @@ bool DrmHostManager::GetIsNetWork()
 
 void DrmHostManager::SetBundleName(const std::string &bundleName)
 {
+    std::lock_guard<std::recursive_mutex> lock(drmHostMapMutex);
     this->bundleName_ = bundleName;
 }
 
 std::string DrmHostManager::GetBundleName()
 {
+    std::lock_guard<std::recursive_mutex> lock(drmHostMapMutex);
     return this->bundleName_;
 }
 }  // namespace DrmStandard

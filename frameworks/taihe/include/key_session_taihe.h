@@ -76,7 +76,8 @@ public:
 
     void SetEventCallbackReference(const std::string eventType, std::shared_ptr<AutoRef> callbackPair);
     void ClearEventCallbackReference(const std::string eventType);
-    bool CheckMediaKeySessionStatus(MediaKeySessionImpl *keySessionTaihe);
+    bool CheckMediaKeySessionStatus(MediaKeySessionImpl *keySessionTaihe,
+        OHOS::sptr<OHOS::DrmStandard::MediaKeySessionImpl> &snapshot);
     MediaKeyRequest getEmptyMediaKeyRequest();
     array<MediaKeyStatus> getEmptyMediaKeyStatusArray();
     array<uint8_t> getEmptyArray();

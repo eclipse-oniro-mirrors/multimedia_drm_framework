@@ -440,9 +440,14 @@ int32_t MediaKeySystemService::SendEvent(OHOS::HDI::Drm::V1_0::EventType eventTy
 {
     DRM_INFO_LOG("SendEvent enter.");
     DrmEventType event = static_cast<DrmEventType>(eventType);
+    sptr<IMediaKeySystemServiceCallback> callbackCopy;
+    {
+        std::lock_guard<std::recursive_mutex> lock(mutex_);
+        callbackCopy = callback_;
+    }
     DRM_CHECK_AND_RETURN_RET_LOG(
-        callback_ != nullptr, DRM_INNER_ERR_OPERATION_NOT_PERMITTED, "SendEvent failed because callback is nullptr");
-    return callback_->SendEvent(event, extra, data);
+        callbackCopy != nullptr, DRM_INNER_ERR_OPERATION_NOT_PERMITTED, "SendEvent failed because callback is nullptr");
+    return callbackCopy->SendEvent(event, extra, data);
 }
 
 std::string MediaKeySystemService::GetPluginName()

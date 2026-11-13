@@ -319,6 +319,8 @@ Drm_ErrCode OH_MediaKeySession_SetMediaKeySessionCallback(MediaKeySession *media
     MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySessoin);
     DRM_CHECK_AND_RETURN_RET_LOG(sessionObject->sessionImpl_ != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_SetMediaKeySessionCallback inner sessionImpl is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(sessionObject->sessionCallback_ != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySession_SetMediaKeySessionCallback inner sessionCallback is nullptr!");
     sessionObject->sessionCallback_->SetCallbackReference(*callback);
     return DRM_ERR_OK;
 }
@@ -332,6 +334,8 @@ Drm_ErrCode OH_MediaKeySession_SetCallback(MediaKeySession *mediaKeySessoin,
     MediaKeySessionObject *sessionObject = reinterpret_cast<MediaKeySessionObject *>(mediaKeySessoin);
     DRM_CHECK_AND_RETURN_RET_LOG(sessionObject->sessionImpl_ != nullptr, DRM_ERR_INVALID_VAL,
         "OH_MediaKeySession_SetCallback inner sessionImpl is nullptr!");
+    DRM_CHECK_AND_RETURN_RET_LOG(sessionObject->sessionCallback_ != nullptr, DRM_ERR_INVALID_VAL,
+        "OH_MediaKeySession_SetCallback inner sessionCallback is nullptr!");
     sessionObject->sessionCallback_->SetCallbackReference(mediaKeySessoin, *callback);
     return DRM_ERR_OK;
 }

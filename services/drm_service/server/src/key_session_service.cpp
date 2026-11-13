@@ -303,9 +303,14 @@ int32_t MediaKeySessionService::SendEvent(OHOS::HDI::Drm::V1_0::EventType eventT
 {
     DRM_INFO_LOG("SendEvent.");
     DrmEventType event = static_cast<DrmEventType>(eventType);
+    sptr<IMediaKeySessionServiceCallback> callbackCopy;
+    {
+        std::lock_guard<std::recursive_mutex> lock(sessionMutex_);
+        callbackCopy = callback_;
+    }
     DRM_CHECK_AND_RETURN_RET_LOG(
-        callback_ != nullptr, DRM_INNER_ERR_OPERATION_NOT_PERMITTED, "SendEvent callback not set");
-    return callback_->SendEvent(event, extra, data);
+        callbackCopy != nullptr, DRM_INNER_ERR_OPERATION_NOT_PERMITTED, "SendEvent callback not set");
+    return callbackCopy->SendEvent(event, extra, data);
 }
 
 int32_t MediaKeySessionService::SendEventKeyChange(
@@ -317,9 +322,14 @@ int32_t MediaKeySessionService::SendEventKeyChange(
     for (auto item : keyStatus) {
         keyStatusMap.insert({ item.first, static_cast<MediaKeySessionKeyStatus>(item.second) });
     }
+    sptr<IMediaKeySessionServiceCallback> callbackCopy;
+    {
+        std::lock_guard<std::recursive_mutex> lock(sessionMutex_);
+        callbackCopy = callback_;
+    }
     DRM_CHECK_AND_RETURN_RET_LOG(
-        callback_ != nullptr, DRM_INNER_ERR_OPERATION_NOT_PERMITTED, "SendEventKeyChange callback not set");
-    return callback_->SendEventKeyChanged(keyStatusMap, hasNewGoodLicense);
+        callbackCopy != nullptr, DRM_INNER_ERR_OPERATION_NOT_PERMITTED, "SendEventKeyChange callback not set");
+    return callbackCopy->SendEventKeyChanged(keyStatusMap, hasNewGoodLicense);
 }
 
 std::string MediaKeySessionService::GetDecryptModuleDumpInfo()
