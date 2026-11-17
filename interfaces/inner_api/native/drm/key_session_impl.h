@@ -20,6 +20,7 @@
 #include <cstring>
 #include <map>
 #include <unordered_map>
+#include <atomic>
 #include "nocopyable.h"
 #include "ipc_skeleton.h"
 #include "imedia_key_session_service.h"
@@ -123,7 +124,7 @@ private:
     std::recursive_mutex mutex_;
     MediaKeySessionImpl *keySessionImpl_;
     std::unordered_map<int32_t, std::string> eventMap_;
-    bool serviceThreadRunning = false;
+    std::atomic<bool> serviceThreadRunning{false};
     void ProcessEventMessage();
     std::thread eventQueueThread;
     std::queue<KeySessionEventMessage> eventQueue;

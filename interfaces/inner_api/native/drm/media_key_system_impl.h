@@ -18,6 +18,7 @@
 
 #include <thread>
 #include <queue>
+#include <atomic>
 #include "ipc_skeleton.h"
 #include "nocopyable.h"
 #include "drm_log.h"
@@ -106,7 +107,7 @@ private:
     std::recursive_mutex mutex_;
     MediaKeySystemImpl *systemImpl_;
     std::unordered_map<int32_t, std::string> eventMap_;
-    bool serviceThreadRunning = false;
+    std::atomic<bool> serviceThreadRunning{false};
     void ProcessEventMessage();
     std::thread eventQueueThread;
     std::queue<MediaKeySystemEventMessage> eventQueue;
