@@ -45,8 +45,6 @@ private:
     const sptr<IMediaKeySystemFactoryService> GetServiceProxy();
     std::mutex serviceProxyMutex_;
     sptr<OHOS::DrmStandard::IMediaKeySystemFactoryService> privateServiceProxy_;
-    std::mutex mutex_;
-    static sptr<MediaKeySystemFactoryImpl> mediaKeySystemFactoryImpl_;
     sptr<DrmDeathRecipient> deathRecipient_ = nullptr;
     sptr<DrmListenerStub> listenerStub_ = nullptr;
     HiviewDFX::HiTraceId traceId_;

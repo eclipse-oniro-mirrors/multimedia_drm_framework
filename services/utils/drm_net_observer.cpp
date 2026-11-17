@@ -112,26 +112,30 @@ int32_t DrmNetObserver::NetCapabilitiesChange(sptr<NetHandle>& netHandle,
 
 int32_t DrmNetObserver::HandleNetAllCap(const NetAllCapabilities& netAllCap)
 {
-    std::lock_guard<std::mutex> lock(drmHostManagerMutex_);
-    DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager_ !=nullptr,
-                                 DRM_INNER_ERR_INVALID_VAL,
-                                 "drmHostManager is nullptr");
-    bool hasInternet = netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_INTERNET) &&
-                       netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_VALIDATED);
-    bool isChecking  = netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_CHECKING_CONNECTIVITY);
-    if (hasInternet && !isChecking) {
-        DRM_INFO_LOG("DrmNetwork OK, trigger CertDownload");
-        drmHostManager_->SetIsNetWork(true);
-        drmHostManager_->condVar.notify_one();
-
-        int32_t ret = StopObserver();
-        DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, DRM_INNER_ERR_UNKNOWN, "StopObserver Error");
-        DRM_INFO_LOG("DrmNetwork OK, CertDownload End");
-        return DRM_INNER_ERR_OK;
+    sptr<DrmHostManager> mgrCopy;
+    {
+        std::lock_guard<std::mutex> lock(drmHostManagerMutex_);
+        DRM_CHECK_AND_RETURN_RET_LOG(drmHostManager_ !=nullptr,
+                                     DRM_INNER_ERR_INVALID_VAL,
+                                     "drmHostManager is nullptr");
+        bool hasInternet = netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_INTERNET) &&
+                           netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_VALIDATED);
+        bool isChecking  = netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_CHECKING_CONNECTIVITY);
+        if (!hasInternet || isChecking) {
+            DRM_INFO_LOG("Network not ready or still checking");
+            return DRM_INNER_ERR_UNKNOWN;
+        }
+        mgrCopy = drmHostManager_;
     }
+    // Operate DrmHostManager and StopObserver outside the lock to avoid re-entering drmHostManagerMutex_
+    DRM_INFO_LOG("DrmNetwork OK, trigger CertDownload");
+    mgrCopy->SetIsNetWork(true);
+    mgrCopy->condVar.notify_one();
 
-    DRM_INFO_LOG("Network not ready or still checking");
-    return DRM_INNER_ERR_UNKNOWN;
+    int32_t ret = StopObserver();
+    DRM_CHECK_AND_RETURN_RET_LOG(ret == DRM_INNER_ERR_OK, DRM_INNER_ERR_UNKNOWN, "StopObserver Error");
+    DRM_INFO_LOG("DrmNetwork OK, CertDownload End");
+    return DRM_INNER_ERR_OK;
 }
 
 int32_t DrmNetObserver::SetDrmHostManager(const sptr<DrmHostManager>& drmHostManager)

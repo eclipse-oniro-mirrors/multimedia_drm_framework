@@ -144,7 +144,7 @@ private:
     std::map<void *, sptr<IMediaKeySystem>> handleAndKeySystemMap;
     std::thread serviceThread;
     std::thread messageQueueThread;
-    bool serviceThreadRunning = false;
+    std::atomic<bool> serviceThreadRunning{false};
     std::atomic<bool> isNetWork{false};
     std::vector<void *> loadedLibs;
     std::recursive_mutex drmHostMapMutex;

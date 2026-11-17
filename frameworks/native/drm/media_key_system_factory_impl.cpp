@@ -24,7 +24,6 @@ namespace OHOS {
 namespace DrmStandard {
 using namespace OHOS::HiviewDFX;
 
-sptr<MediaKeySystemFactoryImpl> MediaKeySystemFactoryImpl::mediaKeySystemFactoryImpl_ = nullptr;
 constexpr int64_t SLEEP_TIME = 1;
 constexpr int32_t RETRY_TIMES = 3;
 
@@ -90,15 +89,9 @@ const sptr<IMediaKeySystemFactoryService> MediaKeySystemFactoryImpl::GetServiceP
 
 sptr<MediaKeySystemFactoryImpl> &MediaKeySystemFactoryImpl::GetInstance()
 {
-    DRM_INFO_LOG("GetInstance enter.");
-    if (MediaKeySystemFactoryImpl::mediaKeySystemFactoryImpl_ == nullptr) {
-        DRM_DEBUG_LOG("Initializing MediaKeySystemFactoryImpl for first time!");
-        MediaKeySystemFactoryImpl::mediaKeySystemFactoryImpl_ = new (std::nothrow) MediaKeySystemFactoryImpl();
-        if (MediaKeySystemFactoryImpl::mediaKeySystemFactoryImpl_ == nullptr) {
-            DRM_ERR_LOG("GetInstance failed to new MediaKeySystemFactoryImpl");
-        }
-    }
-    return MediaKeySystemFactoryImpl::mediaKeySystemFactoryImpl_;
+    // Function-local static guarantees thread-safe one-time initialization (C++11 magic statics)
+    static sptr<MediaKeySystemFactoryImpl> instance = new (std::nothrow) MediaKeySystemFactoryImpl();
+    return instance;
 }
 
 void MediaKeySystemFactoryImpl::Init()
